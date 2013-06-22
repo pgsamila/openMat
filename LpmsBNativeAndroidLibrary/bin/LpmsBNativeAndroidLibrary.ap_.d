@@ -1,0 +1,20 @@
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\LpmsBNativeAndroidLibrary.ap_ \
+ : C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-hdpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-hdpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-ldpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-ldpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-mdpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-mdpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-xhdpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\drawable-xhdpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\layout\main.xml \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\res\values\strings.xml \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-hdpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-hdpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-ldpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-ldpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-mdpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-mdpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-xhdpi\ic_launcher.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\res\drawable-xhdpi\lp_logo.png \
+C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\AndroidManifest.xml \

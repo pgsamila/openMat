@@ -1,0 +1,47 @@
+/* QWidget {
+	font-size: 12px;
+} */
+
+QGroupBox {
+	background-color: white;
+}
+
+MainWindow {
+	background-color: white;
+}
+
+QSplitter {
+	color: white;
+	background-color: white;
+}
+
+QSplitter::handle { 
+	background-color: white;
+}
+
+QGLWidget {
+	background-color: white;
+}
+
+/* QPushButton {
+	color: black;
+	border: 1px solid #666;
+	border-radius: 6px;
+	padding: 5px;
+	background: qradialgradient(	cx: 0.3, cy: -0.4,
+									fx: 0.3, fy: -0.4,
+									radius: 1.35, stop: 0 #fff, stop: 1 #aaa);
+	min-width: 80px;
+}
+
+QPushButton:hover {
+	background: qradialgradient(	cx: 0.3, cy: -0.4,
+									fx: 0.3, fy: -0.4,
+									radius: 1.35, stop: 0 #fff, stop: 1 #ccc);
+}
+
+QPushButton:pressed {
+	background: qradialgradient(	cx: 0.4, cy: -0.1,
+									fx: 0.4, fy: -0.1,
+									radius: 1.35, stop: 0 #fff, stop: 1 #eee);
+} */

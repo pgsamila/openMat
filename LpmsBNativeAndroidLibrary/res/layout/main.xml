@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout	
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+    android:shrinkColumns="*"  
+    android:stretchColumns="*">
+	<TableRow>
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Gyroscope" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"			
+			android:text="X=" />
+		<TextView 
+			android:id="@+id/gyrXText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Y=" />
+		<TextView 
+			android:id="@+id/gyrYText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Z=" />
+		<TextView 
+			android:id="@+id/gyrZText"
+			android:textSize="18sp"
+			android:text="0.0" />
+	</TableRow>
+	<TableRow>	
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Accelerometer" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="X=" />
+		<TextView 
+			android:id="@+id/accXText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Y=" />
+		<TextView 
+			android:id="@+id/accYText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Z=" />
+		<TextView 
+			android:id="@+id/accZText"
+			android:textSize="18sp"
+			android:text="0.0" />
+	</TableRow>
+	<TableRow>	
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Magnetometer" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="X=" />
+		<TextView 
+			android:id="@+id/magXText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Y=" />
+		<TextView 
+			android:id="@+id/magYText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Z=" />
+		<TextView 
+			android:id="@+id/magZText"
+			android:textSize="18sp"
+			android:text="0.0" />
+	</TableRow>
+	<TableRow>	
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Quaternion" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="X=" />
+		<TextView 
+			android:id="@+id/quatXText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Y=" />
+		<TextView 
+			android:id="@+id/quatYText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Z=" />
+		<TextView 
+			android:id="@+id/quatZText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="W=" />
+		<TextView 
+			android:id="@+id/quatWText"
+			android:textSize="18sp"
+			android:text="0.0" />
+	</TableRow>
+	<TableRow>	
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Euler" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="X=" />
+		<TextView 
+			android:id="@+id/eulerXText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Y=" />
+		<TextView 
+			android:id="@+id/eulerYText"
+			android:textSize="18sp"
+			android:text="0.0" />
+		<TextView 
+			android:id="@+id/text"
+			android:textSize="18sp"
+			android:text="Z=" />
+		<TextView 
+			android:id="@+id/eulerZText"
+			android:textSize="18sp"
+			android:text="0.0" />
+	</TableRow>
+</TableLayout>
+		
+
+

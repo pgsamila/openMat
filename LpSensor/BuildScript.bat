@@ -1,0 +1,5 @@
+cmake -DCMAKE_BUILD_TYPE=Debug -DARCH_32BIT=TRUE
+nmake
+
+cmake -DCMAKE_BUILD_TYPE=Release -DARCH_32BIT=TRUE
+nmake

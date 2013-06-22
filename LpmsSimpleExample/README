@@ -1,0 +1,27 @@
+			Open Motion Analysis Toolkit (OpenMAT)
+				Version 0.0.8, 2012-2-24
+
+This program and its source code are part of the OpenMAT open-source 
+library. If you have any questions regarding the usage of the library 
+feel free to contact the developers:
+
+	LP-Research
+	c/o Waseda University Incubation Center
+	Nishi Waseda 1-22-3
+	169-0051 Tokyo, Japan
+	Telephone: +81-30-3438-3207
+	Email: klaus@lp-research.com or lin@lp-research.com
+
+We would like to give credits to the following people / companies / projects
+whose open-source develpoments we have used:
+	
+	QWT: Uwe Rathmann, Josef Wilgen (http://qwt.sourceforge.net/)
+	ICE: ZeroC (http://www.zeroc.com)
+	QT: NOKIA / Trolltech (http://qt.nokia.com/)
+	Application Icon: Fast Icon (http://www.fasticon.com/commercial_license.html)
+	PugiXML: Arseny Kapoulkine (http://pugixml.org/)
+	Boost: Boost.org (http://www.boost.org/)
+	
+For further information on LP-Research, please visit our website:
+	
+	http://www.lp-research.com

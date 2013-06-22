@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.LpResearch.LpmsBNativeAndroidLibrary"
+      android:versionCode="1"
+      android:versionName="1.0">
+
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="16" />
+
+    <application android:label="LpmsBSimpleDataAcq" android:icon="@drawable/lp_logo">
+        <activity android:name="LpmsBMainActivity"
+                  android:label="LpmsBSimpleDataAcq"
+				  android:screenOrientation="landscape" 
+				  android:configChanges="orientation|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+	<uses-permission android:name="android.permission.BLUETOOTH" />
+	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+</manifest>

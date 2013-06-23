@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Project>
+  <Desktop>
+    <Static>
+      <Debug-Log>
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1621</ColumnWidth1></Debug-Log>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1215</ColumnWidth1><ColumnWidth2>324</ColumnWidth2><ColumnWidth3>81</ColumnWidth3></Build>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>426</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Disassembly>
+        <col-names>
+          
+          
+        <item>Disassembly</item><item>_I0</item></col-names>
+        <col-widths>
+          
+          
+        <item>500</item><item>20</item></col-widths>
+        <DisasmHistory><item>0x08040000</item><item>0x08050000</item><item>0x08060000</item><item>0x08020000</item><item>0x08010000</item><item>0x08000000</item><item>0x08004000</item><item>0x08008000</item><item>0x08006000</item><item>0x08002000</item></DisasmHistory>
+        
+        
+      <PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows><ShowCodeCoverage>0</ShowCodeCoverage><ShowInstrProfiling>0</ShowInstrProfiling></Disassembly>
+      <WATCH_1>
+        <expressions>
+          
+          
+          
+          
+        <item>lin</item><item>lin2</item><item>RCC_Clocks</item><item>delayCounter</item><item>data</item><item>timecounter</item><item>calibrationData.gyrGain</item><item>calibrationData.gyrOffset</item><item>calibrationData.accGain</item><item>calibrationData.magGain</item><item>calibrationData.magOffset</item><item>lpFilterParam.accCompGain</item><item>lpFilterParam.accRef</item><item>lpFilterParam.magRef</item><item>lpFilterParam.gyrThres</item><item>lpFilterParam.magThres</item><item>t</item><item>t1</item><item>lin</item><item>t1</item><item>pDataBuffer</item><item>oneTx</item><item>txData</item><item>config</item><item>gRxBuffer</item><item>rawDataCounter</item><item>rxState</item><item>data</item><item>txData</item><item>rxFirmwarePacketCounter</item><item>rxFirmwarePacketSize</item><item>flash_destination</item><item>rxFirmwarePacketSize</item><item>baudrate_flag</item><item>newPacket</item><item>rxFirmwarePacketSize</item><item>m</item><item>rxFirmwarePacketCounter</item><item>gTransmitMailbox</item><item>processedPacketPtr</item><item>SectorsWRPStatus</item><item>*flashAddress</item><item>flash_destination</item><item>temp1</item><item>temp2</item><item>data</item><item>ui32</item><item>data[i*4 + j]</item><item>data</item><item>gReg</item><item>data</item><item>data[i*4 + j]</item><item>v</item><item>packet</item><item>flashAddress</item><item>gReg.data</item><item>finvW[0][0]</item><item>rawDataCounter</item><item>fConBpz</item><item>data</item><item>data[j*4+i]</item><item>buffer</item><item>packet</item><item>lpFilterParam.magCompGain</item><item/></expressions>
+        <col-names>
+          
+          
+          
+          
+        <item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names>
+        <col-widths>
+          
+          
+          
+          
+        <item>138</item><item>150</item><item>100</item><item>299</item></col-widths>
+      <PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows></WATCH_1>
+    <QuickWatch><col-names><item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names><col-widths><item>100</item><item>150</item><item>100</item><item>100</item></col-widths><QWatchHistory/><PreferedWindows><Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows><Window><Factory>WATCH_1</Factory></Window></Windows></PreferedWindows></QuickWatch></Static>
+    <Windows>
+      
+      
+      
+      
+    <Wnd0>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-32362-12028</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-31840-12038</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd1>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-10343-12032</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>LpmsB</ExpandedNode><ExpandedNode>LpmsB/LpmsSource</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd1><Wnd3><Tabs><Tab><Identity>TabID-27281-26863</Identity><TabName>Disassembly</TabName><Factory>Disassembly</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsL3gd20.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>3170</SelStart><SelEnd>3170</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsLsm303dlhc.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>268</SelStart><SelEnd>268</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsStartUp.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>444</SelStart><SelEnd>444</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsTest.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>266</SelStart><SelEnd>266</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsTest.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>388</SelStart><SelEnd>388</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsUsart.h</Filename><XPos>0</XPos><YPos>51</YPos><SelStart>250</SelStart><SelEnd>250</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpMatrix.h</Filename><XPos>0</XPos><YPos>90</YPos><SelStart>3498</SelStart><SelEnd>3511</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsStartUp.c</Filename><XPos>0</XPos><YPos>67</YPos><SelStart>265</SelStart><SelEnd>265</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsLsm303dlhc.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>917</SelStart><SelEnd>917</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsTimebase.h</Filename><XPos>0</XPos><YPos>24</YPos><SelStart>928</SelStart><SelEnd>938</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpFilterCVersion.h</Filename><XPos>0</XPos><YPos>3</YPos><SelStart>791</SelStart><SelEnd>791</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpMatrix.c</Filename><XPos>0</XPos><YPos>716</YPos><SelStart>25229</SelStart><SelEnd>25233</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsAssignments.h</Filename><XPos>0</XPos><YPos>27</YPos><SelStart>1129</SelStart><SelEnd>1129</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsRn42.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>378</SelStart><SelEnd>378</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsBmp180.c</Filename><XPos>0</XPos><YPos>265</YPos><SelStart>8468</SelStart><SelEnd>8468</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsBmp180.h</Filename><XPos>0</XPos><YPos>36</YPos><SelStart>1621</SelStart><SelEnd>1636</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsL3gd20.c</Filename><XPos>0</XPos><YPos>202</YPos><SelStart>5946</SelStart><SelEnd>5946</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsTimebase.c</Filename><XPos>0</XPos><YPos>9</YPos><SelStart>2871</SelStart><SelEnd>2871</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsCanBus.h</Filename><XPos>0</XPos><YPos>39</YPos><SelStart>1099</SelStart><SelEnd>1099</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsUsart.c</Filename><XPos>0</XPos><YPos>187</YPos><SelStart>7955</SelStart><SelEnd>7996</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsModbus.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>355</SelStart><SelEnd>372</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsModbus.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>443</SelStart><SelEnd>443</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\HeaveMotion.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>369</SelStart><SelEnd>396</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\SensorManager.h</Filename><XPos>0</XPos><YPos>9</YPos><SelStart>782</SelStart><SelEnd>782</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpFilterCVersion.c</Filename><XPos>0</XPos><YPos>290</YPos><SelStart>5149</SelStart><SelEnd>5149</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsCanBus.c</Filename><XPos>0</XPos><YPos>672</YPos><SelStart>14857</SelStart><SelEnd>14857</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsConfig.c</Filename><XPos>0</XPos><YPos>81</YPos><SelStart>2213</SelStart><SelEnd>2213</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsConfig.h</Filename><XPos>0</XPos><YPos>262</YPos><SelStart>12588</SelStart><SelEnd>12588</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsRn42.c</Filename><XPos>0</XPos><YPos>216</YPos><SelStart>8133</SelStart><SelEnd>8133</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\CommunicationManager.c</Filename><XPos>0</XPos><YPos>48</YPos><SelStart>1627</SelStart><SelEnd>1640</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsSensorParameters.c</Filename><XPos>0</XPos><YPos>1101</YPos><SelStart>25353</SelStart><SelEnd>25353</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\HeaveMotion.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>1436</SelStart><SelEnd>1436</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsAssignments.c</Filename><XPos>0</XPos><YPos>150</YPos><SelStart>2619</SelStart><SelEnd>2619</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\SensorManager.c</Filename><XPos>0</XPos><YPos>638</YPos><SelStart>20598</SelStart><SelEnd>20611</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsFactorySetting.h</Filename><XPos>0</XPos><YPos>3</YPos><SelStart>388</SelStart><SelEnd>388</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\main.c</Filename><XPos>0</XPos><YPos>10</YPos><SelStart>608</SelStart><SelEnd>608</SelEnd></Tab><ActiveTab>35</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-02bcef78><key>iaridepm.enu1</key></Toolbar-02bcef78></Sizes></Row0><Row1><Sizes><Toolbar-1002dba0><key>debuggergui.enu1</key></Toolbar-1002dba0></Sizes></Row1><Row2><Sizes><Toolbar-1002d948><key>armstlink.enu1</key></Toolbar-1002d948></Sizes></Row2></Top><Left><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>369</Bottom><Right>517</Right><x>-2</x><y>-2</y><xscreen>1455</xscreen><yscreen>1585</yscreen><sizeHorzCX>1065154</sizeHorzCX><sizeHorzCY>2186207</sizeHorzCY><sizeVertCX>379941</sizeVertCX><sizeVertCY>511724</sizeVertCY></Rect></Wnd1></Sizes></Row0></Left><Right><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>369</Bottom><Right>245</Right><x>-2</x><y>-2</y><xscreen>247</xscreen><yscreen>204</yscreen><sizeHorzCX>180820</sizeHorzCX><sizeHorzCY>281379</sizeHorzCY><sizeVertCX>180820</sizeVertCX><sizeVertCY>511724</sizeVertCY></Rect></Wnd3></Sizes></Row0></Right><Bottom><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>263</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>265</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>365517</sizeHorzCY><sizeVertCX>1065154</sizeVertCX><sizeVertCY>2186207</sizeVertCY></Rect></Wnd0></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Project>
+
+

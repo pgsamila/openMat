@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Project>
+  <Desktop>
+    <Static>
+      <Debug-Log>
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1621</ColumnWidth1></Debug-Log>
+      <Build>
+        <ColumnWidth0>20</ColumnWidth0>
+        <ColumnWidth1>1215</ColumnWidth1>
+        <ColumnWidth2>324</ColumnWidth2>
+        <ColumnWidth3>81</ColumnWidth3>
+      </Build>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>87</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Disassembly>
+        <col-names>
+          
+          
+        <item>Disassembly</item><item>_I0</item></col-names>
+        <col-widths>
+          
+          
+        <item>500</item><item>20</item></col-widths>
+        <DisasmHistory>
+          
+          
+        <item>0x08020000</item><item>0x08000000</item><item>0x08060000</item><item>0x08078000</item><item>0x08008000</item><item>0x08040000</item><item>0x08070000</item><item>0x0807f000</item><item>0x0807ffff</item><item>0x080083ff</item></DisasmHistory>
+        <PreferedWindows>
+          
+          
+          
+          
+        <Position>2</Position><ScreenPosX>0</ScreenPosX><ScreenPosY>0</ScreenPosY><Windows/></PreferedWindows>
+        
+        
+      <ShowCodeCoverage>0</ShowCodeCoverage><ShowInstrProfiling>0</ShowInstrProfiling></Disassembly>
+      <WATCH_1>
+        <expressions>
+          
+          
+          
+        <item>flash_source</item><item>buf_1024</item><item>buf_1024[i]</item><item>destination</item><item>flash_source</item><item>flash_destination</item><item/></expressions>
+        <col-names>
+          
+          
+          
+          
+        <item>Expression</item><item>Location</item><item>Type</item><item>Value</item></col-names>
+        <col-widths>
+          
+          
+          
+          
+        <item>100</item><item>150</item><item>100</item><item>100</item></col-widths>
+      </WATCH_1>
+    </Static>
+    <Windows>
+      
+      
+      
+      
+    <Wnd1>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-32703-13184</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-32180-13194</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd1><Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-10684-13187</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>LpmsCRS_IAP</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd6>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-19383-16913</Identity>
+            <TabName>Watch 1</TabName>
+            <Factory>WATCH_1</Factory>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd6><Wnd7><Tabs><Tab><Identity>TabID-29151-32696</Identity><TabName>Disassembly</TabName><Factory>Disassembly</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd7></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_flash.c</Filename><XPos>0</XPos><YPos>497</YPos><SelStart>13974</SelStart><SelEnd>13974</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\main.c</Filename><XPos>0</XPos><YPos>213</YPos><SelStart>5734</SelStart><SelEnd>5734</SelEnd></Tab><ActiveTab>1</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\Common\system_stm32f2xx.c</Filename><XPos>0</XPos><YPos>114</YPos><SelStart>7135</SelStart><SelEnd>7135</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\inc\stm32f2xx_flash.h</Filename><XPos>0</XPos><YPos>97</YPos><SelStart>4843</SelStart><SelEnd>4843</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-00c8de10><key>iaridepm.enu1</key></Toolbar-00c8de10></Sizes></Row0><Row1><Sizes><Toolbar-1644f938><key>debuggergui.enu1</key></Toolbar-1644f938></Sizes></Row1><Row2><Sizes><Toolbar-0e6f7278><key>armjlink.enu1</key></Toolbar-0e6f7278></Sizes></Row2></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>484</Bottom><Right>161</Right><x>-2</x><y>-2</y><xscreen>163</xscreen><yscreen>150</yscreen><sizeHorzCX>119327</sizeHorzCX><sizeHorzCY>206897</sizeHorzCY><sizeVertCX>119327</sizeVertCX><sizeVertCY>670345</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes><Wnd6><Rect><Top>-2</Top><Left>-2</Left><Bottom>484</Bottom><Right>33</Right><x>-2</x><y>-2</y><xscreen>163</xscreen><yscreen>150</yscreen><sizeHorzCX>119327</sizeHorzCX><sizeHorzCY>206897</sizeHorzCY><sizeVertCX>25622</sizeVertCX><sizeVertCY>670345</sizeVertCY></Rect></Wnd6></Sizes></Row0><Row1><Sizes><Wnd7><Rect><Top>-2</Top><Left>31</Left><Bottom>484</Bottom><Right>532</Right><x>31</x><y>-2</y><xscreen>214</xscreen><yscreen>148</yscreen><sizeHorzCX>156662</sizeHorzCX><sizeHorzCY>204138</sizeHorzCY><sizeVertCX>366764</sizeVertCX><sizeVertCY>670345</sizeVertCY></Rect></Wnd7></Sizes></Row1></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>148</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>150</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>206897</sizeHorzCY><sizeVertCX>119327</sizeVertCX><sizeVertCY>206897</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Project>
+
+

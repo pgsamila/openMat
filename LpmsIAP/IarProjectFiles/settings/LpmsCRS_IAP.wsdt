@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>LpmsCRS_IAP/Debug</Project></CurrentConfigs></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>271</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1215</ColumnWidth1><ColumnWidth2>324</ColumnWidth2><ColumnWidth3>81</ColumnWidth3></Build>
+    <TerminalIO/><Debug-Log><ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1621</ColumnWidth1></Debug-Log></Static>
+    <Windows>
+      
+      
+    <Wnd0>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-27617-1329</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>LpmsCRS_IAP</ExpandedNode><ExpandedNode>LpmsCRS_IAP/CMSIS</ExpandedNode><ExpandedNode>LpmsCRS_IAP/LpmsSource</ExpandedNode><ExpandedNode>LpmsCRS_IAP/STM32F2xx_Common</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd1>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-23100-2642</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        <Tab><Identity>TabID-17083-13886</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab></Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd1></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_flash.c</Filename><XPos>0</XPos><YPos>497</YPos><SelStart>13974</SelStart><SelEnd>13974</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\main.c</Filename><XPos>0</XPos><YPos>294</YPos><SelStart>5757</SelStart><SelEnd>5757</SelEnd></Tab><ActiveTab>1</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\Common\system_stm32f2xx.c</Filename><XPos>0</XPos><YPos>114</YPos><SelStart>7135</SelStart><SelEnd>7135</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\inc\stm32f2xx_flash.h</Filename><XPos>0</XPos><YPos>97</YPos><SelStart>4843</SelStart><SelEnd>4843</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-00c8de10><key>iaridepm.enu1</key></Toolbar-00c8de10></Sizes></Row0></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>539</Bottom><Right>345</Right><x>-2</x><y>-2</y><xscreen>369</xscreen><yscreen>143</yscreen><sizeHorzCX>270132</sizeHorzCX><sizeHorzCY>197241</sizeHorzCY><sizeVertCX>254026</sizeVertCX><sizeVertCY>746207</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>141</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>143</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>197241</sizeHorzCY><sizeVertCX>270132</sizeVertCX><sizeVertCY>197241</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

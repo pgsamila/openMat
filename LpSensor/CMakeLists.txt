@@ -6,30 +6,21 @@
 
 cmake_minimum_required(VERSION 2.4.6)
 
-# Specifies build type (Debug or Release)
-SET(CMAKE_BUILD_TYPE "Debug")
-# SET(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-# Defines path of dependencies for LpSensor library
-# LpSensor has the following dependencies:
-# FTDI D2XX drivers (http://www.ftdichip.com/Drivers/D2XX.htm)
-# PCAN Basic API for CAN bus adapter library (http://www.peak-system.com/Support.55.0.html)
-# Boost library (http://www.boost.org/)
-# Windows SDK 6 (http://msdn.microsoft.com/en-us/dd299405.aspx)
-# PugiXML (http://pugixml.org/)
-set(OPENMAT_DEPENDENCIES_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/")
+set(WINDOWS_BOOST_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Boost" CACHE STRING "")
+set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ice" CACHE STRING "")
+set(WINDOWS_SDK_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/WindowsSdk6" CACHE STRING "")
+set(WINDOWS_FTDI_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/FTdi" CACHE STRING "")
 
-# Selects the architecture to build for
-# set(ARCH_64BIT TRUE)
-set(ARCH_32BIT TRUE)
+set(BUILD_ARCHITECTURE "32-bit" CACHE STRING "")
+set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
 
-# Selects if ZeroC ICE network driver is to be used
-# SET(USE_ZEROC_ICE TRUE)
+set(USE_ICE FALSE CACHE BOOL "")
+set(BUILD_OPENSOURCE CACHE BOOL "")
 
-# Selects if open-source version of the library is to be built
-# SET(BUILD_OPENSOURCE TRUE)
-
-if (ARCH_32BIT)
+if (BUILD_ARCHITECTURE STREQUAL "32-bit")
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		project (LpSensor)
 	endif()
@@ -39,7 +30,7 @@ if (ARCH_32BIT)
 	endif()
 endif()
 
-if (ARCH_64BIT)
+if (BUILD_ARCHITECTURE STREQUAL "64-bit")
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		project (LpSensor64)
 	endif()
@@ -59,25 +50,25 @@ if (USE_ZEROC_ICE)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	include_directories("../lp3rdpartylibraries/Ftdi")
-	include_directories("../openmatcommon")
-	include_directories("../lpsensor")
-	include_directories("../lp3rdpartylibraries/Pugixml/src")
-	include_directories("../lp3rdpartylibraries/PcanApi/Include")
-	include_directories("../lp3rdpartylibraries/Boost")
+	include_directories("../Lp3rdPartyLibraries/Ftdi")
+	include_directories("../OpenMATCommon")
+	include_directories("../LpSensor")
+	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
+	include_directories("../Lp3rdPartyLibraries/PcanApi/Include")
+	include_directories("${WINDOWS_BOOST_PATH}")
 
-	if (ARCH_32BIT)
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/Ftdi/i386")
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/PcanApi/Win32/VC_LIB")
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/Boost/lib/win32")
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}Libraries/WindowsSdk6/Lib")
+if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+		link_directories("${WINDOWS_FTDI_PATH}/i386")
+		link_directories("${WINDOWS_PCAN_PATH}/Win32/VC_LIB")
+		link_directories("${WINDOWS_BOOST_PATH}/lib/win32")
+		link_directories("${WINDOWS_SDK_PATH}/Lib")
 	endif()	
 	
-	if (ARCH_64BIT)
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/Ftdi/amd64")
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/PcanApi/x64/VC_LIB")	
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/Boost/lib/win64")
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/WindowsSdk6/Lib/x64")		
+if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+		link_directories("${WINDOWS_FTDI_PATH}/amd64")
+		link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")	
+		link_directories("${WINDOWS_BOOST_PATH}/lib/win64")
+		link_directories("${WINDOWS_SDK_PATH}/Lib/x64")		
 	endif()
 	
 	ADD_DEFINITIONS(-DUSE_EIGEN)
@@ -103,16 +94,16 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	include_directories("../openmatcommon")
-	include_directories("../lp3rdpartylibraries/Pugixml/src")
-	include_directories("../lp3rdpartylibraries/Ftdi/Linux/release")
+	include_directories("../OpenMATCommon")
+	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
+	include_directories("../Lp3rdPartyLibraries/Ftdi/Linux/release")
+	
 	include_directories("/usr/local/include")
 	include_directories("/usr/include")
 
 	link_directories("/usr/lib")
 	link_directories("/usr/lib/x86_64-linux-gnu")
 	link_directories("/usr/local/lib")
-	link_directories("${OPENMAT_DEPENDENCIES_PATH}/Ftdi/Linux/release/build/x86_64")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -131,7 +122,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 		PCANBasicClass.cpp
 			
-		../lp3rdpartylibraries/Pugixml/src/pugixml.cpp
+		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
 	)
 	
 	if (BUILD_OPENSOURCE)	
@@ -174,7 +165,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		LpmsSensor.cpp	
 		LpMatrix.c
 						
-		../lp3rdpartylibraries/Pugixml/src/pugixml.cpp
+		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
 	)
 
 	if (BUILD_OPENSOURCE)	
@@ -206,12 +197,14 @@ endif()
 set(headers
 )
 
-if (ARCH_32BIT)
-	set(LIBRARY_OUTPUT_PATH ./build)
+if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+	set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
+	set(EXECUTABLE_OUTPUT_PATH ./build CACHE STRING "")
 endif()
 
-if (ARCH_64BIT)
-	set(LIBRARY_OUTPUT_PATH ./build/x64)
+if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+	set(LIBRARY_OUTPUT_PATH ./build/x64 CACHE STRING "")
+	set(EXECUTABLE_OUTPUT_PATH ./build/x64 CACHE STRING "")
 endif()
 
 if (USE_ZEROC_ICE)
@@ -223,7 +216,7 @@ if (USE_ZEROC_ICE)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	if (ARCH_32BIT)
+	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
 		if(CMAKE_BUILD_TYPE STREQUAL "Release")
 			add_library(LpSensor SHARED ${sources} ${headers})
 			target_link_libraries(LpSensor Ws2_32.lib)
@@ -247,7 +240,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		endif()
 	endif()
 	
-	if (ARCH_64BIT)
+	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
 		if(CMAKE_BUILD_TYPE STREQUAL "Release")
 			add_library(LpSensor64 SHARED ${sources} ${headers})
 			target_link_libraries(LpSensor64 Ws2_32.lib)

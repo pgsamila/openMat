@@ -39,44 +39,48 @@ cmake_policy(SET CMP0015 NEW)
 endif(COMMAND cmake_policy)
 
 SET(USE_ZEROC_ICE FALSE)
-SET(USE_QT5 FALSE)
-SET(USE_QT4 TRUE)
+SET(USE_QT5 FALSE CACHE BOOL "")
 
-SET(CMAKE_BUILD_TYPE "Debug")
-# SET(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-set(OPENMAT_DEPENDENCIES_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/")
+set(WINDOWS_BOOST_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Boost" CACHE STRING "")
+set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ice" CACHE STRING "")
+set(WINDOWS_QWT_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Qwt" CACHE STRING "")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	SET(SHOW_CONSOLE FALSE)
-	set(EXECUTABLE_OUTPUT_PATH ./build/release)
+	set(EXECUTABLE_OUTPUT_PATH "./build/release" CACHE STRING "")
+	set(LIBRARY_OUTPUT_PATH "./build/release" CACHE STRING "")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	SET(SHOW_CONSOLE TRUE)
-	set(EXECUTABLE_OUTPUT_PATH ./build/debug)	
+	set(EXECUTABLE_OUTPUT_PATH "./build/debug" CACHE STRING "")	
+	set(LIBRARY_OUTPUT_PATH "./build/debug" CACHE STRING "")	
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	include_directories("../lp3rdpartylibraries/Ftdi")
-	include_directories("../lp3rdpartylibraries/Qwt/include")
-	include_directories("../lp3rdpartylibraries/Boost")
-	include_directories("../lp3rdpartylibraries/Eigen")
+	include_directories("../Lp3rdPartyLibraries/Ftdi")
+	include_directories("../Lp3rdPartyLibraries/Qwt/include")
+	include_directories("../Lp3rdPartyLibraries/Eigen")
+	
+	include_directories("${WINDOWS_BOOST_PATH}")	
 
 	if (USE_ZEROC_ICE)
-		include_directories("../lp3rdpartylibraries/Ice/include")
+		include_directories("../Lp3rdPartyLibraries/Ice/include")
 	endif()
 
 	include_directories("../OpenMATCommon")
-	include_directories("../LpAlgorithm")
 	include_directories("../LpSensor")
-	include_directories("../lp3rdpartylibraries/Pugixml/src/")
+	include_directories("../Lp3rdPartyLibraries/Pugixml/src/")
 
-	link_directories("${OPENMAT_DEPENDENCIES_PATH}/Qwt/lib")
-	link_directories("${OPENMAT_DEPENDENCIES_PATH}/Boost/lib/win32")	
+	link_directories("${WINDOWS_QWT_PATH}/lib")
+	
+	link_directories("${WINDOWS_BOOST_PATH}/lib/win32")	
 
 	if (USE_ZEROC_ICE)
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/Ice/lib")
+		link_directories("${WINDOWS_ICE_PATH}/Ice/lib")
 	endif() 
 
 	link_directories("../LpSensor/build")
@@ -98,27 +102,23 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(SHOW_CONSOLE TRUE)
 
-	include_directories("../lp3rdpartylibraries/Qwt/include")
-	include_directories("../lp3rdpartylibraries/Pugixml/src")
-	include_directories("../lp3rdpartylibraries/Ftdi/Linux/release")
-	include_directories("../lp3rdpartylibraries/Eigen")
+	include_directories("../Lp3rdPartyLibraries/Qwt/include")
+	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
+	include_directories("../Lp3rdPartyLibraries/Ftdi/Linux/release")
+	include_directories("../Lp3rdPartyLibraries/Eigen")
 
-	include_directories("../openmatcommon")
-	include_directories("../lpsensor")
+	include_directories("../OpenMATCommon")
+	include_directories("../LpSensor")
 
 	include_directories("/usr/local/include")
 	include_directories("/usr/include")
 
-	link_directories("../lp3rdpartylibraries/Ftdi/Linux/release/build/x86_64")
-	link_directories("../lpsensor/build")
+	link_directories("../Lp3rdPartyLibraries/Ftdi/Linux/release/build/x86_64")
+	link_directories("../LpSensor/build")
 
 	link_directories("/usr/lib")
 	link_directories("/usr/lib/x86_64-linux-gnu")
 	link_directories("/usr/local/lib")
-
-	if (USE_ZEROC_ICE)
-		link_directories("../lp3rdpartylibraries/Ice/lib")
-	endif() 
 endif()
 
 if (USE_ZEROC_ICE)
@@ -151,7 +151,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	
 		LpmsControl.rc
 
-		../lp3rdpartylibraries/Pugixml/src/pugixml.cpp
+		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
 	)
 
 	if (USE_ZEROC_ICE)
@@ -211,7 +211,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	
 		LpmsControl.rc
 
-		../lp3rdpartylibraries/Pugixml/src/pugixml.cpp
+		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
 	)
 
 	if (USE_ZEROC_ICE)
@@ -251,14 +251,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
-if (USE_QT4)
-	find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-	include(${QT_USE_FILE})
-	qt4_wrap_cpp(moc_sources ${headers})
-	include_directories(${CMAKE_BINARY_DIR})
-	include_directories(${QT_INCLUDE_DIR})
-endif()
-
 if (USE_QT5)
 	set(CMAKE_INCLUDE_CURRENT_DIR ON)
 	set(CMAKE_AUTOMOC ON)
@@ -268,6 +260,12 @@ if (USE_QT5)
 	find_package(Qt5OpenGL REQUIRED)
 
 	qt5_use_modules(LpmsControl Widgets Core OpenGL)
+else()
+	find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+	include(${QT_USE_FILE})
+	qt4_wrap_cpp(moc_sources ${headers})
+	include_directories(${CMAKE_BINARY_DIR})
+	include_directories(${QT_INCLUDE_DIR})
 endif()
 
 find_package(OpenGL REQUIRED)

@@ -33,10 +33,10 @@
 // #define EULER_FROM_QUATERNION
 
 // Enables CAN bus interface
-#define USE_CANBUS_INTERFACE
+// #define USE_CANBUS_INTERFACE
 
 // Enables Bluetooth interface
-// #define USE_BLUETOOTH_INTERFACE
+#define USE_BLUETOOTH_INTERFACE
 
 // Enables watchdog timer
 #define ENABLE_WATCHDOG
@@ -49,6 +49,9 @@
 
 // To enable pressure sensing
 #define ENABLE_PRESSURE
+
+// Enable Bluetooth low-latency
+#define ENABLE_LOWLATENCY
 
 // <--
 

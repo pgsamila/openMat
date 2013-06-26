@@ -166,8 +166,12 @@ void DiscoveryTree::addDevice(int deviceType, string deviceId)
 void DiscoveryTree::removeCurrentDevice(void)
 {
 	if (topLevelItemCount() > 0) {
-		takeTopLevelItem(indexOfTopLevelItem(currentItem()->parent()));
-		takeTopLevelItem(indexOfTopLevelItem(currentItem()));
+		// std::cout << indexOfTopLevelItem(currentItem()) << std::endl;
+		if (indexOfTopLevelItem(currentItem()) == -1) {
+			takeTopLevelItem(indexOfTopLevelItem(currentItem()->parent()));
+		} else {
+			takeTopLevelItem(indexOfTopLevelItem(currentItem()));
+		}
 	}
 }
 

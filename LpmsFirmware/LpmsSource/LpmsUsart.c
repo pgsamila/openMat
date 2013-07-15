@@ -10,7 +10,6 @@
 #include "LpmsUsart.h"
 
 uint8_t serialPortRxBuffer[USART_MAX_RX_BUFFER_LENGTH];
-uint8_t serialPortTxBuffer[USART_MAX_TX_BUFFER_LENGTH];
 
 static DMA_InitTypeDef serialPortDMAInitStructure;
 static LpmsPacket newPacket;
@@ -71,8 +70,6 @@ void serialPortSetConfig(uint32_t baudrate)
 
 void serialPortSetDmaConfig(void)
 {
-  	NVIC_InitTypeDef  NVIC_InitStructure;
-	   
   	RCC_AHB1PeriphClockCmd(USART_DMA_CLK, ENABLE); 	
 	
 	DMA_DeInit(USART_RX_DMA_STREAM);
@@ -96,9 +93,9 @@ void serialPortSetDmaConfig(void)
 	
 	DMA_DeInit(USART_TX_DMA_STREAM);
 	serialPortDMAInitStructure.DMA_Channel = USART_TX_DMA_CHANNEL;
-	serialPortDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t)serialPortTxBuffer;
+	// serialPortDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t)serialPortTxBuffer;
 	serialPortDMAInitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	serialPortDMAInitStructure.DMA_BufferSize = (uint32_t)USART_MAX_TX_BUFFER_LENGTH;
+	// serialPortDMAInitStructure.DMA_BufferSize = (uint32_t)USART_MAX_TX_BUFFER_LENGTH;
 	serialPortDMAInitStructure.DMA_Mode = DMA_Mode_Normal;
 	DMA_Init(USART_TX_DMA_STREAM, &serialPortDMAInitStructure);
 	
@@ -112,13 +109,13 @@ void serialPortSetDmaConfig(void)
 	DMA_Cmd(USART_RX_DMA_STREAM, DISABLE);
 	DMA_Cmd(USART_TX_DMA_STREAM, DISABLE);
 	
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+	/* NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 
 	NVIC_InitStructure.NVIC_IRQChannel = USART_DMA_STEAM_IRQ;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+	NVIC_Init(&NVIC_InitStructure); */
 	
   	USART_DMACmd(USART_PORT, USART_DMAReq_Rx, ENABLE);
   	DMA_Cmd(USART_RX_DMA_STREAM, ENABLE);
@@ -126,19 +123,22 @@ void serialPortSetDmaConfig(void)
 
 void serialPortStartTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 {
+	DMA_Cmd(USART_TX_DMA_STREAM, DISABLE);
 	DMA_ClearFlag(USART_TX_DMA_STREAM, USART_TX_DMA_FLAG_TCIF);
-	DMA_DeInit(USART_TX_DMA_STREAM);
 
+	DMA_DeInit(USART_TX_DMA_STREAM);
 	serialPortDMAInitStructure.DMA_Channel = USART_TX_DMA_CHANNEL;
 	serialPortDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t)pDataBuffer;
 	serialPortDMAInitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
 	serialPortDMAInitStructure.DMA_BufferSize = (uint32_t)dataLength;
 	serialPortDMAInitStructure.DMA_Mode = DMA_Mode_Normal;
-
 	DMA_Init(USART_TX_DMA_STREAM, &serialPortDMAInitStructure);
+
 	USART_DMACmd(USART_PORT, USART_DMAReq_Tx, ENABLE);
 	USART_ClearFlag(USART_PORT, USART_FLAG_TC);
-	DMA_ITConfig(USART_TX_DMA_STREAM, DMA_IT_TC, ENABLE);
+	
+	// DMA_ITConfig(USART_TX_DMA_STREAM, DMA_IT_TC, ENABLE);
+	
 	DMA_Cmd(USART_TX_DMA_STREAM, ENABLE);
 }
 
@@ -152,11 +152,9 @@ void serialPortStopTransfer(void)
 
 uint8_t serialPortIsTransferCompleted(void)
 {
-	if (DMA_GetFlagStatus(USART_TX_DMA_STREAM, USART_TX_DMA_FLAG_TCIF) != RESET) {
-		return 0;
-	}
+	if (DMA_GetFlagStatus(USART_TX_DMA_STREAM, USART_TX_DMA_FLAG_TCIF) != RESET) return 1;
 
-	return 1;
+	return 0;
 }
 
 uint8_t pollSerialPortData(void) 

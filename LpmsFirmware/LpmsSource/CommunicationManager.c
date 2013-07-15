@@ -6,8 +6,13 @@
 
 #include "CommunicationManager.h"
 
+#define MAX_BUFFER 2048
+
 typedef void (*pFunction)(void);
 
+long txIndex = 0;
+uint8_t txBuffer[MAX_BUFFER];
+uint8_t txBuffer2[MAX_BUFFER];
 uint8_t connected = 0;
 uint32_t overSending = 0;
 uint8_t isFirmwareUpdating = 0;
@@ -17,14 +22,11 @@ uint32_t rxFirmwarePacketSize = 0;
 uint32_t JumpAddress;
 pFunction Jump_To_Application;
 uint8_t isConfigForFirmwareUpdateSent = 0;
+volatile int firstTimeTx = 1;
 
 extern uint8_t rxPacketBufferPtr;
 extern uint8_t processedPacketPtr;
 extern uint8_t connectedInterface;
-extern uint8_t bluetoothRxBuffer[BT_MAX_RX_BUFFER_LENGTH];
-extern uint8_t bluetoothTxBuffer[BT_MAX_TX_BUFFER_LENGTH];
-extern uint8_t serialPortRxBuffer[USART_MAX_RX_BUFFER_LENGTH];
-extern uint8_t serialPortTxBuffer[USART_MAX_TX_BUFFER_LENGTH];
 extern LpmsPacket rxPacketBuffer[MAX_RX_PACKET_BUFFER];
 extern LpmsReg gReg;
 extern int modeHasChanged;
@@ -49,12 +51,6 @@ void initCommunicationManager(void)
 #ifdef USE_BLUETOOTH_INTERFACE	
 	bluetoothInitBaudrate(BT_BAUDRATE_921600_ENABLED);
 #endif
-	  	
-	/* while (connected == 0) {
-		connected = checkCommunicationStatus();
-	} */
-
-	clearDataSendingFlag();
 
 	setStreamMode();
 }
@@ -66,6 +62,8 @@ uint8_t checkCommunicationStatus(void)
 
 uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *data)
 {
+	int i;
+
 	uint8_t txData[MAX_PACKET_DATA_LENGTH];
 	uint16_t txLrcCheck;
 	
@@ -98,26 +96,48 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 
-	waitForSendCompleted();
-	setDataSendingFlag(); 
-                           
+	if (txIndex+10+length < MAX_BUFFER) {
+		for (i=0; i<(10+length); ++i) {
+			txBuffer[txIndex] = txData[i];
+			++txIndex;
+		}
+	} else {
+		asm("NOP");
+	}	
+
+	return 1;
+}
+
+void sendQueue(void)
+{
+	int i;
+	
 #ifdef USE_BLUETOOTH_INTERFACE
-	bluetoothStartDataTransfer(txData, 11 + length);
+	if (bluetoothIsReadyForSend() == 0 && firstTimeTx == 0) return;
+#else
+	if (connectedInterface == CANOPEN_CONNECTED) return;
+	if (connectedInterface == USB_CONNECTED && serialPortIsTransferCompleted() == 0 && firstTimeTx == 0) return;
+#endif
+
+	if (txIndex == 0) return;                          
+
+	for (i=0; i<txIndex; ++i) txBuffer2[i] = txBuffer[i];
+
+#ifdef USE_BLUETOOTH_INTERFACE
+	bluetoothStartDataTransfer(txBuffer2, txIndex);
 #endif
 
 #ifdef USE_CANBUS_INTERFACE
 	if (	connectedInterface == CANBUS_CONNECTED || 
 		connectedInterface == CANOPEN_CONNECTED) {
-		
-		CANStartDataTransfer(txData, 11 + length);
-		clearDataSendingFlag();
-
+			CANStartDataTransfer(txBuffer2, txIndex);
 	} else if (connectedInterface == USB_CONNECTED) { 
-	  	serialPortStartTransfer(txData, 11 + length);
+	  	serialPortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
-		
-	return 1;
+
+	txIndex = 0;
+	firstTimeTx = 0;
 }
 
 void updateDataTransmission(void)
@@ -131,7 +151,7 @@ void updateDataTransmission(void)
 	sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 #else
 	if (connectedInterface == CANBUS_CONNECTED) {
-			sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
+		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	} else if (connectedInterface == USB_CONNECTED) {
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	} else if (connectedInterface == CANOPEN_CONNECTED) {
@@ -174,12 +194,9 @@ void sendFirmwareUpdateAck(void)
 	data[9] = 0x0d;
 	data[10] = 0x0a;
 	
-	setDataSendingFlag();
-
 #ifdef USE_CANBUS_INTERFACE	
 	if (connectedInterface == CANBUS_CONNECTED) {
 		CANStartDataTransfer(data, 11);
-		clearDataSendingFlag();
 	} else if (connectedInterface == USB_CONNECTED) { 
 	  	serialPortStartTransfer(data, 11);
 	}
@@ -216,7 +233,6 @@ void sendFirmwareUpdateNack(void)
 #ifdef USE_CANBUS_INTERFACE	
 	if (connectedInterface == CANBUS_CONNECTED) {
 		CANStartDataTransfer(data, 11);
-		clearDataSendingFlag();
 	} else if (connectedInterface == USB_CONNECTED) { 
 	  	serialPortStartTransfer(data, 11);
 	}
@@ -265,13 +281,17 @@ void parsePacket(void)
 			switch (packet.function) {
 			case UPDATE_FIRMWARE:
 				if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
+
 					isFirmwareUpdating = 1;
 					rxFirmwarePacketCounter = 0;
 					rxFirmwarePacketSize = 0;
+
 					for (uint8_t i = 0; i < packet.length; i++) {
 						rxFirmwarePacketSize = rxFirmwarePacketSize | (((uint32_t)packet.data[i]) << (8 * i));
 					}
+					
 					flash_destination = USER_APPLICATION_BACKUP_ADDRESS;
+					
 					FLASH_Unlock();
 					FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR); 
 					if (FLASH_EraseSector(FLASH_Sector_5, VoltageRange_3) != FLASH_COMPLETE) {
@@ -279,23 +299,25 @@ void parsePacket(void)
 					} else {
 					  	sendAck();
 					}
+
 				} else if ((packet.length != 4) && (isFirmwareUpdating == 1)) {
 					if (copyRamToFlash_256bytes(&flash_destination, (uint32_t*)buffer)) {
 						rxFirmwarePacketCounter++;
 						sendAck();
-						     
+						sendQueue();
+    
 						if (rxFirmwarePacketCounter >= rxFirmwarePacketSize) {
-							msDelay(1000);
+							msDelay(1000);		
+							
 							isFirmwareUpdating = 0;
 							rxFirmwarePacketCounter = 0;
+
 							if (((*(__IO uint32_t*)IAP_FLASH_START_ADDRESS) & 0x2FFE0000 ) == 0x20000000) {
 								eraseCompleteRegisterSet();
 
-							  	// Jump to user application
 								JumpAddress = *(__IO uint32_t*) (IAP_FLASH_START_ADDRESS + 4);
 								Jump_To_Application = (pFunction) JumpAddress;
 
-								// Initialize user application's Stack Pointer
 								__set_MSP(*(__IO uint32_t*) IAP_FLASH_START_ADDRESS);
 								msDelay(1000);
 								Jump_To_Application();
@@ -307,7 +329,7 @@ void parsePacket(void)
 						sendNack();				
 					}
 				} else {
-					nackForFirmwareUpdate();
+					sendNack();
 				}
 			break;
 			
@@ -463,13 +485,14 @@ void parsePacket(void)
 			case GET_ACC_BIAS:
 				getAccOffset(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_ACC_BIAS, dataLength, dataBuffer);
-				waitForSendCompleted();	
 			break;		
 				
 			case GET_SENSOR_DATA:
+				updateSensorData();
+				processSensorData();
+
 				getSensorData(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
-				waitForSendCompleted();				
+				sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);				
 			break;
 				
 			case GET_FILTER_MODE:
@@ -492,8 +515,7 @@ void parsePacket(void)
 					}
 					flash_destination = IAP_FLASH_START_ADDRESS;  
  
-					// FLASH_Unlock();
-
+					FLASH_Unlock();
 					FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR); 
 					if (FLASH_EraseSector(FLASH_Sector_7, VoltageRange_3) != FLASH_COMPLETE) {
 					  	sendNack();
@@ -542,19 +564,16 @@ void parsePacket(void)
 			case GET_HARD_IRON_OFFSET:
 				getHardIronOffsetData(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_HARD_IRON_OFFSET, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case GET_SOFT_IRON_MATRIX:
 				getSoftIronMatrixData(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_SOFT_IRON_MATRIX, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case GET_FIELD_ESTIMATE:
 				getFieldEstimateData(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_FIELD_ESTIMATE, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_HARD_IRON_OFFSET:
@@ -580,7 +599,6 @@ void parsePacket(void)
 			case GET_ACC_ALIGN_MATRIX:
 				getAccAlignMatrix(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_ACC_ALIGN_MATRIX, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_GYR_ALIGN_MATRIX:
@@ -596,17 +614,11 @@ void parsePacket(void)
 			case GET_GYR_ALIGN_MATRIX:
 				getGyrAlignMatrix(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_GYR_ALIGN_MATRIX, dataLength, dataBuffer);
-				waitForSendCompleted();
-
-				/* getGyrAlignMatrix(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_GYR_ALIGN_MATRIX, dataLength, dataBuffer);
-				waitForSendCompleted(); */
 			break;
 
 			case GET_GYR_ALIGN_BIAS:
 				getGyrAlignBias(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_GYR_ALIGN_BIAS, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_GYR_TEMP_CAL_PRM_A:
@@ -632,25 +644,21 @@ void parsePacket(void)
 			case GET_GYR_TEMP_CAL_PRM_A:
 				getHardIronOffsetData(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_GYR_TEMP_CAL_PRM_A, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case GET_GYR_TEMP_CAL_PRM_B:
 				getHardIronOffsetData(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_GYR_TEMP_CAL_PRM_B, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;			
 
 			case GET_GYR_TEMP_CAL_BASE_V:
 				getHardIronOffsetData(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_GYR_TEMP_CAL_BASE_V, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 	
 			case GET_GYR_TEMP_CAL_BASE_T:
 				getHardIronOffsetData(dataBuffer, &dataLength);		
 				sendData(getImuID(), GET_GYR_TEMP_CAL_BASE_T, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_TRANSMIT_DATA:
@@ -661,13 +669,11 @@ void parsePacket(void)
 			case GET_FIRMWARE_VERSION:
 				getFirmwareVersion(dataBuffer, &dataLength);			
 				sendData(getImuID(), GET_FIRMWARE_VERSION, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case GET_RAW_DATA_LP:
 				getRawDataLp(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_RAW_DATA_LP, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_RAW_DATA_LP:
@@ -683,7 +689,6 @@ void parsePacket(void)
 			case GET_CAN_MAPPING:
 				getCanMapping(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_CAN_MAPPING, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_CAN_HEARTBEAT:
@@ -694,7 +699,6 @@ void parsePacket(void)
 			case GET_CAN_HEARTBEAT:
 				getCanHeartbeat(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_CAN_HEARTBEAT, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case RESET_TIMESTAMP:
@@ -710,7 +714,6 @@ void parsePacket(void)
 			case GET_LIN_ACC_COMP_MODE:
 				getLinAccCompMode(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_LIN_ACC_COMP_MODE, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 			
 			case SET_CENTRI_COMP_MODE:
@@ -721,13 +724,11 @@ void parsePacket(void)
 			case GET_CENTRI_COMP_MODE:
 				getCentriCompMode(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_CENTRI_COMP_MODE, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case GET_CAN_CONFIGURATION:
 				getCanConfiguration(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_CAN_CONFIGURATION, dataLength, dataBuffer);
-				waitForSendCompleted();
 			break;
 
 			case SET_CAN_CHANNEL_MODE:
@@ -763,8 +764,6 @@ void parsePacket(void)
 			case GOTO_COMMAND_MODE:
 				setCommandMode();
 				sendAck();
-				/* modeHasChanged = 1;
-				modeChangeCounter = 100; */
 			break;
 				
 			case GET_STATUS:

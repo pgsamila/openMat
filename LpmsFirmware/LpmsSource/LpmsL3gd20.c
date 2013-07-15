@@ -168,7 +168,7 @@ uint8_t initGyr(uint32_t outputDataRate, uint8_t powerMode, uint32_t fullScale)
 	}
 	
 	waitGyrI2CStandbyState();
-	writeGyrRegister(L3GD20_CTRL_REG5, L3GD20_FIFO_ENABLE | L3GD20_HPEN_DISABLE | L3GD20_OUTSEL_LPF1);
+	writeGyrRegister(L3GD20_CTRL_REG5, L3GD20_FIFO_DISABLE | L3GD20_HPEN_DISABLE | L3GD20_OUTSEL_LPF1);
 	
 	waitGyrI2CStandbyState();
 	writeGyrRegister(L3GD20_FIFO_CTRL_REG, L3GD20_FM_BYPASS_MODE);

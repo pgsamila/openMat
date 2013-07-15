@@ -85,13 +85,6 @@
 // Bluetooth receive buffer length
 #define BT_MAX_RX_BUFFER_LENGTH 256
 
-// Bluetooth transmission buffer length
-#define BT_MAX_TX_BUFFER_LENGTH 512
-
-// Receive and transmit buffer
-extern uint8_t gRxUsartBuffer[BT_MAX_RX_BUFFER_LENGTH];
-extern uint8_t gTxUsartBuffer[BT_MAX_TX_BUFFER_LENGTH];
-
 // Sets USART baudrate
 void bluetoothSetUSARTConfig(uint32_t baudrate);
 
@@ -166,5 +159,9 @@ uint8_t bluetoothCheckConnectionStatus(void);
 
 // Polls Bluetooth receive data
 uint8_t pollBluetoothData(void);
+
+uint8_t bluetoothGotoFastMode(void);
+
+uint8_t checkConnectionStatus(void);
 
 #endif

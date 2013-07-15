@@ -44,13 +44,13 @@ void setDataStreamTimer(uint32_t T)
 	cycleTime = T;
 	
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-	TIM_TimeBaseStructure.TIM_Prescaler = 300;
+	TIM_TimeBaseStructure.TIM_Prescaler = 6000;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(DATA_STREAMING_TIMER, &TIM_TimeBaseStructure);
 		
 	TIM_SetCounter(DATA_STREAMING_TIMER, 0);
-	TIM_Cmd(DATA_STREAMING_TIMER, DISABLE);
+	TIM_Cmd(DATA_STREAMING_TIMER, ENABLE);
 	TIM_ClearITPendingBit(DATA_STREAMING_TIMER, TIM_IT_Update);
 }
 
@@ -60,13 +60,13 @@ void setSystemStepTimer(void)
 
 	RCC_APB1PeriphClockCmd(SYSTEM_STEP_TIMER_CLK, ENABLE);
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-	TIM_TimeBaseStructure.TIM_Prescaler = 300;
+	TIM_TimeBaseStructure.TIM_Prescaler = 6000;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(SYSTEM_STEP_TIMER, &TIM_TimeBaseStructure);
 
 	TIM_SetCounter(SYSTEM_STEP_TIMER, 0);
-	TIM_Cmd(SYSTEM_STEP_TIMER, DISABLE);
+	TIM_Cmd(SYSTEM_STEP_TIMER, ENABLE);
 	TIM_ClearITPendingBit(SYSTEM_STEP_TIMER,TIM_IT_Update);
 }
 
@@ -76,16 +76,16 @@ void setTimeoutTimer(void)
 	
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-	TIM_TimeBaseStructure.TIM_Prescaler = 60;
+	TIM_TimeBaseStructure.TIM_Prescaler = 6000;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(LED_FLASHING_TIMER, &TIM_TimeBaseStructure);
+
 	TIM_SetCounter(LED_FLASHING_TIMER, 0);
-	TIM_Cmd(LED_FLASHING_TIMER, DISABLE);
+	TIM_Cmd(LED_FLASHING_TIMER, ENABLE);
 	TIM_ClearITPendingBit(LED_FLASHING_TIMER, TIM_IT_Update);
 }
 
-#pragma optimize=none
 void msDelay(uint32_t ms)
 {
 	uint32_t iterations;
@@ -100,13 +100,11 @@ void msDelay(uint32_t ms)
 void startTimeStepCounting(void)
 {
   	TIM_SetCounter(SYSTEM_STEP_TIMER, 0);
-	TIM_Cmd(SYSTEM_STEP_TIMER, ENABLE);
 }
 
 void startTimeoutCounting(void)
 {
   	TIM_SetCounter(LED_FLASHING_TIMER, 0);
-	TIM_Cmd(LED_FLASHING_TIMER, ENABLE);
 }
 
 uint32_t getTimeout(void)
@@ -118,54 +116,36 @@ uint32_t getTimeout(void)
 	return counter;
 }
 
-void getTimeStep(float* t)
+uint32_t getTimeStep()
 {
-	uint32_t counter;
-	counter = TIM_GetCounter(SYSTEM_STEP_TIMER) * 5;
-
-	if (counter == 0) {
-		*t = 0.001f;
-	} else {
-		*t = (float)counter * 0.000001;
-	}
+	return TIM_GetCounter(SYSTEM_STEP_TIMER);
 }
 
-void setStreamModeTransferReady(void)
+#define SENSOR_MEASUREMENT_T 33
+
+uint8_t isSensorMeasurementReady(void)
 {
-	if (TIM_GetITStatus(DATA_STREAMING_TIMER, TIM_IT_Update) != RESET) {
-		TIM_ClearITPendingBit(DATA_STREAMING_TIMER, TIM_IT_Update);
-		isDataStreamReady = 1;   
-	}
+	if (getTimeStep() > SENSOR_MEASUREMENT_T) return 1;
+
+	return 0;
 }
 
 void clearStreamModeTransferReady(void)
 {
   	TIM_SetCounter(DATA_STREAMING_TIMER, 0);
-	TIM_Cmd(DATA_STREAMING_TIMER, ENABLE);
-
-	isDataStreamReady = 0;
 }
 
 uint8_t isStreamModeTransferReady(void)
 {
-	uint32_t counter;
+	if (TIM_GetCounter(DATA_STREAMING_TIMER) > cycleTime) return 1;
 	
-	counter = TIM_GetCounter(DATA_STREAMING_TIMER) * 5;
+	return 0;
+}
 
-	if (counter > cycleTime) {
-		return 1;
-	} else {
-		return 0;
+void updateAliveLed(void)
+{
+	if (TIM_GetCounter(LED_FLASHING_TIMER) > 5000) {
+		GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN)));
+		TIM_SetCounter(LED_FLASHING_TIMER, 0);
 	}
-}
-
-void startDataStreamTimer(void)
-{
-	TIM_SetCounter(DATA_STREAMING_TIMER,0);
-	TIM_Cmd(DATA_STREAMING_TIMER, ENABLE);
-}
-
-void stopDataStreamTimer(void)
-{
-	TIM_Cmd(DATA_STREAMING_TIMER, DISABLE);
 }

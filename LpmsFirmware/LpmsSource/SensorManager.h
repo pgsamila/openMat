@@ -206,4 +206,6 @@ void setSleepMode(void);
 // Sets data sending flag
 void setDataSendingFlag(void);
 
+int isDataSendingSet(void);
+
 #endif

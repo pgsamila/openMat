@@ -34,7 +34,7 @@ LpmsU::LpmsU(CalibrationData *configData) :
 }
 	
 long long LpmsU::getConnectWait(void) { 
-	return 2000000; 
+	return 3000000; 
 }	
 	
 void LpmsU::listDevices(LpmsDeviceList *deviceList) 
@@ -71,6 +71,8 @@ bool LpmsU::connect(string deviceId)
 {
 	FT_STATUS ftStatus; 
 	bool f;
+	unsigned long bytesReceived;
+	unsigned char rxBuffer[4096];
 	
 	this->idNumber = deviceId;
 	
@@ -82,7 +84,13 @@ bool LpmsU::connect(string deviceId)
 	ftStatus = FT_SetFlowControl(ftHandle, FT_FLOW_RTS_CTS, 0x11, 0x13);	
 	ftStatus = FT_SetLatencyTimer(ftHandle, 2);
 	ftStatus = FT_SetUSBParameters(ftHandle, 64, 0);
-	ftStatus = FT_Purge(ftHandle, FT_PURGE_RX | FT_PURGE_TX);
+				
+	if (ftStatus == FT_OK) { 
+		setCommandMode();			
+		Sleep(100);
+		read(rxBuffer, &bytesReceived);
+		FT_Purge(ftHandle, FT_PURGE_RX | FT_PURGE_TX);
+	}
 
 	if (ftStatus == FT_OK) { 
 		cout << "[LPMS-U] Connection to " << idNumber << " successful." << endl;
@@ -108,7 +116,10 @@ bool LpmsU::connect(string deviceId)
 
 	lpmsStatus = 0;
 	configReg = 0;
-		
+	
+	timestampOffset = 0.0f;
+	currentTimestamp = 0.0f;
+	
 	return f;
 }
 
@@ -223,10 +234,16 @@ bool LpmsU::sendModbusData(unsigned address, unsigned function, unsigned length,
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 	
+	/* printf("Sent: ");
+	for (int i=0; i<10+length; ++i) {
+		printf("%x ", txData[i]);
+	}
+	printf("\n"); */
+	
 	if (write(txData, length+11) == true) {
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -320,10 +337,15 @@ bool LpmsU::pollData(void)
 		return false;
 	}	
 
-	for (unsigned int i=0; i < bytesReceived; i++) {
-		dataQueue.push((unsigned char) rxBuffer[i]);
-	}	
-	
+	if (bytesReceived > 0) {
+		// printf("Received: ");
+		for (unsigned int i=0; i < bytesReceived; i++) {
+			dataQueue.push((unsigned char) rxBuffer[i]);
+			// printf("%x ", rxBuffer[i]);		
+		}
+		// printf("\n");
+	}
+		
 	return true;
 }
 

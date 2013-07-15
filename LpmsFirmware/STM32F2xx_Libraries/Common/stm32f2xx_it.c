@@ -96,30 +96,14 @@ void SysTick_Handler(void)
 
 void DMA1_Stream6_IRQHandler(void)
 {
-#ifdef USE_BLUETOOTH_INTERFACE
-	bluetoothStopDataTransfer();
-#endif
-	
-#ifdef USE_CANBUS_INTERFACE
-	serialPortStopTransfer();
-#endif
-
-	clearDataSendingFlag();
-	// TIM_SetCounter(TIM4,0);
 }
 
 void DataStreamTimerHandler(void)
 {
-  	setStreamModeTransferReady();
 }
 
 void LedFlashTimerHandler(void)
 {
-  	/* if (TIM_GetITStatus(LED_FLASHING_TIMER, TIM_IT_Update ) != RESET) {
-		// Clear pending interrupt bit
-		TIM_ClearITPendingBit(LED_FLASHING_TIMER, TIM_IT_Update); 
-	}
-  	GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN))); */
 }
 
 void CAN1_RX0_IRQHandler(void)

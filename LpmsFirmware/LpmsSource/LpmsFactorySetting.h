@@ -24,7 +24,7 @@
 // #define SIMPLE_REF
 
 // To use low pass on raw data
-#define USE_RAW_DATA_LP
+// #define USE_RAW_DATA_LP
 
 // Activates strong linear acceleration suppression
 // #define LIN_ACC_SUP_STRONG
@@ -51,13 +51,13 @@
 #define ENABLE_PRESSURE
 
 // Enable Bluetooth low-latency
-#define ENABLE_LOWLATENCY
+// #define ENABLE_LOWLATENCY
 
 // <--
 
 // Firmware version information
-#define FIRMWARE_VERSION_DIGIT0 1
-#define FIRMWARE_VERSION_DIGIT1 1
+#define FIRMWARE_VERSION_DIGIT0 0
+#define FIRMWARE_VERSION_DIGIT1 2
 #define FIRMWARE_VERSION_DIGIT2 1
 
 // Interface dependent factory settings

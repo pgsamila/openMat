@@ -1,13 +1,35 @@
 /***********************************************************************
-** Magnetometer data correction and reference vector adjustment
-**
 ** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (info@lp-research.com)
 **
-** Note: Parts of this code have been adapted from Freescale 
-** application note AN4248. Main calibration code in LpSensor
-** has been completely changed to proprietary code in the meantime.
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**
+** NOTE: Initially parts of this code have been adapted from Freescale 
+** application note AN4248.
 ***********************************************************************/
 
 #ifndef LP_MAGNETOMETER_CALIBRATION
@@ -28,45 +50,35 @@
 extern "C" {
 #endif 
 
-// Degree to radians conversion
-#define DegToRad 0.0174532925199433f
-#define RadToDeg 57.2957795130823f
-
-// Applies low-pass filter
-void fModuloLPF(float Angle, float *pLPFAngle);
-
-// Applies hard and soft-iron scaling
-void fInvertHardandSoftIron(void);
-
-// Initializes magnetometer calibration
+// Initializes soft and hard-iron data
 void initializeMCal(void);
 
-// Corrects current raw magnetometer sensor data
-void correctB(float *bX, float *bY, float *bZ);
+// Corrects raw magnetic field data
+LpVector3f correctB(LpVector3f b);
+	
+// Retrieves field direction
+float getFieldDirection(void);
 
 // Retrieves soft iron matrix
-void getSoftIronMatrix(LpMatrix3x3f *m);
+LpMatrix3x3f getSoftIronMatrix(void);
 
-// Retrievs hard iron offset
-void getHardIronOffset(LpVector3f *o);
+// Retrives hard iron offset vector
+LpVector3f getHardIronOffset(void);
 
-// Sets soft iron matrix
+// Retrieves soft iron matrix
 void setSoftIronMatrix(LpMatrix3x3f m);
 
-// Sets hard iron ofset
-void setHardIronOffset(LpVector3f o);
+// Sets hard iron offset vector
+void setHardIronOffset(LpVector3f v);
 
-// Retrieves reference Y and Z axis
-void getReferenceYZ(float fBx, float fBy, float fBz, 
-	float fGx, float fGy, float fGz,
-	float *refY, float *refZ,
-	float *bInc);
+// Retrieves magnetic reference vector
+void getReferenceYZ(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc);
 
+// Calculates orientation from accelerometer and magnetometer
+void bCalOrientationFromAccMag(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc);
 
-void feCompass(float fBx, float fBy, float fBz, 
-	float fGx, float fGy, float fGz,
-	float *bInc,
-	float *phiOut, float *thetaOut, float *psiOut);
+// Modulo low-pass filters Euler angle
+void modLpFilter(float a, float *lpA);
 
 #ifdef __cplusplus
 }

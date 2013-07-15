@@ -83,7 +83,7 @@ GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
     
 	linAccGraph = new Plot("", "Samples", "Linear acceleration (g)", 
 		"X", "Y", "Z", "",	
-		0, 128, 3, -0.5f, 0.5f, linAccLegend);
+		0, 128, 3, -2.5f, 2.5f, linAccLegend);
 		
 	heaveMotionGraph = new Plot("", "Samples", "Heave height (m)", 
 		"h", "", "", "",

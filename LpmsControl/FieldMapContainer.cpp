@@ -43,20 +43,8 @@ FieldMapContainer::FieldMapContainer(QWidget* parent) :
 	QVBoxLayout* v2 = new QVBoxLayout();
 	QGridLayout* g1 = new QGridLayout();
 	
-	/* originalFieldCheck = new QCheckBox("Show original field", this);
-	correctedFieldCheck = new QCheckBox("Show corrected field", this);
-	ellipsoidCheck = new QCheckBox("Show ellipsoid fit", this);
-	
-	originalFieldCheck->setChecked(true);
-	correctedFieldCheck->setChecked(false);
-	ellipsoidCheck->setChecked(true); */
-	
 	v1->addWidget(fmi);
 	v1->addWidget(fmd);
-	
-	/* v2->addWidget(originalFieldCheck);
-	v2->addWidget(correctedFieldCheck);
-	v2->addWidget(ellipsoidCheck); */
 
 	g1->addWidget(new QLabel("Estimated field strength (uT)"), 0, 0);
 	g1->addWidget(new QLabel("="), 0, 1);
@@ -76,18 +64,12 @@ FieldMapContainer::FieldMapContainer(QWidget* parent) :
 	g1->addWidget(fieldDistortionLabel[2] = new QLabel(), 2, 4);
 	g1->addWidget(new QLabel("]"), 2, 5);
 	
-	// h2->addLayout(v2);
 	h2->addLayout(g1);
-	
 	v1->addLayout(h2);
 	
 	v1->setStretch(0, 1);
 	v1->setStretch(1, 10);
 	v1->setStretch(2, 1);
-	
-	/* connect(originalFieldCheck, SIGNAL(stateChanged(int)), this, SLOT(updateGraphs(int)));
-	connect(correctedFieldCheck, SIGNAL(stateChanged(int)), this, SLOT(updateGraphs(int)));	
-	connect(ellipsoidCheck, SIGNAL(stateChanged(int)), this, SLOT(updateGraphs(int)));	*/
 	
 	setLayout(v1);
 }

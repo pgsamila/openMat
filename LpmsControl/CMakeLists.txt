@@ -49,7 +49,7 @@ set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Softwa
 set(WINDOWS_QWT_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Qwt" CACHE STRING "")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-	SET(SHOW_CONSOLE FALSE)
+	SET(SHOW_CONSOLE TRUE)
 	set(EXECUTABLE_OUTPUT_PATH "./build/release" CACHE STRING "")
 	set(LIBRARY_OUTPUT_PATH "./build/release" CACHE STRING "")
 endif()

@@ -41,9 +41,6 @@ uint8_t pollBluetoothData(void);
 // Sends latest data in streaming mode 
 void updateDataTransmission(void);
 
-// Resets data data sending flag
-void clearDataSendingFlag(void);
-
 // Sends ACK to host
 inline void sendAck(void);
 
@@ -67,6 +64,8 @@ void parsePacket(void);
 
 // Returns 1 if a successful data exchange has taken place
 inline uint8_t isDataExchanged(void);
+
+void sendQueue(void);
 
 #endif
 

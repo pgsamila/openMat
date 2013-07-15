@@ -2,209 +2,198 @@
 ** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (info@lp-research.com)
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**
+** NOTE: Initially parts of this code have been adapted from Freescale 
+** application note AN4248.
 ***********************************************************************/
 
 #include "LpMagnetometerCalibration.h"
 
 #define LOW_PASS_ALPHA 0.01
 
-float fPsi, fThe, fPhi;
-float fLPPsi, fLPThe, fLPPhi;
-float fdelta;
-float fLPdelta;
-float fBpx, fBpy, fBpz;
-float fBcx, fBcy, fBcz;
-float fBfx, fBfy, fBfz;
-float fGpx, fGpy, fGpz;
-float fVx, fVy, fVz;
-int loopcounter;
-float xfinvW[3][3], *finvW[3];
-float xA[3][3], *A[3];
-float xinvA[3][3], *invA[3];
+float lpPsi, lpThe, lpPhi, lpInc;
+int lpLoop = 0;
+LpVector3f hIV;
+LpMatrix3x3f sIM;
 
 void initializeMCal(void)
 {
-	int i;
-
-	for (i = 0; i < 3; i++) {
-		finvW[i] = xfinvW[i];
-		A[i] = xA[i];
-		invA[i] = xinvA[i];
-	}
-
-	loopcounter = 0;
+	vectZero3x1(&hIV);
+	createIdentity3x3(&sIM);
 }
 
-void correctB(float *bX, float *bY, float *bZ)
+LpVector3f correctB(LpVector3f b)
 {
-	fBpx = *bX;
-	fBpy = *bY;
-	fBpz = *bZ;
+	int i;
+	LpVector3f x, y;
 	
-	fInvertHardandSoftIron();
-
-	*bX = fBcx;
-	*bY = fBcy;
-	*bZ = fBcz;
+	for (i=0; i<3; ++i) x.data[i] = b.data[i] - hIV.data[i];
+	
+	for (i=0; i<3; ++i) {
+		y.data[i] = sIM.data[i][0] * x.data[0] + sIM.data[i][1] * x.data[1] + sIM.data[i][2] * x.data[2];
+	}
+	
+	return y;
 }
 	
 float getFieldDirection(void)
 {
-	return fLPPsi;
+	return lpPsi;
 }
 
-void getSoftIronMatrix(LpMatrix3x3f *m)
+LpMatrix3x3f getSoftIronMatrix(void)
 {
-	int i, j;
-	
-	for (i=0; i<3; i++) {
-		for (j=0; j<3; j++) {
-			m->data[i][j] = finvW[i][j];
-		}
-	}
+	return sIM;
 }
 
-void getHardIronOffset(LpVector3f *o)
+LpVector3f getHardIronOffset(void)
 {
-	o->data[0] = fVx;
-	o->data[1] = fVy;
-	o->data[2] = fVz;
+	return hIV;
 }
 
 void setSoftIronMatrix(LpMatrix3x3f m)
 {
-	int i, j;
-	
-	for (i=0; i<3; i++) {
-		for (j=0; j<3; j++) {
-			finvW[i][j] = m.data[i][j];
-		}
-	}
+	sIM = m;
 }
 
-void setHardIronOffset(LpVector3f o)
+void setHardIronOffset(LpVector3f v)
 {
-	fVx = o.data[0];
-	fVy = o.data[1];
-	fVz = o.data[2];
+	hIV = v;
 }
 
-void fInvertHardandSoftIron()
+void getReferenceYZ(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc)
 {
-	float ftmpx, ftmpy, ftmpz;
+	float sinR, cosR;
+	float sZ, phi, the;
+	float magic0, magic1, magic2, magic3, magic4;
+	const float r2d = 57.2958f;	
+	const float d2r = 0.01745f;
 
-	fBcx = fBpx - fVx;
-	fBcy = fBpy - fVy;
-	fBcz = fBpz - fVz;
+	if (a.data[2] >= 0.0f) sZ = 1.0f; else sZ = -1.0f;
 
-	ftmpx = finvW[0][0] * fBcx + finvW[0][1] * fBcy + finvW[0][2] * fBcz;
-	ftmpy = finvW[1][0] * fBcx + finvW[1][1] * fBcy + finvW[1][2] * fBcz;
-	ftmpz = finvW[2][0] * fBcx + finvW[2][1] * fBcy + finvW[2][2] * fBcz;
+	phi = (float) atan2(a.data[1], sZ * sqrt(a.data[2] * a.data[2])) * r2d;
+	
+	sinR = (float) sin(phi * d2r);
+	cosR = (float) cos(phi * d2r);
 
-	fBcx = ftmpx; 
-	fBcy = ftmpy;	
-	fBcz = ftmpz;	
+	magic0 = b.data[1] * cosR - b.data[2] * sinR;
+	magic1 = b.data[1] * sinR + b.data[2] * cosR;
+	magic2 = a.data[1] * sinR + a.data[2] * cosR;
+	
+	if (magic2 == 0.0F) magic2 = 1e-10f;
+	the = (float) atan(-a.data[0] / magic2) * r2d;
+		
+	sinR = (float) sin(the * d2r);
+	cosR = (float) cos(the * d2r);	
+		
+	magic3 = b.data[0] * cosR + magic1 * sinR;
+	magic4 = -b.data[0] * sinR + magic1 * cosR;	
+	
+	*inc = (float) atan2(magic4, sqrt(magic3 * magic3 + magic0 * magic0)) * r2d;	
+
+	r->data[0] = phi;
+	r->data[1] = sqrt(magic3 * magic3 + magic0 * magic0);
+	r->data[2] = -magic4;
 }
 
-void getReferenceYZ(float fBx, float fBy, float fBz, 
-	float fGx, float fGy, float fGz,
-	float *refY, float *refZ, float *bInc)
+void bCalOrientationFromAccMag(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc)
 {
-	float sinAngle, cosAngle;
+	float sinR, cosR;
+	float sZ, phi, psi, the;
+	float magic0, magic1, magic2, magic3, magic4;
+	const float r2d = 57.2958f;	
+	const float d2r = 0.01745f;
 
-	fPhi = atan2(fGy, ((fGz >= 0.0F) ? 1.0F : -1.0F) * sqrt(fGz * fGz)) * RadToDeg;
+	if (a.data[2] >= 0.0f) sZ = 1.0f; else sZ = -1.0f;
+
+	phi = (float) atan2(a.data[1], sZ * sqrt(a.data[2] * a.data[2])) * r2d;
 	
-	sinAngle = sin(fPhi * DegToRad);
-	cosAngle = cos(fPhi * DegToRad);
+	sinR = (float) sin(phi * d2r);
+	cosR = (float) cos(phi * d2r);
+
+	magic0 = b.data[1] * cosR - b.data[2] * sinR;
+	magic1 = b.data[1] * sinR + b.data[2] * cosR;
+	magic2 = a.data[1] * sinR + a.data[2] * cosR;
 	
-	fBfy = fBy * cosAngle - fBz * sinAngle;
-	fBz = fBy * sinAngle + fBz * cosAngle;
-	fGz = fGy * sinAngle + fGz * cosAngle;
+	if (magic2 == 0.0F) magic2 = 1e-10f;
+	the = (float) atan(-a.data[0] / magic2) * r2d;
+		
+	sinR = (float) sin(the * d2r);
+	cosR = (float) cos(the * d2r);	
+		
+	magic3 = b.data[0] * cosR + magic1 * sinR;
+	magic4 = -b.data[0] * sinR + magic1 * cosR;	
 
-	if (fGz == 0.0f) fGz = 1e-10f;
-	fThe = atan(-fGx / fGz) * RadToDeg;
+	psi = (float) atan2(-magic0, magic3) * r2d; 
 	
-	sinAngle = sin(fThe * DegToRad);
-	cosAngle = cos(fThe * DegToRad);
+	*inc = (float) atan2(magic4, sqrt(magic3 * magic3 + magic0 * magic0)) * r2d;
 	
-	fBfx = fBx * cosAngle + fBz * sinAngle;
-	fBfz = -fBx * sinAngle + fBz * cosAngle;
+	if (lpLoop == 0) {
+		lpPhi = phi;
+		lpThe = the;
+		lpPsi = psi;
+		lpInc = *inc;
 
-	*refY = sqrt(fBfx * fBfx + fBfy * fBfy);
-	*refZ = -fBfz;
-
-	*bInc = atan2(fBfz, sqrt(fBfx * fBfx + fBfy * fBfy)) * RadToDeg;
-}
-
-void feCompass(float fBx, float fBy, float fBz, 
-	float fGx, float fGy, float fGz, 
-	float *bInc,
-	float *phiOut, float *thetaOut, float *psiOut)
-{
-	float sinAngle, cosAngle;
-
-	fPhi = atan2(fGy, ((fGz >= 0.0f) ? 1.0f : -1.0f) * sqrt(fGz * fGz)) * RadToDeg;
-
-	sinAngle = sin(fPhi * DegToRad);
-	cosAngle = cos(fPhi * DegToRad);
-
-	fBfy = fBy * cosAngle - fBz * sinAngle;
-	fBz = fBy * sinAngle + fBz * cosAngle;
-	fGz = fGy * sinAngle + fGz * cosAngle;
-
-	if (fGz == 0.0f) fGz = 1e-10f;
-	fThe = atan(-fGx / fGz) * RadToDeg;
-
-	sinAngle = sin(fThe * DegToRad);
-	cosAngle = cos(fThe * DegToRad);
-
-	fBfx = fBx * cosAngle + fBz * sinAngle;
-	fBfz = -fBx * sinAngle + fBz * cosAngle;
-
-	fPsi = atan2(-fBfy, fBfx) * RadToDeg; 
-
-	fdelta = atan2(fBfz, sqrt(fBfx * fBfx + fBfy * fBfy)) * RadToDeg;
-
-	if (loopcounter == 0) {
-		fLPPhi = fPhi;
-		fLPThe = fThe;
-		fLPPsi = fPsi;
-		fLPdelta = fdelta;
-
-		loopcounter = 1;
+		lpLoop = 1;
 	}
 
-	fModuloLPF(fPhi, &fLPPhi);
-	fModuloLPF(fThe, &fLPThe);
+	modLpFilter(phi, &lpPhi);
+	modLpFilter(the, &lpThe);
 
-	if (fLPThe > 90.0F) {
-		fLPThe = 180.0F - fLPThe;
+	if (lpThe > 90.0f) {
+		lpThe = 180.0f - lpThe;
 	}
 	
-	if (fLPThe < -90.0F) {
-		fLPThe = -180.0F - fLPThe;
+	if (lpThe < -90.0f) {
+		lpThe = -180.0f - lpThe;
 	}
 
-	fModuloLPF(fPsi, &fLPPsi);
-	fModuloLPF(fdelta, &fLPdelta);
+	modLpFilter(psi, &lpPsi);
+	modLpFilter(*inc, &lpInc);
 
-	*bInc = fdelta;
-	*phiOut = fLPPhi * DegToRad;
-	*thetaOut = fLPThe * DegToRad;
-	*psiOut = fLPPsi * DegToRad;
+	*inc = lpInc;
+
+	r->data[0] = lpPhi;
+	r->data[1] = lpThe;
+	r->data[2] = lpPsi;
 }
 
-void fModuloLPF(float fAngle, float *pfLPFAngle)
+void modLpFilter(float a, float *lpA)
 {
-	float ftmpAngle;
+	float tA;
 
-	ftmpAngle = fAngle - *pfLPFAngle;
+	tA = a - *lpA;
 
-	if (ftmpAngle > 180.0f) ftmpAngle -= 360.0f;
-	if (ftmpAngle < -180.0f) ftmpAngle += 360.0f;
+	if (tA > 180.0f) tA -= 360.0f;
+	if (tA < -180.0f) tA += 360.0f;
 
-	*pfLPFAngle += LOW_PASS_ALPHA * ftmpAngle;
+	*lpA += LOW_PASS_ALPHA * tA;
 
-	if (*pfLPFAngle > 180.0F) *pfLPFAngle -= 360.0F;
-	if (*pfLPFAngle < -180.0F) *pfLPFAngle += 360.0F;
+	if (*lpA > 180.0f) *lpA -= 360.0f;
+	if (*lpA < -180.0f) *lpA += 360.0f;
 }

@@ -6,7 +6,7 @@
 
 #include "LpmsSensorManager.h"
 
-#define SENSOR_UPDATE_PERIOD 750
+#define SENSOR_UPDATE_PERIOD 500
 
 #define SMANAGER_LIST 0
 #define SMANAGER_MEASURE 1
@@ -269,15 +269,16 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 
 	if (isRecording == true) return false;	
 	
-	saveDataHandle = fopen(fn, "w");
-	if (saveDataHandle != NULL) {	
-		fprintf(saveDataHandle, "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatX, QuatY, QuatZ, QuatW, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n");
+	saveDataHandle.open(fn, ios_base::out);
+	saveDataHandle.rdbuf()->pubsetbuf(writeBuffer, 65536);
+	if (saveDataHandle.is_open() == true) {	
+		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatX, QuatY, QuatZ, QuatW, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
 		
 		lm.lock();
 		for (i = sensorList.begin(); i != sensorList.end(); ++i) {
-			(*i)->startSaveData(saveDataHandle);
+			(*i)->startSaveData(&saveDataHandle);
 		}
 		lm.unlock();		
 		
@@ -305,7 +306,7 @@ void LpmsSensorManager::stopSaveSensorData(void)
 
 	isRecording = false;
 	
-	if (saveDataHandle != NULL) fclose(saveDataHandle);
+	if (saveDataHandle != NULL) saveDataHandle.close();
 }
 
 void LpmsSensorManager::setThreadTiming(int delay)

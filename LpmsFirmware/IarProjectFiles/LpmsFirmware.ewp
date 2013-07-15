@@ -573,7 +573,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsB.bin</state>
+          <state>LpmsBFirmware1.2.0.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -627,7 +627,7 @@
         </option>
         <option>
           <name>IlinkOutputFile</name>
-          <state>LpmsB.out</state>
+          <state>LpmsFirmware.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>

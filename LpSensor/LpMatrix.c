@@ -807,7 +807,7 @@ void quaternionToEuler(LpVector4f *q, LpVector3f *r)
 	r->data[0] = (float) -atan2(2*(qw*qz+qx*qy), 1-2*(qy*qy+qz*qz)) * r2d;
 }
 
-void quaternionToMatrix(LpVector4f *q, LpMatrix3x3f* M)
+/* void quaternionToMatrix(LpVector4f *q, LpMatrix3x3f* M)
 {
 	float qw = q->data[0];
 	float qx = q->data[1];
@@ -825,7 +825,42 @@ void quaternionToMatrix(LpVector4f *q, LpMatrix3x3f* M)
 	M->data[2][0] = 2*qx*qz + 2*qw*qy;
 	M->data[2][1] = 2*qy*qz - 2*qw*qx;
 	M->data[2][2] = qw*qw - qx*qx - qy*qy + qz*qz;
-}
+} */
+
+void quaternionToMatrix(LpVector4f *q, LpMatrix3x3f* M)
+{	
+    float tmp1;
+	float tmp2;
+
+	float sqw = q->data[0] * q->data[0];
+	float sqx = q->data[1] * q->data[1];
+	float sqy = q->data[2] * q->data[2];
+	float sqz = q->data[3] * q->data[3];
+
+	float invs = 1 / (sqx + sqy + sqz + sqw);
+    
+	M->data[0][0] = ( sqx - sqy - sqz + sqw) * invs;
+    M->data[1][1] = (-sqx + sqy - sqz + sqw) * invs;
+    M->data[2][2] = (-sqx - sqy + sqz + sqw) * invs;
+	
+    tmp1 = q->data[1] * q->data[2];
+    tmp2 = q->data[3] * q->data[0];
+	
+    M->data[1][0] = 2.0f * (tmp1 + tmp2) * invs;
+    M->data[0][1] = 2.0f * (tmp1 - tmp2) * invs;
+    
+    tmp1 = q->data[1] * q->data[3];
+    tmp2 = q->data[2] * q->data[0];
+	
+    M->data[2][0] = 2.0f * (tmp1 - tmp2) * invs;
+    M->data[0][2] = 2.0f * (tmp1 + tmp2) * invs;
+    
+	tmp1 = q->data[2] * q->data[3];
+    tmp2 = q->data[1] * q->data[0];
+    
+	M->data[2][1] = 2.0f * (tmp1 + tmp2) * invs;
+    M->data[1][2] = 2.0f * (tmp1 - tmp2) * invs;
+}	
 
 void convertLpMatrixToArray(LpMatrix3x3f* src, float dest[9])
 {

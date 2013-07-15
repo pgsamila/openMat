@@ -279,7 +279,7 @@ uint8_t setStreamFreq(uint8_t* data)
 }
 
 uint8_t setOffset(uint8_t* data)
-{	
+{
   	quaternionInv(&q, &qOffset);
 
 	setRegVector4f(LPMS_OFFSET_QUAT_0, qOffset);
@@ -650,7 +650,7 @@ uint8_t getHardIronOffsetData(uint8_t* data, uint16_t *l)
 {
 	LpVector3f f;
 
-	getHardIronOffset(&f);
+	f = getHardIronOffset();
 	setFloatVector3f(data, 0, f);
 
 	*l = 12;
@@ -671,7 +671,7 @@ uint8_t getSoftIronMatrixData(uint8_t* data, uint16_t *l)
 {
 	LpMatrix3x3f M;
 
-	getSoftIronMatrix(&M);
+	M = getSoftIronMatrix();
 	setFloatMatrix3x3f(data, 0, M);
 
 	*l = 36;

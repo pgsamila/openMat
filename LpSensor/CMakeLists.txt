@@ -9,11 +9,6 @@ cmake_minimum_required(VERSION 2.4.6)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-set(WINDOWS_BOOST_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Boost" CACHE STRING "")
-set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ice" CACHE STRING "")
-set(WINDOWS_SDK_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/WindowsSdk6" CACHE STRING "")
-set(WINDOWS_FTDI_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/FTdi" CACHE STRING "")
-
 set(BUILD_ARCHITECTURE "32-bit" CACHE STRING "")
 set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
 
@@ -50,6 +45,11 @@ if (USE_ZEROC_ICE)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(WINDOWS_BOOST_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Boost" CACHE STRING "")
+	set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ice" CACHE STRING "")
+	set(WINDOWS_SDK_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/WindowsSdk6" CACHE STRING "")
+	set(WINDOWS_FTDI_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/FTdi" CACHE STRING "")
+
 	include_directories("../Lp3rdPartyLibraries/Ftdi")
 	include_directories("../OpenMATCommon")
 	include_directories("../LpSensor")
@@ -128,7 +128,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	if (BUILD_OPENSOURCE)	
 		set(sources
 			${sources}	
-			LpFilterCVersionOS.c
 			LpMagnetometerCalibrationOS.c
 			CalcMisalignmentOS.c
 			GaitTrackingOS.cpp
@@ -136,7 +135,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	else()
 		set(sources
 			${sources}	
-			../../openmat-closedsource/LpFilterCVersion.c
 			../../openmat-closedsource/LpMagnetometerCalibration.c
 			../../openmat-closedsource/CalcMisalignment.c
 			../../openmat-closedsource/GaitTracking.cpp
@@ -170,8 +168,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	if (BUILD_OPENSOURCE)	
 		set(sources
-			${sources}	
-			LpFilterCVersionOS.c
+			${sources}
 			LpMagnetometerCalibrationOS.c
 			CalcMisalignmentOS.c
 			GaitTrackingOS.cpp
@@ -179,7 +176,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	else()
 		set(sources
 			${sources}	
-			../../openmat-closedsource/LpFilterCVersion.c
 			../../openmat-closedsource/LpMagnetometerCalibration.c
 			../../openmat-closedsource/CalcMisalignment.c
 			../../openmat-closedsource/GaitTracking.cpp

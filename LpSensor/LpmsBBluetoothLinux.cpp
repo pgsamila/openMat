@@ -96,16 +96,24 @@ bool LpmsBBluetooth::connect(string deviceId)
 
 	rxState = PACKET_END;
 	currentState = IDLE_STATE;
+
 	waitForAck = false;
 	waitForData = false;
+
 	ackReceived = false;
 	ackTimeout = 0;	
+
 	lpmsStatus = 0;
 	configReg = 0;
+
 	dataReceived = false;
-	pCount = 0;
 	dataTimeout = 0;
+
+	pCount = 0;
 	isOpen = true;
+	
+	timestampOffset = 0.0f;
+	currentTimestamp = 0.0f;
 
 	boost::thread t(&LpmsBBluetooth::runRead, this);	
 	t.detach();

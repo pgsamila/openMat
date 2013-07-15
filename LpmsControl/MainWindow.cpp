@@ -394,7 +394,7 @@ void MainWindow::calibrateMag(void)
 	
 	currentLpms->getSensor()->startCalibrateMag();
 	
-	startWaitBar(40);
+	startWaitBar(45);
 }
 
 void MainWindow::startServer(void)
@@ -1183,7 +1183,7 @@ void MainWindow::getFieldMap(void)
 void MainWindow::getVersionInfo(void)
 {
 	QString openMATVersion(LPMS_CONTROL_VERSION);	
-	QMessageBox::about(this, "LP-RESEARCH - LpmsControl", QString("LP-RESEARCH - LpmsControl ") + openMATVersion + QString("\n(c) LP-Research\nhttp://www.lp-research.com\n\nThis software is licensed under the Simplified BSD License (http://opensource.org/licenses/bsd-license.php).\n\nCREDITS:\nQWT: Uwe Rathmann, Josef Wilgen (http://qwt.sourceforge.net/)\nQT: QT-Project (http://qt-project.org/)\nApplication icon: Fast Icon (http://www.fasticon.com)\nPugiXML: Arseny Kapoulkine (http://pugixml.org/)\nBoost: Boost.org (http://www.boost.org/)\nToolbar icons: P.J. Onori (http://somerandomdude.com/work/iconic/)"));
+	QMessageBox::about(this, "LP-RESEARCH - LpmsControl", QString("LP-RESEARCH - LpmsControl ") + openMATVersion + QString("\n(c) LP-Research\nhttp://www.lp-research.com\n\nRelease information: https://bitbucket.org/lpresearch/openmat/wiki/Home"));
 }
 
 void MainWindow::resetToFactory(void)

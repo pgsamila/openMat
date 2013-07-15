@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-967900723
+Checksum=-427759572
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -46,6 +46,8 @@ ITMportsEnable=0
 ITMportsTermIO=0
 ITMportsLogFile=0
 ITMlogFile=$PROJ_DIR$\ITM.log
+[RecentFlashDownload]
+Path=C:\Users\user\Dropbox\LpResearch\ProductDevelopment\Firmware\Binaries\LpmsBFirmware1.1.1r2.out
 [PowerLog]
 LogEnabled=0
 GraphEnabled=0
@@ -71,7 +73,8 @@ SumSortOrder=0
 [Disassemble mode]
 mode=0
 [Breakpoints2]
-Count=0
+Bp0=_ 0 "EMUL_DATA" "isSensorMeasurementReady" 0 0 0 0 4294967295
+Count=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

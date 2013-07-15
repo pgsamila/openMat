@@ -6,7 +6,7 @@
 
 #include "SensorManager.h"
 
-#define DATA_SEND_TIMEOUT 2000
+#define PRESSURE_T 5000
 
 LpVector3i gyrRawData;
 LpVector3i accRawData;
@@ -60,9 +60,8 @@ LpVector3f maxGyr;
 LpVector3f minGyr;	
 float T = 0.01f;
 uint32_t lpmsStatus = 0;
-volatile uint8_t isDataSending = 0;
-uint16_t ledTime = 0;
-uint16_t pressureTime = 0;
+static __IO uint8_t isDataSending = 0;
+uint32_t pressureTime = 0;
 float canHeartbeatTime = 0.0f;
 float gLowX = 0.0f;
 float gLowY = 0.0f;
@@ -323,10 +322,8 @@ void initSensorManager(void)
 
 void updateSensorData(void)
 {     
-	waitForSendCompleted();
+	uint32_t cT;
 
-	if (isFirmwareUpdating == 1) return;
- 
 	if (isSelfTestOn == 1) {
 		calibrationData.gyrOffset.data[0] = 0.0f;
 		calibrationData.gyrOffset.data[1] = 0.0f;
@@ -337,17 +334,28 @@ void updateSensorData(void)
 			lpFilterParam.accRef, lpFilterParam.magRef,
 			T);
 	} else {
+
 #ifdef ENABLE_WATCHDOG
 		WWDG_Enable(0x7F);
 #endif
+
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
+
+		cT = getTimeStep();
+		startTimeStepCounting();
+		
+		T = (float) cT * 0.0001f;
+		canHeartbeatTime += T;
+		measurementTime += T;
+		heaveTime = T;
+
 #ifdef ENABLE_WATCHDOG
 		WWDG_DeInit();
 #endif
 
-#ifdef ENABLE_WATCHDOG
+/* #ifdef ENABLE_WATCHDOG
 		WWDG_Enable(0x7F);
 #endif
 		if ((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
@@ -355,10 +363,10 @@ void updateSensorData(void)
 		}
 #ifdef ENABLE_WATCHDOG
 		WWDG_DeInit();
-#endif
+#endif */
 
 #ifdef ENABLE_PRESSURE
-		if (pressureTime > 100) {
+		if (cT > PRESSURE_T) {
 			pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 					((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
@@ -370,30 +378,13 @@ void updateSensorData(void)
 		}
 #endif
 	}
-	
-	getTimeStep(&T);
-	startTimeStepCounting();
-
-	ledTime += (uint16_t)(T * 1000.0f);
-	pressureTime += (uint16_t)(T * 1000.0f);
-	canHeartbeatTime += T;
-	measurementTime += T;
-	sendTime += T;
-	heaveTime = T;
 
 	checkGyrCal();
-
-	if (ledTime > 500) {
-		GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN)));
-		ledTime = 0;
-	}
 }
 
 void processSensorData(void)
 {     
 	float bInc;
-            
-	if (isFirmwareUpdating == 1) return;
 
 	aRaw.data[0] = (float) accRawData.data[0] * calibrationData.accGain.data[0];
 	aRaw.data[1] = (float) accRawData.data[1] * calibrationData.accGain.data[1];
@@ -435,7 +426,7 @@ void processSensorData(void)
 
 	gTemp = (float) rawGyrTemp;
 
-	correctB(&b.data[0], &b.data[1], &b.data[2]);
+	b = correctB(b);
 	checkRefCal();
 
 	matVectMult3(&calibrationData.accAlignment, &aRaw, &a);
@@ -449,7 +440,7 @@ void processSensorData(void)
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
-		quaternionMult(&qOffset, &q, &qAfterOffset);
+		quaternionMult(&q, &qOffset, &qAfterOffset);
 		gyroToInertial();
 		quaternionToEuler(&qAfterOffset, &rAfterOffset);
 		calcLinearAcceleration();
@@ -511,7 +502,8 @@ void calcAltitude(void)
 	}
 }
 
-void gyroToInertial(void) {
+void gyroToInertial(void) 
+{
 	float p = gRaw.data[0];
 	float q = gRaw.data[1];
 	float r = gRaw.data[2];
@@ -533,12 +525,9 @@ void gyroToInertial(void) {
 
 void calcLinearAcceleration(void)
 {
-	LpVector3f aWorld;
+	/* LpVector3f aWorld;
 	LpMatrix3x3f M;
 	LpMatrix3x3f iM;
-	
-	/* startTime += T;
-	if (startTime < 5.0f) return; */
 
 	quaternionToMatrix(&q, &M);
 	matInv3x3(&M, &iM);
@@ -546,7 +535,19 @@ void calcLinearAcceleration(void)
 	
 	linAcc.data[0] = aWorld.data[0];
 	linAcc.data[1] = aWorld.data[1];
-	linAcc.data[2] = aWorld.data[2] + 1.0f;
+	linAcc.data[2] = aWorld.data[2] + 1.0f; */
+
+	LpVector3f gWorld;
+	LpVector3f gSensor;
+	LpMatrix3x3f M;
+
+	gWorld.data[0] = 0;
+	gWorld.data[1] = 0;
+	gWorld.data[2] = -1;
+
+	quaternionToMatrix(&q, &M);
+	matVectMult3(&M, &gWorld, &gSensor);
+	vectSub3x1(&a, &gSensor, &linAcc);
 }
 
 void gyrOnlineCal(void)
@@ -641,8 +642,6 @@ void setCommandMode(void)
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
 	lpmsStatus |= LPMS_COMMAND_MODE;
-
-	stopDataStreamTimer();
 }
 
 void setStreamMode(void)
@@ -651,8 +650,6 @@ void setStreamMode(void)
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
 	lpmsStatus |= LPMS_STREAM_MODE;
-
-	startDataStreamTimer();
 }
 
 void setSleepMode(void)
@@ -661,8 +658,6 @@ void setSleepMode(void)
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
 	lpmsStatus |= LPMS_SLEEP_MODE;
-
-	stopDataStreamTimer();
 }
 
 void startGyrCalibration(void)
@@ -777,20 +772,20 @@ void startRefCalibration(void)
 
 void checkRefCal(void)
 {
-	float refY, refZ, bInc;
+	float bInc;
+	LpVector3f tR;
 
 	if (isRefCalibrationEnabled) {
 		refCalibrationDuration += T;
 
 		cumulatedRefCounter++;
 		
-		getReferenceYZ(b.data[0], b.data[1], b.data[2], 
-			a.data[0], a.data[1], a.data[2],
-			&refY, &refZ, &bInc);		
+		getReferenceYZ(b, a, &tR, &bInc);
 		
 		cumulatedRefData[0] = cumulatedRefData[0] + bInc;
-		cumulatedRefData[1] = cumulatedRefData[1] + refY;
-		cumulatedRefData[2] = cumulatedRefData[2] + refZ;
+		cumulatedRefData[1] = cumulatedRefData[1] + tR.data[1];
+		cumulatedRefData[2] = cumulatedRefData[2] + tR.data[2];
+		cumulatedRefData[2] = cumulatedRefData[2] + tR.data[2];
 		
 		if (refCalibrationDuration >= LPMS_REF_CALIBRATION_DURATION_1S) {
 			stopRefCalibration();
@@ -842,26 +837,6 @@ void stopRefCalibration(void)
 	isRefCalibrationEnabled = 0;
 	
 	lpmsStatus &= ~LPMS_REF_CALIBRATION_RUNNING;	
-}
-
-int isDataSendingSet(void)
-{  
-	return isDataSending;
-}
-
-void waitForSendCompleted(void)
-{
-	while (isDataSendingSet() == 1);
-}
-
-void clearDataSendingFlag(void)
-{
-	isDataSending = 0;
-}
-
-void setDataSendingFlag(void)
-{
-	isDataSending = 1;
 }
 
 uint8_t getSensorData(uint8_t* data, uint16_t *l)

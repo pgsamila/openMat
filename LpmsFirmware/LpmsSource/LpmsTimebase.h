@@ -47,7 +47,7 @@ void setTimeoutTimer(void);
 void startTimeStepCounting(void);
 
 // Retrieves current time step value
-void getTimeStep(float* t);
+uint32_t getTimeStep(void);
 
 // Sets ready-for-transfer flag
 void setStreamModeTransferReady(void);
@@ -69,5 +69,9 @@ void startTimeoutCounting(void);
 
 // Retrieves current timeout value
 uint32_t getTimeout(void);
+
+void updateAliveLed(void);
+
+uint8_t isSensorMeasurementReady(void);
 
 #endif

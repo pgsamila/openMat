@@ -42,6 +42,8 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <iostream>
+#include <fstream>
 
 #ifdef _WIN32
 	#ifdef DLL_EXPORT
@@ -89,10 +91,11 @@ private:
 	string configurationFile;
 	LpmsDeviceList deviceList;
 	int managerState;
-	FILE *saveDataHandle;
+	std::ofstream saveDataHandle;
 	bool isRecording;
 	boost::mutex lm;
 	int threadDelay;
+	char writeBuffer[65536];
 	
 #ifdef _WIN32	
 	CanEngine ce;

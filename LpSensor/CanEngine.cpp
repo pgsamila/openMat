@@ -107,10 +107,12 @@ void CanEngine::poll() {
 	updateSendQueue();
 
 	r = pcan.Read(canChannel, &m, &t);
-
+	
 	if (r != PCAN_ERROR_OK) {
 		return;
 	}
+	
+	// printf("Msg. push %x %x %x %x %x %x %x %x\n", m.DATA[0], m.DATA[1], m.DATA[2], m.DATA[3], m.DATA[4], m.DATA[5], m.DATA[6], m.DATA[7]);		
 
 	BOOST_FOREACH(LpmsCanIo *c, sensorList) {
 		c->parseCanMsg(m);

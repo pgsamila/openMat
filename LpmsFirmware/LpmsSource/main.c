@@ -35,24 +35,12 @@ int main(void)
 #endif
 
 	while (1) {
+		updateAliveLed();
+
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
-#ifdef USE_CANBUS_INTERFACE
-			pollSerialPortData();
-			pollCanBusData();
-#else
-			pollBluetoothData();
-#endif
-			parsePacket();
-			updateSensorData();
-			processSensorData();
-
-		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
-			updateSensorData();
-			processSensorData();
-
-			if (isStreamModeTransferReady()) {
-				clearStreamModeTransferReady();
-				updateDataTransmission();
+			if (isSensorMeasurementReady() == 1) {
+				updateSensorData();
+				processSensorData();
 			}
 
 #ifdef USE_CANBUS_INTERFACE
@@ -63,6 +51,26 @@ int main(void)
 #endif
 			parsePacket();
 
+			sendQueue();
+		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
+			if (isStreamModeTransferReady() == 1) {
+				clearStreamModeTransferReady();
+
+				updateSensorData();
+				processSensorData();
+
+				updateDataTransmission();
+			}
+			
+			sendQueue();
+
+#ifdef USE_CANBUS_INTERFACE
+			pollSerialPortData();
+			pollCanBusData();
+#else
+			pollBluetoothData();
+#endif
+			parsePacket();
 		} else if (getCurrentMode() == LPMS_SLEEP_MODE) {
 #ifdef USE_CANBUS_INTERFACE
 			pollSerialPortData();
@@ -71,6 +79,8 @@ int main(void)
 			pollBluetoothData();
 #endif
 			parsePacket();
+
+			sendQueue();
 		}
   	}
 }

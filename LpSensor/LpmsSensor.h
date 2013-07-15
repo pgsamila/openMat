@@ -9,6 +9,9 @@
 
 #include <boost/thread/thread.hpp>
 
+#include <iostream>
+#include <fstream>
+
 #ifdef _WIN32
 	#include "windows.h"
 #endif
@@ -19,7 +22,6 @@
 #include "LpmsIoInterface.h"
 #include "LpmsSensorI.h"
 #include "LpMatrix.h"
-#include "LpFilterCVersion.h"
 #include "LpMagnetometerCalibration.h"
 #include "CalcMisalignment.h"
 #include "GaitTracking.h"
@@ -152,6 +154,7 @@
 #define C_STATE_GET_LIN_ACC_COMP_MODE 26
 #define C_STATE_CENTRI_COMP_MODE 27
 #define C_STATE_GET_CAN_CONFIGURATION 28
+#define C_RESET_SENSOR_TIMESTAMP 29
 
 #define CAL_STATE_GET_STATUS 1
 #define CAL_STATE_WAIT_FINISH 2
@@ -219,7 +222,7 @@ public:
 	float getFieldNoise(void);
 	void saveCalibrationData(const char *fn);
 	void loadCalibrationData(const char *fn);
-	void startSaveData(FILE *saveDataHandle);
+	void startSaveData(std::ofstream *saveDataHandle);
 	void checkSaveData(void);
 	void stopSaveData(void);
 	void setCallback(LpmsCallback cb);
@@ -321,7 +324,7 @@ private:
 	bool isSaveData;
 	LpVector3f bMax;
 	LpVector3f bMin;
-	FILE* saveDataHandle;
+	std::ofstream *saveDataHandle;
 	LpmsCallback lpmsCallback;
 	bool callbackSet;
 	GaitTracking gm;

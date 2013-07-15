@@ -53,7 +53,6 @@ FieldMapDisplay::FieldMapDisplay(QWidget *parent, QGLWidget *shareWidget)
 	showEllipsoid = true;
 	
 	fieldUpdated = false;
-	// setAutoFillBackground(false);
 	
 	for (int i=0; i<ABSMAXPITCH; i++) {
 		for (int j=0; j<ABSMAXROLL; j++) {
@@ -148,15 +147,6 @@ void FieldMapDisplay::paintEvent(QPaintEvent*)
 	QFont f;
 	f.setPixelSize(15);
 	painter.setFont(f);
-
-	/* painter.setPen(redPen);
-	painter.drawText(width()-280, height()-70, QString("- Measured magnetic field (norm.)"));
-
-	painter.setPen(bluePen);
-	painter.drawText(width()-280, height()-50, QString("- Corrected magnetic field (norm.)"));
-
-	painter.setPen(greenPen);
-	painter.drawText(width()-280, height()-30, QString("- Ellipsoid fit (norm.)")); */
 	
 	glEnable(GL_CULL_FACE);
 	
@@ -186,7 +176,7 @@ void FieldMapDisplay::drawFieldMap(void)
 	Eigen::Vector3f v2;
 	Eigen::Matrix3f M;
 	
-	float s = 0.02f;
+	float s = 0.03f;
 	
 	bool showCurrentField = true;
 	bool showCurrentFieldLimit = true;
@@ -413,11 +403,8 @@ void FieldMapDisplay::drawGridCube(void)
 	}
 	
 	glColor3f((GLfloat) 0.0f, (GLfloat) 1.0f, (GLfloat) 0.0f);		
-	// renderText(0 + 0.05, 0 + 0.05, 2.0 + 0.05, QString("Z"), f);	
-	glColor3f((GLfloat) 0.0f, (GLfloat) 0.0f, (GLfloat) 1.0f);	
-	// renderText(0 + 0.05, 2.0 + 0.05, 0.0 + 0.05, QString("Y"), f);		
-	glColor3f((GLfloat) 1.0f, (GLfloat) 0.0f, (GLfloat) 0.0f);	
-	// renderText(2.0 + 0.05, 0 + 0.05, 0.0 + 0.05, QString("X"), f);		
+	glColor3f((GLfloat) 0.0f, (GLfloat) 0.0f, (GLfloat) 1.0f);		
+	glColor3f((GLfloat) 1.0f, (GLfloat) 0.0f, (GLfloat) 0.0f);		
 		
 	glLineWidth(1.0f);			
 		

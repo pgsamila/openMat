@@ -329,7 +329,7 @@ void SystemCoreClockUpdate(void)
   * @retval None
   */
 static void SetSysClock(void)
-{
+{	
 /******************************************************************************/
 /*            PLL (clocked by HSE) used as System clock source                */
 /******************************************************************************/
@@ -390,7 +390,8 @@ static void SetSysClock(void)
     }
   }
   else
-  { /* If HSE fails to start-up, the application will have wrong clock
+  {
+	/* If HSE fails to start-up, the application will have wrong clock
          configuration. User can add here some code to deal with this error */
   }
 

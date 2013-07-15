@@ -1,5 +1,5 @@
-Name "OpenMAT 1.1.2"
-OutFile "OpenMAT-1.1.2-Setup.exe"
+Name "OpenMAT 1.2.0"
+OutFile "OpenMAT-1.2.0-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin
@@ -19,7 +19,7 @@ RequestExecutionLevel admin
 
 !define MUI_ABORTWARNING
 
-!insertmacro MUI_PAGE_LICENSE "COPYING"
+!insertmacro MUI_PAGE_LICENSE "..\LpmsControl\README"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -47,7 +47,7 @@ Section "OpenMAT (required)"
 	File "..\LpSensor\build\LpSensor.lib"
 	File "..\LpSensor\build\LpSensor.dll"
 	
-	File "..\Libraries\Ftdi\i386\ftd2xx.dll"
+	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
 	/* File "..\Libraries\PcanApi\Win32\PCANBasic.dll" */	
 	
 	/* SetOutPath $INSTDIR\lib\x64	
@@ -102,11 +102,11 @@ Section "OpenMAT (required)"
 		
 	File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\iceutil34.dll" */
 		
-	File "..\Libraries\Ftdi\i386\ftd2xx.dll"
+	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
 		
-	File "..\Libraries\Qwt\lib\qwt.dll"
+	File "..\Lp3rdPartyLibraries\Qwt\lib\qwt.dll"
 	
-	File "..\Libraries\PcanApi\Win32\PCANBasic.dll"	
+	File "..\Lp3rdPartyLibraries\PcanApi\Win32\PCANBasic.dll"	
 	
 	SetOutPath $INSTDIR\bin\icons
 	File "..\LpmsControl\icons\stop_32x32.png"

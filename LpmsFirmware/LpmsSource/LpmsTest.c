@@ -15,7 +15,6 @@ static float rPrev = 0.0f;
 static int direction = 0;
 static int mode = 0;
 static float w = 0.0f;
-
 FilterTestParameters testPrm;
 
 void setTestParameters(LpVector3f magOff,

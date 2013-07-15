@@ -33,6 +33,8 @@
 #define LPMS_SENSOR_I
 
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 #include "ImuData.h"
 #include "LpmsDefinitions.h"
@@ -185,7 +187,7 @@ public:
 	virtual void loadCalibrationData(const char *fn) = 0;
 	
 	/* Starts saving data to file handle. */
-	virtual void startSaveData(FILE *saveDataHandle) = 0;
+	virtual void startSaveData(std::ofstream *saveDataHandle) = 0;
 
 	/* Updates file saving. */
 	virtual void checkSaveData(void) = 0;

@@ -19,19 +19,29 @@ LpmsCanIo::~LpmsCanIo(void)
 bool LpmsCanIo::connect(std::string deviceId) 
 {
 	currentState = IDLE_STATE;
+	
 	waitForAck = false;
 	waitForData = false;
 	ackReceived = false;
+
 	ackTimeout = 0;
 	dataReceived = false;
 	dataTimeout = 0;
+
 	lpmsStatus = 0;
 	configReg = 0;
+
 	prevInMC = 255;
 	outMC = 0;
+
 	rxState = PACKET_END;
 	configSet = false;
 	
+	timestampOffset = 0.0f;
+	currentTimestamp = 0.0f;
+
+	setCommandMode();			
+
 	try {
 		imuId = boost::lexical_cast<int>(deviceId);
 	} catch(boost::bad_lexical_cast const&) {
@@ -164,7 +174,7 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 	}
 		
 	return true;
-}*/
+} */
 
 bool LpmsCanIo::getTxMessage(std::queue<TPCANMsg> *topTxQ)
 {
@@ -224,6 +234,8 @@ bool LpmsCanIo::parseCanMsg(TPCANMsg m)
 		for (int i=0; i<m.LEN; i++) {
 			dataQueue.push((unsigned char) m.DATA[i]);
 		}
+		
+	// printf("Msg. push %x %x %x %x %x %x %x %x\n", m.DATA[0], m.DATA[1], m.DATA[2], m.DATA[3], m.DATA[4], m.DATA[5], m.DATA[6], m.DATA[7]);	
 		
 		return true;
 	// }

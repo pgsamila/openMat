@@ -239,7 +239,7 @@ public:
 	bool setCanMapping(int *v);
 	bool getCanHeartbeat(void);
 	bool setCanHeartbeat(int v);
-	bool resetTimestamp(void);
+	bool resetSensorTimestamp(void);
 	bool getLinAccCompMode(void);
 	bool setLinAccCompMode(int v);
 	bool getCentriCompMode(void);
@@ -248,6 +248,10 @@ public:
 	bool setCanChannelMode(int v);
 	bool setCanPointMode(int v);
 	bool setCanStartId(int v);
+	bool getLatestImuData(ImuData *id);
+	void resetTimestamp(void);
+	void clearRxBuffer(void);
+	void clearDataQueue(void);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
@@ -293,6 +297,7 @@ protected:
 	unsigned currentFunction;
 	unsigned currentLength;
 	std::queue<unsigned char> dataQueue;
+	std::queue<ImuData> imuDataQueue;
 	std::vector<unsigned char> oneTx;
 	unsigned lrcIndex;
 	unsigned lrcCheck;
@@ -319,6 +324,8 @@ protected:
 	float latestLatency;
 	MicroMeasure latencyTimer;
 	bool newDataFlag;
+	float timestampOffset;
+	float currentTimestamp;
 };	
 
 #endif

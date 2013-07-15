@@ -198,7 +198,7 @@ void LpmsSensor::update(void)
 			switch (getConfigState) {
 			// Switches to command mode.
 			case C_STATE_GOTO_COMMAND_MODE:
-				LOGE("[LpmsSensor] Switch to command mode");	
+				LOGE("[LpmsSensor] Switch to command mode");
 				bt->setCommandMode();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_CONFIG;
@@ -401,8 +401,16 @@ void LpmsSensor::update(void)
 				LOGE("[LpmsSensor] Get CAN configuration");
 				bt->getCanConfiguration();
 				state = STATE_GET_SETTINGS;
+				getConfigState = C_RESET_SENSOR_TIMESTAMP;		
+			break;
+
+			// Resets sensor timestamp
+			case C_RESET_SENSOR_TIMESTAMP:
+				LOGE("[LpmsSensor] Resetting timestamp");
+				bt->resetSensorTimestamp();
+				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_SETTINGS_DONE;		
-			break;		
+			break;				
 		
 			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
 			case C_STATE_SETTINGS_DONE:	
@@ -418,7 +426,6 @@ void LpmsSensor::update(void)
 					
 				bt->startStreaming();
 				
-				setConnectionStatus(SENSOR_CONNECTION_CONNECTED);
 				setSensorStatus(SENSOR_STATUS_RUNNING);	
 				
 				retrialsConnect = 0;
@@ -486,19 +493,15 @@ void LpmsSensor::update(void)
 		if (prepareStream < STREAM_N_PREPARE) {
 			++prepareStream;
 			break;
-		}			
+		}
+				
+		// Load current data from hardware and calculate rotation matrix and Euler angle.		
+		if (bt->getLatestImuData(&imuData) == false) break;
 		
 		frameTime = lpmsTimer.measure() / 1000.0f;	
-		/* if (frameTime < (long) getStreamFrequency()) break; */
-		
-		if (bt->isNewData() == false) break;
-		
 		lpmsTimer.reset();	
-		setFps(frameTime);	
+		setFps(frameTime);		
 		
-		// Load current data from hardware and calculate rotation matrix and Euler angle.
-		bt->loadData(&imuData);
-	
 		convertArrayToLpVector4f(imuData.q, &q);
 		quaternionToMatrix(&q, &m);
 		convertLpMatrixToArray(&m, imuData.rotationM);		
@@ -506,9 +509,9 @@ void LpmsSensor::update(void)
 		// Add frame number timestamp and IMU ID to current ImuData.
 		++frameNo;
 		imuData.frameCount = frameNo;	
-		// imuData.timestamp = (float) frameNo * (float) getStreamFrequency() / 1000.0f;
 		imuData.openMatId = configData.openMatId;				
 
+		setConnectionStatus(SENSOR_CONNECTION_CONNECTED);
 		if (isMagCalibrationEnabled == true) {
 			setSensorStatus(SENSOR_STATUS_CALIBRATING);
 		} else {
@@ -1094,7 +1097,7 @@ void LpmsSensor::update(void)
 	// Resets sensor timestamp.
 	case STATE_RESET_TIMESTAMP:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->resetTimestamp();
+			bt->resetSensorTimestamp();
 			LOGE("[LpmsSensor] Reset sensor timestamp");
 			
 			state = STATE_GET_SETTINGS;
@@ -2025,10 +2028,11 @@ void LpmsSensor::calcGyrTempCal(void)
 	updateParameters();
 }
 
-void LpmsSensor::startSaveData(FILE *saveDataHandle)
+void LpmsSensor::startSaveData(std::ofstream *saveDataHandle)
 {
 	sensorMutex.lock();
-	resetTimestamp();
+	bt->resetTimestamp();
+	bt->clearDataQueue();
 	isSaveData = true;
 	this->saveDataHandle = saveDataHandle;
 	frameNo = 0;
@@ -2037,9 +2041,11 @@ void LpmsSensor::startSaveData(FILE *saveDataHandle)
 
 void LpmsSensor::checkSaveData(void)
 {
-	if (isSaveData == true) {
-		fprintf(saveDataHandle, "%i, %f, %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n", currentData.openMatId, currentData.timeStamp, currentData.frameCount, currentData.aRaw[0], currentData.aRaw[1], currentData.aRaw[2], currentData.gRaw[0], currentData.gRaw[1], currentData.gRaw[2], currentData.bRaw[0], currentData.bRaw[1], currentData.bRaw[2], currentData.r[0], currentData.r[1], currentData.r[2], currentData.q[0], currentData.q[1], currentData.q[2], currentData.q[3], currentData.linAcc[0], currentData.linAcc[1], currentData.linAcc[2], currentData.pressure, currentData.altitude, currentData.temperature, currentData.hm.yHeave);
+	sensorMutex.lock();
+	if (isSaveData == true && saveDataHandle->is_open() == true) {
+		*saveDataHandle << currentData.openMatId << ", " << currentData.timeStamp << ", " << currentData.frameCount << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
 	}
+	sensorMutex.unlock();
 }
 
 void LpmsSensor::stopSaveData(void)

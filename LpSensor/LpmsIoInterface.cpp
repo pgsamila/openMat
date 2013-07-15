@@ -9,7 +9,8 @@
 LpmsIoInterface::LpmsIoInterface(CalibrationData *configData) :
 	configData(configData)
 {
-	newDataFlag = false;
+	timestampOffset = 0.0f;
+	currentTimestamp = 0.0f;
 }
 
 bool LpmsIoInterface::connect(std::string deviceId) 
@@ -26,7 +27,8 @@ bool LpmsIoInterface::connect(std::string deviceId)
 	currentMode = LPMS_STREAM_MODE;
 	configSet = false;
 	latestLatency = 0.0f;
-	newDataFlag = false;
+	timestampOffset = 0.0f;
+	currentTimestamp = 0.0f;
 	
 	zeroImuData(&imuData);
 	
@@ -359,16 +361,24 @@ bool LpmsIoInterface::parseFieldMapData(void)
 	return true;
 }
 
+void LpmsIoInterface::resetTimestamp(void)
+{
+	timestampOffset = currentTimestamp;
+}
+
 bool LpmsIoInterface::parseSensorData(void)
 {
 	unsigned o=0;
 	float r0, r1, r2;
-	const float r2d = 57.2958f;	
+	const float r2d = 57.2958f;
 
 	zeroImuData(&imuData);
 	
-	fromBuffer(oneTx, o, &imuData.timeStamp);
-	o = o + 4;	
+	fromBuffer(oneTx, o, &currentTimestamp);
+	o = o + 4;
+	
+	if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
+	imuData.timeStamp = currentTimestamp - timestampOffset;
 	
 	if ((configReg & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
 		fromBuffer(oneTx, o, &r0, &r1, &r2);
@@ -430,10 +440,27 @@ bool LpmsIoInterface::parseSensorData(void)
 		fromBuffer(oneTx, o, &imuData.hm.yHeave);
 		o = o + 4;
 	}
+	
+	if (imuDataQueue.size() < 64) {
+		imuDataQueue.push(imuData);
+	}
 
-	newDataFlag = true;
+	return true;
+}
+
+bool LpmsIoInterface::getLatestImuData(ImuData *id) 
+{
+	if (imuDataQueue.empty() == true) return false;
+	
+	*id = imuDataQueue.front();
+	imuDataQueue.pop();
 	
 	return true;
+}
+
+void LpmsIoInterface::clearDataQueue(void)
+{
+	while (imuDataQueue.empty() == false) imuDataQueue.pop();
 }
 
 bool LpmsIoInterface::parseFunction(void) 
@@ -452,7 +479,7 @@ bool LpmsIoInterface::parseFunction(void)
 
 		if (isNack() == true) {
 			receiveReset();
-
+			
 			return false;
 		}
 	}
@@ -826,6 +853,16 @@ bool LpmsIoInterface::parseFunction(void)
 	receiveReset();
 
 	return true;
+}
+
+void LpmsIoInterface::clearRxBuffer(void)
+{
+	while (dataQueue.size() > 0) {
+		dataQueue.pop();
+	}
+	
+	oneTx.clear();
+	receiveReset();
 }
 
 bool LpmsIoInterface::checkState(void)
@@ -1897,15 +1934,6 @@ long LpmsIoInterface::getConfigReg(void) {
 	return configReg;
 }
 
-bool LpmsIoInterface::isNewData(void) {
-	if (newDataFlag == true) {
-		newDataFlag = false;
-		return true;
-	}
-
-	return false;
-}
-
 bool LpmsIoInterface::getRawDataLpFilter(void)
 {
 	return modbusGet(GET_RAW_DATA_LP);	
@@ -1936,7 +1964,7 @@ bool LpmsIoInterface::setCanHeartbeat(int v)
 	return modbusSetInt32(SET_CAN_HEARTBEAT, v);
 }
 
-bool LpmsIoInterface::resetTimestamp(void)
+bool LpmsIoInterface::resetSensorTimestamp(void)
 {
 	return modbusSetNone(RESET_TIMESTAMP);
 }

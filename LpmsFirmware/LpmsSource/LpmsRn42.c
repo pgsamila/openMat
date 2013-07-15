@@ -10,8 +10,6 @@
 #include "LpmsRn42.h"
 
 uint8_t bluetoothRxBuffer[BT_MAX_RX_BUFFER_LENGTH];
-uint8_t bluetoothTxBuffer[BT_MAX_TX_BUFFER_LENGTH];
-
 static DMA_InitTypeDef bluetoothDMAInitStructure;
 static LpmsPacket newPacket;
 static uint8_t rxState = PACKET_START;
@@ -52,7 +50,7 @@ void bluetoothSetUSARTConfig(uint32_t baudrate)
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_RTS_CTS;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_RTS_CTS; // USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_DeInit(BT_USART_PORT);
 	USART_Init(BT_USART_PORT, &USART_InitStructure);
@@ -62,7 +60,7 @@ void bluetoothSetUSARTConfig(uint32_t baudrate)
 
 void bluetoothSetDmaConfig(void)
 {
-  	NVIC_InitTypeDef  NVIC_InitStructure;
+  	// NVIC_InitTypeDef  NVIC_InitStructure;
   	RCC_AHB1PeriphClockCmd(BT_USART_DMA_CLK, ENABLE); 	
 	
 	DMA_DeInit(BT_USART_RX_DMA_STREAM);
@@ -84,15 +82,15 @@ void bluetoothSetDmaConfig(void)
 	bluetoothDMAInitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 	DMA_Init(BT_USART_RX_DMA_STREAM, &bluetoothDMAInitStructure);
 	
-	DMA_DeInit(BT_USART_TX_DMA_STREAM);
+	/*DMA_DeInit(BT_USART_TX_DMA_STREAM);
 	bluetoothDMAInitStructure.DMA_Channel = BT_USART_TX_DMA_CHANNEL;
-	bluetoothDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t) bluetoothTxBuffer;
+	bluetoothDMAInitStructure.DMA_Memory0BaseAddr = 0; // (uint32_t) bluetoothTxBuffer;
 	bluetoothDMAInitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	bluetoothDMAInitStructure.DMA_BufferSize = (uint32_t)BT_MAX_TX_BUFFER_LENGTH;
+	bluetoothDMAInitStructure.DMA_BufferSize = 0; // (uint32_t)BT_MAX_TX_BUFFER_LENGTH;
 	bluetoothDMAInitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_Init(BT_USART_TX_DMA_STREAM, &bluetoothDMAInitStructure);
+	DMA_Init(BT_USART_TX_DMA_STREAM, &bluetoothDMAInitStructure); */
 	
-	DMA_ITConfig(BT_USART_TX_DMA_STREAM, DMA_IT_TC, DISABLE);
+	// DMA_ITConfig(BT_USART_TX_DMA_STREAM, DMA_IT_TC, DISABLE);
 
 	USART_ClearFlag(BT_USART_PORT, USART_FLAG_TC);
 	
@@ -102,13 +100,13 @@ void bluetoothSetDmaConfig(void)
 	DMA_Cmd(BT_USART_RX_DMA_STREAM, DISABLE);
 	DMA_Cmd(BT_USART_TX_DMA_STREAM, DISABLE);
 	
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
+	/* NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 
 	NVIC_InitStructure.NVIC_IRQChannel = BT_DMA_STEAM_IRQ;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+	NVIC_Init(&NVIC_InitStructure); */
 }
 
 void bluetoothSetGpioConfig(void)
@@ -173,6 +171,48 @@ void bluetoothSetGpioConfig(void)
 	GPIO_Init(BT_SHOW_STATUS_IO_PORT, &GPIO_InitStructure);
 }
 
+void bluetoothStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength) 
+{
+	DMA_Cmd(BT_USART_TX_DMA_STREAM, DISABLE);
+	
+	DMA_ClearFlag(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF);
+	USART_ClearFlag(BT_USART_PORT, USART_FLAG_TC);
+
+	DMA_DeInit(BT_USART_TX_DMA_STREAM);
+	bluetoothDMAInitStructure.DMA_Channel = BT_USART_TX_DMA_CHANNEL;
+	bluetoothDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t)pDataBuffer;
+	bluetoothDMAInitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+	bluetoothDMAInitStructure.DMA_BufferSize = (uint32_t)dataLength;
+	bluetoothDMAInitStructure.DMA_Mode = DMA_Mode_Normal;
+	DMA_Init(BT_USART_TX_DMA_STREAM, &bluetoothDMAInitStructure);
+
+	USART_DMACmd(BT_USART_PORT, USART_DMAReq_Tx, ENABLE);
+	DMA_Cmd(BT_USART_TX_DMA_STREAM, ENABLE);
+
+	// DMA_ITConfig(BT_USART_TX_DMA_STREAM, DMA_IT_TC, ENABLE);
+}
+
+void bluetoothStopDataTransfer(void)
+{
+	if (DMA_GetFlagStatus(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF) != RESET) {
+		DMA_ClearITPendingBit(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF);
+	}
+}
+
+int bluetoothIsReadyForSend(void)
+{
+	if (DMA_GetFlagStatus(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF) != RESET) return 1;
+
+	return 0;
+}
+
+uint8_t checkConnectionStatus(void)
+{
+	if (GPIO_ReadInputDataBit(BT_STATUS_IO_PORT, BT_STATUS_IO_PIN) == RESET) return 1;
+
+	return 0;
+}
+
 uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 {
 	uint32_t baudrate;
@@ -228,15 +268,18 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 	if (!bluetoothGotoCommandMode()) return 0;
 	if (!bluetoothSetBaudrate(baudrate)) return 0;
 
-	msDelay(200);
+	msDelay(50);
 	bluetoothSetName();
-	msDelay(200);
+	msDelay(50);
 	
 #ifdef ENABLE_LOWLATENCY
 	bluetoothEnableLowLatency();
 	bluetoothEnableLowLatencyOptimization();
+#else
+	bluetoothDisableSpecialCommands();
 #endif
-	
+	msDelay(50);
+
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(baudrate);
 	bluetoothReset();
@@ -449,6 +492,13 @@ uint8_t bluetoothEnableLowLatency(void)
 	return bluetoothSendCommand(c, 5);	
 }
 
+uint8_t bluetoothGotoFastMode(void)
+{
+	uint8_t c[16] = "F,1";
+	
+	return bluetoothSendCommand(c, 3);	
+}
+
 uint8_t bluetoothSetBaudrate(uint32_t baudrate)
 {
 	uint8_t data[5];
@@ -543,55 +593,6 @@ uint8_t bluetoothSetBaudrate(uint32_t baudrate)
 	
 	if (data[0] == 'A' && data[1] == 'O' && data[2] == 'K' && 
 		data[3] == 0x0d && data[4] == 0x0a) {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-void bluetoothStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength) 
-{                                                                      
-	bluetoothStopDataTransfer();
-
-	DMA_ClearFlag(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF);
-	DMA_DeInit(BT_USART_TX_DMA_STREAM);
-
-	bluetoothDMAInitStructure.DMA_Channel = BT_USART_TX_DMA_CHANNEL;
-	bluetoothDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t)pDataBuffer;
-	bluetoothDMAInitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	bluetoothDMAInitStructure.DMA_BufferSize = (uint32_t)dataLength;
-	bluetoothDMAInitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_Init(BT_USART_TX_DMA_STREAM, &bluetoothDMAInitStructure);
-
-	USART_DMACmd(BT_USART_PORT, USART_DMAReq_Tx, ENABLE);
-      
-	USART_ClearFlag(BT_USART_PORT, USART_FLAG_TC);
-
-	DMA_ITConfig(BT_USART_TX_DMA_STREAM, DMA_IT_TC, ENABLE);
-	
-	DMA_Cmd(BT_USART_TX_DMA_STREAM, ENABLE);
-}
-
-void bluetoothStopDataTransfer(void)
-{
-	if (DMA_GetFlagStatus(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF) != RESET) {
-		DMA_ClearFlag(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF);
-		DMA_Cmd(BT_USART_TX_DMA_STREAM, DISABLE);
-	}
-}
-
-int bluetoothIsReadyForSend(void)
-{
-	if (DMA_GetFlagStatus(BT_USART_TX_DMA_STREAM, BT_USART_TX_DMA_FLAG_TCIF) == RESET) {
-		return 1;
-	}
-
-	return 0;
-}
-
-uint8_t checkConnectionStatus(void)
-{
-	if (GPIO_ReadInputDataBit(BT_STATUS_IO_PORT, BT_STATUS_IO_PIN) == RESET) {
 		return 1;
 	} else {
 		return 0;
@@ -698,7 +699,7 @@ uint8_t pollBluetoothData(void)
 			rxDmaBufferPtr = 0;
 	}
 
-	bluetoothShowStatus();
+	//bluetoothShowStatus();
 	
 	return 1;
 }

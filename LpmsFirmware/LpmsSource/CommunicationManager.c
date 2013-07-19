@@ -97,7 +97,7 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	txData[10 + length] = 0x0a;
 
 	if (txIndex+10+length < MAX_BUFFER) {
-		for (i=0; i<(10+length); ++i) {
+		for (i=0; i<(11+length); ++i) {
 			txBuffer[txIndex] = txData[i];
 			++txIndex;
 		}
@@ -130,7 +130,7 @@ void sendQueue(void)
 #ifdef USE_CANBUS_INTERFACE
 	if (	connectedInterface == CANBUS_CONNECTED || 
 		connectedInterface == CANOPEN_CONNECTED) {
-			CANStartDataTransfer(txBuffer2, txIndex);
+		CANStartDataTransfer(txBuffer2, txIndex);
 	} else if (connectedInterface == USB_CONNECTED) { 
 	  	serialPortStartTransfer(txBuffer2, txIndex);
 	}

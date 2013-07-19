@@ -495,6 +495,12 @@ void getCanData(uint8_t* data, int i, int fixed)
 		case 18:
 			getAccZData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
+
+#ifdef USE_HEAVEMOTION
+		case 19:
+			getHeaveData(data, &dataLength, FLOAT_FIXED_POINT_1000);
+		break;
+#endif
 		}
 	} else {
 		switch (v) {

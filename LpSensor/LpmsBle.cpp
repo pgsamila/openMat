@@ -521,6 +521,8 @@ void LpmsBle::close(void)
 	started = false;
 	isOpen = false;
 	
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	
 	uart_close();
 }
 

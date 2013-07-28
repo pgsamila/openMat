@@ -34,6 +34,11 @@
 
 CalibrationData::CalibrationData(void)
 { 
+	LpMatrix3x3f m;
+	createIdentity3x3(&m);
+	LpVector3f v;
+	vectZero3x1(&v);
+	
 	for (int i=0; i<ABSMAXPITCH; i++) {
 		for (int j=0; j<ABSMAXROLL; j++) {
 			for (int k=0; k<ABSMAXYAW; k++) {
@@ -44,8 +49,53 @@ CalibrationData::CalibrationData(void)
 		}
 	}
 	
-	selectedData = 0xffff;
 	firmwareVersion = std::string("n/a");
+	name = std::string("");
+	deviceId = std::string("");
+	openMatId = 1;
+	deviceType = 0;
+	parameterSet = 0;	
+	filterMode = 0;
+	gyrThresEnable = 0;
+	accCompGain = 0.0f;
+	accCovariance = 0.0f;
+	magCompGain = 0.0f;
+	magCovariance = 0.0f;	
+	quaternionCalcLocal = 0;
+	samplingRate = 0;	
+	gyrRange = 0;
+	magRange = 0;
+	accRange = 0;
+	magAutocalibration = 0;
+	canStreamFormat = 0;
+	canBaudrate = 0;
+	selfTestOn = 0;	
+	fieldRadius = 0;
+	magThreshold = 0;
+	magOutOfRange = 0;
+	gyrAutocalibration = 0;	
+	hardIronOffset = v;
+	softIronMatrix = m;
+	misalignMatrix = m;
+	accBias = v;
+	gyrMisalignMatrix = m;
+	gyrAlignmentBias = v;
+	firmwareVersion = std::string("");
+	gyrCalA = v;
+	gyrCalB = v;
+	gyrCalBaseV = v;
+	gyrCalBaseT = 0.0f;
+	lowPassFilter = 0;
+	canHeartbeat = 0;
+	heavemotionEnabled = 0;
+	gaitTrackingEnabled = 0;
+	linAccCompMode = 0;
+	centriCompMode = 0;
+	canPointMode = 0;
+	canChannelMode = 0;
+	canStartId = 0;	
+	
+	selectedData = 0xffff;
 }
 
 bool CalibrationData::setDefaultParameters(std::string name, std::string deviceId, int deviceType)

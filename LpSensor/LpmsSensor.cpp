@@ -238,11 +238,11 @@ void LpmsSensor::update(void)
 				LOGE("[LpmsSensor] Get configuration data");
 				bt->getConfig();
 				state = STATE_GET_SETTINGS;
-				//if (deviceType == DEVICE_LPMS_BLE) {
-				//	getConfigState = C_STATE_SETTINGS_DONE;
-				//} else {
+				if (deviceType == DEVICE_LPMS_BLE) {
+					getConfigState = C_STATE_SETTINGS_DONE;
+				} else {
 					getConfigState = C_STATE_FILTER_MODE;
-				//}
+				}
 			break;
 			
 			// Retrieves the current filter mode.
@@ -457,11 +457,11 @@ void LpmsSensor::update(void)
 				
 				newFieldMap = true;		
 					
-				//if (deviceType != DEVICE_LPMS_BLE) {
+				if (deviceType != DEVICE_LPMS_BLE) {
 					bt->startStreaming();
-				//} else {
-				//	bt->getSensorData();
-				//}
+				} else {
+					bt->getSensorData();
+				}
 				
 				setSensorStatus(SENSOR_STATUS_RUNNING);	
 				
@@ -512,14 +512,14 @@ void LpmsSensor::update(void)
 		// LOGE("[LpmsSensor] STATE MEASURE");	
 		// Start next measurement step only if program is not waiting for data or ACK.
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			//if (deviceType != DEVICE_LPMS_BLE) {
+			if (deviceType != DEVICE_LPMS_BLE) {
 				if (bt->getMode() != SELECT_LPMS_MODE_STREAM) {
 					bt->setStreamMode();
 					prepareStream = 0;
 				}
-			//} else {
-			//	bt->getSensorData();
-			//}
+			} else {
+				bt->getSensorData();
+			}
 		}
 		
 		// TODO: Insert error handling for sensor.

@@ -649,7 +649,7 @@ bool LpmsIoInterface::parseFunction(void)
 	case GET_SENSOR_DATA:
 		parseSensorData();
 		
-		return true;
+		if ((lpmsStatus & LPMS_STREAM_MODE) != 0) return true;
 	break;
 
 	case GET_IMU_ID:

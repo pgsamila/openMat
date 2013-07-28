@@ -42,7 +42,7 @@
 
 // State machine definitions
 #define IDLE_STATE -1
-#define ACK_MAX_TIME 2000000
+#define ACK_MAX_TIME 3000000
 #define MAX_UPLOAD_TIME 5000000
 
 // Float to unsigned integer conversion structure

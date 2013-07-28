@@ -35,7 +35,7 @@
 #include "BleUart.h"
 
 #define MAX_DEVICES 64
-#define UART_TIMEOUT 1000
+#define UART_TIMEOUT 10
 
 int found_devices_count = 0;
 bd_addr found_devices[MAX_DEVICES];
@@ -487,7 +487,7 @@ bool LpmsBle::connect(std::string deviceId)
 	connect_addr.addr[4] = 0x07;	
 	connect_addr.addr[5] = 0x00;	
 	
-	ble_cmd_gap_connect_direct(&connect_addr, gap_address_type_public, 40, 60, 100, 0);
+	ble_cmd_gap_connect_direct(&connect_addr, gap_address_type_public, 20, 30, 100, 0);
 	
 	mm.reset();
 	oneTx.clear();

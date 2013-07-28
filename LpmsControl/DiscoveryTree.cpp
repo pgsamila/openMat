@@ -61,7 +61,7 @@ void DiscoveryTree::startDiscoverDevices(void) {
 	discoverProgress->setAutoReset(false);
 	discoverProgress->show();
 
-	boost::thread t(&DiscoveryTree::discoverDevices, this);
+	std::thread t(&DiscoveryTree::discoverDevices, this);
 	t.detach();
 
 	progressTimer = new QTimer(this);
@@ -143,7 +143,7 @@ void DiscoveryTree::readFromFile(string fn)
 			} catch (ifstream::failure e) {
 				break;
 			}
-			if (deviceType == DEVICE_LPMS_B || deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
+			if (deviceType == DEVICE_LPMS_B || deviceType == DEVICE_LPMS_BLE ||deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
 				addDevice(deviceType, deviceId);
 			}
 		}
@@ -226,6 +226,8 @@ void DiscoveryTree::copyTo(QComboBox *cb)
 			cb->addItem(QString("LPMS-CU (USB ID: ") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
 		} else if (((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceType() == DEVICE_LPMS_C) {
 			cb->addItem(QString("LPMS-CU (CAN ID: ") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
+		} else if (((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceType() == DEVICE_LPMS_BLE) {
+			cb->addItem(QString("LPMS-BLE (") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
 		} else {
 			cb->addItem(QString("LPMS-B (") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
 		}

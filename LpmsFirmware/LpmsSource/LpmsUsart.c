@@ -90,16 +90,6 @@ void serialPortSetDmaConfig(void)
 	serialPortDMAInitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
 	serialPortDMAInitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 	DMA_Init(USART_RX_DMA_STREAM, &serialPortDMAInitStructure);
-	
-	DMA_DeInit(USART_TX_DMA_STREAM);
-	serialPortDMAInitStructure.DMA_Channel = USART_TX_DMA_CHANNEL;
-	// serialPortDMAInitStructure.DMA_Memory0BaseAddr = (uint32_t)serialPortTxBuffer;
-	serialPortDMAInitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-	// serialPortDMAInitStructure.DMA_BufferSize = (uint32_t)USART_MAX_TX_BUFFER_LENGTH;
-	serialPortDMAInitStructure.DMA_Mode = DMA_Mode_Normal;
-	DMA_Init(USART_TX_DMA_STREAM, &serialPortDMAInitStructure);
-	
-	DMA_ITConfig(USART_TX_DMA_STREAM, DMA_IT_TC, DISABLE);
 
 	USART_ClearFlag(USART_PORT, USART_FLAG_TC);
 	
@@ -108,15 +98,7 @@ void serialPortSetDmaConfig(void)
 
 	DMA_Cmd(USART_RX_DMA_STREAM, DISABLE);
 	DMA_Cmd(USART_TX_DMA_STREAM, DISABLE);
-	
-	/* NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
 
-	NVIC_InitStructure.NVIC_IRQChannel = USART_DMA_STEAM_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure); */
-	
   	USART_DMACmd(USART_PORT, USART_DMAReq_Rx, ENABLE);
   	DMA_Cmd(USART_RX_DMA_STREAM, ENABLE);
 }
@@ -124,7 +106,9 @@ void serialPortSetDmaConfig(void)
 void serialPortStartTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 {
 	DMA_Cmd(USART_TX_DMA_STREAM, DISABLE);
+
 	DMA_ClearFlag(USART_TX_DMA_STREAM, USART_TX_DMA_FLAG_TCIF);
+	USART_ClearFlag(USART_PORT, USART_FLAG_TC);
 
 	DMA_DeInit(USART_TX_DMA_STREAM);
 	serialPortDMAInitStructure.DMA_Channel = USART_TX_DMA_CHANNEL;
@@ -135,10 +119,6 @@ void serialPortStartTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 	DMA_Init(USART_TX_DMA_STREAM, &serialPortDMAInitStructure);
 
 	USART_DMACmd(USART_PORT, USART_DMAReq_Tx, ENABLE);
-	USART_ClearFlag(USART_PORT, USART_FLAG_TC);
-	
-	// DMA_ITConfig(USART_TX_DMA_STREAM, DMA_IT_TC, ENABLE);
-	
 	DMA_Cmd(USART_TX_DMA_STREAM, ENABLE);
 }
 

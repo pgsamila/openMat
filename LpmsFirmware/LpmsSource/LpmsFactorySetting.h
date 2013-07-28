@@ -56,7 +56,7 @@
 // <--
 
 // Firmware version information
-#define FIRMWARE_VERSION_DIGIT0 0
+#define FIRMWARE_VERSION_DIGIT0 1
 #define FIRMWARE_VERSION_DIGIT1 2
 #define FIRMWARE_VERSION_DIGIT2 1
 

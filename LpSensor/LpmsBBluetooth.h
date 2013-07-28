@@ -72,7 +72,7 @@ public:
 	void close(void);
 	bool pollData(void);
 	bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
-	bool parseModbusByte(unsigned char b);
+	bool parseModbusByte(void);
 	bool deviceStarted(void);
 	long long getConnectWait(void);
 	static void listDevices(LpmsDeviceList *deviceList);	

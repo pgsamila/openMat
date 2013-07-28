@@ -52,7 +52,7 @@
 #define USART_BAUDRATE_921600 921600
 
 // USART maximum buffer length definitions
-#define USART_MAX_RX_BUFFER_LENGTH 256
+#define USART_MAX_RX_BUFFER_LENGTH 512
 
 //  initializes serial port
 void serialPortInit(uint32_t baudrate);

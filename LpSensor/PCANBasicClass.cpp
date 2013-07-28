@@ -29,7 +29,7 @@ void PCANBasicClass::LoadAPI()
 	//
 	if(!LoadDllHandle())
 	{
-		std::cout << "[CANEngine] Couldn't load PCANBasic DLL." << std::endl;
+		std::cout << "[CanEngine] Couldn't load PCANBasic DLL. If you would like to use a PCAN CAN bus interface with this application please install the DLL." << std::endl;
 		/* ::MessageBox(NULL,"Error: \"Unable to find the DLL PCANBasic.dll!\"","Error!",MB_ICONERROR); */
 		return;
 	}

@@ -46,6 +46,11 @@ DiscoveryItem::DiscoveryItem(QTreeWidget* tree, string deviceId, int deviceType,
 		gl->addWidget(interfaceTypeItem = new QLabel("Bluetooth"), 1, 1);
 		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-B (") + deviceId.c_str() + ")"));
 	break;
+	
+	case DEVICE_LPMS_BLE:
+		gl->addWidget(interfaceTypeItem = new QLabel("Bluetooth LE"), 1, 1);
+		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-BLE (") + deviceId.c_str() + ")"));
+	break;
 
 	case DEVICE_LPMS_U:
 		gl->addWidget(interfaceTypeItem = new QLabel("USB"), 1, 1);

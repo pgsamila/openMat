@@ -46,7 +46,7 @@ public:
 protected:
 	bool updateSendQueue(void);
 	bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
-	bool parseModbusByte(unsigned char b);
+	bool parseModbusByte(void);
 
 	int inMC;
 	int prevInMC;

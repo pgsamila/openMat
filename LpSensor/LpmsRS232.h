@@ -38,7 +38,7 @@ public:
 	bool deviceStarted(void);
 
 	/* Parses one byte of a LPBUS message. */
-	bool parseModbusByte(unsigned char b);
+	bool parseModbusByte(void);
 
 private:
 	bool read(unsigned char *rxBuffer, unsigned long *bytesReceived); 

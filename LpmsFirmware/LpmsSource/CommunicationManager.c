@@ -10,7 +10,7 @@
 
 typedef void (*pFunction)(void);
 
-long txIndex = 0;
+volatile int txIndex = 0;
 uint8_t txBuffer[MAX_BUFFER];
 uint8_t txBuffer2[MAX_BUFFER];
 uint8_t connected = 0;
@@ -96,7 +96,7 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 
-	if (txIndex+10+length < MAX_BUFFER) {
+	if (txIndex+11+length < MAX_BUFFER) {
 		for (i=0; i<(11+length); ++i) {
 			txBuffer[txIndex] = txData[i];
 			++txIndex;
@@ -106,6 +106,15 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	}	
 
 	return 1;
+}
+
+void waitForSendCompleted(void)
+{
+#ifdef USE_BLUETOOTH_INTERFACE
+	while (bluetoothIsReadyForSend() == 0);
+#else
+	serialPortStartTransfer(txBuffer2, txIndex);
+#endif
 }
 
 void sendQueue(void)
@@ -281,7 +290,6 @@ void parsePacket(void)
 			switch (packet.function) {
 			case UPDATE_FIRMWARE:
 				if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
-
 					isFirmwareUpdating = 1;
 					rxFirmwarePacketCounter = 0;
 					rxFirmwarePacketSize = 0;
@@ -304,9 +312,9 @@ void parsePacket(void)
 					if (copyRamToFlash_256bytes(&flash_destination, (uint32_t*)buffer)) {
 						rxFirmwarePacketCounter++;
 						sendAck();
-						sendQueue();
     
 						if (rxFirmwarePacketCounter >= rxFirmwarePacketSize) {
+							sendQueue();
 							msDelay(1000);		
 							
 							isFirmwareUpdating = 0;

@@ -12,6 +12,8 @@
 
 #include <iostream>
 #include <string>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 	
@@ -21,7 +23,6 @@ using namespace std;
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
-#include <boost/thread/thread.hpp>
 
 #include "pugixml.hpp"
 
@@ -81,7 +82,7 @@ public:
 	int canStartId;
 	
 private:
-	boost::mutex calibrationMutex;
+	std::mutex calibrationMutex;
 	
 public:
 	CalibrationData(void);

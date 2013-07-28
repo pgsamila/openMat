@@ -50,7 +50,6 @@
 #include <list>
 #include <string>
 #include <iostream>
-using namespace std;
 
 /*!
 	\brief	Container for GUI elements related to one sensor unit.

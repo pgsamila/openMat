@@ -11,6 +11,7 @@
 #define DEVICE_LPMS_B 	0 // LPMS-B (Bluetooth)
 #define DEVICE_LPMS_U 	1 // LPMS-CU (USB)
 #define DEVICE_LPMS_C 	2 // LPMS-CU (CAN bus)
+#define DEVICE_LPMS_BLE 3 // LPMS-BLE (Bluetooth low energy)
 
 #define SENSOR_STATUS_ERROR 		3
 #define SENSOR_STATUS_CALIBRATING 	2

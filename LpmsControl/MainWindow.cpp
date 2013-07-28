@@ -358,7 +358,7 @@ MainWindow::MainWindow(QWidget *parent)
 	this->setMinimumSize(800, 600);
 	showMaximized();
 	
-	setWindowTitle("LPMS Control");
+	setWindowTitle("LpmsControl");
 	
 	isRunning = false;
 	isConnecting = false;
@@ -910,11 +910,11 @@ void MainWindow::cancelUpload(void)
 void MainWindow::uploadTimerUpdate(void)
 {	
 	int p;
+	int s;
 
-	if (currentLpms->getSensor()->getUploadProgress(&p) == true) {
-		uploadProgress->setValue(p);
-		uploadProgress->show();
-	} else {
+	s = currentLpms->getSensor()->getUploadProgress(&p);
+	
+	if (s == 0) {
 		QMessageBox msgBox;
 	
 	    delete uploadTimer;
@@ -922,7 +922,18 @@ void MainWindow::uploadTimerUpdate(void)
 		
 		msgBox.setText("Upload has been finished.");
 		msgBox.exec();
-	}	
+	} else if (s == 1) {
+		uploadProgress->setValue(p);
+		uploadProgress->show();
+	} else if (s == 2) {
+		QMessageBox msgBox;
+	
+	    delete uploadTimer;
+		delete uploadProgress;
+		
+		msgBox.setText("Upload has failed.\nPlease reconnect LPMS and retry.\nPlease contact LP-RESEARCH if the problem persists.");
+		msgBox.exec();
+	}
 }
 
 void MainWindow::uploadIap(void)

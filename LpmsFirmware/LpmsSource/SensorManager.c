@@ -525,18 +525,6 @@ void gyroToInertial(void)
 
 void calcLinearAcceleration(void)
 {
-	/* LpVector3f aWorld;
-	LpMatrix3x3f M;
-	LpMatrix3x3f iM;
-
-	quaternionToMatrix(&q, &M);
-	matInv3x3(&M, &iM);
-	matVectMult3(&iM, &a, &aWorld);
-	
-	linAcc.data[0] = aWorld.data[0];
-	linAcc.data[1] = aWorld.data[1];
-	linAcc.data[2] = aWorld.data[2] + 1.0f; */
-
 	LpVector3f gWorld;
 	LpVector3f gSensor;
 	LpMatrix3x3f M;
@@ -642,6 +630,8 @@ void setCommandMode(void)
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
 	lpmsStatus |= LPMS_COMMAND_MODE;
+
+	isFirmwareUpdating = 0;
 }
 
 void setStreamMode(void)
@@ -806,19 +796,19 @@ void stopRefCalibration(void)
 
 	cumulatedRefData[0] = 0;
 	lpFilterParam.magRef.data[0] = 0.0f;
-	gReg.data[LPMS_MAG_REF_X + 0] = conFtoI(0.0f);
 
 	for (uint8_t i = 1; i < 3; i++) {
 		o = cumulatedRefData[i] / (float) cumulatedRefCounter;
-  
 		lpFilterParam.magRef.data[i] = o;
-		gReg.data[LPMS_MAG_REF_X + i] = conFtoI(o);
-		
 		cumulatedRefData[i] = 0;
 	}
 
 	n = vect3x1Norm(lpFilterParam.magRef);
 	scalarVectMult3x1(n, &lpFilterParam.magRef, &lpFilterParam.magRef);
+
+	gReg.data[LPMS_MAG_REF_X + 0] = conFtoI(0.0f);
+	gReg.data[LPMS_MAG_REF_X + 1] = conFtoI(lpFilterParam.magRef.data[1]);
+	gReg.data[LPMS_MAG_REF_X + 2] = conFtoI(lpFilterParam.magRef.data[2]);
 
 	lpFilterParam.accRef.data[0] = 0.0f;
 	gReg.data[LPMS_ACC_REF_X + 0] = conFtoI(0.0f);

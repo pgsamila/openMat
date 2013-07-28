@@ -55,19 +55,17 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	include_directories("../LpSensor")
 	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
 	include_directories("../Lp3rdPartyLibraries/PcanApi/Include")
-	include_directories("${WINDOWS_BOOST_PATH}")
+	include_directories("../Lp3rdPartyLibraries/Boost")
 
 if (BUILD_ARCHITECTURE STREQUAL "32-bit")
 		link_directories("${WINDOWS_FTDI_PATH}/i386")
 		link_directories("${WINDOWS_PCAN_PATH}/Win32/VC_LIB")
-		link_directories("${WINDOWS_BOOST_PATH}/lib/win32")
 		link_directories("${WINDOWS_SDK_PATH}/Lib")
 	endif()	
 	
 if (BUILD_ARCHITECTURE STREQUAL "64-bit")
 		link_directories("${WINDOWS_FTDI_PATH}/amd64")
-		link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")	
-		link_directories("${WINDOWS_BOOST_PATH}/lib/win64")
+		link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")
 		link_directories("${WINDOWS_SDK_PATH}/Lib/x64")		
 	endif()
 	
@@ -119,6 +117,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		LpmsRS232.cpp
 		LpmsSensor.cpp	
 		LpMatrix.c
+		LpmsBle.cpp
+		BleCmdDef.c
+		BleCommands.c
+		BleUart.c
 
 		PCANBasicClass.cpp
 			
@@ -162,6 +164,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		LpmsRS232Linux.cpp
 		LpmsSensor.cpp	
 		LpMatrix.c
+		LpmsBleLinux.cpp
 						
 		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
 	)
@@ -217,7 +220,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			add_library(LpSensor SHARED ${sources} ${headers})
 			target_link_libraries(LpSensor Ws2_32.lib)
 			target_link_libraries(LpSensor ftd2xx.lib)
-			target_link_libraries(LpSensor Bthprops.lib)
+			target_link_libraries(LpSensor Bthprops.lib Setupapi.lib)
 					
 			if (USE_ZEROC_ICE)
 				target_link_libraries(LpSensor ice.lib icestorm.lib iceutil.lib)
@@ -228,7 +231,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			add_library(LpSensorD SHARED ${sources} ${headers})
 			target_link_libraries(LpSensorD Ws2_32.lib)
 			target_link_libraries(LpSensorD ftd2xx.lib)
-			target_link_libraries(LpSensorD Bthprops.lib)	
+			target_link_libraries(LpSensorD Bthprops.lib Setupapi.lib)	
 
 			if (USE_ZEROC_ICE)	
 				target_link_libraries(LpSensorD iced.lib icestormd.lib iceutild.lib)

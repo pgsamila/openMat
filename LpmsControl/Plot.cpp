@@ -44,11 +44,7 @@ Plot::Plot(string title, string xAxis, string yAxis,
 	: QwtPlot(parent),
 	yMax(yMax),
 	yMin(yMin)
-{
-	/* (void) new QwtPlotPanner(canvas());
-	(void) new QwtPlotMagnifier(canvas());
-	setMinimumSize(100, 150); */
-	
+{	
 	this->nCurves = nCurves;
 	
 	if (maxData < MAX_DATA) {
@@ -61,11 +57,13 @@ Plot::Plot(string title, string xAxis, string yAxis,
     setPalette(QPalette(QColor(255, 255, 255)));
 
 	QwtDynGridLayout *dgl = qobject_cast<QwtDynGridLayout *>(legend->contentsWidget()->layout());
-	dgl->setMaxCols(1);
-	legend->setMinimumWidth(125);
+	dgl->setMaxColumns(1);
+	legend->setMinimumWidth(200);
+	legend->setFixedWidth(200);
+	legend->setFixedWidth(200);
 	legend->contentsWidget()->layout()->setAlignment(Qt::AlignLeft);
-	
-	insertLegend(legend, QwtPlot::ExternalLegend);
+	legend->contentsWidget()->layout()->setContentsMargins(11, 11, 50, 11);
+	insertLegend(legend,  QwtPlot::RightLegend, 1.0);
 
 	QwtText qwtTitle(title.c_str());
 
@@ -75,7 +73,6 @@ Plot::Plot(string title, string xAxis, string yAxis,
 	f.setBold(false);	
 
 	qwtTitle.setFont(f);
-	// setTitle(qwtTitle);
 	
 	QwtText t0(QString(xAxis.c_str()));
 	QwtText t1(QString(yAxis.c_str()));
@@ -94,23 +91,14 @@ Plot::Plot(string title, string xAxis, string yAxis,
     setAxisScale(yLeft, yMax, yMin);	
 	setAxisMaxMajor(yLeft, 5);
 	
-	/* setAxisAutoScale(yLeft);
-    setAxisScale(yLeft, -5000, 5000);
-	QwtPlot::setFrameStyle(QFrame::NoFrame);
-  	QwtPlot::setLineWidth(0);
-  	QwtPlot::setCanvasLineWidth(2); */
-	
   	QwtPlot::setAutoReplot();
 
-    // panning with the left mouse button
     (void) new QwtPlotPanner(canvas());
-
-    // zoom in/out with the wheel
     (void) new QwtPlotMagnifier(canvas());	
 	
-    canvas()->setLineWidth(1);
-	// canvas()->setFrameStyle(QFrame::NoFrame);
-    canvas()->setFrameStyle(QFrame::Box | QFrame::Plain);
+    ((QwtPlotCanvas*)canvas())->setLineWidth(1);
+	((QwtPlotCanvas*)canvas())->setFrameStyle(QFrame::NoFrame);
+    ((QwtPlotCanvas*)canvas())->setFrameStyle(QFrame::Box | QFrame::Plain);
 
     QPalette canvasPalette(Qt::white);
     canvasPalette.setColor(QPalette::Foreground, QColor(0, 0, 0));
@@ -125,29 +113,21 @@ Plot::Plot(string title, string xAxis, string yAxis,
 	QwtPlotGrid *grid = new QwtPlotGrid;
     grid->enableX(true);
     grid->enableY(true);
-    grid->setMajPen(QPen(Qt::gray, 0, Qt::DotLine));
-    grid->setMinPen(QPen(Qt::gray, 0, Qt::DotLine));
+    grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
+    grid->setMinorPen(QPen(Qt::gray, 0, Qt::DotLine));
     grid->attach(this);
 	
-	/* QPalette p(palette());
-    canvasPalette.setColor(backgroundRole(), Qt::white);
-    canvas()->setPalette(p); */
-	
-	curveName[0] = aName; // std::string("X-Axis");
-	curveName[1] = bName; // std::string("Y-Axis");
-	curveName[2] = cName; // std::string("Z-Axis");
-	curveName[3] = dName; // std::string("W-Axis");	
+	curveName[0] = aName;
+	curveName[1] = bName;
+	curveName[2] = cName;
+	curveName[3] = dName;
 
-	// QPen redPen(QColor(255, 153, 51));
 	QPen redPen(Qt::red);
 	redPen.setWidth(2);
-	// QPen greenPen(QColor(0, 204, 153));
 	QPen greenPen(Qt::green);
 	greenPen.setWidth(2);
-	// QPen bluePen(QColor(102, 153, 255)); 
 	QPen bluePen(Qt::blue);
 	bluePen.setWidth(2);
-	// QPen magentaPen(QColor(255, 102, 255));
 	QPen magentaPen(Qt::magenta);
 	magentaPen.setWidth(2);
 	
@@ -181,6 +161,11 @@ Plot::Plot(string title, string xAxis, string yAxis,
 		
 		c.qwtCurve->attach(this);
 		c.qwtCurve->setRawSamples(c.xData, c.yData, c.nData); 
+
+		QString text;
+		float y = 0.0f;
+		text.sprintf(" = %+08.2f", y);
+		c.qwtCurve->setTitle(QString(curveName[i].c_str()) + QString(" = ") + text);
 		
 		curves.push_back(c);
 	}
@@ -223,7 +208,7 @@ void Plot::addData(int i, float y)
 			textRedraw[i] = 0;
 
 			QString text;
-			text.sprintf(" = %+06.2f", y);
+			text.sprintf(" = %+08.2f", y);
 			curves[i].qwtCurve->setTitle(QString(curveName[i].c_str()) + QString(" = ") + text);
 		} else {
 			++textRedraw[i];

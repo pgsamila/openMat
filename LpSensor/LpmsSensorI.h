@@ -133,7 +133,7 @@ public:
 	virtual void getRotationMatrix(float M[3][3]) = 0;
 	
 	/* Gets the current upload progress. */
-	virtual bool getUploadProgress(int *p) = 0;	
+	virtual int getUploadProgress(int *p) = 0;	
 	
 	/* Measures the average data transfer latency. */
 	virtual void measureAvgLatency(void) = 0; 

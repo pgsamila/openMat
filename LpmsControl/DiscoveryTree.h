@@ -45,13 +45,13 @@
 #include "LpmsSensorManagerI.h"
 #include "DeviceListItem.h"
 
+#include <thread>
 #include <list>
 #include <string>
 #include <iostream>
 #include <fstream>
 using namespace std;
 
-#include <boost/thread/thread.hpp> 
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>

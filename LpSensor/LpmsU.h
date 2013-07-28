@@ -32,7 +32,7 @@ public:
 	void close(void);
 	bool pollData(void);
 	bool deviceStarted(void);
-	bool parseModbusByte(unsigned char b);
+	bool parseModbusByte(void);
 
 private:
 //#ifdef WIN32

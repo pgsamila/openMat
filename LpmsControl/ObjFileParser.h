@@ -29,17 +29,12 @@
 #include <iostream>
 using namespace std;
 
-#include <boost/thread/thread.hpp> 
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#ifdef USE_EMBEDDED_EIGEN
-	#include "EEigen.h"
-#else
-	#include <Eigen/Dense>	
-#endif
+#include <Eigen/Dense>	
 
 class ObjFace {
 public:

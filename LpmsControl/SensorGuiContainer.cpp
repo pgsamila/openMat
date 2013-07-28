@@ -501,7 +501,7 @@ void SensorGuiContainer::checkOptionalFeatures(void) {
 	
 void SensorGuiContainer::updateData(void) {	
 	int i;
-	string s;
+	std::string s;
 	char cStr[64];
 	int omId;
 	int a[8];
@@ -552,6 +552,10 @@ void SensorGuiContainer::updateData(void) {
 	switch (i) {
 	case DEVICE_LPMS_B:
 		treeItem->setText(0, QString("LPMS-B ID=%1 (").arg(omId) + QString(cStr) + ")");
+	break;
+	
+	case DEVICE_LPMS_BLE:
+		treeItem->setText(0, QString("LPMS-BLE ID=%1 (").arg(omId) + QString(cStr) + ")");
 	break;
 
 	case DEVICE_LPMS_U:

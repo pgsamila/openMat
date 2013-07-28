@@ -1,7 +1,32 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
+** Copyright (C) LP-Research
 ** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** Contact: LP-Research (klaus@lp-research.com)
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "LpmsBBluetooth.h"
@@ -198,74 +223,81 @@ bool LpmsBBluetooth::sendModbusData(unsigned address, unsigned function, unsigne
 
 bool LpmsBBluetooth::parseModbusByte(unsigned char b)
 {
-	switch (rxState) {
-	case PACKET_END:
-		if (b == 0x3a) {
-			rxState = PACKET_ADDRESS0;
-			oneTx.clear();
-		}
-		break;
-		
-	case PACKET_ADDRESS0:
-		currentAddress = b;
-		rxState = PACKET_ADDRESS1;
-		break;
+	unsigned char b;
 
-	case PACKET_ADDRESS1:
-		currentAddress = currentAddress + ((unsigned) b * 256);
-		rxState = PACKET_FUNCTION0;
-		break;
+	while (dataQueue.size() > 0) {	
+		b = dataQueue.front();
+		dataQueue.pop();
 
-	case PACKET_FUNCTION0:
-		currentFunction = b;
-		rxState = PACKET_FUNCTION1;				
-		break;
-
-	case PACKET_FUNCTION1:
-		currentFunction = currentFunction + ((unsigned) b * 256);
-		rxState = PACKET_LENGTH0;			
-	break;
-
-	case PACKET_LENGTH0:
-		currentLength = b;
-		rxState = PACKET_LENGTH1;
-	break;
+		switch (rxState) {
+		case PACKET_END:
+			if (b == 0x3a) {
+				rxState = PACKET_ADDRESS0;
+				oneTx.clear();
+			}
+			break;
 			
-	case PACKET_LENGTH1:
-		currentLength = currentLength + ((unsigned) b * 256);
-		rxState = PACKET_RAW_DATA;
-		rawDataIndex = currentLength;
-	break;
+		case PACKET_ADDRESS0:
+			currentAddress = b;
+			rxState = PACKET_ADDRESS1;
+			break;
+
+		case PACKET_ADDRESS1:
+			currentAddress = currentAddress + ((unsigned) b * 256);
+			rxState = PACKET_FUNCTION0;
+			break;
+
+		case PACKET_FUNCTION0:
+			currentFunction = b;
+			rxState = PACKET_FUNCTION1;				
+			break;
+
+		case PACKET_FUNCTION1:
+			currentFunction = currentFunction + ((unsigned) b * 256);
+			rxState = PACKET_LENGTH0;			
+		break;
+
+		case PACKET_LENGTH0:
+			currentLength = b;
+			rxState = PACKET_LENGTH1;
+		break;
+				
+		case PACKET_LENGTH1:
+			currentLength = currentLength + ((unsigned) b * 256);
+			rxState = PACKET_RAW_DATA;
+			rawDataIndex = currentLength;
+		break;
+				
+		case PACKET_RAW_DATA:
+			if (rawDataIndex == 0) {
+				lrcCheck = currentAddress + currentFunction + currentLength;
+				for (unsigned i=0; i<oneTx.size(); i++) lrcCheck += oneTx[i];
+				lrcReceived = b;
+				rxState = PACKET_LRC_CHECK1;
+			} else {
+				oneTx.push_back(b);
+				--rawDataIndex;
+			}
+			break;
 			
-	case PACKET_RAW_DATA:
-		if (rawDataIndex == 0) {
-			lrcCheck = currentAddress + currentFunction + currentLength;
-			for (unsigned i=0; i<oneTx.size(); i++) lrcCheck += oneTx[i];
-			lrcReceived = b;
-			rxState = PACKET_LRC_CHECK1;
-		} else {
-			oneTx.push_back(b);
-			--rawDataIndex;
-		}
-		break;
+		case PACKET_LRC_CHECK1:
+			lrcReceived = lrcReceived + ((unsigned) b * 256);			
+			if (lrcReceived == lrcCheck) {
+				parseFunction();
+			} else {
+				std::cout << "[LpmsBBluetooth] Checksum fail in data packet" << std::endl;
+			}
+			
+			rxState = PACKET_END;
+			break;
 		
-	case PACKET_LRC_CHECK1:
-		lrcReceived = lrcReceived + ((unsigned) b * 256);			
-		if (lrcReceived == lrcCheck) {
-			parseFunction();
-		} else {
-			std::cout << "[LpmsBBluetooth] Checksum fail in data packet" << std::endl;
+		default:
+			rxState = PACKET_END;		
+			return false;
+			break;
 		}
-		
-		rxState = PACKET_END;
-		break;
-	
-	default:
-		rxState = PACKET_END;		
-		return false;
-		break;
 	}
-	
+		
 	return true;
 }
 

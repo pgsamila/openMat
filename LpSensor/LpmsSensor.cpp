@@ -1,7 +1,32 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
+** Copyright (C) LP-Research
 ** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** Contact: LP-Research (klaus@lp-research.com)
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "LpmsSensor.h"
@@ -68,7 +93,11 @@ const float pi = 3.141592f;
 		
 	case DEVICE_LPMS_U:
 		bt = new LpmsU(&(this->configData));
-	break;			
+	break;
+
+	case DEVICE_LPMS_BLE:
+		bt = new LpmsBle(&(this->configData));
+	break;		
 #endif
 
 #ifdef __GNUC__
@@ -123,7 +152,7 @@ LpmsSensor::~LpmsSensor(void)
 
 void LpmsSensor::getDeviceId(char *str)
 {
-	string deviceId;
+	std::string deviceId;
 
 	configData.getParameter(PRM_DEVICE_ID, &deviceId);
 	
@@ -209,7 +238,11 @@ void LpmsSensor::update(void)
 				LOGE("[LpmsSensor] Get configuration data");
 				bt->getConfig();
 				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_FILTER_MODE;
+				//if (deviceType == DEVICE_LPMS_BLE) {
+				//	getConfigState = C_STATE_SETTINGS_DONE;
+				//} else {
+					getConfigState = C_STATE_FILTER_MODE;
+				//}
 			break;
 			
 			// Retrieves the current filter mode.
@@ -424,7 +457,11 @@ void LpmsSensor::update(void)
 				
 				newFieldMap = true;		
 					
-				bt->startStreaming();
+				//if (deviceType != DEVICE_LPMS_BLE) {
+					bt->startStreaming();
+				//} else {
+				//	bt->getSensorData();
+				//}
 				
 				setSensorStatus(SENSOR_STATUS_RUNNING);	
 				
@@ -441,7 +478,7 @@ void LpmsSensor::update(void)
 				}
 			break;
 			} 
-		} else if (lpmsTimer.measure() > 200000) {
+		} else if (lpmsTimer.measure() > 10000000) {
 			lpmsTimer.reset();
 			
 			if (bt->deviceStarted() == true && retrialsCommandMode < 10) {
@@ -475,10 +512,14 @@ void LpmsSensor::update(void)
 		// LOGE("[LpmsSensor] STATE MEASURE");	
 		// Start next measurement step only if program is not waiting for data or ACK.
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			if (bt->getMode() != SELECT_LPMS_MODE_STREAM) {
-				bt->setStreamMode();
-				prepareStream = 0;
-			}
+			//if (deviceType != DEVICE_LPMS_BLE) {
+				if (bt->getMode() != SELECT_LPMS_MODE_STREAM) {
+					bt->setStreamMode();
+					prepareStream = 0;
+				}
+			//} else {
+			//	bt->getSensorData();
+			//}
 		}
 		
 		// TODO: Insert error handling for sensor.
@@ -1355,7 +1396,7 @@ bool LpmsSensor::getConfigurationPrm(int parameterIndex, int* parameter)
 
 bool LpmsSensor::getConfigurationPrm(int parameterIndex, char* parameter)
 {
-	string cppStr;
+	std::string cppStr;
 	
 	const bool ret = configData.getParameter(parameterIndex, &cppStr);
 	
@@ -1388,7 +1429,7 @@ bool LpmsSensor::uploadIap(const char *fn)
 	return true;
 }
 
-bool LpmsSensor::getUploadProgress(int *p) 
+int LpmsSensor::getUploadProgress(int *p) 
 {
 	if (state != STATE_CHECK_IAP_UPLOAD &&
 		state != STATE_WAIT_IAP_WRITE &&
@@ -1396,10 +1437,10 @@ bool LpmsSensor::getUploadProgress(int *p)
 		state != STATE_CHECK_FIRMWARE_UPLOAD &&
 		state != STATE_WAIT_FIRMWARE_WRITE &&
 		state != STATE_UPLOAD_FIRMWARE) {
-		return false;
+		return 0;
 	}
 	
-	bt->getUploadProgress(p);
+	if (bt->getUploadProgress(p) == false) return 2;
 	
 	if (state == STATE_WAIT_FIRMWARE_WRITE) {
 		*p = *p + (int) (lpmsTimer.measure() * 100 / WAIT_FIRMWARE_WRITE_TIME);
@@ -1409,7 +1450,7 @@ bool LpmsSensor::getUploadProgress(int *p)
 		*p = *p + (int) (lpmsTimer.measure() * 100 / WAIT_IAP_WRITE_TIME);
 	} 
 
-	return true;
+	return 1;
 }
 
 void LpmsSensor::saveCalibrationData(void)	

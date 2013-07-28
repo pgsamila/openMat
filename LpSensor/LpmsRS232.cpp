@@ -162,80 +162,87 @@ bool LpmsRS232::sendModbusData(unsigned address, unsigned function, unsigned len
 
 int c2 = 0;
 
-bool LpmsRS232::parseModbusByte(unsigned char b)
+bool LpmsRS232::parseModbusByte(void)
 {	
-	switch (rxState) {
-	case PACKET_END:
-		if (b == 0x3a) {
-			rxState = PACKET_ADDRESS0;
-			oneTx.clear();
-		}
-		break;
-		
-	case PACKET_ADDRESS0:
-		currentAddress = b;
-		rxState = PACKET_ADDRESS1;
-		break;
+	unsigned char b;
 
-	case PACKET_ADDRESS1:
-		currentAddress = currentAddress + ((unsigned) b * 256);
-		rxState = PACKET_FUNCTION0;
-		break;
+	while (dataQueue.size() > 0) {	
+		b = dataQueue.front();
+		dataQueue.pop();
 
-	case PACKET_FUNCTION0:
-		currentFunction = b;
-		rxState = PACKET_FUNCTION1;				
-		break;
-
-	case PACKET_FUNCTION1:
-		currentFunction = currentFunction + ((unsigned) b * 256);
-		rxState = PACKET_LENGTH0;			
-	break;
-
-	case PACKET_LENGTH0:
-		currentLength = b;
-		rxState = PACKET_LENGTH1;
-	break;
+		switch (rxState) {
+		case PACKET_END:
+			if (b == 0x3a) {
+				rxState = PACKET_ADDRESS0;
+				oneTx.clear();
+			}
+			break;
 			
-	case PACKET_LENGTH1:
-		currentLength = currentLength + ((unsigned) b * 256);
-		rxState = PACKET_RAW_DATA;
-		rawDataIndex = currentLength;
-	break;
+		case PACKET_ADDRESS0:
+			currentAddress = b;
+			rxState = PACKET_ADDRESS1;
+			break;
+
+		case PACKET_ADDRESS1:
+			currentAddress = currentAddress + ((unsigned) b * 256);
+			rxState = PACKET_FUNCTION0;
+			break;
+
+		case PACKET_FUNCTION0:
+			currentFunction = b;
+			rxState = PACKET_FUNCTION1;				
+			break;
+
+		case PACKET_FUNCTION1:
+			currentFunction = currentFunction + ((unsigned) b * 256);
+			rxState = PACKET_LENGTH0;			
+		break;
+
+		case PACKET_LENGTH0:
+			currentLength = b;
+			rxState = PACKET_LENGTH1;
+		break;
+				
+		case PACKET_LENGTH1:
+			currentLength = currentLength + ((unsigned) b * 256);
+			rxState = PACKET_RAW_DATA;
+			rawDataIndex = currentLength;
+		break;
+				
+		case PACKET_RAW_DATA:
+			if (rawDataIndex == 0) {
+				lrcCheck = currentAddress + currentFunction + currentLength;
+				for (unsigned i=0; i<oneTx.size(); i++) {
+					lrcCheck += oneTx[i];
+				}
+				
+				lrcReceived = b;
+				rxState = PACKET_LRC_CHECK1;			
+			} else {	
+				oneTx.push_back(b);		
+				--rawDataIndex;		
+			}
+			break;
 			
-	case PACKET_RAW_DATA:
-		if (rawDataIndex == 0) {
-			lrcCheck = currentAddress + currentFunction + currentLength;
-			for (unsigned i=0; i<oneTx.size(); i++) {
-				lrcCheck += oneTx[i];
+		case PACKET_LRC_CHECK1:
+			lrcReceived = lrcReceived + ((unsigned) b * 256);
+			
+			if (lrcReceived == lrcCheck) {
+				parseFunction();
+				cout << "[LPMS-U] Finished processing packet: " << c2 << endl;
+				c2++;
+			} else {
+				cout << "[LPMS-U] Checksum fail in data packet" << endl;
 			}
 			
-			lrcReceived = b;
-			rxState = PACKET_LRC_CHECK1;			
-		} else {	
-			oneTx.push_back(b);		
-			--rawDataIndex;		
+			rxState = PACKET_END;
+			break;
+		
+		default:
+			rxState = PACKET_END;		
+			return false;
+			break;
 		}
-		break;
-		
-	case PACKET_LRC_CHECK1:
-		lrcReceived = lrcReceived + ((unsigned) b * 256);
-		
-		if (lrcReceived == lrcCheck) {
-			parseFunction();
-			cout << "[LPMS-U] Finished processing packet: " << c2 << endl;
-			c2++;
-		} else {
-			cout << "[LPMS-U] Checksum fail in data packet" << endl;
-		}
-		
-		rxState = PACKET_END;
-		break;
-	
-	default:
-		rxState = PACKET_END;		
-		return false;
-		break;
 	}
 	
 	return true;

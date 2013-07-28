@@ -12,9 +12,6 @@
 #include <queue>
 #include <list>
 
-#include <boost/foreach.hpp>
-#include <boost/thread/thread.hpp>
-
 #ifdef _WIN32
 	#include "windows.h"
 

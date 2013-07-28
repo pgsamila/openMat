@@ -1,7 +1,32 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
+** Copyright (C) LP-Research
 ** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** Contact: LP-Research (klaus@lp-research.com)
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #include "LpmsSensorManager.h"
@@ -46,7 +71,7 @@
 
 	managerState = SMANAGER_MEASURE;
 
-	boost::thread t(&LpmsSensorManager::run, this);
+	std::thread t(&LpmsSensorManager::run, this);
 	
 #ifdef _WIN32	
 	#ifdef THREAD_HIGH_PRIORITY
@@ -64,7 +89,7 @@
 LpmsSensorManager::~LpmsSensorManager(void)
 {
 	stopped = true;
-	boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	deviceList.clear();
 }
 
@@ -98,7 +123,7 @@ void LpmsSensorManager::stopListDevices(void) {
 void LpmsSensorManager::start(void)
 {
 	stopped = false;
-	boost::thread t(&LpmsSensorManager::run, this);
+	std::thread t(&LpmsSensorManager::run, this);
 
 #ifdef _WIN32
 	#ifdef THREAD_HIGH_PRIORITY
@@ -126,10 +151,10 @@ void LpmsSensorManager::run(void)
 
 	if ((osvi.dwMajorVersion > 6) || ((osvi.dwMajorVersion == 6) && (osvi.dwMinorVersion >= 1))) {
 		bIsWindows7orLater = true;
-		LOGV("[LpmsSensorManager] Win7 mode");		
+		LOGV("[LpmsSensorManager] Windows 7 and above mode");		
 	} else {
 		bIsWindows7orLater = false;
-		LOGV("[LpmsSensorManager] WinXP mode");
+		LOGV("[LpmsSensorManager] Windows XP mode");
 	}
 	
 	ce.connect();
@@ -173,7 +198,7 @@ void LpmsSensorManager::run(void)
 			} */
 			
 			if (bIsWindows7orLater == false) {
-				boost::this_thread::sleep(boost::posix_time::microseconds(500));
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			}			
 #endif		
 		break;
@@ -189,6 +214,7 @@ void LpmsSensorManager::run(void)
 			
 			LpmsU::listDevices(&deviceList);
 			LpmsBBluetooth::listDevices(&deviceList);
+			LpmsBle::listDevices(&deviceList);
 
 			managerState = SMANAGER_MEASURE;
 		break;
@@ -217,7 +243,12 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 #endif
 
 		sensorList.push_back(sensor);
-		break;
+	break;
+		
+	case DEVICE_LPMS_BLE:	
+		sensor = new LpmsSensor(DEVICE_LPMS_BLE, deviceId);
+		sensorList.push_back(sensor);
+	break;		
 		
 	case DEVICE_LPMS_C:		
 		sensor = new LpmsSensor(DEVICE_LPMS_C, deviceId);
@@ -227,12 +258,12 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 #endif
 
 		sensorList.push_back(sensor);
-		break;		
+	break;		
 		
 	case DEVICE_LPMS_U:	
 		sensor = new LpmsSensor(DEVICE_LPMS_U, deviceId);
 		sensorList.push_back(sensor);
-		break;
+	break;
 	}
 	lm.unlock();
 	

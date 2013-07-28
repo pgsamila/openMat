@@ -67,5 +67,7 @@ inline uint8_t isDataExchanged(void);
 
 void sendQueue(void);
 
+void waitForSendCompleted(void);
+
 #endif
 

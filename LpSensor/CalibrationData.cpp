@@ -701,7 +701,7 @@ void CalibrationData::print(void)
 	printf("[CalibrationData] Gyro range: %d\n", gyrRange);
 	printf("[CalibrationData] Mag. range: %d\n", magRange);
 	printf("[CalibrationData] Acc. range: %d\n", accRange);
-	printf("[CalibrationData] CAN Stream format: %d\n", canStreamFormat);
+	// printf("[CalibrationData] CAN Stream format: %d\n", canStreamFormat);
 	printf("[CalibrationData] CAN Baudrate: %d\n", canBaudrate);
 	printf("[CalibrationData] Field estimate: %f\n", fieldRadius);
 	printf("[CalibrationData] Gyr. auto-calibration on / off: %d\n", gyrAutocalibration);

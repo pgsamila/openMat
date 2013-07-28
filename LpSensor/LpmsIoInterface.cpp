@@ -131,7 +131,7 @@ bool LpmsIoInterface::sendModbusData(unsigned address, unsigned function, unsign
 	return true;
 }
 
-bool LpmsIoInterface::parseModbusByte(unsigned char b)
+bool LpmsIoInterface::parseModbusByte(void)
 {
 	return true;
 }
@@ -559,7 +559,7 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_250KBPS);
 		} else if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_500K_ENABLED) {
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_500KBPS);
-		} else if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_1M_ENABLED) {
+		} else /* ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_1M_ENABLED) */ {
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
 		}
 		
@@ -867,16 +867,10 @@ void LpmsIoInterface::clearRxBuffer(void)
 
 bool LpmsIoInterface::checkState(void)
 {
-	while (dataQueue.size() > 0) {	
-		unsigned char b = dataQueue.front();
-		dataQueue.pop();
-		
-		parseModbusByte(b);
-	}
-	
+	parseModbusByte();
+
 	if (waitForAck == true && ackReceived == false) {
-		++ackTimeout;
-		if (ackTimeout > ACK_MAX_TIME && 
+		if (ackTimer.measure() > ACK_MAX_TIME && 
 			currentState != UPDATE_FIRMWARE &&
 			currentState != UPDATE_IAP) {
 			currentState = IDLE_STATE;
@@ -894,8 +888,7 @@ bool LpmsIoInterface::checkState(void)
 	} 
 	
 	if (waitForData == true && dataReceived == false) {
-		++dataTimeout;
-		if (dataTimeout > ACK_MAX_TIME && 
+		if (ackTimer.measure() > ACK_MAX_TIME && 
 			currentState != UPDATE_FIRMWARE &&
 			currentState != UPDATE_IAP) {
 			currentState = IDLE_STATE;
@@ -1107,6 +1100,7 @@ bool LpmsIoInterface::startUploadFirmware(std::string fn)
 	ackTimeout = 0;
 
 	pCount = 0;	
+	uploadTimer.reset();
 	
 	return f;
 }
@@ -1116,10 +1110,32 @@ int LpmsIoInterface::getCurrentState(void)
 	return currentState;
 }
 
+bool LpmsIoInterface::checkUploadTimeout(void)
+{
+	if (currentState == UPDATE_FIRMWARE) {
+		if (uploadTimer.measure() > MAX_UPLOAD_TIME) {	
+			currentState = IDLE_STATE;
+		
+			waitForAck = false;
+			ackReceived = false;	
+
+			ifs.close();
+			
+			std::cout << "[LpmsIoInterface] Firmware upload failed. Please reconnect sensor and retry." << std::endl;
+
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 bool LpmsIoInterface::handleFirmwareFrame(void)
 {
 	char buffer[FIRMWARE_PACKET_LENGTH];	
 
+	uploadTimer.reset();
+	
 	if (ifs.is_open() == false) {
 		currentState = IDLE_STATE;
 		waitForAck = false;
@@ -1153,7 +1169,7 @@ bool LpmsIoInterface::handleFirmwareFrame(void)
 
 	currentState = UPDATE_FIRMWARE;
 	waitForAck = true;
-	ackReceived = false;		
+	ackReceived = false;	
 	
 	return true;
 }
@@ -1204,6 +1220,7 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 	ackTimeout = 0;
 
 	pCount = 0;
+	uploadTimer.reset();
 	
 	return f;
 }	
@@ -1212,6 +1229,8 @@ bool LpmsIoInterface::handleIAPFrame(void)
 {
 	char buffer[FIRMWARE_PACKET_LENGTH];	
 
+	uploadTimer.reset();	
+	
 	if (ifs.is_open() == false) {
 		currentState = IDLE_STATE;
 		waitForAck = false;
@@ -1278,6 +1297,7 @@ bool LpmsIoInterface::modbusSetNone(unsigned command)
 	waitForData = false;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 	
 	return r;
 }
@@ -1297,6 +1317,7 @@ bool LpmsIoInterface::modbusGet(unsigned command)
 	waitForAck = false;	
 	dataReceived = false;
 	dataTimeout = 0;
+	ackTimer.reset();	
 	
 	return r;
 }
@@ -1323,6 +1344,7 @@ bool LpmsIoInterface::modbusGetMultiUint32(unsigned command, boost::uint32_t *v,
 	waitForData = true;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 	
 	return r;
 }
@@ -1345,6 +1367,7 @@ bool LpmsIoInterface::modbusSetInt32(unsigned command, long v)
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 	
 	return r;
 }
@@ -1369,6 +1392,7 @@ bool LpmsIoInterface::modbusSetInt32Array(unsigned command, long *v, int length)
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 	
 	return r;
 }
@@ -1394,7 +1418,8 @@ bool LpmsIoInterface::modbusSetVector3Int32(unsigned command, long x, long y, lo
 	currentState = command;
 	waitForAck = true;
 	ackReceived = false;
-	ackTimeout = 0;	
+	ackTimeout = 0;
+	ackTimer.reset();
 	
 	return r;
 }
@@ -1421,6 +1446,7 @@ bool LpmsIoInterface::modbusSetFloat(unsigned command, float v)
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 	
 	return r;		
 }
@@ -1451,6 +1477,7 @@ bool LpmsIoInterface::modbusSetVector3Float(unsigned command, float x, float y, 
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;	
+	ackTimer.reset();
 	
 	return r;		
 }
@@ -1477,6 +1504,7 @@ bool LpmsIoInterface::modbusSetVector3f(unsigned command, LpVector3f v)
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;	
+	ackTimer.reset();
 	
 	return r;		
 }
@@ -1505,6 +1533,7 @@ bool LpmsIoInterface::modbusSetMatrix3x3f(unsigned command, LpMatrix3x3f m)
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;	
+	ackTimer.reset();
 	
 	return r;		
 }
@@ -1861,6 +1890,8 @@ bool LpmsIoInterface::getUploadProgress(int *p)
 	} else {
 		*p = 0;
 	}
+
+	if (checkUploadTimeout() == false) return false;
 	
 	return true;
 }

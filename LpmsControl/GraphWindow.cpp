@@ -91,42 +91,20 @@ GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
 	
 	QGridLayout *vLayout = new QGridLayout();
 	
-	vLayout->addWidget(accGraph, 0, 0);		
-	vLayout->addWidget(accLegend, 0, 1, Qt::AlignLeft);		
-
-	vLayout->addWidget(gyroGraph, 1, 0);		
-	vLayout->addWidget(gyroLegend, 1, 1, Qt::AlignLeft);		
-
-	vLayout->addWidget(magGraph, 2, 0);		
-	vLayout->addWidget(magLegend, 2, 1, Qt::AlignLeft);		
-	
-	vLayout->addWidget(quaternionGraph, 3, 0);		
-	vLayout->addWidget(quaternionLegend, 3, 1, Qt::AlignLeft);		
-
-	vLayout->addWidget(angleGraph, 4, 0);		
-	vLayout->addWidget(angleLegend, 4, 1, Qt::AlignLeft);		
-
+	vLayout->addWidget(accGraph, 0, 0);	
+	vLayout->addWidget(gyroGraph, 1, 0);	
+	vLayout->addWidget(magGraph, 2, 0);
+	vLayout->addWidget(quaternionGraph, 3, 0);
+	vLayout->addWidget(angleGraph, 4, 0);
 	vLayout->addWidget(linAccGraph, 5, 0);		
-	vLayout->addWidget(linAccLegend, 5, 1, Qt::AlignLeft);		
-	
-	vLayout->addWidget(pressureGraph, 6, 0);		
-	vLayout->addWidget(pressureLegend, 6, 1, Qt::AlignLeft);	
+	vLayout->addWidget(pressureGraph, 6, 0);
+	vLayout->addWidget(altitudeGraph, 7, 0);
+	vLayout->addWidget(temperatureGraph, 8, 0);
+	vLayout->addWidget(heaveMotionGraph, 9, 0);
+	vLayout->setColumnStretch(0, 2);
 
-	vLayout->addWidget(altitudeGraph, 7, 0);		
-	vLayout->addWidget(altitudeLegend, 7, 1, Qt::AlignLeft);	
-	
-	vLayout->addWidget(temperatureGraph, 8, 0);		
-	vLayout->addWidget(temperatureLegend, 8, 1, Qt::AlignLeft);	
-	
-	vLayout->addWidget(heaveMotionGraph, 9, 0);		
-	vLayout->addWidget(heaveMotionLegend, 9, 1, Qt::AlignLeft);	
-	
-	vLayout->setColumnStretch(0, 2);	
-	
 	this->setLayout(vLayout);
-	
-	// for (int i=0; i<7; i++) vLayout->setStretch(i, 1);
-	
+		
     setAutoFillBackground(true);
     setPalette(QPalette(QColor(255, 255, 255)));
 

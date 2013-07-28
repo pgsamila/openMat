@@ -44,7 +44,7 @@ void CanEngine::listDevices(LpmsDeviceList *v)
 		sensor.connect(ss.str());
 		addSensor(&sensor);
 
-		boost::this_thread::sleep(boost::posix_time::milliseconds(10));	
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));	
 		sensor.setCommandMode();
 		
 		MicroMeasure mm;
@@ -59,8 +59,6 @@ void CanEngine::listDevices(LpmsDeviceList *v)
 				std::cout << "[LpmsCanIo] Discovered device: " << i << std::endl;
 				break;
 			}
-
-			// boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 		}
 
 		sensorList.pop_back();
@@ -148,7 +146,7 @@ bool CanEngine::updateSendQueue(void)
 		/* printf("Msg. write %x %x %x %x %x %x %x %x\n", m.DATA[0], m.DATA[1], m.DATA[2], m.DATA[3], m.DATA[4], m.DATA[5], m.DATA[6], m.DATA[7]); */
 		r = pcan.Write(canChannel, &m);
 		
-		boost::this_thread::sleep(boost::posix_time::microseconds(2000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 		
 		if (r == PCAN_ERROR_QXMTFULL) {
 			// std::cout << "[CanEngine] Transmit queue full!" << std::endl;

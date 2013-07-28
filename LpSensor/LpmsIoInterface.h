@@ -42,7 +42,8 @@
 
 // State machine definitions
 #define IDLE_STATE -1
-#define ACK_MAX_TIME 200000
+#define ACK_MAX_TIME 2000000
+#define MAX_UPLOAD_TIME 5000000
 
 // Float to unsigned integer conversion structure
 typedef union _float2uint {
@@ -255,7 +256,7 @@ public:
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
-	virtual bool parseModbusByte(unsigned char b);
+	virtual bool parseModbusByte(void);
 
 	bool isAck(void);
 	bool isNack(void);
@@ -286,6 +287,7 @@ protected:
 	bool parseSensorData(void);
 	bool modbusSetMatrix3x3f(unsigned command, LpMatrix3x3f m);
 	bool modbusSetVector3f(unsigned command, LpVector3f v);
+	bool checkUploadTimeout(void);
 
 	int fieldMapPitch;
 	int fieldMapRoll;
@@ -323,6 +325,8 @@ protected:
 	bool configSet;
 	float latestLatency;
 	MicroMeasure latencyTimer;
+	MicroMeasure uploadTimer;
+	MicroMeasure ackTimer;
 	bool newDataFlag;
 	float timestampOffset;
 	float currentTimestamp;

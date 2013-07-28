@@ -1,16 +1,40 @@
 /***********************************************************************
-** Copyright (C) 2012 LP-Research
+** Copyright (C) LP-Research
 ** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** Contact: LP-Research (klaus@lp-research.com)
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifndef LPMS_SENSOR
 #define LPMS_SENSOR
 
-#include <boost/thread/thread.hpp>
-
 #include <iostream>
 #include <fstream>
+#include <mutex>
 
 #ifdef _WIN32
 	#include "windows.h"
@@ -31,6 +55,7 @@
 	#include "LpmsU.h"
 	#include "LpmsBBluetooth.h"	
 	#include "LpmsRS232.h"
+	#include "LpmsBle.h"
 	
 	#ifdef USE_ZEROC_ICE
 		#include "IceImuDriver.h"
@@ -210,7 +235,7 @@ public:
 	void getQuaternion(float q[4]);
 	void getEulerAngle(float r[3]);
 	void getRotationMatrix(float M[3][3]);
-	bool getUploadProgress(int *p);
+	int getUploadProgress(int *p);
 	void measureAvgLatency(void); 
 	void acquireFieldMap(void);
 	bool getPressure(float *p);
@@ -260,7 +285,7 @@ private:
 	void stopPlanarMagCalibration(void);
 
 	LpmsIoInterface *bt;	
-	string deviceId;
+	std::string deviceId;
 	int state;
 	MicroMeasure lpmsTimer;
 	MicroMeasure statusTimer;
@@ -268,8 +293,8 @@ private:
 	CalibrationData configData;
 	long configReg;
 	int getConfigState;
-	string iapFilename;
-	string firmwareFilename;
+	std::string iapFilename;
+	std::string firmwareFilename;
 	unsigned long frameNo;	
 	float frameTime;
 	float currentFps;
@@ -278,7 +303,7 @@ private:
 	ImuData currentData;
 	bool stopped;
 	bool paused;	
-	boost::mutex sensorMutex;
+	std::mutex sensorMutex;
 	float q0;
 	float q1;
 	float q2;

@@ -51,7 +51,7 @@ void LpmsU::listDevices(LpmsDeviceList *deviceList)
 	ftStatus = FT_CreateDeviceInfoList(&numDevs);
 	
 	if (ftStatus == FT_OK) { 
-		printf("[LPMS-U] Number of devices is %d\n", numDevs); 
+		printf("[LpmsU] Number of devices is %d\n", numDevs); 
 	} 
 	
 	if (numDevs > 0) { 
@@ -60,7 +60,7 @@ void LpmsU::listDevices(LpmsDeviceList *deviceList)
 
 		if (ftStatus == FT_OK) { 
 			for (unsigned i = 0; i < numDevs; i++) {
-				std::cout << "[LPMS-U] Discovered device: " << devInfo[i].SerialNumber << std::endl;
+				std::cout << "[LpmsU] Discovered device: " << devInfo[i].SerialNumber << std::endl;
 				deviceList->push_back(DeviceListItem(devInfo[i].SerialNumber, DEVICE_LPMS_U));
 			} 
 		} 
@@ -93,10 +93,10 @@ bool LpmsU::connect(string deviceId)
 	}
 
 	if (ftStatus == FT_OK) { 
-		cout << "[LPMS-U] Connection to " << idNumber << " successful." << endl;
+		cout << "[LpmsU] Connection to " << idNumber << " successful." << endl;
 		isOpen = true;
 	} else {
-		cout << "[LPMS-U] Connection to " << idNumber << " failed." << endl;
+		cout << "[LpmsU] Connection to " << idNumber << " failed." << endl;
 		isOpen = false;
 	}
 		
@@ -153,12 +153,12 @@ bool LpmsU::read(unsigned char *rxBuffer, unsigned long *bytesReceived)
 	if (isOpen == false) return false;
 	
 	if (FT_GetStatus(ftHandle, &rxBytes, &txBytes, &eventDWord) != FT_OK) {
-		std::cout << "[LPMS-U] Read failed!" << std::endl;
+		std::cout << "[LpmsU] Read failed!" << std::endl;
 		return false;
 	}
 
 	if (rxBytes > 4096) {
-		std::cout << "[LPMS-U] Buffer overflow!" << std::endl;
+		std::cout << "[LpmsU] Buffer overflow!" << std::endl;
 		rxBytes = 4096;
 	}
 	
@@ -247,78 +247,85 @@ bool LpmsU::sendModbusData(unsigned address, unsigned function, unsigned length,
 	return false;
 }
 
-bool LpmsU::parseModbusByte(unsigned char b)
+bool LpmsU::parseModbusByte(void)
 {	
-	switch (rxState) {
-	case PACKET_END:
-		if (b == 0x3a) {
-			rxState = PACKET_ADDRESS0;
-			oneTx.clear();
-		}
-		break;
-		
-	case PACKET_ADDRESS0:
-		currentAddress = b;
-		rxState = PACKET_ADDRESS1;
-		break;
+	unsigned char b;
 
-	case PACKET_ADDRESS1:
-		currentAddress = currentAddress + ((unsigned) b * 256);
-		rxState = PACKET_FUNCTION0;
-		break;
+	while (dataQueue.size() > 0) {	
+		b = dataQueue.front();
+		dataQueue.pop();
 
-	case PACKET_FUNCTION0:
-		currentFunction = b;
-		rxState = PACKET_FUNCTION1;				
-		break;
-
-	case PACKET_FUNCTION1:
-		currentFunction = currentFunction + ((unsigned) b * 256);
-		rxState = PACKET_LENGTH0;			
-	break;
-
-	case PACKET_LENGTH0:
-		currentLength = b;
-		rxState = PACKET_LENGTH1;
-	break;
+		switch (rxState) {
+		case PACKET_END:
+			if (b == 0x3a) {
+				rxState = PACKET_ADDRESS0;
+				oneTx.clear();
+			}
+			break;
 			
-	case PACKET_LENGTH1:
-		currentLength = currentLength + ((unsigned) b * 256);
-		rxState = PACKET_RAW_DATA;
-		rawDataIndex = currentLength;
-	break;
+		case PACKET_ADDRESS0:
+			currentAddress = b;
+			rxState = PACKET_ADDRESS1;
+			break;
+
+		case PACKET_ADDRESS1:
+			currentAddress = currentAddress + ((unsigned) b * 256);
+			rxState = PACKET_FUNCTION0;
+			break;
+
+		case PACKET_FUNCTION0:
+			currentFunction = b;
+			rxState = PACKET_FUNCTION1;				
+			break;
+
+		case PACKET_FUNCTION1:
+			currentFunction = currentFunction + ((unsigned) b * 256);
+			rxState = PACKET_LENGTH0;			
+		break;
+
+		case PACKET_LENGTH0:
+			currentLength = b;
+			rxState = PACKET_LENGTH1;
+		break;
+				
+		case PACKET_LENGTH1:
+			currentLength = currentLength + ((unsigned) b * 256);
+			rxState = PACKET_RAW_DATA;
+			rawDataIndex = currentLength;
+		break;
+				
+		case PACKET_RAW_DATA:
+			if (rawDataIndex == 0) {
+				lrcCheck = currentAddress + currentFunction + currentLength;
+				for (unsigned i=0; i<oneTx.size(); i++) {
+					lrcCheck += oneTx[i];
+				}
+				
+				lrcReceived = b;
+				rxState = PACKET_LRC_CHECK1;			
+			} else {	
+				oneTx.push_back(b);		
+				--rawDataIndex;		
+			}
+			break;
 			
-	case PACKET_RAW_DATA:
-		if (rawDataIndex == 0) {
-			lrcCheck = currentAddress + currentFunction + currentLength;
-			for (unsigned i=0; i<oneTx.size(); i++) {
-				lrcCheck += oneTx[i];
+		case PACKET_LRC_CHECK1:
+			lrcReceived = lrcReceived + ((unsigned) b * 256);
+			
+			if (lrcReceived == lrcCheck) {
+				parseFunction();
+			} else {
+				cout << "[LpmsU] Checksum fail in data packet" << endl;
 			}
 			
-			lrcReceived = b;
-			rxState = PACKET_LRC_CHECK1;			
-		} else {	
-			oneTx.push_back(b);		
-			--rawDataIndex;		
+			rxState = PACKET_END;
+			break;
+		
+		default:
+			rxState = PACKET_END;		
+			return false;
+			break;
 		}
-		break;
-		
-	case PACKET_LRC_CHECK1:
-		lrcReceived = lrcReceived + ((unsigned) b * 256);
-		
-		if (lrcReceived == lrcCheck) {
-			parseFunction();
-		} else {
-			cout << "[LPMS-U] Checksum fail in data packet" << endl;
-		}
-		
-		rxState = PACKET_END;
-		break;
-	
-	default:
-		rxState = PACKET_END;		
-		return false;
-		break;
 	}
 	
 	return true;

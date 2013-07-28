@@ -29,17 +29,17 @@
 #* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #**********************************************************************/
 
-cmake_minimum_required(VERSION 2.4.6)
+cmake_minimum_required(VERSION 2.8.3)
 
 project (LpmsControl)
 
 if (COMMAND cmake_policy)
 cmake_policy(SET CMP0003 NEW)
 cmake_policy(SET CMP0015 NEW)
+cmake_policy(SET CMP0020 NEW)
 endif(COMMAND cmake_policy)
 
 SET(USE_ZEROC_ICE FALSE)
-SET(USE_QT5 FALSE CACHE BOOL "")
 
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
@@ -62,10 +62,10 @@ endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	include_directories("../Lp3rdPartyLibraries/Ftdi")
-	include_directories("../Lp3rdPartyLibraries/Qwt/include")
+	include_directories("../Lp3rdPartyLibraries/Qwt/src")
 	include_directories("../Lp3rdPartyLibraries/Eigen")
 	
-	include_directories("${WINDOWS_BOOST_PATH}")	
+	include_directories("../Lp3rdPartyLibraries/Boost")	
 
 	if (USE_ZEROC_ICE)
 		include_directories("../Lp3rdPartyLibraries/Ice/include")
@@ -75,9 +75,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	include_directories("../LpSensor")
 	include_directories("../Lp3rdPartyLibraries/Pugixml/src/")
 
-	link_directories("${WINDOWS_QWT_PATH}/lib")
-	
-	link_directories("${WINDOWS_BOOST_PATH}/lib/win32")	
+	link_directories("../Lp3rdPartyLibraries/Qwt/lib")
 
 	if (USE_ZEROC_ICE)
 		link_directories("${WINDOWS_ICE_PATH}/Ice/lib")
@@ -251,22 +249,16 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
-if (USE_QT5)
-	set(CMAKE_INCLUDE_CURRENT_DIR ON)
-	set(CMAKE_AUTOMOC ON)
+set(CMAKE_PREFIX_PATH "C:/qt5/qtbase")
 
-	find_package(Qt5Widgets REQUIRED)
-	find_package(Qt5Core REQUIRED)
-	find_package(Qt5OpenGL REQUIRED)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
 
-	qt5_use_modules(LpmsControl Widgets Core OpenGL)
-else()
-	find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-	include(${QT_USE_FILE})
-	qt4_wrap_cpp(moc_sources ${headers})
-	include_directories(${CMAKE_BINARY_DIR})
-	include_directories(${QT_INCLUDE_DIR})
-endif()
+find_package(Qt5Widgets REQUIRED)
+include_directories(${Qt5Widgets_INCLUDES})
+add_definitions(${Qt5Widgets_DEFINITIONS})
+find_package(Qt5Core REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
 
 find_package(OpenGL REQUIRED)
 	
@@ -288,6 +280,9 @@ target_link_libraries(LpmsControl ${OPENGL_LIBRARIES})
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		target_link_libraries(LpmsControl LpSensor.lib)
+		target_link_libraries(LpmsControl Qt5::Widgets)		
+		target_link_libraries(LpmsControl Qt5::Core)
+		target_link_libraries(LpmsControl Qt5::OpenGL)		
 		target_link_libraries(LpmsControl qwt.lib)
 		target_link_libraries(LpmsControl Ws2_32.lib)
 
@@ -298,6 +293,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		target_link_libraries(LpmsControl LpSensorD.lib)
+		target_link_libraries(LpmsControl Qt5::Widgets)
+		target_link_libraries(LpmsControl Qt5::Core)
+		target_link_libraries(LpmsControl Qt5::OpenGL)
 		target_link_libraries(LpmsControl qwtd.lib)
 		target_link_libraries(LpmsControl Ws2_32.lib)
 	

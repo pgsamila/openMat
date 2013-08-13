@@ -350,6 +350,7 @@ void updateSensorData(void)
 		canHeartbeatTime += T;
 		measurementTime += T;
 		heaveTime = T;
+		pressureTime += cT;
 
 #ifdef ENABLE_WATCHDOG
 		WWDG_DeInit();
@@ -366,7 +367,7 @@ void updateSensorData(void)
 #endif */
 
 #ifdef ENABLE_PRESSURE
-		if (cT > PRESSURE_T) {
+		if (pressureTime > PRESSURE_T) {
 			pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 					((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||

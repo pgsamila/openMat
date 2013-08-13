@@ -13,6 +13,7 @@ static uint8_t gTransmitMailbox = CAN_NO_MB;
 static LpmsPacket newPacket;
 static uint8_t rxState = PACKET_START;
 static uint16_t rawDataCounter = 0;
+CAN_InitTypeDef CAN_InitStructure;
 
 extern LpmsReg gReg;
 extern uint8_t connectedInterface;
@@ -20,11 +21,10 @@ extern float T;
 extern LpmsCalibrationData calibrationData;
 extern float canHeartbeatTime;
 
+
 void CANConfiguration(uint32_t baudrateFlag)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure;
-	CAN_InitTypeDef CAN_InitStructure;
-	CAN_FilterInitTypeDef CAN_FilterInitStructure;
 	
 	RCC_AHB1PeriphClockCmd(CAN_GPIO_CLK, ENABLE);
 	RCC_APB1PeriphClockCmd(CAN_CLK, ENABLE);
@@ -94,32 +94,23 @@ void CANConfiguration(uint32_t baudrateFlag)
 	
 	CAN_Init(CAN_PORT, &CAN_InitStructure);
 
+	resetCanId();
+}
+
+void resetCanId(void) 
+{
+	CAN_FilterInitTypeDef CAN_FilterInitStructure;
+
 	CAN_FilterInitStructure.CAN_FilterNumber = 0;
 	CAN_FilterInitStructure.CAN_FilterMode = CAN_FilterMode_IdMask;
 	CAN_FilterInitStructure.CAN_FilterScale = CAN_FilterScale_32bit;
-	CAN_FilterInitStructure.CAN_FilterIdHigh = (((uint32_t) AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION << 21) & 0xFFFF0000) >> 16;
+	CAN_FilterInitStructure.CAN_FilterIdHigh = (((uint32_t) (AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + getImuID()) << 21) & 0xFFFF0000) >> 16;
 	CAN_FilterInitStructure.CAN_FilterIdLow = (CAN_ID_STD | CAN_RTR_DATA) & 0xFFFF;
 	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0xffe0;
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x0000;
 	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_FIFO0;
 	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;
 	CAN_FilterInit(&CAN_FilterInitStructure);
-	
-	/* NVIC_PriorityGroupConfig(NVIC_PriorityGroup_0);
-	Enable the CAN RX Interrupt.
-	NVIC_InitStructure.NVIC_IRQChannel = USB_LP_CAN1_RX0_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-	
-	CAN FIFO0 message pending interrupt enable
-	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
-	
-	rxMsg.StdId = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION;
-	rxMsg.RTR = CAN_RTR_DATA;
-	rxMsg.IDE = CAN_ID_STD;
-	rxMsg.DLC = 8; */
 }
 
 uint8_t CANInitBaudrate(uint8_t baudrateFlag)
@@ -157,7 +148,7 @@ void CANStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 {
 	CanTxMsg txMsg;
 	uint32_t timeout = 0;
-	txMsg.StdId = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION;
+	txMsg.StdId = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + getImuID();
 	txMsg.RTR = CAN_RTR_DATA;
 	txMsg.IDE = CAN_ID_STD;
 	txMsg.DLC = 8;
@@ -178,6 +169,11 @@ void CANStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 		while ((CAN_TransmitStatus(CAN_PORT, gTransmitMailbox) != CANTXOK) && (timeout <= CAN_TX_TIMEOUT)) {
 			timeout++;
 		}
+
+		if (timeout > CAN_TX_TIMEOUT) {
+			CAN_DeInit(CAN_PORT);
+			CAN_Init(CAN_PORT, &CAN_InitStructure);
+		}
 	}	
 	
 	if (r > 0) {
@@ -192,6 +188,12 @@ void CANStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 		timeout = 0;
 		while ((CAN_TransmitStatus(CAN_PORT, gTransmitMailbox) != CANTXOK) && (timeout <= CAN_TX_TIMEOUT)) {
 			timeout++;
+		}
+
+
+		if (timeout > CAN_TX_TIMEOUT) {
+			CAN_DeInit(CAN_PORT);
+			CAN_Init(CAN_PORT, &CAN_InitStructure);
 		}
 	}
 }
@@ -212,6 +214,8 @@ uint8_t pollCanBusData(void)
 	
 	while ((CAN_MessagePending(CAN_PORT, CAN_FIFO0) > 0)) {
 		CAN_Receive(CAN_PORT, CAN_FIFO0, &m);
+
+		// if (m.StdId != AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + getImuID()) continue;
 
 		for (int i=0; i<m.DLC; i++) {
 			b = m.Data[i];
@@ -291,8 +295,8 @@ uint8_t pollCanBusData(void)
 				if (b == 0x0a) {
 					newPacket.end = newPacket.end | (((uint16_t)b) << 8);
 					rxState = PACKET_START;
-					if (newPacket.lrcCheck == computeCheckSum(newPacket) && 
-						newPacket.address == getImuID()) {
+					if (newPacket.lrcCheck == computeCheckSum(newPacket)/* && 
+						newPacket.address == getImuID()*/) {
 						addPacketToBuffer(newPacket);
 						connectedInterface = CANBUS_CONNECTED;
 					}

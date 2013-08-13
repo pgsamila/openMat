@@ -91,4 +91,6 @@ void canSendCustomFloatingPoint(void);
 // Sends CANopen fixed point message
 void canSendCanOpenFixedPoint(void);
 
+void resetCanId(void);
+
 #endif

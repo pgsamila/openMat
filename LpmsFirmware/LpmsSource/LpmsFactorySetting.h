@@ -33,16 +33,16 @@
 // #define EULER_FROM_QUATERNION
 
 // Enables CAN bus interface
-#define USE_CANBUS_INTERFACE
+// #define USE_CANBUS_INTERFACE
 
 // Enables Bluetooth interface
-// #define USE_BLUETOOTH_INTERFACE
+#define USE_BLUETOOTH_INTERFACE
 
 // Enables watchdog timer
 #define ENABLE_WATCHDOG
 
 // Enables heave motion tracking
-#define USE_HEAVEMOTION
+// #define USE_HEAVEMOTION
 
 // Activates gait tracking
 // #define USE_GAIT_TRACKING
@@ -56,7 +56,7 @@
 // <--
 
 // Firmware version information
-#define FIRMWARE_VERSION_DIGIT0 1
+#define FIRMWARE_VERSION_DIGIT0 3
 #define FIRMWARE_VERSION_DIGIT1 2
 #define FIRMWARE_VERSION_DIGIT2 1
 
@@ -135,7 +135,7 @@
 #endif
 
 // Factory settings
-#define LPMS_FACTORY_IMU_ID			1
+#define LPMS_FACTORY_IMU_ID			0
 #define LPMS_FACTORY_GYR_RANGE			GYR_RANGE_2000DPS
 #define LPMS_FACTORY_ACC_RANGE			ACC_RANGE_4G
 #define LPMS_FACTORY_MAG_RANGE			MAG_RANGE_250UT

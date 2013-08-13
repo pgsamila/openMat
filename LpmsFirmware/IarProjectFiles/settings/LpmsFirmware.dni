@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1898684928
+Checksum=-785934255
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -47,7 +47,7 @@ ITMportsTermIO=0
 ITMportsLogFile=0
 ITMlogFile=$PROJ_DIR$\ITM.log
 [RecentFlashDownload]
-Path=C:\Users\user\Dropbox\LpResearch\ProductDevelopment\Firmware\Binaries\LpmsBFirmware1.1.1r2.out
+Path=C:\Users\user\Dropbox\LpResearch\ProductDevelopment\Firmware\Binaries\LpmsBFirmware1.1.2.out
 [PowerLog]
 LogEnabled=0
 GraphEnabled=0
@@ -70,6 +70,10 @@ GraphEnabled=0
 ShowTimeLog=1
 ShowTimeSum=1
 SumSortOrder=0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -95,10 +99,6 @@ Enabled=0
 Mode=3
 Graph=0
 Symbiont=0
-[Log file]
-LoggingEnabled=_ 0
-LogFile=_ ""
-Category=_ 0
 [Disassemble mode]
 mode=0
 [Breakpoints2]

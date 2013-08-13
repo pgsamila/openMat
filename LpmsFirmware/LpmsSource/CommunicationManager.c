@@ -383,6 +383,9 @@ void parsePacket(void)
 				
 			case SET_IMU_ID:
 				setReg(packet.length, packet.data, LPMS_IMU_ID);
+#ifdef USE_CANBUS_INTERFACE
+				resetCanId();
+#endif
 				sendAck();
 			break;
 				

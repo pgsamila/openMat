@@ -27,6 +27,8 @@
 #include "LpmsFactorySetting.h"
 #include "HeaveMotion.h"
 
+#define LPMS_CU_MEASUREMENT_PERIOD 20
+
 // Number of iterations for gyrsocope calibration
 #define GYRO_ONLINE_CAL_ITER 			128
 

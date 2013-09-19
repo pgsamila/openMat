@@ -53,21 +53,13 @@ int main(void)
 
 			sendQueue();
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
-#ifdef USE_CANBUS_INTERFACE
-			if (getTimeStep() > LPMS_CU_MEASUREMENT_PERIOD) {
+			if (getTimeStep() > LPMS_MEASUREMENT_PERIOD) {
 				updateSensorData();
 				processSensorData();
 			}
-#endif
 
 			if (isStreamModeTransferReady() == 1) {
 				clearStreamModeTransferReady();
-
-#ifdef USE_BLUETOOTH_INTERFACE
-				updateSensorData();
-				processSensorData();
-#endif
-
 				updateDataTransmission();
 			}
 			

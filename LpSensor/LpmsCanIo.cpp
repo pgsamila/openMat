@@ -18,35 +18,22 @@ LpmsCanIo::~LpmsCanIo(void)
 
 bool LpmsCanIo::connect(std::string deviceId) 
 {
-	currentState = IDLE_STATE;
-	
-	waitForAck = false;
-	waitForData = false;
-	ackReceived = false;
-
-	ackTimeout = 0;
-	dataReceived = false;
-	dataTimeout = 0;
-
-	lpmsStatus = 0;
-	configReg = 0;
+	LpmsIoInterface::connect(deviceId);
 
 	prevInMC = 255;
 	outMC = 0;
 
 	rxState = PACKET_END;
-	configSet = false;
+
+	setCommandMode();
 	
-	timestampOffset = 0.0f;
-	currentTimestamp = 0.0f;
-
-	setCommandMode();			
-
 	try {
 		imuId = boost::lexical_cast<int>(deviceId);
 	} catch(boost::bad_lexical_cast const&) {
 		imuId = 1;
 	}	
+	
+	setCommandMode();
 	
 	return true;
 }
@@ -57,6 +44,7 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 	TPCANMsg sendMsg;
 	unsigned char txData[1024];
 	unsigned int txLrcCheck;
+	int v = 0;
 	
 	if (length > 1014) return false;
 
@@ -85,20 +73,20 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 	
-	sendMsg.ID = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION;
+	sendMsg.ID = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + imuId;
 	sendMsg.MSGTYPE = PCAN_MESSAGE_STANDARD;
 	
 	int p = (length+11) / 8;
 	int r = (length+11) % 8;
-	
-	// printf("Msg. n=%d r=%d f=%d\n", p, r, function);
 	
 	sendMsg.LEN = 8;
 	for (int i=0; i<p; i++) {
 		for (int j=0; j<8; j++) {
 			sendMsg.DATA[j] = txData[i*8+j];
 		}
+		
 		/* printf("Msg. push %x %x %x %x %x %x %x %x\n", sendMsg.DATA[0], sendMsg.DATA[1], sendMsg.DATA[2], sendMsg.DATA[3], sendMsg.DATA[4], sendMsg.DATA[5], sendMsg.DATA[6], sendMsg.DATA[7]); */
+		
 		txQ.push(sendMsg);
 	}
 	
@@ -107,74 +95,14 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 		for (int j=0; j<r; j++) {
 			sendMsg.DATA[j] = txData[p*8+j];
 		}
+		
 		/* printf("Msg. push %x %x %x %x %x %x %x %x\n", sendMsg.DATA[0], sendMsg.DATA[1], sendMsg.DATA[2], sendMsg.DATA[3], sendMsg.DATA[4], sendMsg.DATA[5], sendMsg.DATA[6], sendMsg.DATA[7]); */
+		
 		txQ.push(sendMsg);
 	}	
 	
 	return true;
 }
-
-/* bool LpmsCanIo::sendModbusData(unsigned address, unsigned function, 
-	unsigned length, unsigned char *data)	
-{
-	boost::uint8_t txData[1024];
-	TPCANMsg sendMsg;
-
-	memset(txData, 0, 1024);
-
-	if (length > 1024) return false;
-			
-	txData[0] = 0x3a;
-	txData[1] = (boost::uint8_t) ((boost::uint16_t) length & 0xff);
-	txData[2] = (boost::uint8_t) (((boost::uint16_t) length & 0xff00) >> 8) & 0xff;
-	txData[3] = 0;
-	
-	for (unsigned i=0; i < length; ++i) {
-		txData[4+i] = (boost::uint8_t) data[i];
-	}
-	
-	// txData[4 + length] = 0x0d;
-	// txData[5 + length] = 0x0a;
-		
-	sendMsg.ID = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION;
-	sendMsg.MSGTYPE = PCAN_MESSAGE_STANDARD;
-
-	sendMsg.DATA[0] = (boost::uint8_t) ((boost::uint16_t) address) & 0xff;
-	sendMsg.DATA[1] = (boost::uint8_t) AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_DATATYPE;
-	sendMsg.DATA[2] = (boost::uint8_t) ((boost::uint16_t) function) & 0xff;
-
-	for (unsigned i=0; i<length+5; i+=4) {
-		sendMsg.DATA[3] = (boost::uint8_t) outMC;
-		sendMsg.DATA[4] = txData[i];
-		sendMsg.DATA[5] = txData[i+1];
-		sendMsg.DATA[6] = txData[i+2];
-		sendMsg.DATA[7] = txData[i+3];
-
-		if (outMC < 255) ++outMC; else outMC = 0;
-
-		txQ.push(sendMsg);
-	}
-	
-	int p = length / 8;
-	int r = length % 8;
-	
-	sendMsg.LEN = 8;
-	for (int i=0; i<length/8; i++) {
-		for (int j=0; j<8; j++) {
-			sendMsg.DATA[j] = txData[i*8+j];
-		}
-		txQ.push(sendMsg);
-	}	
-	
-	if (r > 0) {
-		sendMsg.LEN = r;
-		for (int j=0; j<r; j++) {
-			sendMsg.DATA[j] = txData[p*8+j];
-		}
-	}
-		
-	return true;
-} */
 
 bool LpmsCanIo::getTxMessage(std::queue<TPCANMsg> *topTxQ)
 {
@@ -190,55 +118,50 @@ bool LpmsCanIo::getTxMessage(std::queue<TPCANMsg> *topTxQ)
 bool LpmsCanIo::parseCanMsg(TPCANMsg m)
 {
 	const float r2d = 57.2958f;
-	
+	int v = 0;
 	int l = m.LEN;
-
-	/* if ((configReg & LPMS_STREAM_CAN_CUSTOM1) != 0 &&
-		(lpmsStatus & LPMS_STREAM_MODE) != 0) {
-		fromBufferBigEndian(&(m.DATA[4]), &v);
 	
-		switch (m.ID) {
-		case AEROSPACE_CAN_ROLL:
-			imuData.r[0] = v * r2d;
-		break;
+	configData->getParameter(PRM_OPENMAT_ID, &v);
+	
+	/* if (m.ID == (0x180 + imuId)) {
+		fromBufferInt16(&(m.DATA[0]), &v);
+		imuData.q[0] = (float)v / 1000.0f;
+		fromBufferInt16(&(m.DATA[2]), &v);
+		imuData.q[1] = (float)v / 1000.0f;
+		fromBufferInt16(&(m.DATA[4]), &v);
+		imuData.q[2] = (float)v / 1000.0f;
+		fromBufferInt16(&(m.DATA[6]), &v);
+		imuData.q[3] = (float)v / 1000.0f;
 		
-		case AEROSPACE_CAN_PITCH:
-			imuData.r[1] = v * r2d;
-		break;
+		imuData.openMatId = imuId;
+		
+		if (imuDataQueue.size() < 64) imuDataQueue.push(imuData);
+	}	
 
-		case AEROSPACE_CAN_YAW:
-			imuData.r[2] = v * r2d;	
-		break;
-		}
+	if (m.ID == (0x280 + imuId)) {
+		fromBufferInt16(&(m.DATA[0]), &v);
+		imuData.linAcc[0] = (float)v / 1000.0f;
+		fromBufferInt16(&(m.DATA[2]), &v);
+		imuData.linAcc[1] = (float)v / 1000.0f;
+		fromBufferInt16(&(m.DATA[4]), &v);
+		imuData.linAcc[2] = (float)v / 1000.0f;
+		fromBufferInt16(&(m.DATA[6]), &v);
+		imuData.hm.yHeave = (float)v / 1000.0f;
 		
-		receiveReset();		
+		imuData.openMatId = imuId;		
 		
-		return true;
-	} else if ((configReg & LPMS_STREAM_CAN_OPEN) != 0 &&
-		(lpmsStatus & LPMS_STREAM_MODE) != 0) {		
-		if (m.ID == (0x180 + imuId)) {
-			fromBuffer(&(m.DATA[0]), &v);
-			imuData.r[0] = v * r2d;
-			fromBuffer(&(m.DATA[4]), &v);
-			imuData.r[1] = v * r2d;
-		}	
-		if (m.ID == (0x280 + imuId)) {
-			fromBuffer(&(m.DATA[0]), &v);
-			imuData.r[2] = v * r2d;
-		}
+		if (imuDataQueue.size() < 64) imuDataQueue.push(imuData);
+	} */
 		
-		receiveReset();	
+	if (m.ID != AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + imuId) {
+		return false;
+	}
 
-		return true;
-	} else { */
-		for (int i=0; i<m.LEN; i++) {
-			dataQueue.push((unsigned char) m.DATA[i]);
-		}
-		
-	// printf("Msg. push %x %x %x %x %x %x %x %x\n", m.DATA[0], m.DATA[1], m.DATA[2], m.DATA[3], m.DATA[4], m.DATA[5], m.DATA[6], m.DATA[7]);	
-		
-		return true;
-	// }
+	for (int i=0; i<m.LEN; i++) {
+		dataQueue.push((unsigned char) m.DATA[i]);
+	}
+	
+	return true;
 }
 
 bool LpmsCanIo::parseModbusByte(void)
@@ -308,8 +231,7 @@ bool LpmsCanIo::parseModbusByte(void)
 			
 			if (lrcReceived == lrcCheck) {
 				parseFunction();
-				// cout << "[LPMS-U] Finished processing packet: " << c << endl;
-				// c++;
+				// cout << "[LpmsCanIo] Finished processing packet: " << currentFunction << endl;
 			} else {
 				cout << "[LpmsCanIo] Checksum fail in data packet" << endl;
 			}
@@ -326,47 +248,3 @@ bool LpmsCanIo::parseModbusByte(void)
 		
 	return true;
 }
-
-/* bool LpmsCanIo::parseModbusByte(unsigned char b)
-{	
-	switch (rxState) {
-	case PACKET_END:
-		if (b == 0x3a) rxState = PACKET_LENGTH0;
-	break;
-
-	case PACKET_LENGTH0:
-		currentLength = (unsigned) b;
-		rxState = PACKET_LENGTH1;				
-	break;
-
-	case PACKET_LENGTH1:
-		currentLength = currentLength + b * 256;
-		rawDataIndex = currentLength;
-	
-		oneTx.clear();
-		
-		rxState = PACKET_SKIP_ZERO;
-	break;
-
-	case PACKET_SKIP_ZERO:
-		rxState = PACKET_RAW_DATA;
-	break;
-	
-	case PACKET_RAW_DATA:		
-		if (rawDataIndex == 0) {
-			parseFunction();
-			rxState = PACKET_END;				
-		} else {		
-			oneTx.push_back(b);
-			--rawDataIndex;					
-		}
-		break;
-	
-	default:
-		rxState = PACKET_END;
-		return false;
-		break;
-	}
-	
-	return true;
-} */

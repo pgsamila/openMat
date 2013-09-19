@@ -39,7 +39,7 @@
 #define CANBUS_BAUDRATE_1M_ENABLED 		7
 
 // CAN transmission timeout
-#define CAN_TX_TIMEOUT 			0xffff
+#define CAN_TX_TIMEOUT 			0x0007ffff
 
 // CANopen definitions
 #define MAX_HEARTBEAT_TIME 			0.5f

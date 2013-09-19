@@ -35,7 +35,7 @@
 #include "BleUart.h"
 
 #define MAX_DEVICES 64
-#define UART_TIMEOUT 10
+#define UART_TIMEOUT 5
 
 int found_devices_count = 0;
 bd_addr found_devices[MAX_DEVICES];
@@ -202,7 +202,7 @@ void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
 
 void ble_evt_connection_status(const struct ble_msg_connection_status_evt_t *msg)
 {
-	printf("[LPMS-BLE] ble_evt_connection_status callback\n");
+	// printf("[LPMS-BLE] ble_evt_connection_status callback\n");
 
 	if (msg->flags & connection_connected) {
 		change_state(state_connected);
@@ -224,7 +224,7 @@ void ble_evt_attclient_group_found(const struct ble_msg_attclient_group_found_ev
 {
 	int i;
 
-	printf("[LPMS-BLE] ble_evt_attclient_group_found callback\n");
+	// printf("[LPMS-BLE] ble_evt_attclient_group_found callback\n");
 
     if (msg->uuid.len < 16) return;
 	
@@ -267,12 +267,12 @@ void ble_rsp_attclient_attribute_write(const struct ble_msg_attclient_attribute_
 	
 	readyToSend = true;
 		
-	printf("[LPMS-BLE] Write acknowledged\n");
+	// printf("[LPMS-BLE] Write acknowledged\n");
 }
 
 void ble_evt_attclient_procedure_completed(const struct ble_msg_attclient_procedure_completed_evt_t *msg)
 {
-	printf("[LPMS-BLE] ble_evt_attclient_procedure_completed callback\n");
+	// printf("[LPMS-BLE] ble_evt_attclient_procedure_completed callback\n");
 
 	if (state == state_finding_services) {
 		if (lpms_handle_start == 0) {
@@ -297,7 +297,7 @@ void ble_evt_attclient_find_information_found(const struct ble_msg_attclient_fin
 {
 	int i;
 	
-	printf("[LPMS-BLE] ble_evt_attclient_find_information_found callback\n");
+	// printf("[LPMS-BLE] ble_evt_attclient_find_information_found callback\n");
 
 	printf("[LPMS-BLE] UUID: ");
 	for (i=0; i<msg->uuid.len; ++i) {
@@ -332,26 +332,38 @@ void ble_evt_attclient_find_information_found(const struct ble_msg_attclient_fin
 	}
 }
 
+MicroMeasure performanceTimer;
+float avgDr = 0.0f;
+int pC = 0;
+
 void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_value_evt_t *msg)
 {
-	rxMutex.lock();
-	printf("[LPMS-BLE] ble_evt_attclient_attribute_value callback\n");
+	long long pt;
+	float dr;
 
-	printf("[LPMS-BLE] Data received: ");
+	rxMutex.lock();
+	// printf("[LPMS-BLE] ble_evt_attclient_attribute_value callback\n");
+
+	// printf("[LPMS-BLE] Data received: ");
 	for (unsigned int i=0; i < msg->value.len; i++) {
-		printf("%x ", msg->value.data[i]);
+		// printf("%x ", msg->value.data[i]);
 		bleQueue->push((unsigned char) msg->value.data[i]);
 	}
-	printf("\n");
+	// printf("\n");
+	
+	pt = performanceTimer.measure();
+	performanceTimer.reset();
+	dr = (float) msg->value.len / ((float) pt / 1000000.0f);
+	avgDr = dr * 0.1f + avgDr * 0.9f;
+	printf("[LpmsBle] Average data rate (bytes/s): %f\n", avgDr);
+	
 	rxMutex.unlock();
 }
 
 void ble_evt_connection_disconnected(const struct ble_msg_connection_disconnected_evt_t *msg)
 {
 	change_state(state_disconnected);
-	printf("[LPMS-BLE] Connection terminated, trying to reconnect\n");
-	change_state(state_connecting);
-	ble_cmd_gap_connect_direct(&connect_addr, gap_address_type_public, 40, 60, 100,0);
+	printf("[LPMS-BLE] Connection terminated.\n");
 }
 
 LpmsBle::LpmsBle(CalibrationData *configData) :
@@ -558,7 +570,7 @@ bool LpmsBle::sendModbusData(unsigned address, unsigned function, unsigned lengt
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 	
-	printf("[LPMS-BLE] Writing LPBUS command\n");
+	// printf("[LPMS-BLE] Writing LPBUS command\n");
 	
 	bleMutex.lock();
 	for (unsigned int i=0; i<11+length; ++i) txQueue.push(txData[i]);
@@ -566,6 +578,9 @@ bool LpmsBle::sendModbusData(unsigned address, unsigned function, unsigned lengt
 	
 	return false;
 }
+
+float avgDt = 0.0f;
+MicroMeasure dataTimer;
 
 bool LpmsBle::parseModbusByte(void)
 {
@@ -630,6 +645,14 @@ bool LpmsBle::parseModbusByte(void)
 		case PACKET_LRC_CHECK1:
 			lrcReceived = lrcReceived + ((unsigned) b * 256);			
 			if (lrcReceived == lrcCheck) {
+				if (currentFunction == GET_SENSOR_DATA) {
+					long long dt;					
+					dt = dataTimer.measure();
+					dataTimer.reset();
+					avgDt = 0.1f * ((float) dt / 1000.0f) + 0.9f * avgDt;
+					printf("[LpmsBle] Time between data (ms): %f\n", avgDt);
+				}
+			
 				parseFunction();
 			} else {
 				std::cout << "[LpmsBle] Checksum fail in data packet" << std::endl;
@@ -676,7 +699,7 @@ void LpmsBle::run(void)
 					txQueue.pop();
 				}
 				
-				printf("[LPMS-BLE] Processing queue. %d bytes.\n", l);
+				// printf("[LPMS-BLE] Processing queue. %d bytes.\n", l);
 				
 				ble_cmd_attclient_attribute_write(k_connection_handle, lpms_handle_measurement, l, txData);
 				readyToSend = false;

@@ -6,29 +6,35 @@
 
 #include "LpmsIoInterface.h"
 
+INIT_LOGGING
+
 LpmsIoInterface::LpmsIoInterface(CalibrationData *configData) :
 	configData(configData)
 {
-	timestampOffset = 0.0f;
-	currentTimestamp = 0.0f;
 }
 
 bool LpmsIoInterface::connect(std::string deviceId) 
 { 
 	currentState = IDLE_STATE;
+	
 	waitForAck = false;
 	waitForData = false;
 	ackReceived = false;
+	dataReceived = false;
 	ackTimeout = 0;	
 	dataTimeout = 0;
+	
 	lpmsStatus = 0;
 	configReg = 0;
 	imuId = 1;
 	currentMode = LPMS_STREAM_MODE;
-	configSet = false;
+	
 	latestLatency = 0.0f;
 	timestampOffset = 0.0f;
 	currentTimestamp = 0.0f;
+	
+	resendI = 0;
+	cLength = 0;
 	
 	zeroImuData(&imuData);
 	
@@ -82,6 +88,11 @@ void LpmsIoInterface::zeroImuData(ImuData* id)
 	id->gm.symmetry = 0.0f;
 	id->gm.zDirection = 0;
 	id->gm.yDirection = 0;
+}
+
+void LpmsIoInterface::setTxRxImuId(int id)
+{
+	imuId = id;
 }
 	
 bool LpmsIoInterface::deviceStarted(void) 
@@ -163,6 +174,7 @@ void LpmsIoInterface::receiveReset(void)
 
 	ackTimeout = 0;
 	dataTimeout = 0;
+	resendI = 0;
 }	
 
 bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, long *v)
@@ -174,6 +186,16 @@ bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, long *v)
 		*v = *v * 256;
 		*v += (long) data[i];
 	}
+
+	return true;
+}
+
+bool LpmsIoInterface::fromBufferInt16(unsigned char *data, int *v)
+{	
+	boost::int16_t i;
+
+	i = (boost::int16_t) data[1] << 8 | data[0];
+	*v = i;
 
 	return true;
 }
@@ -473,7 +495,7 @@ bool LpmsIoInterface::parseFunction(void)
 	if (waitForAck == true) {
 		if (isAck() == true) {
 			ackReceived = true;
-			
+						
 			return true;
 		}
 
@@ -519,19 +541,7 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_ENABLED);
 		} else {
 			configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_DISABLED);
-		}	
-
-		/* if ((configReg & LPMS_STREAM_CAN_LPBUS) != 0) {
-			configData->setParameter(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_LPBUS);		
-		} else if ((configReg & LPMS_STREAM_CAN_CUSTOM1) != 0) {
-			configData->setParameter(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM1);
-		} else if ((configReg & LPMS_STREAM_CAN_OPEN) != 0) {
-			configData->setParameter(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_OPEN);		
-		} else if ((configReg & LPMS_STREAM_CAN_CUSTOM2) != 0) {
-			configData->setParameter(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM2);		
-		} else if ((configReg & LPMS_STREAM_CAN_CUSTOM3) != 0) {
-			configData->setParameter(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM3);		
-		} */
+		}
 		
 		if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_5HZ);	
@@ -642,8 +652,6 @@ bool LpmsIoInterface::parseFunction(void)
 		} else {
 			configData->setParameter(PRM_GAIT_TRACKING_ENABLED, SELECT_GAIT_TRACKING_DISABLED);
 		}
-		
-		configSet = true;
 	break;	
 	
 	case GET_SENSOR_DATA:
@@ -869,34 +877,53 @@ bool LpmsIoInterface::checkState(void)
 {
 	parseModbusByte();
 
-	if (waitForAck == true && ackReceived == false) {
-		if (ackTimer.measure() > ACK_MAX_TIME && 
-			currentState != UPDATE_FIRMWARE &&
-			currentState != UPDATE_IAP) {
-			currentState = IDLE_STATE;
-			waitForAck = false;
-			ackReceived = false;
-			ackTimeout = 0;
-			std::cout << "[LpmsIoInterface] ACK timeout error" << std::endl;			
+	if (waitForAck == true && ackReceived == false) {	
+		if (ackTimer.measure() > ACK_MAX_TIME) {
+			if (resendI < MAX_COMMAND_RESEND) {
+				ackTimer.reset();
+				uploadTimer.reset();
+				++resendI;
+				sendModbusData(imuId, currentState, cLength, cBuffer);
+				
+				LOGV("[LpmsIoInterface] ACK timeout error. Resending command: %d\n", resendI);
+				
+				return true;
+			} else {			
+				currentState = IDLE_STATE;
+				waitForAck = false;
+				ackReceived = false;
+				ackTimeout = 0;
 			
-			if (ifs.is_open() == true) {
-				ifs.close();
+				LOGV("[LpmsIoInterface] ACK timeout error. Resetting send queue.\n");
+			
+				if (ifs.is_open() == true) ifs.close();
+			
+				return false;
 			}
-			
-			return false;
 		}
 	} 
 	
 	if (waitForData == true && dataReceived == false) {
-		if (ackTimer.measure() > ACK_MAX_TIME && 
-			currentState != UPDATE_FIRMWARE &&
-			currentState != UPDATE_IAP) {
-			currentState = IDLE_STATE;
-			waitForData = false;
-			dataReceived = false;
-			dataTimeout = 0;
-			std::cout << "[LpmsIoInterface] DATA timeout error" << std::endl;
-			return false;
+		if (ackTimer.measure() > ACK_MAX_TIME) {
+			if (resendI < MAX_COMMAND_RESEND) {
+				ackTimer.reset();
+				uploadTimer.reset();
+				++resendI;
+				sendModbusData(imuId, currentState, cLength, cBuffer);
+				
+				LOGV("[LpmsIoInterface] ACK timeout error. Resending command: %d\n", resendI);
+				
+				return true;
+			} else {			
+				currentState = IDLE_STATE;
+				waitForAck = false;
+				ackReceived = false;
+				ackTimeout = 0;
+			
+				LOGV("[LpmsIoInterface] ACK timeout error. Resetting send queue.\n");
+			
+				return false;
+			}
 		}
 	}
 
@@ -910,128 +937,12 @@ bool LpmsIoInterface::checkState(void)
 				handleIAPFrame();
 			break;
 			
-			case START_GYR_CALIBRA:
-				receiveReset();
-			break;
-						
-			case SET_OFFSET:
-				receiveReset();
-			break;	
-
-			case SET_IMU_ID:
-				receiveReset();
-			break;	
-			
-			case RESET_REFERENCE:
-				receiveReset();
-			break;	
-		
-			case ENABLE_GYR_THRES:
-				receiveReset();
-			break;
-			
-			case ENABLE_GYR_AUTOCAL:
-				receiveReset();
-			break;		
-			
-			case SET_FILTER_MODE:
-				receiveReset();
-			break;
-			
-			case SET_FILTER_PRESET:
-				receiveReset();
-			break;	
-			
-			case SET_GYR_RANGE:
-				receiveReset();
-			break;	
-
-			case SET_ACC_RANGE:
-				receiveReset();
-			break;	
-
-			case SET_MAG_RANGE:
-				receiveReset();
-			break;	
-
-			case GOTO_COMMAND_MODE:
-				receiveReset();
-			break;
-			
-			case GOTO_STREAM_MODE:
-				receiveReset();
-			break;
-			
-			case GOTO_SLEEP_MODE:
-				receiveReset();
-			break;
-			
-			case WRITE_REGISTERS:
-				receiveReset();
-			break;
-			
 			case SET_CAN_STREAM_FORMAT:
 				receiveReset();
 				zeroImuData(&imuData);
 			break;
 			
-			case SET_CAN_BAUDRATE:
-				receiveReset();
-			break;	
-
-			case SET_STREAM_FREQ:
-				receiveReset();
-			break;
-			
-			case SELF_TEST:
-				receiveReset();
-			break;
-			
-			case SET_HARD_IRON_OFFSET:
-				receiveReset();
-			break;
-	
-			case SET_SOFT_IRON_MATRIX:
-				receiveReset();
-			break;
-			
-			case SET_FIELD_ESTIMATE:
-				receiveReset();
-			break;
-			
-			case SET_ACC_ALIGN_MATRIX:
-				receiveReset();
-			break;
-			
-			case SET_ACC_BIAS:
-				receiveReset();
-			break;
-			
-			case SET_TRANSMIT_DATA:
-				receiveReset();
-			break;
-			
-			case SET_GYR_ALIGN_MATRIX:
-				receiveReset();
-			break;
-			
-			case SET_GYR_ALIGN_BIAS:
-				receiveReset();
-			break;
-
-			case SET_GYR_TEMP_CAL_PRM_A:
-			case SET_GYR_TEMP_CAL_PRM_B:
-			case SET_GYR_TEMP_CAL_BASE_V:
-			case SET_GYR_TEMP_CAL_BASE_T:
-			case SET_RAW_DATA_LP:
-			case SET_CAN_MAPPING:
-			case SET_CAN_HEARTBEAT:
-			case RESET_TIMESTAMP:
-			case SET_LIN_ACC_COMP_MODE:
-			case SET_CENTRI_COMP_MODE:
-			case SET_CAN_CHANNEL_MODE:
-			case SET_CAN_POINT_MODE:
-			case SET_CAN_START_ID:
+			default:
 				receiveReset();
 			break;
 		}
@@ -1053,7 +964,6 @@ bool LpmsIoInterface::isWaitForAck(void)
 bool LpmsIoInterface::startUploadFirmware(std::string fn)
 {
 	bool f = false;
-	char buffer[4];
 	long long l;
 	unsigned long r;
 	
@@ -1064,40 +974,42 @@ bool LpmsIoInterface::startUploadFirmware(std::string fn)
 		
 	if (ifs.is_open() == true) {
 		f = true;
-		std::cout << "[LpmsIoInterface] Firmware file " << fn.c_str() <<" opened." << std::endl;	
+		LOGV("[LpmsIoInterface] Firmware file %s opened.\n", fn.c_str());
 	} else {
-		std::cout << "[LpmsIoInterface] Could not open firmware file " << fn.c_str() << std::endl;	
+		LOGV("[LpmsIoInterface] Could not open firmware file ", fn.c_str());
 		f = false;
-		
+	
 		return f;
 	}
 	
 	ifs.seekg(0, ios::end);
 	l = ifs.tellg();
 	ifs.seekg(0, ios::beg);
-	std::cout << "[LpmsIoInterface] Firmware filesize: " << l << std::endl;
+	LOGV("[LpmsIoInterface] Firmware filesize: %d\n", l);
 	
 	firmwarePages = l / FIRMWARE_PACKET_LENGTH;
 	r = l % FIRMWARE_PACKET_LENGTH;
 	
 	if (r > 0) ++firmwarePages;
 	
-	std::cout << "[LpmsIoInterface] Firmware pages: " << firmwarePages << std::endl;	
-	std::cout << "[LpmsIoInterface] Firmware remainder: " << r << std::endl;	
+	LOGV("[LpmsIoInterface] Firmware pages: %d\n", firmwarePages);	
+	LOGV("[LpmsIoInterface] Firmware remainder: %d\n", r);
 	
-	buffer[0] = firmwarePages & 0xff;
-	buffer[1] = (firmwarePages >> 8) & 0xff;
-	buffer[2] = (firmwarePages >> 16) & 0xff;
-	buffer[3] = (firmwarePages >> 24) & 0xff;
+	cBuffer[0] = firmwarePages & 0xff;
+	cBuffer[1] = (firmwarePages >> 8) & 0xff;
+	cBuffer[2] = (firmwarePages >> 16) & 0xff;
+	cBuffer[3] = (firmwarePages >> 24) & 0xff;
 	
-	std::cout << "[LpmsIoInterface] Firmware packets to be sent: " << firmwarePages << std::endl;
+	LOGV("[LpmsIoInterface] Firmware packets to be sent: %d\n", firmwarePages);
 	
-	sendModbusData(imuId, UPDATE_FIRMWARE, 4, (unsigned char *)buffer);	
+	cLength = 4;
+	sendModbusData(imuId, UPDATE_FIRMWARE, 4, (unsigned char *)cBuffer);	
 	
 	currentState = UPDATE_FIRMWARE;
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 
 	pCount = 0;	
 	uploadTimer.reset();
@@ -1121,7 +1033,7 @@ bool LpmsIoInterface::checkUploadTimeout(void)
 
 			ifs.close();
 			
-			std::cout << "[LpmsIoInterface] Firmware upload failed. Please reconnect sensor and retry." << std::endl;
+			LOGV("[LpmsIoInterface] Firmware upload failed. Please reconnect sensor and retry.\n");
 
 			return false;
 		}
@@ -1132,8 +1044,6 @@ bool LpmsIoInterface::checkUploadTimeout(void)
 
 bool LpmsIoInterface::handleFirmwareFrame(void)
 {
-	char buffer[FIRMWARE_PACKET_LENGTH];	
-
 	uploadTimer.reset();
 	
 	if (ifs.is_open() == false) {
@@ -1153,19 +1063,23 @@ bool LpmsIoInterface::handleFirmwareFrame(void)
 
 		ifs.close();
 		
-		std::cout << "[LpmsIoInterface] Firmware upload finished. Now writing to flash. Please DO NOT detach the power from the device for 15s." << std::endl;
+		LOGV("[LpmsIoInterface] Firmware upload finished. Now writing to flash. Please DO NOT detach the power from the device for 15s.\n");
 		
 		return true;
 	}
 
-	std::cout << "[LpmsIoInterface] Firmware sending packet " << pCount << std::endl;
+	LOGV("[LpmsIoInterface] Firmware sending packet %d\n", pCount);
 	++pCount;
 
-	for (unsigned i=0; i < FIRMWARE_PACKET_LENGTH; i++) buffer[i] = (char) 0xff;
-	ifs.read(buffer, FIRMWARE_PACKET_LENGTH);
-	sendModbusData(imuId, UPDATE_FIRMWARE, FIRMWARE_PACKET_LENGTH, (unsigned char *)buffer);
+	for (unsigned i=0; i < FIRMWARE_PACKET_LENGTH; i++) cBuffer[i] = (char) 0xff;
+	ifs.read((char *)cBuffer, FIRMWARE_PACKET_LENGTH);
+	cLength = FIRMWARE_PACKET_LENGTH;
+	sendModbusData(imuId, UPDATE_FIRMWARE, FIRMWARE_PACKET_LENGTH, (unsigned char *)cBuffer);
 
 	ackTimeout = 0;
+	ackTimer.reset();
+	dataTimeout = 0;
+	resendI = 0;
 
 	currentState = UPDATE_FIRMWARE;
 	waitForAck = true;
@@ -1185,39 +1099,40 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 		
 	if (ifs.is_open() == true) {
 		f = true;
-		std::cout << "[LpmsIoInterface] IAP file " << fn.c_str() <<" opened." << std::endl;	
+		LOGV("[LpmsIoInterface] IAP file %s opened.\n", fn.c_str());
 	} else {
-		std::cout << "[LpmsIoInterface] Could not open IAP file " << fn.c_str() << std::endl;	
+		LOGV("[LpmsIoInterface] Could not open IAP file %s\n", fn.c_str());	
 		f = false;
 	}
 	
 	ifs.seekg(0, ios::end);
 	long long l = ifs.tellg();
 	ifs.seekg(0, ios::beg);
-	std::cout << "[LpmsIoInterface] IAP filesize: " << l << std::endl;
+	LOGV("[LpmsIoInterface] IAP filesize: %d", l);
 	
 	firmwarePages = l / 256;
 	unsigned long r = (long) (l % 256);
 	
 	if (r > 0) ++firmwarePages;
 	
-	std::cout << "[LpmsIoInterface] IAP pages: " << firmwarePages << std::endl;	
-	std::cout << "[LpmsIoInterface] IAP remainder: " << r << std::endl;
+	LOGV("[LpmsIoInterface] IAP pages: %d", firmwarePages);
+	LOGV("[LpmsIoInterface] IAP remainder: %d", r);
 	
-	char buffer[4];
-	buffer[0] = firmwarePages & 0xff;
-	buffer[1] = (firmwarePages >> 8) & 0xff;
-	buffer[2] = (firmwarePages >> 16) & 0xff;
-	buffer[3] = (firmwarePages >> 24) & 0xff;
+	cBuffer[0] = firmwarePages & 0xff;
+	cBuffer[1] = (firmwarePages >> 8) & 0xff;
+	cBuffer[2] = (firmwarePages >> 16) & 0xff;
+	cBuffer[3] = (firmwarePages >> 24) & 0xff;
 	
-	std::cout << "[LpmsIoInterface] IAP packets to be sent: " << firmwarePages << std::endl;
+	LOGV("[LpmsIoInterface] IAP packets to be sent: %d\n", firmwarePages);
 	
-	sendModbusData(imuId, UPDATE_IAP, 4, (unsigned char *)buffer);	
+	cLength = 4;
+	sendModbusData(imuId, UPDATE_IAP, 4, (unsigned char *)cBuffer);	
 	
 	currentState = UPDATE_IAP;
 	waitForAck = true;
 	ackReceived = false;
 	ackTimeout = 0;
+	ackTimer.reset();
 
 	pCount = 0;
 	uploadTimer.reset();
@@ -1227,8 +1142,6 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 
 bool LpmsIoInterface::handleIAPFrame(void)
 {
-	char buffer[FIRMWARE_PACKET_LENGTH];	
-
 	uploadTimer.reset();	
 	
 	if (ifs.is_open() == false) {
@@ -1248,19 +1161,23 @@ bool LpmsIoInterface::handleIAPFrame(void)
 
 		ifs.close();
 		
-		std::cout << "[LpmsIoInterface] IAP upload finished" << std::endl;
+		LOGV("[LpmsIoInterface] IAP upload finished\n");
 		
 		return true;		
 	}
 	
-	std::cout << "[LpmsIoInterface] Sending IAP packet " << pCount << std::endl;
+	LOGV("[LpmsIoInterface] Sending IAP packet %d\n", pCount);
 	++pCount;		
 	
-	for (unsigned i=0; i < FIRMWARE_PACKET_LENGTH; i++) buffer[i] = (char) 0xff;
-	ifs.read(buffer, FIRMWARE_PACKET_LENGTH);
-	sendModbusData(imuId, UPDATE_IAP, FIRMWARE_PACKET_LENGTH, (unsigned char *)buffer);
+	for (unsigned i=0; i < FIRMWARE_PACKET_LENGTH; i++) cBuffer[i] = (char) 0xff;
+	ifs.read((char *)cBuffer, FIRMWARE_PACKET_LENGTH);
+	cLength = FIRMWARE_PACKET_LENGTH;
+	sendModbusData(imuId, UPDATE_IAP, FIRMWARE_PACKET_LENGTH, (unsigned char *)cBuffer);
 	
 	ackTimeout = 0;
+	dataTimeout = 0;
+	resendI = 0;
+	ackTimer.reset();
 	
 	currentState = UPDATE_IAP;
 	waitForAck = true;
@@ -1286,11 +1203,11 @@ float LpmsIoInterface::conItoF(boost::uint32_t v)
 bool LpmsIoInterface::modbusSetNone(unsigned command) 
 {
 	bool r;
-	unsigned char buffer[1];	
 
 	receiveReset();
 
-	r = sendModbusData(imuId, command, 0, buffer);
+	cLength = 0;
+	r = sendModbusData(imuId, command, 0, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1305,11 +1222,11 @@ bool LpmsIoInterface::modbusSetNone(unsigned command)
 bool LpmsIoInterface::modbusGet(unsigned command) 
 {
 	bool r;
-	unsigned char buffer[1];	
 
 	receiveReset();
 
-	r = sendModbusData(imuId, command, 0, buffer);
+	cLength = 0;
+	r = sendModbusData(imuId, command, 0, cBuffer);
 	
 	currentState = command;
 	
@@ -1325,7 +1242,6 @@ bool LpmsIoInterface::modbusGet(unsigned command)
 bool LpmsIoInterface::modbusGetMultiUint32(unsigned command, boost::uint32_t *v, int n) 
 {
 	bool r;
-	boost::uint8_t buffer[256];	
 	boost::uint32_t t;
 	
 	receiveReset();
@@ -1333,12 +1249,13 @@ bool LpmsIoInterface::modbusGetMultiUint32(unsigned command, boost::uint32_t *v,
 	for (int j=0; j<n; ++j) {
 		t = v[j];
 		for (int i=0; i<4; ++i) {
-			buffer[j*4+i] = t & 0xff;
+			cBuffer[j*4+i] = t & 0xff;
 			t = t >> 8;
 		}
 	}
 	
-	r = sendModbusData(imuId, command, n*4, buffer);
+	cLength = n*4;
+	r = sendModbusData(imuId, command, n*4, cBuffer);
 	
 	currentState = command;
 	waitForData = true;
@@ -1351,17 +1268,17 @@ bool LpmsIoInterface::modbusGetMultiUint32(unsigned command, boost::uint32_t *v,
 
 bool LpmsIoInterface::modbusSetInt32(unsigned command, long v)
 {
-	bool r;
-	unsigned char buffer[4];	
+	bool r;	
 	
 	receiveReset();
 
 	for (int i=0; i<4; ++i) {
-		buffer[i] = (unsigned char) (v & 0xff);
+		cBuffer[i] = (unsigned char) (v & 0xff);
 		v = v >> 8;
 	}
 	
-	r = sendModbusData(imuId, command, 4, buffer);
+	cLength = 4;
+	r = sendModbusData(imuId, command, 4, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1375,18 +1292,18 @@ bool LpmsIoInterface::modbusSetInt32(unsigned command, long v)
 bool LpmsIoInterface::modbusSetInt32Array(unsigned command, long *v, int length)
 {
 	bool r;
-	unsigned char buffer[64];	
 	
 	receiveReset();
 
 	for (int j=0; j<length; ++j) {
 		for (int i=0; i<4; ++i) {
-			buffer[j*4+i] = (unsigned char) (v[j] & 0xff);
+			cBuffer[j*4+i] = (unsigned char) (v[j] & 0xff);
 			v[j] = v[j] >> 8;
 		}
 	}
 	
-	r = sendModbusData(imuId, command, 4*length, buffer);
+	cLength = 4*length;
+	r = sendModbusData(imuId, command, 4*length, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1400,20 +1317,19 @@ bool LpmsIoInterface::modbusSetInt32Array(unsigned command, long *v, int length)
 bool LpmsIoInterface::modbusSetVector3Int32(unsigned command, long x, long y, long z)
 {
 	bool r;
-	unsigned char buffer[6];
-
 	long v[3] = { x, y, z };
 
 	receiveReset();
 	
 	for (int i=0; i<3; ++i) {	
 		for (int j=3; j>=0; --j) {
-			buffer[i*4+j] = (unsigned char) (v[i] & 0xff);
+			cBuffer[i*4+j] = (unsigned char) (v[i] & 0xff);
 			v[i] = v[i] / 256;
 		}
 	}
 	
-	r = sendModbusData(imuId, command, 12, buffer);
+	cLength = 12;
+	r = sendModbusData(imuId, command, 12, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1428,19 +1344,19 @@ bool LpmsIoInterface::modbusSetFloat(unsigned command, float v)
 {
 	boost::uint32_t i;
 	boost::uint32_t m = 0xff;
-	bool r;
-	unsigned char buffer[4];		
+	bool r;		
 
 	receiveReset();
 
-	i = conFtoI(v);	
+	i = conFtoI(v);
 
 	for (int j=0; j<4; j++) {
-		buffer[j] = (unsigned char) (i & 0xff);
+		cBuffer[j] = (unsigned char) (i & 0xff);
 		i = i / 256;
 	}
 
-	r = sendModbusData(imuId, command, 4, buffer);
+	cLength = 4;
+	r = sendModbusData(imuId, command, 4, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1455,23 +1371,21 @@ bool LpmsIoInterface::modbusSetVector3Float(unsigned command, float x, float y, 
 {
 	boost::uint32_t i;
 	boost::uint32_t m = 0xff;
-	
 	float v[3] = { x, y, z };
-	
-	bool r;
-	unsigned char buffer[12];		
+	bool r;	
 	
 	receiveReset();
 
 	for (int j=0; j<3; ++j) {	
 		i = conFtoI(v[j]);
 		for (int k=3; k>=0; --k) {
-			buffer[j*4+k] = (unsigned char) (i & 0xff);
+			cBuffer[j*4+k] = (unsigned char) (i & 0xff);
 			i = i / 256;
 		}
 	}
 
-	r = sendModbusData(imuId, command, 12, buffer);
+	cLength = 12;
+	r = sendModbusData(imuId, command, 12, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1485,20 +1399,20 @@ bool LpmsIoInterface::modbusSetVector3Float(unsigned command, float x, float y, 
 bool LpmsIoInterface::modbusSetVector3f(unsigned command, LpVector3f v)
 {
 	boost::uint32_t i;	
-	bool r;
-	unsigned char buffer[32];		
+	bool r;	
 	
 	receiveReset();
 
 	for (int j=0; j<3; j++) {	
 		i = conFtoI(v.data[j]);
 		for (int k=0; k<4; k++) {
-			buffer[j*4+k] = (unsigned char) (i & 0xff);
+			cBuffer[j*4+k] = (unsigned char) (i & 0xff);
 			i = i / 256;
 		}
 	}
 
-	r = sendModbusData(imuId, command, 12, buffer);
+	cLength = 12;
+	r = sendModbusData(imuId, command, 12, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;
@@ -1512,8 +1426,7 @@ bool LpmsIoInterface::modbusSetVector3f(unsigned command, LpVector3f v)
 bool LpmsIoInterface::modbusSetMatrix3x3f(unsigned command, LpMatrix3x3f m)
 {
 	boost::uint32_t i;
-	bool r;
-	unsigned char buffer[64];		
+	bool r;	
 	
 	receiveReset();
 
@@ -1521,13 +1434,14 @@ bool LpmsIoInterface::modbusSetMatrix3x3f(unsigned command, LpMatrix3x3f m)
 		for (int l=0; l<3; l++) {
 			i = conFtoI(m.data[j][l]);
 			for (int k=0; k<4; k++) {
-				buffer[j*3*4+l*4+k] = (unsigned char) (i & 0xff);
+				cBuffer[j*3*4+l*4+k] = (unsigned char) (i & 0xff);
 				i = i / 256;
 			}
 		}
 	}
 
-	r = sendModbusData(imuId, command, 36, buffer);
+	cLength = 36;
+	r = sendModbusData(imuId, command, 36, cBuffer);
 	
 	currentState = command;
 	waitForAck = true;

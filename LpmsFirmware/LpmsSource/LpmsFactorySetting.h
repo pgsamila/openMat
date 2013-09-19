@@ -33,13 +33,13 @@
 // #define EULER_FROM_QUATERNION
 
 // Enables CAN bus interface
-// #define USE_CANBUS_INTERFACE
+#define USE_CANBUS_INTERFACE
 
 // Enables Bluetooth interface
-#define USE_BLUETOOTH_INTERFACE
+// #define USE_BLUETOOTH_INTERFACE
 
 // Enables watchdog timer
-#define ENABLE_WATCHDOG
+// #define ENABLE_WATCHDOG
 
 // Enables heave motion tracking
 // #define USE_HEAVEMOTION
@@ -48,7 +48,7 @@
 // #define USE_GAIT_TRACKING
 
 // To enable pressure sensing
-#define ENABLE_PRESSURE
+// #define ENABLE_PRESSURE
 
 // Enable Bluetooth low-latency
 // #define ENABLE_LOWLATENCY
@@ -224,22 +224,22 @@
 #define LPMS_FACTORY_ACC_COMP_GAIN_1		1.0f
 #define LPMS_FACTORY_ACC_COVAR_1		0.1f
 #define LPMS_FACTORY_MAG_COMP_GAIN_1		1.0f
-#define LPMS_FACTORY_MAG_COVAR_1		5.0e3f
+#define LPMS_FACTORY_MAG_COVAR_1		5.0e2f
 
 #define LPMS_FACTORY_ACC_COMP_GAIN_2		1.0f
 #define LPMS_FACTORY_ACC_COVAR_2		0.1f
 #define LPMS_FACTORY_MAG_COMP_GAIN_2		1.0f
-#define LPMS_FACTORY_MAG_COVAR_2		5.0e2f
+#define LPMS_FACTORY_MAG_COVAR_2		5.0e1f
 
 #define LPMS_FACTORY_ACC_COMP_GAIN_3		1.0f
 #define LPMS_FACTORY_ACC_COVAR_3		0.1f
 #define LPMS_FACTORY_MAG_COMP_GAIN_3		1.0f
-#define LPMS_FACTORY_MAG_COVAR_3		5.0e1f
+#define LPMS_FACTORY_MAG_COVAR_3		5.0f
 
 #define LPMS_FACTORY_ACC_COMP_GAIN_4		1.0f
 #define LPMS_FACTORY_ACC_COVAR_4		0.1f
 #define LPMS_FACTORY_MAG_COMP_GAIN_4		1.0f
-#define LPMS_FACTORY_MAG_COVAR_4		5.0f
+#define LPMS_FACTORY_MAG_COVAR_4		0.5f
 
 #define LPMS_FACTORY_ACC_COMP_GAIN_USER		LPMS_FACTORY_ACC_COMP_GAIN_1
 #define LPMS_FACTORY_ACC_COVAR_USER		LPMS_FACTORY_ACC_COVAR_1

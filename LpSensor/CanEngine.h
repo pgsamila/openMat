@@ -17,11 +17,22 @@
 
 	#include "PCANBasic.h"
 	#include "PCANBasicClass.h"
+	
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <conio.h>
+	#include <time.h>
+	#include <string.h>
+
+	#include <winsock.h>
 #endif
 
 #include "LpmsCanIo.h"
 #include "DeviceListItem.h"
 #include "LpmsDefinitions.h"
+
+#define CMD_LEN 2048
+#define CAN_GATEWAY_TCP_PORT 19227
 
 class CanEngine {
 private:
@@ -29,10 +40,27 @@ private:
 	std::queue<TPCANMsg> txQ;
 	TPCANHandle canChannel;
 	PCANBasicClass pcan;
+	
+	UINT32 port;
+	SOCKET connectionSocket;
+	char commandStr[CMD_LEN], replyStr[CMD_LEN];	
 #endif
 
-	bool canInitialized;
 	std::list<LpmsCanIo *> sensorList;
+
+	bool peakCanInitialized;
+	bool ixxatCanInitialized;
+	
+	bool peakCanDetected;
+	bool ixxatCanDetected;
+	
+	int messageBytes;
+	int headerBytes;
+	int messageLen;
+	int ixxatState;
+
+	char headerData[64];
+	char messageData[64];
 
 public:
 	/*! Constructor. */
@@ -65,6 +93,12 @@ public:
 	bool isInterfacePresent(void);
 	
 	void setBaudrate(int i);
+	
+	/* IXXAT related */
+	bool sendCmdIxxat(char *commandPtr);
+	bool getReplyIxxat(char *replyPtr, int *nBytes);
+	bool connectIxxat(char *hostName, int port);
+	bool initIxxat(void);
 };
 
 #endif

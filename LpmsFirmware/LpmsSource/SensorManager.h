@@ -27,7 +27,7 @@
 #include "LpmsFactorySetting.h"
 #include "HeaveMotion.h"
 
-#define LPMS_CU_MEASUREMENT_PERIOD 20
+#define LPMS_MEASUREMENT_PERIOD 20
 
 // Number of iterations for gyrsocope calibration
 #define GYRO_ONLINE_CAL_ITER 			128
@@ -36,7 +36,7 @@
 #define GYR_CAL_THRES 				60
 
 // Duration of gyroscope auto-calibration sequence
-#define GYR_CAL_TIMEOUT 			5000.0f
+#define GYR_CAL_TIMEOUT 			5000
 
 // Possible durations of manual gyroscope bias clibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)
@@ -138,9 +138,6 @@ void setSensorParam(LpmsCalibrationData lCD);
 
 // Calculates raw accelerometer data running average
 void accAverage(void);
-
-// Does gyroscope online calibration
-void gyrOnlineCal(void);
 
 // Calculates linear acceleration
 void calcLinearAcceleration(void);

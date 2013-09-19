@@ -131,8 +131,7 @@ Plot::Plot(string title, string xAxis, string yAxis,
 	QPen magentaPen(Qt::magenta);
 	magentaPen.setWidth(2);
 	
-	for (int i=0; i<nCurves; i++)
-	{
+	for (int i=0; i<nCurves; i++) {
 		Curve c;
 		
 		c.qwtCurve = new QwtPlotCurve(curveName[i].c_str());
@@ -185,18 +184,16 @@ QSize Plot::minimumSizeHint() const
 void Plot::addData(int i, float y)
 {	
 	if (i < nCurves) {
-		if (curves[i].xPos /*curves[i].nData*/ > maxData-1) {
-			// curves[i].nData = 0;
+		if (curves[i].xPos > maxData-1) {
 			curves[i].xPos = 0;
 			curves[i].nData = maxData;
 			curves[i].first = false;
-			// clearXMarker();
 		}
 
 		if (curves[i].first == true) curves[i].nData = curves[i].xPos+1;
 	
-		curves[i].xData[curves[i].xPos /*curves[i].nData*/] = (float) curves[i].xPos; // curves[i].nData;
-		curves[i].yData[curves[i].xPos /*curves[i].nData*/] = (float) y;
+		curves[i].xData[curves[i].xPos] = (float) curves[i].xPos;
+		curves[i].yData[curves[i].xPos] = (float) y;
 				
 		setData(i);
 
@@ -221,12 +218,10 @@ void Plot::setXMarker(string text)
 	QwtPlotMarker* m;
 	
     m = new QwtPlotMarker();
-    // m->setLabel(QString::fromStdString(text));
     m->setLabelAlignment(Qt::AlignRight | Qt::AlignTop);
-	// m->setLabelOrientation(Qt::Horizontal);
     m->setLineStyle(QwtPlotMarker::VLine);
     m->setLinePen(QPen(Qt::gray, 0, Qt::SolidLine));
-    m->setXValue(0); // curves[0].nData);
+    m->setXValue(0);
 
     m->attach(this);
 
@@ -252,9 +247,8 @@ void Plot::setData(int i)
 
 void Plot::clearData(void)
 {
-	for (int i=0; i<nCurves; i++)
-	{
-		curves[i].nData = 0; // maxData;
+	for (int i=0; i<nCurves; i++) {
+		curves[i].nData = 0;
 		curves[i].first = true;
 
 		for (int j=0; j<maxData; j++) {
@@ -272,6 +266,4 @@ void Plot::clearData(void)
 	
 	setAxisScale(xBottom, 0.0, (float) maxData);
     setAxisScale(yLeft, yMax, yMin);
-	
-	// clearXMarker();
 }

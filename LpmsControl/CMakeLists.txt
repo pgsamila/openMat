@@ -44,9 +44,7 @@ SET(USE_ZEROC_ICE FALSE)
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-set(WINDOWS_BOOST_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Boost" CACHE STRING "")
 set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ice" CACHE STRING "")
-set(WINDOWS_QWT_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Qwt" CACHE STRING "")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	SET(SHOW_CONSOLE TRUE)

@@ -93,7 +93,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	gl2->addWidget(gyrAutocalibrationCombo = new QComboBox(), l, 1); ++l;
 	gl2->addWidget(lowPassCombo = new QComboBox(), l, 1); ++l;	
 	
-	for (int i=1; i < 129; i++) indexItem->addItem(QString("%1").arg(i));
+	for (int i=0; i < 129; i++) indexItem->addItem(QString("%1").arg(i));
 	connect(indexItem, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOpenMATIndex(int)));
 
 	samplingRateCombo->addItem(QString("5 Hz"));
@@ -570,7 +570,7 @@ void SensorGuiContainer::updateData(void) {
 	addressItem->setText(QString(cStr));	
 
 	sensor->getConfigurationPrm(PRM_OPENMAT_ID, &i);		
-	indexItem->setCurrentIndex(i-1);	
+	indexItem->setCurrentIndex(i);	
 
 	sensor->getConfigurationPrm(PRM_FIRMWARE_VERSION, cStr);		
 	firmwareItem->setText(QString(cStr));
@@ -1038,7 +1038,7 @@ void SensorGuiContainer::updateData(void) {
 
 void SensorGuiContainer::updateOpenMATIndex(int i)
 {
-	sensor->setConfigurationPrm(PRM_OPENMAT_ID, indexItem->currentIndex()+1);
+	sensor->setConfigurationPrm(PRM_OPENMAT_ID, indexItem->currentIndex());
 }
 
 void SensorGuiContainer::updateGyrThresholdEnable(int i)

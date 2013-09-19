@@ -130,12 +130,12 @@ int uart_tx(int len,unsigned char *data)
 	DWORD r,written;
 	int i;
 
-	printf("[LPMS-BLE] Writing data: ");
+	/* printf("[LPMS-BLE] Writing data: ");
 
 	for (i=0; i<len; ++i) {
 		printf("%x ", data[i]);
 	}
-	printf("\n");
+	printf("\n"); */
 
 	while (len) {
 		r = WriteFile (serial_handle, data, len, &written, NULL);
@@ -159,7 +159,7 @@ int uart_rx(int len, unsigned char *data, int timeout_ms)
 	COMMTIMEOUTS timeouts;
 	timeouts.ReadIntervalTimeout = MAXDWORD;
 	timeouts.ReadTotalTimeoutMultiplier = 0;
-	timeouts.ReadTotalTimeoutConstant = timeout_ms;
+	timeouts.ReadTotalTimeoutConstant = 0; // timeout_ms;
 	timeouts.WriteTotalTimeoutMultiplier = 0;
 	timeouts.WriteTotalTimeoutConstant = 0;
 

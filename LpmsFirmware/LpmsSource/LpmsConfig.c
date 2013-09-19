@@ -402,3 +402,43 @@ uint8_t copyRamToFlash_256bytes(__IO uint32_t* flashAddress, uint32_t* ramBuffer
 	
 	return 1;
 }
+
+uint8_t copyRamToFlash_128bytes(__IO uint32_t* flashAddress, uint32_t* ramBuffer)
+{
+	uint16_t data_length;
+	uint32_t temp1=0;
+	uint32_t temp2=0;
+	
+	FLASH_Unlock();
+	
+	SectorsWRPStatus = FLASH_OB_GetWRP() & (OB_WRP_Sector_5 | OB_WRP_Sector_7);
+	if (SectorsWRPStatus == 0x00) {
+	  	FLASH_OB_Unlock();
+		FLASH_OB_WRPConfig((OB_WRP_Sector_5 | OB_WRP_Sector_7), DISABLE);
+		if (FLASH_OB_Launch() != FLASH_COMPLETE) {
+			return 0;
+		}
+		FLASH_OB_Lock();
+	}
+
+	FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
+	
+	data_length = 128/4;
+	
+	for (uint16_t i = 0; i < data_length; i++) {
+		if (FLASH_ProgramWord(*flashAddress, *(uint32_t*)(ramBuffer + i)) == FLASH_COMPLETE) {
+		  	temp1 = *(__IO uint32_t*)(*flashAddress);
+			temp2 = *(uint32_t*)(ramBuffer + i);
+		  	
+			if (temp1 != temp2) {
+				return 0;
+			}
+
+			*flashAddress += 4;
+		} else {
+			return 0;
+		}
+	}
+	
+	return 1;
+}

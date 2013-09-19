@@ -13,7 +13,7 @@ static uint8_t gTransmitMailbox = CAN_NO_MB;
 static LpmsPacket newPacket;
 static uint8_t rxState = PACKET_START;
 static uint16_t rawDataCounter = 0;
-CAN_InitTypeDef CAN_InitStructure;
+uint32_t canBaudrate;
 
 extern LpmsReg gReg;
 extern uint8_t connectedInterface;
@@ -21,10 +21,12 @@ extern float T;
 extern LpmsCalibrationData calibrationData;
 extern float canHeartbeatTime;
 
-
 void CANConfiguration(uint32_t baudrateFlag)
 {
-	GPIO_InitTypeDef  GPIO_InitStructure;
+	canBaudrate = baudrateFlag;
+
+	CAN_InitTypeDef CAN_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(CAN_GPIO_CLK, ENABLE);
 	RCC_APB1PeriphClockCmd(CAN_CLK, ENABLE);
@@ -171,8 +173,6 @@ void CANStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 		}
 
 		if (timeout > CAN_TX_TIMEOUT) {
-			CAN_DeInit(CAN_PORT);
-			CAN_Init(CAN_PORT, &CAN_InitStructure);
 		}
 	}	
 	
@@ -190,10 +190,7 @@ void CANStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 			timeout++;
 		}
 
-
 		if (timeout > CAN_TX_TIMEOUT) {
-			CAN_DeInit(CAN_PORT);
-			CAN_Init(CAN_PORT, &CAN_InitStructure);
 		}
 	}
 }
@@ -296,7 +293,7 @@ uint8_t pollCanBusData(void)
 					newPacket.end = newPacket.end | (((uint16_t)b) << 8);
 					rxState = PACKET_START;
 					if (newPacket.lrcCheck == computeCheckSum(newPacket)/* && 
-						newPacket.address == getImuID()*/) {
+						newPacket.address == getImuID() */) {
 						addPacketToBuffer(newPacket);
 						connectedInterface = CANBUS_CONNECTED;
 					}
@@ -311,64 +308,6 @@ uint8_t pollCanBusData(void)
 			}			
 		}
 	}
-
-	return 1;
-}
-
-uint8_t sendCANCustom1OrientationData(void)
-{
- 	uint8_t dataBuffer[8];
-	uint16_t dataLength; 
-	int i;
-  
-	for (i=0; i<8; i++) dataBuffer[i] = 0;	
-	
-	getRollData(dataBuffer, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
-	sendStrictCANAerospaceData(GET_ROLL, dataLength, dataBuffer);
-
-	for (i=0; i<8; i++) dataBuffer[i] = 0;	
-	
-	getPitchData(dataBuffer, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
-	sendStrictCANAerospaceData(GET_PITCH, dataLength, dataBuffer);
-
-	for (i=0; i<8; i++) dataBuffer[i] = 0;	
-		
-	getYawData(dataBuffer, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
-	sendStrictCANAerospaceData(GET_YAW, dataLength, dataBuffer);	
-
-        return 1;
-}
-
-uint8_t sendStrictCANAerospaceData(uint8_t function, uint16_t length, uint8_t *data)
-{
-	uint8_t txData[8];
-	uint16_t id = 0;
-
-	switch (function) {
-	case GET_PITCH:
-		id = 0x137;
-	break;
-
-	case GET_ROLL:
-		id = 0x138;
-	break;
-
-	case GET_YAW:
-		id = 0x141;
-	break;
-	}
-
-	txData[0] = getImuID();
-	txData[1] = 0x02;
-	txData[2] = 0x0;
-	txData[3] = 0x0;
-
-	txData[4] = data[0];
-	txData[5] = data[1];
-	txData[6] = data[2];
-	txData[7] = data[3];
-	
-	CANStartStrictCANAerospaceDataTransfer(id, txData);
 
 	return 1;
 }

@@ -28,6 +28,7 @@ project (HumanBodySimulation)
 if(COMMAND cmake_policy)
 cmake_policy(SET CMP0003 NEW)
 cmake_policy(SET CMP0015 NEW)
+cmake_policy(SET CMP0020 NEW)
 endif(COMMAND cmake_policy)
 
 SET(USE_ZEROC_ICE TRUE)
@@ -40,33 +41,28 @@ set(LP_DROPBOX_PATH "C:/Users/user/Dropbox")
 
 SET(CMAKE_BUILD_TYPE "Debug")
 
-include_directories("C:/qwt-6.0.1/src")
-include_directories("C:/Program Files/boost/boost_1_47")
 include_directories("C:/Program Files/ZeroC/Ice-3.4.2/include")
 include_directories("C:/eigen-eigen-3.0.2")
 include_directories("../OpenMATCommon")
-include_directories("../LpAlgorithm")
 
-link_directories("C:/qwt-6.0.1/lib")
-link_directories("C:/Program Files/boost/boost_1_47/lib")
-link_directories("C:/Program Files (x86)/boost/boost_1_47/lib")
 link_directories("C:/Program Files/ZeroC/Ice-3.4.2/lib/vc100")
 
-include_directories("../Libraries/Qwt/include")
-include_directories("../Libraries/Boost")
-include_directories("../Libraries/Eigen")
-include_directories("../Libraries/Ice/include")
+include_directories("../Lp3rdPartyLibraries/Qwt/src")
+include_directories("../Lp3rdPartyLibraries/Boost")
+include_directories("../Lp3rdPartyLibraries/Eigen")
+
+include_directories("C:/Program Files (x86)/ZeroC/Ice-3.5.0/include")
+
 include_directories("../OpenMATCommon")
-include_directories("../LpAlgorithm")
 include_directories("../LpSensor")
-include_directories("../Libraries/Pugixml/src/")
-include_directories("${LP_DROPBOX_PATH}/LpResearch/ProductDevelopment/Software/Libraries/Ice/include")
+include_directories("../Lp3rdParty/Pugixml/src/")
 
 link_directories("../Libraries/Qwt/lib")
 link_directories("../Libraries/Boost/lib")
 link_directories("../Libraries/Ice/lib")
 link_directories("../LpAlgorithm/build")
-link_directories("${LP_DROPBOX_PATH}/LpResearch/ProductDevelopment/Software/Libraries/Ice/lib")
+
+link_directories("C:/Program Files (x86)/ZeroC/Ice-3.5.0/lib/vc110")
 
 ADD_DEFINITIONS(-DQWT_DLL)
 ADD_DEFINITIONS(-DNOMINMAX)
@@ -103,18 +99,21 @@ set(headers
 	../OpenMATCommon/ImuMonitor.h	
 	../OpenMATCommon/ImuMonitorI.h		
 	../OpenMATCommon/IceStormSubscriber.h
-
-	../LpAlgorithm/LpAlgorithm.h	
 )
 
 set(EXECUTABLE_OUTPUT_PATH ./build)
 
-find_package(OpenGL REQUIRED)
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL Phonon QtXml REQUIRED)
-include(${QT_USE_FILE})
-qt4_wrap_cpp(moc_sources ${headers})
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(${QT_INCLUDE_DIR})
+set(CMAKE_PREFIX_PATH "C:/qt5/qtbase")
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+
+find_package(Qt5Widgets REQUIRED)
+include_directories(${Qt5Widgets_INCLUDES})
+add_definitions(${Qt5Widgets_DEFINITIONS})
+find_package(Qt5Core REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Xml REQUIRED)
 
 add_executable(HumanBodySimulation ${sources} ${headers} ${moc_sources})
 target_link_libraries(HumanBodySimulation ${QT_LIBRARIES})
@@ -123,4 +122,7 @@ target_link_libraries(HumanBodySimulation ${OPENGL_LIBRARIES})
 target_link_libraries(HumanBodySimulation iced.lib icestormd.lib iceutild.lib)
 target_link_libraries(HumanBodySimulation qwtd.lib)
 target_link_libraries(HumanBodySimulation Ws2_32.lib)
-# target_link_libraries(HumanBodySimulation LpAlgorithm.lib)
+target_link_libraries(HumanBodySimulation Qt5::Widgets)		
+target_link_libraries(HumanBodySimulation Qt5::Core)
+target_link_libraries(HumanBodySimulation Qt5::OpenGL)
+target_link_libraries(HumanBodySimulation Qt5::Xml)

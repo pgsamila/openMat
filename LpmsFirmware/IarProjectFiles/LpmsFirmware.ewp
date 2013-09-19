@@ -573,7 +573,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsBFirmware1.2.3.bin</state>
+          <state>LpmsCuFirmwareTest.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -691,7 +691,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>C:\Users\user\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\IarProjectFiles\LpmsFirmware.icf</state>
+          <state>X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\IarProjectFiles\LpmsFirmware.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>

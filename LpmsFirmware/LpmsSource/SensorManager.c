@@ -18,8 +18,6 @@ int32_t rawPressure;
 float pressure;
 float pressureBias;
 float altitude;
-int8_t rawGyrTemp;
-float gTemp;
 LpVector3f a;
 LpVector3f aRaw;
 LpVector3f b;
@@ -71,13 +69,6 @@ float preGY = 0.0f;
 float preGZ = 0.0f;
 float aAvg[3];
 int32_t preAvg[3];
-int32_t gAvg[3];
-int32_t gAcc[GYRO_ONLINE_CAL_ITER][3];
-int32_t gMin[3];
-int32_t gMax[3];
-int32_t gSum[3];
-int32_t cueC = 0;
-uint32_t calTime = 0;
 float startTime = 0.0f;
 int8_t firstPressure = 1;
 int32_t pCycleCount = 0;
@@ -343,6 +334,10 @@ void updateSensorData(void)
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
 
+#ifdef ENABLE_WATCHDOG
+		WWDG_DeInit();
+#endif
+
 		cT = getTimeStep();
 		startTimeStepCounting();
 		
@@ -351,20 +346,6 @@ void updateSensorData(void)
 		measurementTime += T;
 		heaveTime = T;
 		pressureTime += cT;
-
-#ifdef ENABLE_WATCHDOG
-		WWDG_DeInit();
-#endif
-
-/* #ifdef ENABLE_WATCHDOG
-		WWDG_Enable(0x7F);
-#endif
-		if ((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
-			getGyrTempData(&rawGyrTemp);
-		}
-#ifdef ENABLE_WATCHDOG
-		WWDG_DeInit();
-#endif */
 
 #ifdef ENABLE_PRESSURE
 		if (pressureTime > PRESSURE_T) {
@@ -412,7 +393,7 @@ void processSensorData(void)
 	tB.data[2] = (float) magRawData.data[2] * calibrationData.magGain.data[2];
 
 	if (lpFilterParam.useGyrAutoCal == 1) {	  
-		gyrOnlineCal();
+		gyrOnlineCal(T);
 	}
 
 	applyLowPass();
@@ -424,8 +405,6 @@ void processSensorData(void)
 	b.data[0] = tB.data[0];
 	b.data[1] = tB.data[1];
 	b.data[2] = tB.data[2];
-
-	gTemp = (float) rawGyrTemp;
 
 	b = correctB(b);
 	checkRefCal();
@@ -503,27 +482,6 @@ void calcAltitude(void)
 	}
 }
 
-void gyroToInertial(void) 
-{
-	float p = gRaw.data[0];
-	float q = gRaw.data[1];
-	float r = gRaw.data[2];
-
-	float sin_phi = sin(rAfterOffset.data[0]);
-	float cos_phi = cos(rAfterOffset.data[0]);
-
-	float sin_theta = sin(rAfterOffset.data[1]);
-	float cos_theta = cos(rAfterOffset.data[1]);
-	float tan_theta = tan(rAfterOffset.data[1]);
-
-	w.data[0] = p + sin_phi * tan_theta * q + cos_phi * tan_theta * r;
-	w.data[1] = cos_phi * q - sin_phi * r;
-
-	if (fabs(cos_theta) < 0.001f) cos_theta = 0.001;
-	
-	w.data[2] = (sin_phi / cos_theta) * q + (cos_phi / cos_theta) * r;
-}
-
 void calcLinearAcceleration(void)
 {
 	LpVector3f gWorld;
@@ -537,51 +495,6 @@ void calcLinearAcceleration(void)
 	quaternionToMatrix(&q, &M);
 	matVectMult3(&M, &gWorld, &gSensor);
 	vectSub3x1(&a, &gSensor, &linAcc);
-}
-
-void gyrOnlineCal(void)
-{
-	if (calTime < 99999) {
-		calTime += (uint32_t)(T * 1000.0f);
-	}
-
-	if (cueC > GYRO_ONLINE_CAL_ITER-2) {
-		cueC = 0;
-	} else {
-		cueC++;
-	}
-	
-	for (int i=0; i<3; i++) {
-		gAcc[cueC][i] = gyrRawData.data[i];
-	}
-
-	gMin[0] = gMin[1] = gMin[2] = 99999;
-	gMax[0] = gMax[1] = gMax[2] = -99999;
-	gSum[0] = gSum[1] = gSum[2] = 0;
-
-	for (int i=0; i<GYRO_ONLINE_CAL_ITER; i++) {
-		for (int j=0; j<3; j++) {
-			if (gAcc[i][j] > gMax[j]) gMax[j] = gAcc[i][j];  
-			if (gAcc[i][j] < gMin[j]) gMin[j] = gAcc[i][j];  
-			gSum[j] += gAcc[i][j];
-		}
-	}
-
-	if (fabs(gMax[1] - gMin[1]) < GYR_CAL_THRES &&
-		fabs(gMax[2] - gMin[2]) < GYR_CAL_THRES &&
-		fabs(gMax[0] - gMin[0]) < GYR_CAL_THRES &&
-		isGyrCalibrationEnabled == 0 && calTime > GYR_CAL_TIMEOUT) {
-
-		for (int j=0; j<3; j++) {
-			gAvg[j] = gSum[j] / GYRO_ONLINE_CAL_ITER;
-		}
-
-		calibrationData.gyrOffset.data[0] = (float) gAvg[0] * calibrationData.gyrGain.data[0] * d2r; 
-		calibrationData.gyrOffset.data[1] = (float) gAvg[1] * calibrationData.gyrGain.data[1] * d2r; 
-		calibrationData.gyrOffset.data[2] = (float) gAvg[2] * calibrationData.gyrGain.data[2] * d2r;
-
-		calTime = 0;
-	}
 }
 
 void accAverage(void)

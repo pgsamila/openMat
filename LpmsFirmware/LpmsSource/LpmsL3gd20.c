@@ -181,9 +181,37 @@ uint8_t isGyrDataReady(void)
  	uint8_t is_data_ready = 0;	
 	
 	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
-	if ((is_data_ready & 0x08) == 0) {
-		return 0;  
-	}
+	if ((is_data_ready & 0x08) == 0) return 0;
+	
+	return 1;
+}
+
+uint8_t isGyrXDataReady(void)
+{
+ 	uint8_t is_data_ready = 0;	
+	
+	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	if ((is_data_ready & 0x01) == 0) return 0;
+	
+	return 1;
+}
+
+uint8_t isGyrYDataReady(void)
+{
+ 	uint8_t is_data_ready = 0;	
+	
+	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	if ((is_data_ready & 0x02) == 0) return 0;
+	
+	return 1;
+}
+
+uint8_t isGyrZDataReady(void)
+{
+ 	uint8_t is_data_ready = 0;	
+	
+	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	if ((is_data_ready & 0x04) == 0) return 0;
 	
 	return 1;
 }

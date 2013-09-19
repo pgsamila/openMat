@@ -24,6 +24,18 @@
 
 #include <boost/cstdint.hpp>
 
+// Logging to console or file
+#define LOG_TO_CONSOLE
+#ifdef LOG_TO_CONSOLE
+	#define INIT_LOGGING
+	#define LOGV(...) printf(__VA_ARGS__);
+#else
+	#define INIT_LOGGING 	static FILE *logFileHandle;
+	#define LOGV(...) 		logFileHandle = fopen("LpmsLog.txt", "a"); \
+							fprintf(logFileHandle, __VA_ARGS__); \
+							fclose(logFileHandle);
+#endif
+
 // LP-BUS byte definitions
 #define PACKET_ADDRESS0 0
 #define PACKET_ADDRESS1 1
@@ -43,7 +55,8 @@
 // State machine definitions
 #define IDLE_STATE -1
 #define ACK_MAX_TIME 3000000
-#define MAX_UPLOAD_TIME 5000000
+#define MAX_UPLOAD_TIME 20000000
+#define MAX_COMMAND_RESEND 10
 
 // Float to unsigned integer conversion structure
 typedef union _float2uint {
@@ -253,6 +266,7 @@ public:
 	void resetTimestamp(void);
 	void clearRxBuffer(void);
 	void clearDataQueue(void);
+	void setTxRxImuId(int id);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
@@ -284,6 +298,7 @@ protected:
 	bool fromBuffer(std::vector<unsigned char> data, unsigned start, float *v);
 	bool fromBuffer(unsigned char *data, float *v);
 	bool fromBufferBigEndian(unsigned char *data, float *v);
+	bool fromBufferInt16(unsigned char *data, int *v);
 	bool parseSensorData(void);
 	bool modbusSetMatrix3x3f(unsigned command, LpMatrix3x3f m);
 	bool modbusSetVector3f(unsigned command, LpVector3f v);
@@ -308,10 +323,10 @@ protected:
 	int rawDataIndex;	
 	bool waitForAck;
 	bool ackReceived;
+	bool dataReceived;
 	int currentState;	
 	long ackTimeout;
 	bool waitForData;
-	bool dataReceived;
 	long dataTimeout;
 	int pCount;
 	ImuData imuData;
@@ -322,7 +337,6 @@ protected:
 	long imuId;
 	long long firmwarePages;
 	int currentMode;
-	bool configSet;
 	float latestLatency;
 	MicroMeasure latencyTimer;
 	MicroMeasure uploadTimer;
@@ -330,6 +344,9 @@ protected:
 	bool newDataFlag;
 	float timestampOffset;
 	float currentTimestamp;
+	unsigned char cBuffer[512];
+	int resendI;
+	int cLength;
 };	
 
 #endif

@@ -18,7 +18,8 @@ EXAMPLE APPLICATIONS
 SUPPORT COMPONENTS
 - OpenMATCommon: Common classes for the whole toolkit
 - OpenMATInstaller: Script to build Windows installer based on NSIS
-- Lp3rdPartyLibraries: Some of the 3rd party library dependencies for OpenMAT. It might be necessary to install some of these libraries separately, depending on your system setup.
+- LpSensorCWrapper: C language wrapper for LpSensor
+- LpSensorCWrapperTest: Simple test application for C language wrapper
 
 SENSOR FIRMWARE
 - LpmsFirmware: Open-souce version of the LPMS firmware

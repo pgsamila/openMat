@@ -1,4 +1,6 @@
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #ifndef LABVIEW_INTERFACE
 #define LABVIEW_INTERFACE
@@ -45,4 +47,6 @@ LPMS_API void APIENTRY disconnectLpms(void);
 
 #endif
 
+#ifdef __cplusplus
 }
+#endif

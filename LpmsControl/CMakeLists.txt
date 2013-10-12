@@ -34,17 +34,26 @@ cmake_minimum_required(VERSION 2.8.3)
 project (LpmsControl)
 
 if (COMMAND cmake_policy)
-cmake_policy(SET CMP0003 NEW)
-cmake_policy(SET CMP0015 NEW)
-cmake_policy(SET CMP0020 NEW)
+	cmake_policy(SET CMP0003 NEW)
+	cmake_policy(SET CMP0015 NEW)
+	cmake_policy(SET CMP0020 NEW)
 endif(COMMAND cmake_policy)
-
-SET(USE_ZEROC_ICE FALSE)
 
 set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-set(WINDOWS_ICE_PATH "C:/Users/user/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ice" CACHE STRING "")
+set(USE_JUST_THREAD CACHE BOOL "")
+set(USE_ZEROC_ICE CACHE BOOL "")
+
+set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.0" CACHE STRING "")
+set(WINDOWS_QWT_PATH "C:/qwt-6.1.0" CACHE STRING "")
+set(WINDOWS_QT5_PATH "C:/qt5/Qt5-Vs2010-32-OpenGl/5.1.1/msvc2010_opengl" CACHE STRING "")
+set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
+set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
+set(WINDOWS_BOOST_PATH "C:/boost_1_54_0" CACHE STRING "")
+set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
+set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.0" CACHE STRING "")
+set(WINDOWS_EIGEN_PATH "C:/eigen-eigen-3.0.3")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	SET(SHOW_CONSOLE TRUE)
@@ -59,25 +68,22 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	include_directories("../Lp3rdPartyLibraries/Ftdi")
-	include_directories("../Lp3rdPartyLibraries/Qwt/src")
-	include_directories("../Lp3rdPartyLibraries/Eigen")
-	
-	include_directories("../Lp3rdPartyLibraries/Boost")	
-
-	if (USE_ZEROC_ICE)
-		include_directories("../Lp3rdPartyLibraries/Ice/include")
-	endif()
+	include_directories("${WINDOWS_BOOST_PATH}")
+	include_directories("${WINDOWS_PUGIXML_PATH}/src")
+	include_directories("${WINDOWS_FTDI_PATH}")
+	include_directories("${WINDOWS_EIGEN_PATH}")
 
 	include_directories("../OpenMATCommon")
 	include_directories("../LpSensor")
-	include_directories("../Lp3rdPartyLibraries/Pugixml/src/")
 
-	link_directories("../Lp3rdPartyLibraries/Qwt/lib")
+	include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+	link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")	
+	
+	include_directories("${WINDOWS_QWT_PATH}/src")
+	link_directories("${WINDOWS_QWT_PATH}/lib")
 
-	if (USE_ZEROC_ICE)
-		link_directories("${WINDOWS_ICE_PATH}/Ice/lib")
-	endif() 
+	include_directories("${WINDOWS_ICE_PATH}/Ice/include")	
+	link_directories("${WINDOWS_ICE_PATH}/Ice/lib")
 
 	link_directories("../LpSensor/build")
 
@@ -147,7 +153,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	
 		LpmsControl.rc
 
-		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
+		${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
 	)
 
 	if (USE_ZEROC_ICE)
@@ -247,7 +253,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
-set(CMAKE_PREFIX_PATH "C:/qt5/qtbase")
+set(CMAKE_PREFIX_PATH "${WINDOWS_QT5_PATH}")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -284,6 +290,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(LpmsControl qwt.lib)
 		target_link_libraries(LpmsControl Ws2_32.lib)
 
+		if (USE_JUSTTHREAD)	
+			target_link_libraries(LpmsControl justthread_vc10_mt.lib)
+		endif()	
+		
 		if (USE_ZEROC_ICE)
 			target_link_libraries(LpmsControl ice.lib icestorm.lib iceutil.lib)
 		endif()
@@ -296,6 +306,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(LpmsControl Qt5::OpenGL)
 		target_link_libraries(LpmsControl qwtd.lib)
 		target_link_libraries(LpmsControl Ws2_32.lib)
+	
+		if (USE_JUSTTHREAD)	
+			target_link_libraries(LpmsControl justthread_vc10_mtd.lib)
+		endif()	
 	
 		if (USE_ZEROC_ICE)	
 			target_link_libraries(LpmsControl iced.lib icestormd.lib iceutild.lib)

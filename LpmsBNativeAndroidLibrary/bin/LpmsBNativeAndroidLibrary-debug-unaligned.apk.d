@@ -1,3 +1,3 @@
-C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\LpmsBNativeAndroidLibrary-debug-unaligned.apk : \
-C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\LpmsBNativeAndroidLibrary.ap_ \
-C:\Users\user\Dropbox\Klaus\LpmsSoftware\Development\LpmsBNativeAndroidLibrary\bin\classes.dex \
+X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\LpmsBNativeAndroidLibrary-debug-unaligned.apk : \
+X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\LpmsBNativeAndroidLibrary.ap_ \
+X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes.dex \

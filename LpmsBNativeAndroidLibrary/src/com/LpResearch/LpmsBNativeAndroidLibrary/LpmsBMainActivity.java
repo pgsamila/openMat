@@ -176,7 +176,7 @@ public class LpmsBMainActivity extends Activity
 			mLpmsB.setAcquisitionParameters(true, true, true, true, true, false);			
 			
 			// Tries to connect to LPMS-B with Bluetooth ID 00:06:66:48:E3:7A
-			mLpmsB.connect("00:06:66:48:E3:7A", 0);
+			mLpmsB.connect("00:06:66:48:E3:62", 0);
 		}	
 	
         super.onResume();

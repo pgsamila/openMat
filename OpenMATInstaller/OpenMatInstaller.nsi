@@ -1,5 +1,5 @@
-Name "OpenMAT 1.2.0"
-OutFile "OpenMAT-1.2.0-Setup.exe"
+Name "OpenMAT 1.2.5"
+OutFile "OpenMAT-1.2.5-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin
@@ -89,12 +89,16 @@ Section "OpenMAT (required)"
 	File "..\OpenMATCommon\config.icebox"
 	File "..\OpenMATCommon\config.service"
 		
-	/* File "C:\Qt\4.7.4\bin\phonon4.dll" */
-	File "C:\Qt\4.8.2\bin\QtCore4.dll"
-	File "C:\Qt\4.8.2\bin\QtGui4.dll"
-	File "C:\Qt\4.8.2\bin\QtOpenGL4.dll"
-	/* File "C:\Qt\4.7.4\bin\QtXml4.dll" */
-	File "C:\Qt\4.8.2\bin\QtSvg4.dll"
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Core.dll"
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Widgets.dll"	
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Gui.dll"	
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5OpenGL.dll"	
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Svg.dll"	
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Network.dll"
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5PrintSupport.dll"
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icudt51.dll"
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icuin51.dll"
+	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icuuc51.dll"
 	
 	/* File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\ice34.dll"
 	File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\icestorm34.dll"
@@ -104,7 +108,7 @@ Section "OpenMAT (required)"
 		
 	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
 		
-	File "..\Lp3rdPartyLibraries\Qwt\lib\qwt.dll"
+	File "C:\qwt-6.1.0\lib\qwt.dll"
 	
 	File "..\Lp3rdPartyLibraries\PcanApi\Win32\PCANBasic.dll"	
 	

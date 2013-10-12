@@ -39,6 +39,7 @@ set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
 
 set(USE_ICE FALSE CACHE BOOL "")
 set(BUILD_OPENSOURCE CACHE BOOL "")
+set(USE_JUST_THREAD CACHE BOOL "")
 
 if (BUILD_ARCHITECTURE STREQUAL "32-bit")
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -70,26 +71,38 @@ if (USE_ZEROC_ICE)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(WINDOWS_SDK_PATH "X:/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/WindowsSdk6" CACHE STRING "")
-	set(WINDOWS_FTDI_PATH "X:/Dropbox/LpResearch/ProductDevelopment/Software/Libraries/Ftdi" CACHE STRING "")
+	set(WINDOWS_SDK_PATH "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.1A" CACHE STRING "")
+	set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
+	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
+	set(WINDOWS_PCAN_PATH "C:/pcan-basic" CACHE STRING "")
+	set(WINDOWS_BOOST_PATH "C:/boost_1_54_0" CACHE STRING "")
+	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
+	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.0" CACHE STRING "")
 
-	include_directories("../Lp3rdPartyLibraries/Ftdi")
+	include_directories("${WINDOWS_PCAN_PATH}/Include")
+	include_directories("${WINDOWS_BOOST_PATH}")
+	include_directories("${WINDOWS_ICE_PATH}/include")
+	include_directories("${WINDOWS_PUGIXML_PATH}/src")
+	include_directories("${WINDOWS_FTDI_PATH}")
+	
 	include_directories("../OpenMATCommon")
 	include_directories("../LpSensor")
-	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
-	include_directories("../Lp3rdPartyLibraries/PcanApi/Include")
-	include_directories("../Lp3rdPartyLibraries/Boost")
+	
+	include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+	link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
 
-if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
 		link_directories("${WINDOWS_FTDI_PATH}/i386")
 		link_directories("${WINDOWS_PCAN_PATH}/Win32/VC_LIB")
 		link_directories("${WINDOWS_SDK_PATH}/Lib")
+		link_directories("${WINDOWS_ICE_PATH}/lib/vc110")
 	endif()	
 	
-if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
 		link_directories("${WINDOWS_FTDI_PATH}/amd64")
 		link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")
-		link_directories("${WINDOWS_SDK_PATH}/Lib/x64")		
+		link_directories("${WINDOWS_SDK_PATH}/Lib/x64")
+		link_directories("${WINDOWS_ICE_PATH}/lib/vc110/x64")		
 	endif()
 	
 	ADD_DEFINITIONS(-DUSE_EIGEN)
@@ -104,20 +117,16 @@ if (BUILD_ARCHITECTURE STREQUAL "64-bit")
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /O2")
 	endif()
-	
-	if (USE_ZEROC_ICE)
-		include_directories("${OPENMAT_DEPENDENCIES_PATH}/Ice/include")
-	endif()
-	
-	if (USE_ZEROC_ICE)
-		link_directories("${OPENMAT_DEPENDENCIES_PATH}/Ice/lib")
-	endif() 
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set(LINUX_FTDI_PATH "" CACHE STRING "")
+	set(LINUX_PUGIXML_PATH "" CACHE STRING "")
+
 	include_directories("../OpenMATCommon")
-	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
-	include_directories("../Lp3rdPartyLibraries/Ftdi/Linux/release")
+	
+	include_directories("${LINUX_PUGIXML_PATH}/src")
+	include_directories("${LINUX_FTDI_PATH}")
 	
 	include_directories("/usr/local/include")
 	include_directories("/usr/include")
@@ -140,15 +149,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		LpmsRS232.cpp
 		LpmsSensor.cpp	
 		LpMatrix.c
-		LpmsBle.cpp
-		BleCmdDef.c
-		BleCommands.c
-		BleUart.c
 		RingBuffer.c
 
 		PCANBasicClass.cpp
 			
-		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
+		${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
 	)
 	
 	if (BUILD_OPENSOURCE)	
@@ -190,7 +195,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		LpMatrix.c
 		LpmsBleLinux.cpp
 						
-		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
+		${LINUX_PUGIXML_PATH}/src/pugixml.cpp
 	)
 
 	if (BUILD_OPENSOURCE)	
@@ -221,8 +226,8 @@ set(headers
 )
 
 if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-	set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
-	set(EXECUTABLE_OUTPUT_PATH ./build CACHE STRING "")
+	set(LIBRARY_OUTPUT_PATH ../LpmsControl/build/release CACHE STRING "")
+	set(EXECUTABLE_OUTPUT_PATH ../LpmsControl/build/release CACHE STRING "")
 endif()
 
 if (BUILD_ARCHITECTURE STREQUAL "64-bit")
@@ -245,6 +250,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			target_link_libraries(LpSensor Ws2_32.lib)
 			target_link_libraries(LpSensor ftd2xx.lib)
 			target_link_libraries(LpSensor Bthprops.lib Setupapi.lib)
+			
+			if (USE_JUSTTHREAD)	
+				target_link_libraries(LpSensor justthread_vc10_mt.lib)
+			endif()
 					
 			if (USE_ZEROC_ICE)
 				target_link_libraries(LpSensor ice.lib icestorm.lib iceutil.lib)
@@ -255,7 +264,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			add_library(LpSensorD SHARED ${sources} ${headers})
 			target_link_libraries(LpSensorD Ws2_32.lib)
 			target_link_libraries(LpSensorD ftd2xx.lib)
-			target_link_libraries(LpSensorD Bthprops.lib Setupapi.lib)	
+			target_link_libraries(LpSensorD Bthprops.lib Setupapi.lib)
+
+			if (USE_JUSTTHREAD)	
+				target_link_libraries(LpSensor justthread_vc10_mtd.lib)
+			endif()
 
 			if (USE_ZEROC_ICE)	
 				target_link_libraries(LpSensorD iced.lib icestormd.lib iceutild.lib)
@@ -269,6 +282,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			target_link_libraries(LpSensor64 Ws2_32.lib)
 			target_link_libraries(LpSensor64 ftd2xx.lib)
 			target_link_libraries(LpSensor64 Bthprops.lib)
+			target_link_libraries(LpSensor64 justthreadx64_vc10_mt.lib)
 					
 			if (USE_ZEROC_ICE)
 				target_link_libraries(LpSensor64 ice.lib icestorm.lib iceutil.lib)
@@ -279,7 +293,8 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			add_library(LpSensorD64 SHARED ${sources} ${headers})
 			target_link_libraries(LpSensorD64 Ws2_32.lib)
 			target_link_libraries(LpSensorD64 ftd2xx.lib)
-			target_link_libraries(LpSensorD64 Bthprops.lib)	
+			target_link_libraries(LpSensorD64 Bthprops.lib)
+			target_link_libraries(LpSensorD64 justthreadx64_vc10_mtd.lib)
 
 			if (USE_ZEROC_ICE)	
 				target_link_libraries(LpSensorD64 iced.lib icestormd.lib iceutild.lib)

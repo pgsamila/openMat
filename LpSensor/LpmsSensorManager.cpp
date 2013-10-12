@@ -214,7 +214,7 @@ void LpmsSensorManager::run(void)
 			
 			LpmsU::listDevices(&deviceList);
 			LpmsBBluetooth::listDevices(&deviceList);
-			LpmsBle::listDevices(&deviceList);
+			// LpmsBle::listDevices(&deviceList);
 
 			managerState = SMANAGER_MEASURE;
 		break;

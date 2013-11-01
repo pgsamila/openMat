@@ -96,7 +96,6 @@ void MotionBuilderCommunication::runThread(void)
 				 
 						if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
 							break;  
-						cout << "count: " << ++count << endl;
 						boost::this_thread::sleep(boost::posix_time::microseconds(1000000)/ fps);
 						//Sleep( 1000/fps );
 					}

@@ -75,6 +75,8 @@
 #include "CubeWindowContainer.h"
 #include "MicroMeasure.h"
 #include "GaitTrackingWindow.h"
+//birdy
+#include "MotionBuilderCommunication.h"
 
 #include <string>
 #include <iostream>
@@ -94,7 +96,7 @@ using namespace boost;
 
 #define USE_HEAVEMOTION
 
-#define LPMS_CONTROL_VERSION "1.2.5"
+#define LPMS_CONTROL_VERSION "1.2.0"
 
 /* LPMS Control main window. */
 class MainWindow : public QMainWindow
@@ -389,6 +391,9 @@ private:
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		
 #endif
+
+	//birdy
+	MotionBuilderCommunication mbcom;
 };
 
 #endif

@@ -86,7 +86,7 @@ private:
 };
 
 struct LPMSRotationData {	
-	static const int ChannelCount = 7; // total number of sensors available
+	static const int ChannelCount = 6; // total number of sensors available
 	int deviceOnline;	// number of device online
 	nsTime 	mTime;
 	struct {
@@ -95,11 +95,15 @@ struct LPMSRotationData {
 	}mChannel[ChannelCount];
 
 	LPMSRotationData(){
+		reset();
+	}
+
+	void reset(){
+		double qIdentity[4] = {0,0,0,1};
 		mTime = 0;
 		deviceOnline = 0;
-		double qIdentity[4] = {0,0,0,1};
 		for (int i=0; i<ChannelCount; ++i){
-			mChannel[i].id = 0;
+			mChannel[i].id = -1;
 			memcpy(mChannel[i].q, qIdentity,sizeof(mChannel[i].q));
 		}
 	}

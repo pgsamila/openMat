@@ -1,6 +1,7 @@
 #include "MotionBuilderCommunication.h"
 #include "MainWindow.h"
 
+
 using Eigen::Quaternion;
 using Eigen::Matrix3d;
 using namespace std;
@@ -85,6 +86,7 @@ void MotionBuilderCommunication::runThread(void)
 				else {
 					LPMSRotationData rotDat;
 					int fps=30;
+					int count=0;
 					recv(lSocket, (char*)&fps, sizeof(fps), 0); 					
 					logd("MBServer FPS: " + toString(fps));
 					while (bRunning)
@@ -94,7 +96,7 @@ void MotionBuilderCommunication::runThread(void)
 				 
 						if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
 							break;  
-						
+						cout << "count: " << ++count << endl;
 						boost::this_thread::sleep(boost::posix_time::microseconds(1000000)/ fps);
 						//Sleep( 1000/fps );
 					}
@@ -245,13 +247,12 @@ void MotionBuilderCommunication::updateImuData( LPMSRotationData &rd )
 	list<LpmsSensorI*>::iterator it;	
 	int i=0;
 	ImuData d;
-
+	rd.reset();
 	rd.deviceOnline=sensorList.size();
 	// update measurement 		 
 	for (it = sensorList.begin(); it != sensorList.end(); ++it) {
 		d = (*it)->getCurrentData();   
-		i = d.openMatId-1;
-		if (i<rd.ChannelCount){
+		if (i++ < rd.ChannelCount){
 			rd.mChannel[i].id = d.openMatId;
 			decodeRotation(rd.mChannel[i].q, d.q[0], d.q[1], d.q[2], d.q[3]); 
 		} 

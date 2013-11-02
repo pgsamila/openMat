@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=2101880426
+Checksum=527132755
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -84,7 +84,21 @@ PcSampling=0
 InterruptLogs=0
 ForcedTimeStamps=0
 EventCPI=0
-EventEX
+EventEXC=0
+EventFOLD=0
+EventLSU=0
+EventSLEEP=0
+[PowerProbe]
+Frequency=10000
+Probe0=I0
+ProbeSetup0=2 1 1 2 0 0
+[CallStackLog]
+Enabled=0
+[DriverProfiling]
+Enabled=0
+Mode=3
+Graph=0
+Symbiont=0
 [Disassemble mode]
 mode=0
 [Breakpoints2]

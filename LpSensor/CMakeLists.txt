@@ -132,7 +132,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	include_directories("/usr/include")
 
 	link_directories("/usr/lib")
-	link_directories("/usr/lib/x86_64-linux-gnu")
+	# link_directories("/usr/lib/x86_64-linux-gnu")
 	link_directories("/usr/local/lib")
 endif()
 
@@ -193,7 +193,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		LpmsRS232Linux.cpp
 		LpmsSensor.cpp	
 		LpMatrix.c
-		LpmsBleLinux.cpp
 						
 		${LINUX_PUGIXML_PATH}/src/pugixml.cpp
 	)

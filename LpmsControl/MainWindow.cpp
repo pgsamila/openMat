@@ -358,13 +358,16 @@ MainWindow::MainWindow(QWidget *parent)
 	this->setMinimumSize(800, 600);
 	showMaximized();
 	
-	setWindowTitle("LpmsControl");
+	setWindowTitle("LPMS Control");
 	
 	isRunning = false;
 	isConnecting = false;
 	calibratingMag	= false;
 	
 	startServer();
+
+	//birdy
+	mbcom.startServer(); 
 	
 	QTimer* timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -409,7 +412,7 @@ void MainWindow::startServer(void)
 		}
 	}
 #endif
-}	
+}	 
 
 void MainWindow::updateMagneticFieldMap(void)
 {
@@ -529,20 +532,20 @@ void MainWindow::timerUpdate(void)
 
 	if (mm.measure() < GRAPH_UPDATE_PERIOD) return;
 	mm.reset();	
-	
-	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {
+	int i=0;
+	for (it = lpmsList.begin(); it != lpmsList.end(); ++it, ++i) {
 		(*it)->updateData();
-		
+
 		if ((*it)->getSensor()->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED && 
 			(*it)->getSensor()->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 			
+
 			(*it)->checkOptionalFeatures();
 			checkOptionalFeatures((*it)->getSensor());
 			
 #ifdef USE_ZEROC_ICE
-			isp->updateImuData(imuData);
-#endif
-
+			//isp->updateImuData(imuData);
+#endif	
 			if (mode == MODE_THREED_WIN && ((cubeWindowContainer->getMode() == CUBE_VIEW_MODE_2) || (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_4))) {
 				imuData = (*it)->getSensor()->getCurrentData();
 				cubeWindowContainer->getSelectedCube()->updateData(imuData);			
@@ -562,7 +565,7 @@ void MainWindow::timerUpdate(void)
 #else
 				imuData = (*it)->getSensor()->getCurrentData();
 #endif
-
+				
 				switch (mode) {
 				case MODE_GRAPH_WIN:
 					graphWindow->plotDataSet(imuData);
@@ -610,6 +613,7 @@ void MainWindow::openSensor(void)
 	isConnecting = true;	
 	std::string deviceAddress = std::string(deviceList.getDeviceId(comboDeviceList->currentIndex()));
 
+
 	f = false;	
 	std::list<SensorGuiContainer *>::iterator it;		
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {
@@ -634,6 +638,9 @@ void MainWindow::openSensor(void)
 #ifdef USE_ZEROC_ICE
 	isp->addSensor(lpmsDevice);
 #endif	
+
+	//birdy
+	mbcom.addSensor(lpmsDevice);
 	
 	currentLpms->updateData();
 
@@ -653,7 +660,7 @@ void MainWindow::openSensor(void)
 }
 
 void MainWindow::closeSensor(void)
-{
+{ 
 	if (currentLpms == 0 || isConnecting == true) return;
 	
 	stopMeasurement();
@@ -664,6 +671,8 @@ void MainWindow::closeSensor(void)
 #ifdef USE_ZEROC_ICE
 		isp->removeSensor(temp->getSensor());
 #endif
+		//birdy
+		mbcom.removeSensor(temp->getSensor());
 
 		sm->removeSensor(temp->getSensor());
 		lpmsList.remove(temp);
@@ -910,11 +919,11 @@ void MainWindow::cancelUpload(void)
 void MainWindow::uploadTimerUpdate(void)
 {	
 	int p;
-	int s;
 
-	s = currentLpms->getSensor()->getUploadProgress(&p);
-	
-	if (s == 0) {
+	if (currentLpms->getSensor()->getUploadProgress(&p) == true) {
+		uploadProgress->setValue(p);
+		uploadProgress->show();
+	} else {
 		QMessageBox msgBox;
 	
 	    delete uploadTimer;
@@ -922,18 +931,7 @@ void MainWindow::uploadTimerUpdate(void)
 		
 		msgBox.setText("Upload has been finished.");
 		msgBox.exec();
-	} else if (s == 1) {
-		uploadProgress->setValue(p);
-		uploadProgress->show();
-	} else if (s == 2) {
-		QMessageBox msgBox;
-	
-	    delete uploadTimer;
-		delete uploadProgress;
-		
-		msgBox.setText("Upload has failed.\nPlease reconnect LPMS and retry.\nPlease contact LP-RESEARCH if the problem persists.");
-		msgBox.exec();
-	}
+	}	
 }
 
 void MainWindow::uploadIap(void)
@@ -1155,6 +1153,9 @@ bool MainWindow::exitWindow(void)
 	return false; */
 	
 	closeSensor();
+	
+	//birdy
+	mbcom.stopServer();
 	
 	return true;
 }

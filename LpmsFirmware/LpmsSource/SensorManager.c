@@ -691,7 +691,7 @@ void checkRefCal(void)
 		cumulatedRefData[2] = cumulatedRefData[2] + tR.data[2];
 		cumulatedRefData[2] = cumulatedRefData[2] + tR.data[2];
 		
-		if (refCalibrationDuration >= LPMS_REF_CALIBRATION_DURATION_1S) {
+		if (refCalibrationDuration >= LPMS_REF_CALIBRATION_DURATION_01S) {
 			stopRefCalibration();
 		}
 	}

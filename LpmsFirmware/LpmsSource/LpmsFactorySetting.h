@@ -14,38 +14,17 @@
 
 // Compile time switches -->
 
-// To calculate linear acceleration
-#define CALC_LINEAR_ACCELERATION
-
-// To use 7-element calibration for magnetometer
-#define USE_7ELEM_CALIB
-
-// To use simple reference calibration
-// #define SIMPLE_REF
-
-// To use low pass on raw data
-// #define USE_RAW_DATA_LP
-
-// Activates strong linear acceleration suppression
-// #define LIN_ACC_SUP_STRONG
-
-// Enables Euler angles from the quternion data calculation
-// #define EULER_FROM_QUATERNION
-
 // Enables CAN bus interface
-#define USE_CANBUS_INTERFACE
+// #define USE_CANBUS_INTERFACE
 
 // Enables Bluetooth interface
-// #define USE_BLUETOOTH_INTERFACE
+#define USE_BLUETOOTH_INTERFACE
 
 // Enables watchdog timer
-// #define ENABLE_WATCHDOG
+#define ENABLE_WATCHDOG
 
 // Enables heave motion tracking
 // #define USE_HEAVEMOTION
-
-// Activates gait tracking
-// #define USE_GAIT_TRACKING
 
 // To enable pressure sensing
 // #define ENABLE_PRESSURE
@@ -234,7 +213,7 @@
 #define LPMS_FACTORY_ACC_COMP_GAIN_3		1.0f
 #define LPMS_FACTORY_ACC_COVAR_3		0.1f
 #define LPMS_FACTORY_MAG_COMP_GAIN_3		1.0f
-#define LPMS_FACTORY_MAG_COVAR_3		5.0f
+#define LPMS_FACTORY_MAG_COVAR_3		25.0f
 
 #define LPMS_FACTORY_ACC_COMP_GAIN_4		1.0f
 #define LPMS_FACTORY_ACC_COVAR_4		0.1f

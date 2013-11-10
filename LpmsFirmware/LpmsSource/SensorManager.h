@@ -49,6 +49,7 @@
 #define LPMS_MAG_CALIBRATION_DURATION_30S	(30.0f)
 #define LPMS_REF_CALIBRATION_DURATION_5S	(5.0f)
 #define LPMS_REF_CALIBRATION_DURATION_1S	(1.0f)
+#define LPMS_REF_CALIBRATION_DURATION_01S	(0.1f)
 
 // Sensor calibration parameters
 typedef struct _LpmsCalibrationData {

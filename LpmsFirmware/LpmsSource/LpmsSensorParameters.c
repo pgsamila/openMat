@@ -280,6 +280,11 @@ uint8_t setStreamFreq(uint8_t* data)
 
 uint8_t setOffset(uint8_t* data)
 {
+	qOffset.data[0] = 1.0f;
+	qOffset.data[1] = 0.0f;
+	qOffset.data[2] = 0.0f;
+	qOffset.data[3] = 0.0f;
+
   	quaternionInv(&q, &qOffset);
 
 	setRegVector4f(LPMS_OFFSET_QUAT_0, qOffset);

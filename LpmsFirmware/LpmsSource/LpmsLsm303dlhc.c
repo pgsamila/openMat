@@ -336,9 +336,15 @@ uint8_t getAccRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 	readAccRegister(&data_buffer[4], (uint8_t)LSM303DLHC_OUT_Z_L_A);
 	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A);
 
+#ifdef USE_LPMSCU_NEW
 	*xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
+	*yAxis = -(int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
+	*zAxis = (int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
+#else
+        *xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
 	*yAxis = (int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
 	*zAxis = -(int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
+#endif
 	
 	return 1;	
 }
@@ -359,12 +365,17 @@ uint8_t getMagRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 {
 	uint8_t data_buffer[6];
 		
-	readMagRegister(data_buffer, (uint8_t)LSM303DLHC_OUT_X_H_M, 6);      
-
+	readMagRegister(data_buffer, (uint8_t)LSM303DLHC_OUT_X_H_M, 6);    
+        
+#ifdef USE_LPMSCU_NEW
 	*xAxis = -(int16_t)((((int16_t)data_buffer[0]) << 8) + data_buffer[1]);
+	*zAxis = -(int16_t)((((int16_t)data_buffer[2]) << 8) + data_buffer[3]);
+	*yAxis = (int16_t)((((int16_t)data_buffer[4]) << 8) + data_buffer[5]);
+#else
+        *xAxis = -(int16_t)((((int16_t)data_buffer[0]) << 8) + data_buffer[1]);
 	*zAxis = (int16_t)((((int16_t)data_buffer[2]) << 8) + data_buffer[3]);
 	*yAxis = -(int16_t)((((int16_t)data_buffer[4]) << 8) + data_buffer[5]);
-	
+#endif
 	return 1;
 }
 

@@ -10,10 +10,16 @@
 #define LPMS_STARTUP_H
        
 #include "stm32f2xx.h"
+#include "LpmsFactorySetting.h"
 
 // IO port initialization
 #define LED_GPIO_CLK RCC_AHB1Periph_GPIOC
-#define LED_GPIO_PIN GPIO_Pin_6
+#ifdef USE_LPMSCU_NEW
+    #define LED_GPIO_PIN GPIO_Pin_5
+#else
+    #define LED_GPIO_PIN GPIO_Pin_6
+#endif
+
 #define LED_GPIO_PORT GPIOC
 
 // Initializes MCU

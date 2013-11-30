@@ -4,6 +4,8 @@ X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\
 X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBMainActivity$1.class \
 X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBMainActivity$2.class \
 X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBMainActivity.class \
+X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBRenderer.class \
+X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBSurfaceView.class \
 X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBThread$ClientReadThread.class \
 X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBThread$ClientStateThread.class \
 X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsBNativeAndroidLibrary\bin\classes\com\LpResearch\LpmsBNativeAndroidLibrary\LpmsBThread.class \

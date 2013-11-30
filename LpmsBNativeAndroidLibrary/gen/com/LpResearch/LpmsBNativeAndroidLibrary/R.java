@@ -13,25 +13,7 @@ public final class R {
     public static final class drawable {
         public static final int ic_launcher=0x7f020000;
         public static final int lp_logo=0x7f020001;
-    }
-    public static final class id {
-        public static final int accXText=0x7f050004;
-        public static final int accYText=0x7f050005;
-        public static final int accZText=0x7f050006;
-        public static final int eulerXText=0x7f05000e;
-        public static final int eulerYText=0x7f05000f;
-        public static final int eulerZText=0x7f050010;
-        public static final int gyrXText=0x7f050001;
-        public static final int gyrYText=0x7f050002;
-        public static final int gyrZText=0x7f050003;
-        public static final int magXText=0x7f050007;
-        public static final int magYText=0x7f050008;
-        public static final int magZText=0x7f050009;
-        public static final int quatWText=0x7f05000d;
-        public static final int quatXText=0x7f05000a;
-        public static final int quatYText=0x7f05000b;
-        public static final int quatZText=0x7f05000c;
-        public static final int text=0x7f050000;
+        public static final int lpmslogo=0x7f020002;
     }
     public static final class layout {
         public static final int main=0x7f030000;

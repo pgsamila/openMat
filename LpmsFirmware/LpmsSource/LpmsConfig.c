@@ -297,7 +297,7 @@ uint8_t resetToFactory(void)
 	gReg.data[LPMS_OFFSET_QUAT_3] = f2int.u32_val;
                  
 	gReg.data[LPMS_FILTER_MODE] = LPMS_FILTER_GYR_ACC_MAG;
-	gReg.data[LPMS_FILTER_PRESET] = LPMS_FILTER_PRM_SET_1;
+	gReg.data[LPMS_FILTER_PRESET] = LPMS_FILTER_PRM_SET_4;
 
 	gReg.data[LPMS_MAG_FIELD_EST] = conFtoI(LPMS_FACTORY_FIELD_EST);
 	gReg.data[LPMS_MAG_FIELD_INC] = LPMS_FACTORY_FIELD_INC;

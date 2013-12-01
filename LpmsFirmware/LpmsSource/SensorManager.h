@@ -35,7 +35,7 @@
 #define GYRO_ONLINE_CAL_ITER 			128
 
 // Amplitude threshold for gyrsocope auto-calibration
-#define GYR_CAL_THRES 				40
+#define GYR_CAL_THRES 				45
 
 // Duration of gyroscope auto-calibration sequence
 #define GYR_CAL_TIMEOUT 			5000

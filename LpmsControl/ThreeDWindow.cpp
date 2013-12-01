@@ -64,8 +64,6 @@ ThreeDWindow::ThreeDWindow(QWidget *parent, QGLWidget *shareWidget)
 		caseObj.faceList[i].vertexList[2] = (caseObj.faceList[i].vertexList[2] - caseObj.centerVertex).cwiseProduct(scale);
 	}
 	
-	// imuData.rotOffsetM = Eigen::Matrix3f::Identity();
-	
 	zeroImuData(&imuData);
 	
 	rM = Eigen::Matrix3f::Identity();
@@ -134,9 +132,6 @@ void ThreeDWindow::initializeGL()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glEnable(GL_COLOR_MATERIAL);
 	
-	/* glLineWidth(3.0);
-	glClearColor(0.75f, 0.75f, 0.75f, 0.0f); */
-	
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
 }
 
@@ -201,7 +196,7 @@ void ThreeDWindow::paintGL()
 	l = (caseObj.maxVertex - caseObj.centerVertex) * lpmsCaseScale + Eigen::Vector3f(0.35f, 0.35f, 0.35f);
 #endif
 	
-	glColor3f((GLfloat) 0.8, (GLfloat) 0.0, (GLfloat) 0.0);		
+	glColor3f((GLfloat) 0.0f, (GLfloat) 0.0f, (GLfloat) 0.8f);		
 	M = Eigen::AngleAxisf(0 * d2r, Eigen::Vector3f::UnitX()) * 
 		Eigen::AngleAxisf(90 * d2r, Eigen::Vector3f::UnitY()) * 
 		Eigen::AngleAxisf(0, Eigen::Vector3f::UnitZ());
@@ -219,7 +214,7 @@ void ThreeDWindow::paintGL()
 	drawCylinder(l(0), radius / 2.0f, rM * M);
 	drawCone(0.3f, radius, rM4 * T4, ""); // "X");
 	
-	glColor3f((GLfloat) 0.0f, (GLfloat) 0.0f, (GLfloat) 0.8f);		
+	glColor3f((GLfloat) 0.8f, (GLfloat) 0.0f, (GLfloat) 0.0f);		
 	M = Eigen::AngleAxisf(90.0f * d2r, Eigen::Vector3f::UnitX()) * 
 		Eigen::AngleAxisf(180.0f * d2r, Eigen::Vector3f::UnitY()) * 
 		Eigen::AngleAxisf(0, Eigen::Vector3f::UnitZ());
@@ -478,26 +473,6 @@ void ThreeDWindow::drawPointCube(void)
 	drawQuad(p8, p5, p1, p4, true);		
 	drawQuad(p5, p6, p2, p1, true);
 	
-	/* glColor3f(1.0, 0, 1.0);		
-	
-	p4 = p4 * 1.001f;
-	p1 = p1 * 1.001f;
-	p2 = p2 * 1.001f;
-	p3 = p3 * 1.001f;
-	p5 = p5 * 1.001f;
-	p6 = p6 * 1.001f;
-	p7 = p7 * 1.001f;
-	p8 = p8 * 1.001f;	
-	
-	glDisable(GL_LIGHTING);
-	drawQuad(p1, p2, p3, p4, false);
-	drawQuad(p8, p7, p6, p5, false);			
-	drawQuad(p6, p7, p3, p2, false);	
-	drawQuad(p3, p7, p8, p4, false);		
-	drawQuad(p8, p5, p1, p4, false);		
-	drawQuad(p5, p6, p2, p1, false);
-	glEnable(GL_LIGHTING); */
-	
 	QFont f;
 	f.setPixelSize(30);
 }
@@ -567,14 +542,14 @@ void ThreeDWindow::drawCylinder(float l, float r, Eigen::Matrix3f m)
 void ThreeDWindow::drawAxes(void)
 {
 	glDisable(GL_LIGHTING);
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3f(0.0, 0.0, 1.0);
 	glBegin(GL_LINES);
 	glNormal3f(0.0f, 1.0f, 0.0f);
 	glVertex3f(10.0, 0.0, 0.0f);
 	glVertex3f(-10.0, 0.0, 0.0f);
 	glEnd();
 
-	glColor3f(0.0, 0.0, 1.0);	
+	glColor3f(1.0, 0.0, 0.0);	
 	glBegin(GL_LINES);
 	glNormal3f(0.0f, 0.0f, 1.0f);	
 	glVertex3f(0.0, -10.0, 0.0f);

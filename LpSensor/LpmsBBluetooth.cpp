@@ -261,7 +261,7 @@ bool LpmsBBluetooth::read(char *rxBuffer, unsigned long *bytesReceived)
 		timeoutT = 0;
 	}
 	
-	if (timeoutT > 10.0f) {
+	if (timeoutT > 20.0f) {
 		std::cout << "[LpmsBBluetooth] LPMS connection timeout has occured (device: " << bluetoothAddress.c_str() << ")." << std::endl;
 		
 		shutdown(sock, SD_SEND);

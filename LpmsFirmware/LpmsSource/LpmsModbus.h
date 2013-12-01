@@ -35,8 +35,7 @@
 #define PACKET_END_HB 11
 
 // LpBus data packet
-typedef struct _LpmsModbusPacket
-{
+typedef struct _LpmsModbusPacket {
 	uint8_t start;
 	uint16_t address;
 	uint16_t function;

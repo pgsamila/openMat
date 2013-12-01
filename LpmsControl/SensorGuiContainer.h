@@ -114,6 +114,10 @@ public:
 	QGridLayout* selectedDataGl;
 	bool heaveMotionEnabled;
 	int deviceType;
+	float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3];
+	float hardIronOffset[3];
+	float softIronMatrix[3][3];
+	float fieldRadius;	
 	
 	SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree);
 	~SensorGuiContainer(void);

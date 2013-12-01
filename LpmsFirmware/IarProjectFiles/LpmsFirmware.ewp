@@ -573,7 +573,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCUFirmware1.2.5.bin</state>
+          <state>LpmsBFirmware1.2.5.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

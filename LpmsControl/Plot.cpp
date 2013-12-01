@@ -58,12 +58,11 @@ Plot::Plot(string title, string xAxis, string yAxis,
 
 	QwtDynGridLayout *dgl = qobject_cast<QwtDynGridLayout *>(legend->contentsWidget()->layout());
 	dgl->setMaxColumns(1);
-	legend->setMinimumWidth(200);
-	legend->setFixedWidth(200);
-	legend->setFixedWidth(200);
+	legend->setMinimumWidth(500);
+	legend->setFixedWidth(500);
 	legend->contentsWidget()->layout()->setAlignment(Qt::AlignLeft);
-	legend->contentsWidget()->layout()->setContentsMargins(11, 11, 50, 11);
-	insertLegend(legend,  QwtPlot::RightLegend, 1.0);
+	legend->contentsWidget()->layout()->setContentsMargins(50, 11, 75, 11);
+	insertLegend(legend, QwtPlot::RightLegend, 1.0);
 
 	QwtText qwtTitle(title.c_str());
 
@@ -163,7 +162,7 @@ Plot::Plot(string title, string xAxis, string yAxis,
 
 		QString text;
 		float y = 0.0f;
-		text.sprintf(" = %+08.2f", y);
+		text.sprintf("%+08.2f\t", y);
 		c.qwtCurve->setTitle(QString(curveName[i].c_str()) + QString(" = ") + text);
 		
 		curves.push_back(c);
@@ -205,7 +204,7 @@ void Plot::addData(int i, float y)
 			textRedraw[i] = 0;
 
 			QString text;
-			text.sprintf(" = %+08.2f", y);
+			text.sprintf("%+08.2f\t", y);
 			curves[i].qwtCurve->setTitle(QString(curveName[i].c_str()) + QString(" = ") + text);
 		} else {
 			++textRedraw[i];

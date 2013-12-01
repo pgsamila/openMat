@@ -165,17 +165,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
 		l = 0;
-		/* gl4->addWidget(new QLabel("CAN protocol"), l, 0);
-		gl4->addWidget(canProtocolCombo = new QComboBox(), l, 1); ++l;
-		
-		canProtocolCombo->addItem(QString("LPBus"));
-		canProtocolCombo->addItem(QString("CANOpen"));
-		canProtocolCombo->addItem(QString("Custom 1"));
-		canProtocolCombo->addItem(QString("Custom 2"));
-		canProtocolCombo->addItem(QString("Custom 3"));
-		
-		connect(canProtocolCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanProtocol(int))); */
-		
+
 		gl4->addWidget(new QLabel("CAN baudrate"), l, 0);
 		gl4->addWidget(canBaudrateCombo = new QComboBox(), l, 1); ++l;
 	
@@ -405,7 +395,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	}
 	
 	l = 0;
-	selectedDataGl->addWidget(new QLabel("Selected data:"), l, 0);
+	selectedDataGl->addWidget(new QLabel("Enabled data:"), l, 0);
 	selectedDataGl->addWidget(selectAcc = new QCheckBox("Raw accelerometer"), l, 1); ++l;
 	selectedDataGl->addWidget(selectMag = new QCheckBox("Raw magnetometer"), l, 1); ++l;
 	selectedDataGl->addWidget(selectGyro = new QCheckBox("Raw gyroscope"), l, 1); ++l;
@@ -439,7 +429,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	
 	QWidget *w0 = new QWidget();
 	w0->setLayout(gl);
-	QTreeWidgetItem* connectionTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("ID / Sampling rate")));	
+	QTreeWidgetItem* connectionTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("ID / sampling rate")));	
 	QTreeWidgetItem* connectionTreeWidget = new QTreeWidgetItem(connectionTreeItem);
 	tree->setItemWidget(connectionTreeWidget, 0, w0);	
 	
@@ -456,7 +446,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	tree->setItemWidget(filterTreeWidget, 0, w2);	
 
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {	
-		QTreeWidgetItem* canTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("CANopen")));
+		QTreeWidgetItem* canTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("CAN bus")));
 		QTreeWidgetItem* canTreeWidget = new QTreeWidgetItem(canTreeItem);	
 		QWidget *w4 = new QWidget();
 		w4->setLayout(gl4);

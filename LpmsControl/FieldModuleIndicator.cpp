@@ -82,16 +82,11 @@ void FieldModuleIndicator::paintEvent(QPaintEvent*)
 	painter.setBrush(whiteB);
 	painter.drawText(0, height() / 2 - 10, QString("Magnetic"));
 	painter.drawText(0, height() / 2 + 10, QString("noise:"));
-	painter.drawRect(100, 0, width()-100-5, height()-5);		
-
-	/* if (cFN > (EPSILON_INCLINATION + EPSILON_MODULE)) {
-		painter.setPen(red);	
-		painter.setBrush(redB);
-	} else { */
+	painter.drawRect(100, 0, width()-105, height()-5);
 	
 	painter.setPen(blue);	
 	painter.setBrush(blueB);
-	painter.drawRect(101, 1, (int) sFN, height()-2-5);	
+	painter.drawRect(101, 1, (int) sFN, height()-7);	
 
 	painter.setPen(black);	
 	painter.drawText(150, height() / 2, QString("weak"));		

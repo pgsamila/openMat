@@ -891,7 +891,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_SELECT_DATA, &p);
 			bt->selectData(p);
-			printf("[LpmsSensor] Select data %x\n", p);
+			printf("[LpmsSensor] Select data 0x%x\n", p);
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
 		}
@@ -1703,7 +1703,7 @@ void LpmsSensor::initMisalignCal(void)
 	p = SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
 	p |= SELECT_LPMS_ACC_OUTPUT_ENABLED;
 
-	printf("selected: %x\n", p);
+	printf("selected: 0x%x\n", p);
 	
 	configData.setParameter(PRM_SELECT_DATA, p);
 	updateParameters();
@@ -1789,7 +1789,7 @@ void LpmsSensor::saveCalibrationData(const char* fn)
 
 void LpmsSensor::loadCalibrationData(const char* fn)
 {
-	printf("Loading calibration data from %s\n", fn);
+	printf("[LpmsSensor] Loading calibration data from %s\n", fn);
 	configData.load(fn);
 	updateParameters();
 }

@@ -289,7 +289,7 @@ void parsePacket(void)
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 			switch (packet.function) {
 			case UPDATE_FIRMWARE:
-				if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
+			  	if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
 					isFirmwareUpdating = 1;
 					rxFirmwarePacketCounter = 0;
 					rxFirmwarePacketSize = 0;

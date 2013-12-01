@@ -660,7 +660,8 @@ bool LpmsIoInterface::parseFunction(void)
 	case GET_SENSOR_DATA:
 		parseSensorData();
 		
-		if ((lpmsStatus & LPMS_STREAM_MODE) != 0) return true;
+		return true; // <- Careful, in case of GET_DATA don't reset anything to prevent overflow in stream mode.
+		// if ((lpmsStatus & LPMS_STREAM_MODE) != 0) return true;
 	break;
 
 	case GET_IMU_ID:

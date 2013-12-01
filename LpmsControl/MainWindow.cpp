@@ -517,10 +517,7 @@ void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
 void MainWindow::timerUpdate(void)
 {
 	list<SensorGuiContainer *>::iterator it;	
-	float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3];
-	float hardIronOffset[3];
-	float softIronMatrix[3][3];
-	float fieldRadius;
+
 	int si = 0;
 	ImuData imuData;
 
@@ -573,14 +570,14 @@ void MainWindow::timerUpdate(void)
 				
 				case MODE_FIELDMAP_WIN:
 					if ((*it)->getSensor()->hasNewFieldMap() == true) {
-						(*it)->getSensor()->getFieldMap(fieldMap);
-						(*it)->getSensor()->getHardIronOffset(hardIronOffset);
-						(*it)->getSensor()->getSoftIronMatrix(softIronMatrix, &fieldRadius);
-						fieldMapWindow->updateFieldMap(fieldMap, hardIronOffset, softIronMatrix, fieldRadius,
+						(*it)->getSensor()->getFieldMap((*it)->fieldMap);
+						(*it)->getSensor()->getHardIronOffset((*it)->hardIronOffset);
+						(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
+						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius,
 						imuData.b);
 					}
 								
-					(*it)->getSensor()->getSoftIronMatrix(softIronMatrix, &fieldRadius);
+					(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
 					fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
 				break;
 				
@@ -856,6 +853,8 @@ void MainWindow::uploadFirmware(void)
 
 	qfilename = QFileDialog::getOpenFileName(this, "Open firmware file", "./", "");
 	fn = qfilename.toStdString();
+	
+	if (fn == "") return;
 	
 	currentLpms->getSensor()->getConfigurationPrm(PRM_DEVICE_TYPE, &i);
 

@@ -259,8 +259,8 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 #endif
 	msDelay(50);
 	
-	bluetoothDisableLowPowerConnectMode();
-	msDelay(50);
+	/* bluetoothDisableLowPowerConnectMode();
+	msDelay(50); */
 
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(baudrate);

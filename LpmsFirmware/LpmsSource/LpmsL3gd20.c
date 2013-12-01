@@ -234,11 +234,11 @@ uint8_t getGyrRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 	readGyrRegister(&data_buffer[5], (uint8_t)L3GD20_OUT_Z_H);
 
 #ifdef USE_LPMSCU_NEW
-        *xAxis = -(int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
+	*xAxis = -(int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
 	*yAxis = (int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
 	*zAxis = -(int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
 #else
-        *xAxis = -(int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
+	*xAxis = -(int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
 	*yAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
 	*zAxis = (int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
 #endif

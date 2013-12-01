@@ -16,12 +16,9 @@
 
 // Enables CAN bus interface
 #define USE_CANBUS_INTERFACE
-<<<<<<< HEAD
 
 // Enables NEW LPMS-CU
-#define USE_LPMSCU_NEW
-=======
->>>>>>> LpSensorLinuxCompatibilityMod
+// #define USE_LPMSCU_NEW
 
 // Enables Bluetooth interface
 // #define USE_BLUETOOTH_INTERFACE

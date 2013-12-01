@@ -60,7 +60,6 @@ QWidget *MainWindow::createDeviceList(void)
 	return (QWidget*) lpmsTree;
 }
 
-// QWidget *MainWindow::createGraphs(void)
 QGroupBox *MainWindow::createGraphs(void)
 {
 	graphLayout = new QVBoxLayout();
@@ -73,10 +72,7 @@ QGroupBox *MainWindow::createGraphs(void)
 	graphLayout->addWidget(cubeWindowContainer);
 	graphLayout->addWidget(fieldMapWindow);
 	graphLayout->addWidget(gaitTrackingWindow);
-	
-	/* QWidget *w = new QWidget();
-	w->setLayout(graphLayout); */
-	
+		
 	QGroupBox *gb = new QGroupBox("Data view");
 	gb->setLayout(graphLayout);	
 	
@@ -84,7 +80,6 @@ QGroupBox *MainWindow::createGraphs(void)
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
 	
-	// return w;
 	return gb;
 }
 
@@ -113,11 +108,13 @@ void MainWindow::createMenuAndToolbar(void)
 	if (sm->isCanPresent() == true) {
 		QVBoxLayout *v4 = new QVBoxLayout();
 		canBaudrateList = new QComboBox();
+		canBaudrateList->addItem("20 kbit");
+		canBaudrateList->addItem("50 kbit");		
 		canBaudrateList->addItem("125 kbit");
 		canBaudrateList->addItem("250 kbit");
 		canBaudrateList->addItem("500 kbit");
 		canBaudrateList->addItem("1000 kbit");
-		canBaudrateList->setCurrentIndex(3);
+		canBaudrateList->setCurrentIndex(5);
 		v4->addWidget(new QLabel("CAN baudrate:"));
 		v4->addWidget(canBaudrateList);
 		QWidget *w4 = new QWidget();
@@ -341,8 +338,6 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	createMenuAndToolbar();
 	
-	// statusBar()->addWidget(new QLabel("Ready"));
-	
 	rescanD = new RescanDialog(sm, comboDeviceList, &deviceList, this);
 	
 	s0->setStretchFactor(0, 3);
@@ -366,8 +361,9 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	startServer();
 
-	//birdy
-	mbcom.startServer(); 
+#ifdef USE_MB_SERVER
+	mbcom.startServer();
+#endif
 	
 	QTimer* timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -497,12 +493,10 @@ void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
 		
 		QAction* heaveMotionGraphAction = new QAction(QIcon("./icons/bars_32x32.png"), "Heave motion window", this);
 		
-		// if (useHeaveMotion == true) {
-			viewMenu->addSeparator();
-			viewMenu->addAction(heaveMotionGraphAction);
-			toolbar->addAction(heaveMotionGraphAction);
-			connect(heaveMotionGraphAction, SIGNAL(triggered()), this, SLOT(selectHeaveMotionWindow()));
-		// }
+		viewMenu->addSeparator();
+		viewMenu->addAction(heaveMotionGraphAction);
+		toolbar->addAction(heaveMotionGraphAction);
+		connect(heaveMotionGraphAction, SIGNAL(triggered()), this, SLOT(selectHeaveMotionWindow()));
 	}
 	
 	sensor->getConfigurationPrm(PRM_GAIT_TRACKING_ENABLED, &i);
@@ -544,7 +538,7 @@ void MainWindow::timerUpdate(void)
 			checkOptionalFeatures((*it)->getSensor());
 			
 #ifdef USE_ZEROC_ICE
-			//isp->updateImuData(imuData);
+			isp->updateImuData(imuData);
 #endif	
 			if (mode == MODE_THREED_WIN && ((cubeWindowContainer->getMode() == CUBE_VIEW_MODE_2) || (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_4))) {
 				imuData = (*it)->getSensor()->getCurrentData();
@@ -639,8 +633,9 @@ void MainWindow::openSensor(void)
 	isp->addSensor(lpmsDevice);
 #endif	
 
-	//birdy
+#ifdef USE_MB_SERVER
 	mbcom.addSensor(lpmsDevice);
+#endif
 	
 	currentLpms->updateData();
 
@@ -671,8 +666,10 @@ void MainWindow::closeSensor(void)
 #ifdef USE_ZEROC_ICE
 		isp->removeSensor(temp->getSensor());
 #endif
-		//birdy
+
+#ifdef USE_MB_SERVER
 		mbcom.removeSensor(temp->getSensor());
+#endif
 
 		sm->removeSensor(temp->getSensor());
 		lpmsList.remove(temp);
@@ -920,7 +917,7 @@ void MainWindow::uploadTimerUpdate(void)
 {	
 	int p;
 
-	if (currentLpms->getSensor()->getUploadProgress(&p) == true) {
+	if (currentLpms->getSensor()->getUploadProgress(&p) == 1) {
 		uploadProgress->setValue(p);
 		uploadProgress->show();
 	} else {
@@ -1058,8 +1055,6 @@ void MainWindow::selectGraph2Window(void)
 	graphWindow->show();
 	
 	mode = MODE_GRAPH_WIN;
-	
-	// statusBar()->showMessage("Orientation data graph", 2000);
 }
 
 void MainWindow::selectGraph3Window(void)
@@ -1072,8 +1067,6 @@ void MainWindow::selectGraph3Window(void)
 	graphWindow->show();	
 	
 	mode = MODE_GRAPH_WIN;	
-	
-	// statusBar()->showMessage("Pressure / temperature data graph", 2000);
 }
 
 void MainWindow::selectHeaveMotionWindow(void)
@@ -1154,8 +1147,9 @@ bool MainWindow::exitWindow(void)
 	
 	closeSensor();
 	
-	//birdy
+#ifdef USE_MB_SERVER
 	mbcom.stopServer();
+#endif
 	
 	return true;
 }

@@ -38,7 +38,8 @@ int main(void)
 		updateAliveLed();
 
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
-			if (isSensorMeasurementReady() == 1) {
+		  
+			if (getTimeStep() > LPMS_MEASUREMENT_PERIOD) {
 				updateSensorData();
 				processSensorData();
 			}
@@ -52,7 +53,9 @@ int main(void)
 			parsePacket();
 
 			sendQueue();
+			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
+		  
 			if (getTimeStep() > LPMS_MEASUREMENT_PERIOD) {
 				updateSensorData();
 				processSensorData();
@@ -72,7 +75,9 @@ int main(void)
 			pollBluetoothData();
 #endif
 			parsePacket();
+			
 		} else if (getCurrentMode() == LPMS_SLEEP_MODE) {
+		  
 #ifdef USE_CANBUS_INTERFACE
 			pollSerialPortData();
 			pollCanBusData();
@@ -82,6 +87,7 @@ int main(void)
 			parsePacket();
 
 			sendQueue();
+
 		}
   	}
 }

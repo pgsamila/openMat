@@ -81,10 +81,6 @@ CalibrationData::CalibrationData(void)
 	gyrMisalignMatrix = m;
 	gyrAlignmentBias = v;
 	firmwareVersion = std::string("");
-	gyrCalA = v;
-	gyrCalB = v;
-	gyrCalBaseV = v;
-	gyrCalBaseT = 0.0f;
 	lowPassFilter = 0;
 	canHeartbeat = 0;
 	heavemotionEnabled = 0;
@@ -215,10 +211,6 @@ bool CalibrationData::setParameter(int parameterIndex, int parameter)
 	case PRM_LOW_PASS:
 		lowPassFilter = parameter;
 	break;
-	
-	/* case PRM_CAN_MAPPING:
-		canMapping = parameter;
-	break; */
 	
 	case PRM_CAN_HEARTBEAT:
 		canHeartbeat = parameter;
@@ -393,10 +385,6 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 	case PRM_LOW_PASS:
 		*parameter = lowPassFilter;
 	break;
-	
-	/* case PRM_CAN_MAPPING:
-		*parameter = canMapping;
-	break; */
 	
 	case PRM_CAN_HEARTBEAT:
 		*parameter = canHeartbeat;
@@ -751,7 +739,6 @@ void CalibrationData::print(void)
 	printf("[CalibrationData] Gyro range: %d\n", gyrRange);
 	printf("[CalibrationData] Mag. range: %d\n", magRange);
 	printf("[CalibrationData] Acc. range: %d\n", accRange);
-	// printf("[CalibrationData] CAN Stream format: %d\n", canStreamFormat);
 	printf("[CalibrationData] CAN Baudrate: %d\n", canBaudrate);
 	printf("[CalibrationData] Field estimate: %f\n", fieldRadius);
 	printf("[CalibrationData] Gyr. auto-calibration on / off: %d\n", gyrAutocalibration);
@@ -769,11 +756,4 @@ void CalibrationData::print(void)
 	printVector(gyrAlignmentBias);
 	printf("[CalibrationData] Selected data: %d\n", selectedData);
 	printf("[CalibrationData] Firmware version %s\n", firmwareVersion.c_str());
-	printf("[CalibrationData] Gyroscope temp. cal. prm. A:\n");
-	printVector(gyrCalA);
-	printf("[CalibrationData] Gyroscope temp. cal. prm. B:\n");
-	printVector(gyrCalB);
-	printf("[CalibrationData] Gyroscope temp. cal. base V:\n");
-	printVector(gyrCalBaseV);
-	printf("[CalibrationData] Gyroscope temp. cal. base T: %f\n", gyrCalBaseT);
 }

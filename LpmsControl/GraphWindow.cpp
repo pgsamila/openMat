@@ -62,7 +62,7 @@ GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
 		0, 128, 3, -200, 200, magLegend);	
 		
     quaternionGraph = new Plot("", "Samples", "Quaternion (norm)", 
-		"X", "Y", "Z", "W",			
+		"W", "X", "Y", "Z",			
 		0, 128, 4, -1.0f, 1.0f, quaternionLegend);	
 		
     angleGraph = new Plot("", "Samples", "Euler angle (degree)", 

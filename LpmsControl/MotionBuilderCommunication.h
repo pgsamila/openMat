@@ -7,33 +7,38 @@ typedef unsigned __int64 nsTime;
 typedef unsigned long long nsTime;
 #endif
 
-#if defined( _USE_MATH_DEFINES )
+/*#if defined( _USE_MATH_DEFINES )
 #else
 	#define _USE_MATH_DEFINES // for C++ 
-#endif
+#endif*/
 
 #include <stdio.h> 
-#include <math.h> 
+//#include <math.h> 
 #include <iostream>
 #include <iomanip>
 #include <list>
 #include <string>
 #include <sstream>
+#include <thread>
 
 #define WS_VERSION_REQUIRED 0x0101
 #include <winsock.h>
 #include <windows.h>
 #pragma comment(lib, "ws2_32.lib")
 
-#include <boost/thread/thread.hpp>
 #include <Eigen/Geometry> 
 
-#include "ImuMonitor.h"
 #include "ImuData.h"
 #include "LpmsSensorI.h"
 //#include "MicroMeasure.h" 
 
 struct LPMSRotationData;
+
+// LP-MB Communication Protocol
+// TODO: Perhaps put into own header file
+const char LPMB_READY = 0x00;
+const char LPMB_FETCHDATA = 0x01;
+const char LPMB_DISCONNECT = 0x02;
 
 class MotionBuilderCommunication
 {
@@ -91,7 +96,7 @@ struct LPMSRotationData {
 	nsTime 	mTime;
 	struct {
 		int id;
-		double q[4]; // x, y, z, w
+		double q[4]; // w,x,y,z
 	}mChannel[ChannelCount];
 
 	LPMSRotationData(){
@@ -99,7 +104,7 @@ struct LPMSRotationData {
 	}
 
 	void reset(){
-		double qIdentity[4] = {0,0,0,1};
+		double qIdentity[4] = {1.0,0.0,0.0,0.0};
 		mTime = 0;
 		deviceOnline = 0;
 		for (int i=0; i<ChannelCount; ++i){

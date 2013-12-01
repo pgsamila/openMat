@@ -384,38 +384,6 @@ uint8_t setGyrAlignBias(uint8_t* data)
 	return 1;
 }
 
-uint8_t setGyrTempCalPrmA(uint8_t* data)
-{
-	calibrationData.gyrTempCalPrmA = getVector3f(data);
-	setRegVector3f(LPMS_GYR_TEMP_CAL_PRM_A_X, calibrationData.gyrTempCalPrmA);
-
-	return 1;
-}
-
-uint8_t setGyrTempCalPrmB(uint8_t* data)
-{
-	calibrationData.gyrTempCalPrmB = getVector3f(data);
-	setRegVector3f(LPMS_GYR_TEMP_CAL_PRM_B_X, calibrationData.gyrTempCalPrmB);
-
-	return 1;
-}
-
-uint8_t setGyrTempCalBaseV(uint8_t* data)
-{
-	calibrationData.gyrTempCalBaseV = getVector3f(data);
-	setRegVector3f(LPMS_GYR_TEMP_CAL_BASE_V_X, calibrationData.gyrTempCalBaseV);
-
-	return 1;
-}
-
-uint8_t setGyrTempCalBaseT(uint8_t* data)
-{
-	calibrationData.gyrTempCalBaseT = getFloat(data);
-	setRegFloat(LPMS_GYR_TEMP_CAL_BASE_T, calibrationData.gyrTempCalBaseT);
-
-	return 1;
-}
-
 uint8_t setEnableGyrThresh(uint8_t* data) 
 {
   	uint8_t f = 1;

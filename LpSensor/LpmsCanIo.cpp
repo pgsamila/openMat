@@ -123,36 +123,6 @@ bool LpmsCanIo::parseCanMsg(TPCANMsg m)
 	
 	configData->getParameter(PRM_OPENMAT_ID, &v);
 	
-	/* if (m.ID == (0x180 + imuId)) {
-		fromBufferInt16(&(m.DATA[0]), &v);
-		imuData.q[0] = (float)v / 1000.0f;
-		fromBufferInt16(&(m.DATA[2]), &v);
-		imuData.q[1] = (float)v / 1000.0f;
-		fromBufferInt16(&(m.DATA[4]), &v);
-		imuData.q[2] = (float)v / 1000.0f;
-		fromBufferInt16(&(m.DATA[6]), &v);
-		imuData.q[3] = (float)v / 1000.0f;
-		
-		imuData.openMatId = imuId;
-		
-		if (imuDataQueue.size() < 64) imuDataQueue.push(imuData);
-	}	
-
-	if (m.ID == (0x280 + imuId)) {
-		fromBufferInt16(&(m.DATA[0]), &v);
-		imuData.linAcc[0] = (float)v / 1000.0f;
-		fromBufferInt16(&(m.DATA[2]), &v);
-		imuData.linAcc[1] = (float)v / 1000.0f;
-		fromBufferInt16(&(m.DATA[4]), &v);
-		imuData.linAcc[2] = (float)v / 1000.0f;
-		fromBufferInt16(&(m.DATA[6]), &v);
-		imuData.hm.yHeave = (float)v / 1000.0f;
-		
-		imuData.openMatId = imuId;		
-		
-		if (imuDataQueue.size() < 64) imuDataQueue.push(imuData);
-	} */
-		
 	if (m.ID != AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + imuId) {
 		return false;
 	}

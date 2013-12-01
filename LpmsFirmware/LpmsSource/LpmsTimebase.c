@@ -60,7 +60,7 @@ void setSystemStepTimer(void)
 
 	RCC_APB1PeriphClockCmd(SYSTEM_STEP_TIMER_CLK, ENABLE);
 	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-	TIM_TimeBaseStructure.TIM_Prescaler = 6000;
+	TIM_TimeBaseStructure.TIM_Prescaler = 600;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(SYSTEM_STEP_TIMER, &TIM_TimeBaseStructure);
@@ -119,15 +119,6 @@ uint32_t getTimeout(void)
 uint32_t getTimeStep()
 {
 	return TIM_GetCounter(SYSTEM_STEP_TIMER);
-}
-
-#define SENSOR_MEASUREMENT_T 33
-
-uint8_t isSensorMeasurementReady(void)
-{
-	if (getTimeStep() > SENSOR_MEASUREMENT_T) return 1;
-
-	return 0;
 }
 
 void clearStreamModeTransferReady(void)

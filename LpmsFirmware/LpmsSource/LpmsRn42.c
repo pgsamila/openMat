@@ -258,6 +258,9 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 	bluetoothDisableSpecialCommands();
 #endif
 	msDelay(50);
+	
+	bluetoothDisableLowPowerConnectMode();
+	msDelay(50);
 
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(baudrate);
@@ -432,8 +435,8 @@ uint8_t bluetoothSetName(void)
 
 uint8_t bluetoothDisableLowPowerConnectMode(void)
 {
-	uint8_t c1[16] = "SI,0300";
-	uint8_t c2[16] = "SJ,0300";
+	uint8_t c1[16] = "SI,0400";
+	uint8_t c2[16] = "SJ,0400";
 	
 	bluetoothSendCommand(c1, 7);	
 
@@ -476,6 +479,13 @@ uint8_t bluetoothGotoFastMode(void)
 	uint8_t c[16] = "F,1";
 	
 	return bluetoothSendCommand(c, 3);	
+}
+
+uint8_t bluetoothGotoSleepMode(void)
+{
+	uint8_t c[16] = "SW,8320";
+	
+	return bluetoothSendCommand(c, 7);	
 }
 
 uint8_t bluetoothSetBaudrate(uint32_t baudrate)

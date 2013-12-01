@@ -400,7 +400,15 @@ bool CanEngine::updateSendQueue(void)
 	if (txQ.size() > 0) {
 		m = txQ.front();
 
-		// printf("Msg. write %x %x %x %x %x %x %x %x\n", m.DATA[0], m.DATA[1], m.DATA[2], m.DATA[3], m.DATA[4], m.DATA[5], m.DATA[6], m.DATA[7]);
+		/* printf("Msg. write %x %x %x %x %x %x %x %x\n", 
+			m.DATA[0], 
+			m.DATA[1], 
+			m.DATA[2], 
+			m.DATA[3], 
+			m.DATA[4], 
+			m.DATA[5], 
+			m.DATA[6], 
+			m.DATA[7]); */
 		
 		if (peakCanInitialized == true) {
 			r = pcan.Write(canChannel, &m);
@@ -453,32 +461,38 @@ void CanEngine::setBaudrate(int i)
 {
 	TPCANStatus r;
 	canChannel = PCAN_USBBUS1;
-
-	if (peakCanInitialized == true) pcan.Uninitialize(canChannel);
+	
+	pcan.Uninitialize(canChannel);
 	
 	switch (i) {
 	case 0:
 		r = pcan.Initialize(canChannel, PCAN_BAUD_20K);
+		std::cout << "[CanEngine] Baudrate changed to 20K." << std::endl;
 	break;	
 	
 	case 1:
 		r = pcan.Initialize(canChannel, PCAN_BAUD_50K);
+		std::cout << "[CanEngine] Baudrate changed to 50K." << std::endl;		
 	break;
 
 	case 2:
 		r = pcan.Initialize(canChannel, PCAN_BAUD_125K);
+		std::cout << "[CanEngine] Baudrate changed to 125K." << std::endl;		
 	break;
 	
 	case 3:
 		r = pcan.Initialize(canChannel, PCAN_BAUD_250K);
+		std::cout << "[CanEngine] Baudrate changed to 250K." << std::endl;
 	break;
 
 	case 4:
 		r = pcan.Initialize(canChannel, PCAN_BAUD_500K);
+		std::cout << "[CanEngine] Baudrate changed to 500K." << std::endl;
 	break;
 
 	case 5:	
 		r = pcan.Initialize(canChannel, PCAN_BAUD_1M);
+		std::cout << "[CanEngine] Baudrate changed to 1M." << std::endl;
 	break;
 	}
 		

@@ -323,17 +323,13 @@ void CANStartCANOpenDataTransfer(uint16_t cobId, uint8_t* pDataBuffer)
 	canOpenMsg.IDE = CAN_ID_STD;
 	canOpenMsg.DLC = 8;
 
-	for (i=0; i<8; i++) {
-		canOpenMsg.Data[i] = pDataBuffer[i];
-	}
+	for (i=0; i<8; i++) canOpenMsg.Data[i] = pDataBuffer[i];
 
 	timeout = 0;
 	gTransmitMailbox = CAN_NO_MB;
 	gTransmitMailbox = CAN_Transmit(CAN_PORT, &canOpenMsg);
 
-	while ((CAN_TransmitStatus(CAN_PORT, gTransmitMailbox) !=  CANTXOK) && (timeout <= 0xffff)) {
-		timeout++;
-	}
+	while ((CAN_TransmitStatus(CAN_PORT, gTransmitMailbox) !=  CANTXOK) && (timeout <= 0xffff)) timeout++;
 }
 
 uint8_t checkCANOpenHeartbeat(void)

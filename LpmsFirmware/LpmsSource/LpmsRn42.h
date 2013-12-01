@@ -164,4 +164,6 @@ uint8_t bluetoothGotoFastMode(void);
 
 uint8_t checkConnectionStatus(void);
 
+uint8_t bluetoothGotoSleepMode(void);
+
 #endif

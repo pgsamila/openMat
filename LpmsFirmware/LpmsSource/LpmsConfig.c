@@ -182,30 +182,6 @@ uint8_t resetToFactory(void)
 	gReg.data[LPMS_GYR_ALIG_BIAS_Y] = f2int.u32_val;
 	f2int.float_val = (float) LPMS_FACTORY_GYR_ALIG_BIAS_Z;
 	gReg.data[LPMS_GYR_ALIG_BIAS_Z] = f2int.u32_val;
-
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_PRM_A_X;
-	gReg.data[LPMS_GYR_TEMP_CAL_PRM_A_X] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_PRM_A_Y;
-	gReg.data[LPMS_GYR_TEMP_CAL_PRM_A_Y] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_PRM_A_Z;
-	gReg.data[LPMS_GYR_TEMP_CAL_PRM_A_Z] = f2int.u32_val;
-	
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_PRM_B_X;
-	gReg.data[LPMS_GYR_TEMP_CAL_PRM_B_X] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_PRM_B_Y;
-	gReg.data[LPMS_GYR_TEMP_CAL_PRM_B_Y] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_PRM_B_Z;
-	gReg.data[LPMS_GYR_TEMP_CAL_PRM_B_Z] = f2int.u32_val;
-	
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_BASE_V_X;
-	gReg.data[LPMS_GYR_TEMP_CAL_BASE_V_X] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_BASE_V_Y;
-	gReg.data[LPMS_GYR_TEMP_CAL_BASE_V_Y] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_BASE_V_Z;
-	gReg.data[LPMS_GYR_TEMP_CAL_BASE_V_Z] = f2int.u32_val;
-
-	f2int.float_val = (float)LPMS_FACTORY_GYR_TEMP_CAL_BASE_T;
-	gReg.data[LPMS_GYR_TEMP_CAL_BASE_T] = f2int.u32_val;
 	
 	f2int.float_val = (float)LPMS_FACTORY_ACC_ALIG_00;
 	gReg.data[LPMS_ACC_ALIG_00] = f2int.u32_val;

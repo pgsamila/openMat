@@ -96,7 +96,7 @@ using namespace boost;
 
 #define USE_HEAVEMOTION
 
-#define LPMS_CONTROL_VERSION "1.2.0"
+#define LPMS_CONTROL_VERSION "1.2.5"
 
 /* LPMS Control main window. */
 class MainWindow : public QMainWindow
@@ -392,8 +392,9 @@ private:
 	IceStormPublisher *isp;		
 #endif
 
-	//birdy
+#ifdef USE_MB_SERVER
 	MotionBuilderCommunication mbcom;
+#endif
 };
 
 #endif

@@ -66,10 +66,6 @@ public:
 	LpVector3f gyrAlignmentBias;
 	int selectedData;
 	std::string firmwareVersion;
-	LpVector3f gyrCalA;
-	LpVector3f gyrCalB;
-	LpVector3f gyrCalBaseV;
-	float gyrCalBaseT;
 	int lowPassFilter;
 	int canMapping[8];
 	int canHeartbeat;

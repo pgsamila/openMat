@@ -72,6 +72,4 @@ uint32_t getTimeout(void);
 
 void updateAliveLed(void);
 
-uint8_t isSensorMeasurementReady(void);
-
 #endif

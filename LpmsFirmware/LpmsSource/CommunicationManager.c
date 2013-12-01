@@ -632,46 +632,6 @@ void parsePacket(void)
 				sendData(getImuID(), GET_GYR_ALIGN_BIAS, dataLength, dataBuffer);
 			break;
 
-			case SET_GYR_TEMP_CAL_PRM_A:
-				setGyrTempCalPrmA(packet.data);
-				sendAck();
-			break;
-
-			case SET_GYR_TEMP_CAL_PRM_B:
-				setGyrTempCalPrmA(packet.data);
-				sendAck();
-			break;			
-
-			case SET_GYR_TEMP_CAL_BASE_V:
-				setGyrTempCalBaseV(packet.data);
-				sendAck();
-			break;
-	
-			case SET_GYR_TEMP_CAL_BASE_T:
-				setGyrTempCalBaseT(packet.data);
-				sendAck();
-			break;
-
-			case GET_GYR_TEMP_CAL_PRM_A:
-				getHardIronOffsetData(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_GYR_TEMP_CAL_PRM_A, dataLength, dataBuffer);
-			break;
-
-			case GET_GYR_TEMP_CAL_PRM_B:
-				getHardIronOffsetData(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_GYR_TEMP_CAL_PRM_B, dataLength, dataBuffer);
-			break;			
-
-			case GET_GYR_TEMP_CAL_BASE_V:
-				getHardIronOffsetData(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_GYR_TEMP_CAL_BASE_V, dataLength, dataBuffer);
-			break;
-	
-			case GET_GYR_TEMP_CAL_BASE_T:
-				getHardIronOffsetData(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_GYR_TEMP_CAL_BASE_T, dataLength, dataBuffer);
-			break;
-
 			case SET_TRANSMIT_DATA:
 				setTransmitData(packet.data);
 				sendAck();

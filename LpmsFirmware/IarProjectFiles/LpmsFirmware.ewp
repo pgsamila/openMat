@@ -569,11 +569,11 @@
         </option>
         <option>
           <name>OCOutputOverride</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsFirmware.bin</state>
+          <state>LpmsCUFirmware1.2.5.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

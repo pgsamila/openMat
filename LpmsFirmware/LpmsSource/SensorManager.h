@@ -27,13 +27,15 @@
 #include "LpmsFactorySetting.h"
 #include "HeaveMotion.h"
 
-#define LPMS_MEASUREMENT_PERIOD 20
+#define LPMS_MEASUREMENT_PERIOD 236
+
+#define PRESSURE_T 100000
 
 // Number of iterations for gyrsocope calibration
 #define GYRO_ONLINE_CAL_ITER 			128
 
 // Amplitude threshold for gyrsocope auto-calibration
-#define GYR_CAL_THRES 				60
+#define GYR_CAL_THRES 				40
 
 // Duration of gyroscope auto-calibration sequence
 #define GYR_CAL_TIMEOUT 			5000

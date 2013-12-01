@@ -151,17 +151,17 @@ void LpmsSensorManager::run(void)
 
 	if ((osvi.dwMajorVersion > 6) || ((osvi.dwMajorVersion == 6) && (osvi.dwMinorVersion >= 1))) {
 		bIsWindows7orLater = true;
-		LOGV("[LpmsSensorManager] Windows 7 and above mode");		
+		LOGV("[LpmsSensorManager] Windows 7 and above mode\n");		
 	} else {
 		bIsWindows7orLater = false;
-		LOGV("[LpmsSensorManager] Windows XP mode");
+		LOGV("[LpmsSensorManager] Windows XP mode\n");
 	}
 	
 	ce.connect();
 #endif	
 
 #ifdef ANDROID
-	LOGV("[LpmsSensorManager] Thread running");
+	LOGV("[LpmsSensorManager] Thread running\n");
 #endif
 
 	mm.reset();
@@ -239,7 +239,7 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 #else
 		sensor = new LpmsSensor(DEVICE_LPMS_B, deviceId, thisVm, bluetoothAdapter);
 		
-		LOGV("[LpmsSensorManager] Sensor added");
+		LOGV("[LpmsSensorManager] Sensor added\n");
 #endif
 
 		sensorList.push_back(sensor);

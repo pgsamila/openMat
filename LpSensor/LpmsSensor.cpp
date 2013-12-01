@@ -78,7 +78,7 @@ const float pi = 3.141592f;
 #ifdef ANDROID
 	case DEVICE_LPMS_B:	
 		bt = new AndroidBluetooth(&(this->configData), thisVm, bluetoothAdapter);
-		LOGV("[LpmsSensor] Sensor initialized");
+		LOGV("[LpmsSensor] Sensor initialized\n");
 		break;
 #endif
 	
@@ -93,11 +93,7 @@ const float pi = 3.141592f;
 		
 	case DEVICE_LPMS_U:
 		bt = new LpmsU(&(this->configData));
-	break;
-
-	/* case DEVICE_LPMS_BLE:
-		bt = new LpmsBle(&(this->configData));
-	break; */		
+	break;	
 #endif
 
 #ifdef __GNUC__
@@ -188,7 +184,7 @@ void LpmsSensor::update(void)
 		setConnectionStatus(SENSOR_CONNECTION_CONNECTING);
 		bt->connect(deviceId);
 		lpmsTimer.reset();
-		LOGV("[LpmsSensor] Trying to connect..");
+		LOGV("[LpmsSensor] Trying to connect..\n");
 		retrialsCommandMode = 0;
 		prepareStream = 0;
 		state = STATE_WAIT_CONNECT;		
@@ -202,7 +198,7 @@ void LpmsSensor::update(void)
 			if (bt->deviceStarted() == false) {		
 				setConnectionStatus(SENSOR_CONNECTION_FAILED);
 				state = STATE_NONE;		
-				LOGV("[LpmsSensor] Connection failed (timeout)..");			
+				LOGV("[LpmsSensor] Connection failed (timeout)..\n");			
 			} else {			
 				state = STATE_WAIT_AFTER_CONNECT;
 			}
@@ -213,7 +209,7 @@ void LpmsSensor::update(void)
 	case STATE_WAIT_AFTER_CONNECT:
 		if (lpmsTimer.measure() > WAIT_AFTER_CONNECT) {
 			lpmsTimer.reset();	
-			LOGV("[LpmsSensor] Waiting after connect..");
+			LOGV("[LpmsSensor] Waiting after connect..\n");
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GOTO_COMMAND_MODE;
 		}
@@ -227,7 +223,7 @@ void LpmsSensor::update(void)
 			switch (getConfigState) {
 			// Switches to command mode.
 			case C_STATE_GOTO_COMMAND_MODE:
-				LOGV("[LpmsSensor] Switch to command mode");
+				LOGV("[LpmsSensor] Switch to command mode\n");
 				bt->setCommandMode();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_CONFIG;
@@ -235,7 +231,7 @@ void LpmsSensor::update(void)
 			
 			// Gets the current configuration word. 
 			case C_STATE_GET_CONFIG:
-				LOGV("[LpmsSensor] Get configuration data");
+				LOGV("[LpmsSensor] Get configuration data\n");
 				bt->getConfig();
 				state = STATE_GET_SETTINGS;
 				if (deviceType == DEVICE_LPMS_BLE) {
@@ -247,7 +243,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves the current filter mode.
 			case C_STATE_FILTER_MODE:
-				LOGV("[LpmsSensor] Get filter mode");			
+				LOGV("[LpmsSensor] Get filter mode\n");			
 				bt->getFilterMode();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_FILTER_PRESET;			
@@ -255,7 +251,7 @@ void LpmsSensor::update(void)
 
 			// Retrieves the current filter parameter preset.
 			case C_STATE_FILTER_PRESET:
-				LOGV("[LpmsSensor] Get filter preset");			
+				LOGV("[LpmsSensor] Get filter preset\n");			
 				bt->getFilterPreset();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GYR_RANGE;			
@@ -263,7 +259,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves the current gyroscope range.
 			case C_STATE_GYR_RANGE:
-				LOGV("[LpmsSensor] Get gyr. range parameters");
+				LOGV("[LpmsSensor] Get gyr. range parameters\n");
 				bt->getGyrRange();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_ACC_RANGE;			
@@ -271,7 +267,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves the current accelerometer range.
 			case C_STATE_ACC_RANGE:
-				LOGV("[LpmsSensor] Get acc. range parameters");
+				LOGV("[LpmsSensor] Get acc. range parameters\n");
 				bt->getAccRange();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_MAG_RANGE;
@@ -279,7 +275,7 @@ void LpmsSensor::update(void)
 
 			// Retrieves the current magnetometer range.
 			case C_STATE_MAG_RANGE:
-				LOGV("[LpmsSensor] Get mag. range parameters");
+				LOGV("[LpmsSensor] Get mag. range parameters\n");
 				bt->getMagRange();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_IMU_ID;			
@@ -287,7 +283,7 @@ void LpmsSensor::update(void)
 
 			// Retrieves the current IMU ID.
 			case C_STATE_IMU_ID:
-				LOGV("[LpmsSensor] Get IMU ID");
+				LOGV("[LpmsSensor] Get IMU ID\n");
 				bt->getImuId();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_HARD;			
@@ -295,7 +291,7 @@ void LpmsSensor::update(void)
 
 			// Retrieves hard iron matrix.
 			case C_STATE_GET_HARD:
-				LOGV("[LpmsSensor] Get hard iron offset");
+				LOGV("[LpmsSensor] Get hard iron offset\n");
 				bt->getHardIronOffset();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_SOFT;			
@@ -303,7 +299,7 @@ void LpmsSensor::update(void)
 
 			// Retrieves hard soft matrix.
 			case C_STATE_GET_SOFT:
-				LOGV("[LpmsSensor] Get soft iron matrix");
+				LOGV("[LpmsSensor] Get soft iron matrix\n");
 				bt->getSoftIronMatrix();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_ESTIMATE;			
@@ -311,7 +307,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves field estimate.
 			case C_STATE_GET_ESTIMATE:
-				LOGV("[LpmsSensor] Get field estimate");
+				LOGV("[LpmsSensor] Get field estimate\n");
 				bt->getFieldEstimate();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_ACC_ALIGNMENT;			
@@ -319,7 +315,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves accelerometer alignment matrix.
 			case C_STATE_GET_ACC_ALIGNMENT:
-				LOGV("[LpmsSensor] Get acc. alignment matrix");
+				LOGV("[LpmsSensor] Get acc. alignment matrix\n");
 				bt->getAccAlignment();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_ACC_BIAS;			
@@ -327,7 +323,7 @@ void LpmsSensor::update(void)
 
 			// Retrieves accelerometer bias.
 			case C_STATE_GET_ACC_BIAS:
-				LOGV("[LpmsSensor] Get acc. bias");
+				LOGV("[LpmsSensor] Get acc. bias\n");
 				bt->getAccBias();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_GYR_ALIGNMENT;			
@@ -335,7 +331,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves gyroscope alignment matrix.
 			case C_STATE_GET_GYR_ALIGNMENT:
-				LOGV("[LpmsSensor] Get gyr. alignment matrix");
+				LOGV("[LpmsSensor] Get gyr. alignment matrix\n");
 				bt->getGyrAlignment();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_GYR_ALIGNMENT_BIAS;			
@@ -343,47 +339,15 @@ void LpmsSensor::update(void)
 
 			// Retrieves gyroscope alignment bias
 			case C_STATE_GET_GYR_ALIGNMENT_BIAS:
-				LOGV("[LpmsSensor] Get gyr. alignment bias");
+				LOGV("[LpmsSensor] Get gyr. alignment bias\n");
 				bt->getGyrAlignmentBias();
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_GYR_TEMP_CAL_PRM_A;
-			break;
-			
-			// Retrieves gyroscope temperature calibration parameter A
-			case C_STATE_GET_GYR_TEMP_CAL_PRM_A:
-				LOGV("[LpmsSensor] Get gyr. temp. cal. prm. A");			
-				bt->getGyrTempCalPrmA();
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_GYR_TEMP_CAL_PRM_B;
-			break;
-
-			// Retrieves gyroscope temperature calibration parameter B			
-			case C_STATE_GET_GYR_TEMP_CAL_PRM_B:
-				LOGV("[LpmsSensor] Get gyr. temp. cal. prm. B");			
-				bt->getGyrTempCalPrmB();
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_GYR_TEMP_CAL_BASE_V;
-			break;
-			
-			// Retrieves gyroscope temperature calibration parameter V
-			case C_STATE_GET_GYR_TEMP_CAL_BASE_V:
-				LOGV("[LpmsSensor] Get gyr. temp. cal. base V");	
-				bt->getGyrTempCalBaseV();
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_GYR_TEMP_CAL_BASE_T;
-			break;
-			
-			// Retrieves gyroscope temperature calibration parameter T
-			case C_STATE_GET_GYR_TEMP_CAL_BASE_T:
-				LOGV("[LpmsSensor] Get gyr. temp. cal. base T");	
-				bt->getGyrTempCalBaseT();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_FIRMWARE_VERSION;
 			break;
-			
+						
 			// Retrieves firmware version
 			case C_STATE_GET_FIRMWARE_VERSION:
-				LOGV("[LpmsSensor] Get firmware version");
+				LOGV("[LpmsSensor] Get firmware version\n");
 				bt->getFirmwareVersion();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_LOW_PASS;			
@@ -391,7 +355,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves low-pass filter settings
 			case C_STATE_GET_LOW_PASS:
-				LOGV("[LpmsSensor] Get low-pass filter settings");
+				LOGV("[LpmsSensor] Get low-pass filter settings\n");
 				bt->getRawDataLpFilter();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_CAN_MAPPING;			
@@ -399,7 +363,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves CAN bus mapping
 			case C_STATE_GET_CAN_MAPPING:
-				LOGV("[LpmsSensor] Get CANopen mapping");
+				LOGV("[LpmsSensor] Get CANopen mapping\n");
 				bt->getCanMapping();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_CAN_HEARTBEAT;			
@@ -407,7 +371,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves CANopen heartbeat timing
 			case C_STATE_GET_CAN_HEARTBEAT:
-				LOGV("[LpmsSensor] Get CANopen heartbeat timing");
+				LOGV("[LpmsSensor] Get CANopen heartbeat timing\n");
 				bt->getCanHeartbeat();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_LIN_ACC_COMP_MODE;			
@@ -415,7 +379,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves CANopen heartbeat timing
 			case C_STATE_GET_LIN_ACC_COMP_MODE:
-				LOGV("[LpmsSensor] Get linear acceleration compensation mode");
+				LOGV("[LpmsSensor] Get linear acceleration compensation mode\n");
 				bt->getLinAccCompMode();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_CENTRI_COMP_MODE;			
@@ -423,7 +387,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves CANopen heartbeat timing
 			case C_STATE_CENTRI_COMP_MODE:
-				LOGV("[LpmsSensor] Get centripetal acceleration compensation mode");
+				LOGV("[LpmsSensor] Get centripetal acceleration compensation mode\n");
 				bt->getCentriCompMode();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_CAN_CONFIGURATION;			
@@ -431,7 +395,7 @@ void LpmsSensor::update(void)
 			
 			// Retrieves CAN configuration
 			case C_STATE_GET_CAN_CONFIGURATION:
-				LOGV("[LpmsSensor] Get CAN configuration");
+				LOGV("[LpmsSensor] Get CAN configuration\n");
 				bt->getCanConfiguration();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_RESET_SENSOR_TIMESTAMP;		
@@ -439,7 +403,7 @@ void LpmsSensor::update(void)
 
 			// Resets sensor timestamp
 			case C_RESET_SENSOR_TIMESTAMP:
-				LOGV("[LpmsSensor] Resetting timestamp");
+				LOGV("[LpmsSensor] Resetting timestamp\n");
 				bt->resetSensorTimestamp();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_SETTINGS_DONE;		
@@ -447,7 +411,7 @@ void LpmsSensor::update(void)
 		
 			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
 			case C_STATE_SETTINGS_DONE:	
-				LOGV("[LpmsSensor] Done reading configuration");			
+				LOGV("[LpmsSensor] Done reading configuration\n");			
 
 				bCalSetSoftIronMatrix(configData.softIronMatrix);
 				bCalSetHardIronOffset(configData.hardIronOffset);
@@ -485,13 +449,13 @@ void LpmsSensor::update(void)
 				bt->setCommandMode();	
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GOTO_COMMAND_MODE;				
-				LOGV("[LpmsSensor] Timeout! Re-trying command mode..");
+				LOGV("[LpmsSensor] Timeout! Re-trying command mode..\n");
 				++retrialsCommandMode;
 			} else if (retrialsConnect < 1) {
 				lpmsTimer.reset();
 				bt->close();
 				state = STATE_CONNECT;
-				LOGV("[LpmsSensor] Timeout! Re-connecting..");
+				LOGV("[LpmsSensor] Timeout! Re-connecting..\n");
 				++retrialsConnect;
 			} else {
 				setConnectionStatus(SENSOR_CONNECTION_FAILED);
@@ -505,7 +469,7 @@ void LpmsSensor::update(void)
 		if (bt->deviceStarted() == false) {	
 			bt->close();
 			state = STATE_CONNECT;
-			LOGV("[LpmsSensor] Timeout! Re-connecting..");	
+			LOGV("[LpmsSensor] Timeout! Re-connecting..\n");	
 			break;
 		}		
 		
@@ -618,7 +582,7 @@ void LpmsSensor::update(void)
 				bt->enableGyrThres(LPMS_DISABLE_GYR_THRESHOLD);
 			break;
 			}
-			LOGV("[LpmsSensor] Enable / disable threshold");
+			LOGV("[LpmsSensor] Enable / disable threshold\n");
 			state = STATE_GYR_AUTOCALIBRATION;
 		}	
 	break;
@@ -636,7 +600,7 @@ void LpmsSensor::update(void)
 				bt->enableGyrAutocalibration(LPMS_DISABLE_GYR_AUTOCAL);
 			break;
 			}
-			LOGV("[LpmsSensor] Gyroscope autocalibration on / off");
+			LOGV("[LpmsSensor] Gyroscope autocalibration on / off\n");
 			state = STATE_SET_GYR_RANGE;
 		}	
 	break;	
@@ -646,7 +610,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_GYR_RANGE, &p);
 			bt->setGyrRange(p);
-			LOGV("[LpmsSensor] Set gyroscope range");
+			LOGV("[LpmsSensor] Set gyroscope range\n");
 			state = STATE_SET_ACC_RANGE;
 		}		
 	break;
@@ -656,7 +620,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_ACC_RANGE, &p);
 			bt->setAccRange(p);
-			LOGV("[LpmsSensor] Set accelerometer range");
+			LOGV("[LpmsSensor] Set accelerometer range\n");
 			state = STATE_SET_MAG_RANGE;
 		}	
 	break;
@@ -666,7 +630,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_MAG_RANGE, &p);
 			bt->setMagRange(p);
-			LOGV("[LpmsSensor] Set magnetometer range");
+			LOGV("[LpmsSensor] Set magnetometer range\n");
 			state = STATE_SET_FILTER_MODE;
 		}
 	break;
@@ -696,7 +660,7 @@ void LpmsSensor::update(void)
 				bt->setFilterMode(LPMS_FILTER_GYR_ACC_EULER);
 			break;
 			}
-			LOGV("[LpmsSensor] Set filter mode");
+			LOGV("[LpmsSensor] Set filter mode\n");
 			state = STATE_SET_PARAMETER_SET;	
 		}
 	break;	
@@ -722,7 +686,7 @@ void LpmsSensor::update(void)
 				bt->setFilterPreset(LPMS_FILTER_PRM_SET_4);	
 			break;				
 			}
-			LOGV("[LpmsSensor] Set parameter set");
+			LOGV("[LpmsSensor] Set parameter set\n");
 			state = STATE_SET_LP_FILTER;
 		}
 	break;
@@ -732,7 +696,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_LOW_PASS, &p);
 			bt->setRawDataLpFilter(p);
-			LOGV("[LpmsSensor] Set low-pass filter");
+			LOGV("[LpmsSensor] Set low-pass filter\n");
 			state = STATE_SET_OPENMAT_ID;
 		}
 	break;	
@@ -742,7 +706,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_OPENMAT_ID, &p);
 			bt->setImuId(p);
-			LOGV("[LpmsSensor] Set OpenMAT ID");
+			LOGV("[LpmsSensor] Set OpenMAT ID\n");
 			state = STATE_SET_CAN_BAUDRATE;
 		}
 	break;
@@ -752,7 +716,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_CAN_STREAM_FORMAT, &p);
 			bt->setCanStreamFormat(p);
-			LOGV("[LpmsSensor] Set CAN protocol");
+			LOGV("[LpmsSensor] Set CAN protocol\n");
 			state = STATE_SET_CAN_BAUDRATE;
 		}
 	break;
@@ -762,7 +726,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_CAN_BAUDRATE, &p);
 			bt->setCanBaudrate(p);
-			LOGV("[LpmsSensor] Set sampling rate");
+			LOGV("[LpmsSensor] Set sampling rate\n");
 			state = STATE_SET_SAMPLING_RATE;
 		}
 	break;
@@ -772,7 +736,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_SAMPLING_RATE, &p);
 			bt->setStreamFrequency(p);
-			LOGV("[LpmsSensor] Set sampling rate");
+			LOGV("[LpmsSensor] Set sampling rate\n");
 			state = STATE_SET_HARD_IRON_OFFSET;
 		}
 	break;	
@@ -781,7 +745,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_HARD_IRON_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setHardIronOffset(configData.hardIronOffset);
-			LOGV("[LpmsSensor] Set hard iron offset");
+			LOGV("[LpmsSensor] Set hard iron offset\n");
 			state = STATE_SET_SOFT_IRON_MATRIX;
 		}
 	break;
@@ -790,7 +754,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_SOFT_IRON_MATRIX:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setSoftIronMatrix(configData.softIronMatrix);
-			LOGV("[LpmsSensor] Set soft iron matrix");
+			LOGV("[LpmsSensor] Set soft iron matrix\n");
 			state = STATE_SET_FIELD_ESTIMATE;
 		}
 	break;
@@ -799,7 +763,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_FIELD_ESTIMATE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setFieldEstimate(configData.fieldRadius);
-			LOGV("[LpmsSensor] Set field estimate");
+			LOGV("[LpmsSensor] Set field estimate\n");
 			state = STATE_SET_GYR_ALIGNMENT;
 		}
 	break;
@@ -808,7 +772,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_GYR_ALIGNMENT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setGyrAlignment(configData.gyrMisalignMatrix);
-			LOGV("[LpmsSensor] Set gyroscope alignment");
+			LOGV("[LpmsSensor] Set gyroscope alignment\n");
 			state = STATE_SET_GYR_ALIGNMENT_BIAS;
 		}
 	break;
@@ -817,7 +781,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_GYR_ALIGNMENT_BIAS:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setGyrAlignmentBias(configData.gyrAlignmentBias);
-			LOGV("[LpmsSensor] Set gyroscope alignment bias");
+			LOGV("[LpmsSensor] Set gyroscope alignment bias\n");
 			state = STATE_SET_ACC_ALIGNMENT;
 		}
 	break;
@@ -826,7 +790,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_ACC_ALIGNMENT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setAccAlignment(configData.misalignMatrix);
-			LOGV("[LpmsSensor] Set acclerometer alignment");
+			LOGV("[LpmsSensor] Set acclerometer alignment\n");
 			state = STATE_SET_ACC_BIAS;
 		}
 	break;
@@ -835,43 +799,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_ACC_BIAS:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setAccBias(configData.accBias);
-			LOGV("[LpmsSensor] Set accelerometer bias");
-			state = STATE_SET_GYR_TEMP_CAL_PRM_A;
-		}
-	break;
-	
-	// Sets gyroscope temperature calibration parameter A
-	case STATE_SET_GYR_TEMP_CAL_PRM_A:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->setGyrTempCalPrmA(configData.gyrCalA);
-			LOGV("[LpmsSensor] Set gyroscope cal. prm. A");
-			state = STATE_SET_GYR_TEMP_CAL_PRM_B;
-		}
-	break;
-	
-	// Sets gyroscope temperature calibration parameter B
-	case STATE_SET_GYR_TEMP_CAL_PRM_B:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->setGyrTempCalPrmB(configData.gyrCalB);
-			LOGV("[LpmsSensor] Set gyroscope cal. prm. B");
-			state = STATE_SET_GYR_TEMP_CAL_BASE_V;
-		}
-	break;
-	
-	// Sets gyroscope temperature calibration parameter V
-	case STATE_SET_GYR_TEMP_CAL_BASE_V:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->setGyrTempCalBaseV(configData.gyrCalBaseV);
-			LOGV("[LpmsSensor] Set gyroscope cal. base V");
-			state = STATE_SET_GYR_TEMP_CAL_BASE_T;
-		}
-	break;
-	
-	// Sets gyroscope temperature calibration parameter T
-	case STATE_SET_GYR_TEMP_CAL_BASE_T:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->setGyrTempCalBaseT(configData.gyrCalBaseT);
-			LOGV("[LpmsSensor] Set gyroscope cal. base T");
+			LOGV("[LpmsSensor] Set accelerometer bias\n");
 			state = STATE_SET_CAN_MAPPING;
 		}
 	break;
@@ -881,7 +809,7 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_CAN_MAPPING, pa);
 			bt->setCanMapping(pa);
-			LOGV("[LpmsSensor] Set CAN bus mapping");
+			LOGV("[LpmsSensor] Set CAN bus mapping\n");
 			state = STATE_SET_CAN_HEARTBEAT;
 		}
 	break;
@@ -890,7 +818,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_CAN_HEARTBEAT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setCanHeartbeat(configData.canHeartbeat);
-			LOGV("[LpmsSensor] Set CAN bus heartbeat timing");
+			LOGV("[LpmsSensor] Set CAN bus heartbeat timing\n");
 			state = STATE_SET_LIN_ACC_COMP_MODE;
 		}
 	break;
@@ -899,7 +827,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_LIN_ACC_COMP_MODE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setLinAccCompMode(configData.linAccCompMode);
-			LOGV("[LpmsSensor] Set linear acceleration compensation mode");
+			LOGV("[LpmsSensor] Set linear acceleration compensation mode\n");
 			state = STATE_SET_CENTRI_COMP_MODE;
 		}
 	break;	
@@ -908,7 +836,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_CENTRI_COMP_MODE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setCentriCompMode(configData.centriCompMode);
-			LOGV("[LpmsSensor] Set centripetal acceleration compensation mode");
+			LOGV("[LpmsSensor] Set centripetal acceleration compensation mode\n");
 			state = STATE_SET_CAN_CHANNEL_MODE;
 		}
 	break;
@@ -926,7 +854,7 @@ void LpmsSensor::update(void)
 				bt->setCanChannelMode(LPMS_CAN_SEQUENTIAL_MODE);
 			break;
 			}
-			LOGV("[LpmsSensor] Set CAN channel mode");
+			LOGV("[LpmsSensor] Set CAN channel mode\n");
 			state = STATE_SET_CAN_POINT_MODE;
 		}
 	break;	
@@ -944,7 +872,7 @@ void LpmsSensor::update(void)
 				bt->setCanPointMode(LPMS_CAN_FIXEDPOINT_MODE);
 			break;
 			}		
-			LOGV("[LpmsSensor] Set CAN point mode");
+			LOGV("[LpmsSensor] Set CAN point mode\n");
 			state = STATE_SET_CAN_START_ID;
 		}
 	break;
@@ -953,7 +881,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_CAN_START_ID:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setCanStartId(configData.canStartId);
-			LOGV("[LpmsSensor] Set CAN start ID");
+			LOGV("[LpmsSensor] Set CAN start ID\n");
 			state = STATE_SELECT_DATA;
 		}
 	break;
@@ -1128,7 +1056,7 @@ void LpmsSensor::update(void)
 	case STATE_RESET_TO_FACTORY_DEFAULTS:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->restoreFactoryValue();
-			LOGV("[LpmsSensor] Reset factory defaults");
+			LOGV("[LpmsSensor] Reset factory defaults\n");
 			
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
@@ -1139,7 +1067,7 @@ void LpmsSensor::update(void)
 	case STATE_RESET_TIMESTAMP:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->resetSensorTimestamp();
-			LOGV("[LpmsSensor] Reset sensor timestamp");
+			LOGV("[LpmsSensor] Reset sensor timestamp\n");
 			
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
@@ -1745,7 +1673,8 @@ void LpmsSensor::stopMagCalibration(void)
 	magCalibrationDuration = 0.0f;
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
-	updateParameters();
+	// updateParameters();
+	startResetReference();
 }
 
 #define N_ALIGNMENT_SETS 6
@@ -1974,99 +1903,6 @@ void LpmsSensor::calcGyrMisalignMatrix(void)
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);	
 	updateParameters();	
-}
-
-void LpmsSensor::initGyrTempCal(void)
-{
-	int p;
-
-  	if (isGetGyrTempCal == true) return;
-  	
-	isGetGyrTempCal = false;
-	misalignSetIndex = 0;
-	misalignSamples = 0;
-	misalignTime = 0.0f;
-
-	for (int i=0; i<N_GYR_TEMPCAL_SETS; i++) {
-		vectZero3x1(&gyrTempCalData[i]);
-		gyrAvgTemp[i] = 0.0f;
-	}
-	
-	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
-	
-	p = SELECT_LPMS_GYRO_OUTPUT_ENABLED;
-	p |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;
-	p |= SELECT_LPMS_GYRO_TEMP_OUTPUT_ENABLED;
-	
-	configData.setParameter(PRM_SELECT_DATA, p);	
-	updateParameters();
-}
-
-void LpmsSensor::startGetGyrTempCal(int i) 
-{
-	if (i < N_GYR_TEMPCAL_SETS) {
-		isGetGyrTempCal = true;
-		misalignSetIndex = i;
-		misalignSamples = 0;
-		misalignTime = 0.0f;
-		
-		vectZero3x1(&gyrTempCalData[i]);
-		gyrAvgTemp[i] = 0.0f;
-	}
-}
-
-#define CALC_GYR_TEMPCAL_DURATION 15000.0f
-
-void LpmsSensor::checkGyrTempCal(float T)
-{
-	if (isGetGyrTempCal == true) {
-		for (int i=0; i<3; i++) {
-			gyrTempCalData[misalignSetIndex].data[i] += gRaw.data[i];
-		}
-		
-		gyrAvgTemp[misalignSetIndex] += gTemp;
-
-		++misalignSamples;
-		misalignTime += T;
-		
-		if (misalignTime >= CALC_GYR_TEMPCAL_DURATION) {
-			isGetGyrTempCal = false;
-
-			for (int i=0; i<3; i++) {
-				if (misalignSamples == 0) break;
-				
-				gyrTempCalData[misalignSetIndex].data[i] /= (float) misalignSamples;
-				gyrAvgTemp[misalignSetIndex] /= (float) misalignSamples;
-			}
-
-			printf("Temp. cal. vector: %d\n", misalignSetIndex);	
-			printf("Avg. gyro data: %f %f %f\n", gyrMisalignBData[misalignSetIndex].data[0], gyrMisalignBData[misalignSetIndex].data[1], gyrMisalignBData[misalignSetIndex].data[2]);
-			printf("Avg. gyro temp. data: %f\n", gyrAvgTemp[misalignSetIndex]);
-
-			misalignSamples = 0;
-			misalignTime = 0.0f;
-		}
-	}
-}
-
-void LpmsSensor::calcGyrTempCal(void)
-{
-	for (int i=0; i<3; i++) {
-		configData.gyrCalBaseV.data[i] = gyrTempCalData[0].data[i];
-		configData.gyrCalBaseT = gyrAvgTemp[0];
-		
-		configData.gyrCalB.data[i] = ((gyrTempCalData[1].data[i] - gyrTempCalData[0].data[i]) / 
-			(gyrAvgTemp[1] - gyrAvgTemp[0]) - 
-			(gyrTempCalData[2].data[i] - gyrTempCalData[0].data[i]) / 
-			(gyrAvgTemp[2] - gyrAvgTemp[0])) / 
-			(gyrAvgTemp[1] - gyrAvgTemp[2]);
-		configData.gyrCalA.data[i] = (gyrTempCalData[1].data[i] - gyrTempCalData[0].data[i]) / 
-			(gyrAvgTemp[1] - gyrAvgTemp[0]) - 
-			configData.gyrCalB.data[i] * (gyrAvgTemp[1] - gyrAvgTemp[0]);
-	}
-
-	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
-	updateParameters();
 }
 
 void LpmsSensor::startSaveData(std::ofstream *saveDataHandle)

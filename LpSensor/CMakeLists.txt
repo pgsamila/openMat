@@ -75,9 +75,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
 	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
 	set(WINDOWS_PCAN_PATH "C:/pcan-basic" CACHE STRING "")
-	set(WINDOWS_BOOST_PATH "C:/boost_1_54_0" CACHE STRING "")
+	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
 	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
-	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.0" CACHE STRING "")
+	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.1" CACHE STRING "")
 
 	include_directories("${WINDOWS_PCAN_PATH}/Include")
 	include_directories("${WINDOWS_BOOST_PATH}")
@@ -123,17 +123,26 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(LINUX_FTDI_PATH "" CACHE STRING "")
 	set(LINUX_PUGIXML_PATH "" CACHE STRING "")
 
-	include_directories("../OpenMATCommon")
-	
-	include_directories("${LINUX_PUGIXML_PATH}/src")
 	include_directories("${LINUX_FTDI_PATH}")
-	
+	include_directories("../OpenMATCommon")
+	include_directories("${LINUX_PUGIXML_PATH}/src")
 	include_directories("/usr/local/include")
 	include_directories("/usr/include")
 
 	link_directories("/usr/lib")
-	# link_directories("/usr/lib/x86_64-linux-gnu")
+
+	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+		link_directories("${LINUX_FTDI_PATH}/build/i386")
+	endif()
+
+	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+		link_directories("/usr/lib/x86_64-linux-gnu")
+		link_directories("${LINUX_FTDI_PATH}/build/x86_64")
+	endif()
+
 	link_directories("/usr/local/lib")
+
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -225,8 +234,8 @@ set(headers
 )
 
 if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-	set(LIBRARY_OUTPUT_PATH ../LpmsControl/build/release CACHE STRING "")
-	set(EXECUTABLE_OUTPUT_PATH ../LpmsControl/build/release CACHE STRING "")
+	set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
+	set(EXECUTABLE_OUTPUT_PATH ./build CACHE STRING "")
 endif()
 
 if (BUILD_ARCHITECTURE STREQUAL "64-bit")

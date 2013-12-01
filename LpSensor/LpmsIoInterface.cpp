@@ -56,6 +56,7 @@ void LpmsIoInterface::zeroImuData(ImuData* id)
 	for (int i=0; i<3; i++) id->gRaw[i] = 0.0f;
 	for (int i=0; i<3; i++) id->bRaw[i] = 0.0f;
 	for (int i=0; i<3; i++) id->linAcc[i] = 0.0f;
+	
 	id->pressure = 0.0f;
 	id->altitude = 0.0f;
 	id->temperature = 0.0f;
@@ -378,7 +379,9 @@ bool LpmsIoInterface::parseFieldMapData(void)
 	r = currentFieldMapRoll; 
 	y = currentFieldMapYaw; 
 	
-	fromBuffer(oneTx, 0, &(configData->fieldMap[p][r][y].data[0]), &(configData->fieldMap[p][r][y].data[1]), &(configData->fieldMap[p][r][y].data[2]));
+	fromBuffer(oneTx, 0, &(configData->fieldMap[p][r][y].data[0]), 
+		&(configData->fieldMap[p][r][y].data[1]), 
+		&(configData->fieldMap[p][r][y].data[2]));
 	
 	return true;
 }
@@ -757,22 +760,6 @@ bool LpmsIoInterface::parseFunction(void)
 		fromBuffer(oneTx, &i0, &i1, &i2);
 		configData->firmwareVersion = static_cast<ostringstream*>(&(ostringstream() << i2))->str() + std::string(".") + static_cast<ostringstream*>(&(ostringstream() << i1))->str() + std::string(".") + static_cast<ostringstream*>(&(ostringstream() << i0))->str();
 	break;
-	
-	case GET_GYR_TEMP_CAL_PRM_A:
-		fromBuffer(oneTx, 0, &(configData->gyrCalA.data[0]), &(configData->gyrCalA.data[1]), &(configData->gyrCalA.data[2]));	
-	break;
-	
-	case GET_GYR_TEMP_CAL_PRM_B:
-		fromBuffer(oneTx, 0, &(configData->gyrCalB.data[0]), &(configData->gyrCalB.data[1]), &(configData->gyrCalB.data[2]));	
-	break;
-
-	case GET_GYR_TEMP_CAL_BASE_V:
-		fromBuffer(oneTx, 0, &(configData->gyrCalBaseV.data[0]), &(configData->gyrCalBaseV.data[1]), &(configData->gyrCalBaseV.data[2]));	
-	break;
-
-	case GET_GYR_TEMP_CAL_BASE_T:
-		fromBuffer(oneTx, &(configData->gyrCalBaseT));	
-	break;
 
 	case GET_GYR_ALIGN_BIAS:
 		fromBuffer(oneTx, 0, &(configData->gyrAlignmentBias.data[0]), &(configData->gyrAlignmentBias.data[1]), &(configData->gyrAlignmentBias.data[2]));
@@ -976,7 +963,7 @@ bool LpmsIoInterface::startUploadFirmware(std::string fn)
 		f = true;
 		LOGV("[LpmsIoInterface] Firmware file %s opened.\n", fn.c_str());
 	} else {
-		LOGV("[LpmsIoInterface] Could not open firmware file ", fn.c_str());
+		LOGV("[LpmsIoInterface] Could not open firmware file %s\n", fn.c_str());
 		f = false;
 	
 		return f;
@@ -1108,15 +1095,15 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 	ifs.seekg(0, ios::end);
 	long long l = ifs.tellg();
 	ifs.seekg(0, ios::beg);
-	LOGV("[LpmsIoInterface] IAP filesize: %d", l);
+	LOGV("[LpmsIoInterface] IAP filesize: %d\n", l);
 	
 	firmwarePages = l / 256;
 	unsigned long r = (long) (l % 256);
 	
 	if (r > 0) ++firmwarePages;
 	
-	LOGV("[LpmsIoInterface] IAP pages: %d", firmwarePages);
-	LOGV("[LpmsIoInterface] IAP remainder: %d", r);
+	LOGV("[LpmsIoInterface] IAP pages: %d\n", firmwarePages);
+	LOGV("[LpmsIoInterface] IAP remainder: %d\n", r);
 	
 	cBuffer[0] = firmwarePages & 0xff;
 	cBuffer[1] = (firmwarePages >> 8) & 0xff;

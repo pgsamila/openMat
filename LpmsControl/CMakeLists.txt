@@ -45,16 +45,6 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 set(USE_JUST_THREAD CACHE BOOL "")
 set(USE_ZEROC_ICE CACHE BOOL "")
 
-set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.0" CACHE STRING "")
-set(WINDOWS_QWT_PATH "C:/qwt-6.1.0" CACHE STRING "")
-set(WINDOWS_QT5_PATH "C:/qt5/Qt5-Vs2010-32-OpenGl/5.1.1/msvc2010_opengl" CACHE STRING "")
-set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
-set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
-set(WINDOWS_BOOST_PATH "C:/boost_1_54_0" CACHE STRING "")
-set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
-set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.0" CACHE STRING "")
-set(WINDOWS_EIGEN_PATH "C:/eigen-eigen-3.0.3")
-
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	SET(SHOW_CONSOLE TRUE)
 	set(EXECUTABLE_OUTPUT_PATH "./build/release" CACHE STRING "")
@@ -68,6 +58,15 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(WINDOWS_QWT_PATH "C:/qwt-6.1.0" CACHE STRING "")
+	set(WINDOWS_QT5_PATH "C:/Qt/Qt5.1.1/5.1.1/msvc2010_opengl" CACHE STRING "")
+	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
+	set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
+	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
+	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
+	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.1" CACHE STRING "")
+	set(WINDOWS_EIGEN_PATH "C:/eigen-3.2.0")
+
 	include_directories("${WINDOWS_BOOST_PATH}")
 	include_directories("${WINDOWS_PUGIXML_PATH}/src")
 	include_directories("${WINDOWS_FTDI_PATH}")
@@ -104,23 +103,33 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	SET(SHOW_CONSOLE TRUE)
 
-	include_directories("../Lp3rdPartyLibraries/Qwt/include")
-	include_directories("../Lp3rdPartyLibraries/Pugixml/src")
-	include_directories("../Lp3rdPartyLibraries/Ftdi/Linux/release")
-	include_directories("../Lp3rdPartyLibraries/Eigen")
+	set(LINUX_PUGIXML_PATH "~/pugixml" CACHE STRING "")
+	include_directories("${LINUX_PUGIXML_PATH}/src")
+
+	set(LINUX_QWT_PATH "~/qwt-6.1/qwt-6.1.0" CACHE STRING "")
+	include_directories("${LINUX_QWT_PATH}/src")
+	link_directories("${LINUX_QWT_PATH}/lib")
+
+	include_directories("/usr/include/eigen3")
 
 	include_directories("../OpenMATCommon")
 	include_directories("../LpSensor")
+	link_directories("../LpSensor/build")
 
 	include_directories("/usr/local/include")
 	include_directories("/usr/include")
 
-	link_directories("../Lp3rdPartyLibraries/Ftdi/Linux/release/build/x86_64")
-	link_directories("../LpSensor/build")
+	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+	endif()
+
+	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+		link_directories("/usr/lib/x86_64-linux-gnu")
+	endif()
 
 	link_directories("/usr/lib")
-	link_directories("/usr/lib/x86_64-linux-gnu")
 	link_directories("/usr/local/lib")
+
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11 -fPIC")
 endif()
 
 if (USE_ZEROC_ICE)
@@ -150,6 +159,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		FieldModuleIndicator.cpp
 		RescanDialog.cpp
 		GaitTrackingWindow.cpp
+		MotionBuilderCommunication.cpp
 	
 		LpmsControl.rc
 
@@ -182,6 +192,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		CubeWindowContainer.h
 		GaitTrackingWindow.h
 		VerticalBarGraph.h
+		MotionBuilderCommunication.h
 	)
 
 	if (USE_ZEROC_ICE)
@@ -210,10 +221,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		FieldModuleIndicator.cpp
 		RescanDialog.cpp
 		GaitTrackingWindow.cpp
+		MotionBuilderCommunication.cpp
 	
 		LpmsControl.rc
 
-		../Lp3rdPartyLibraries/Pugixml/src/pugixml.cpp
+		${LINUX_PUGIXML_PATH}/src/pugixml.cpp
 	)
 
 	if (USE_ZEROC_ICE)
@@ -241,6 +253,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		CubeWindowContainer.h
 		GaitTrackingWindow.h
 		VerticalBarGraph.h
+		MotionBuilderCommunication.h
 	)
 
 	if (USE_ZEROC_ICE)
@@ -253,16 +266,21 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	endif()
 endif()
 
-set(CMAKE_PREFIX_PATH "${WINDOWS_QT5_PATH}")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(CMAKE_PREFIX_PATH "${WINDOWS_QT5_PATH}")
+endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Widgets REQUIRED)
+include_directories(${Qt5Widgets_INCLUDE_DIRS})
 include_directories(${Qt5Widgets_INCLUDES})
 add_definitions(${Qt5Widgets_DEFINITIONS})
 find_package(Qt5Core REQUIRED)
+include_directories(${Qt5Core_INCLUDE_DIRS})
 find_package(Qt5OpenGL REQUIRED)
+include_directories(${Qt5OpenGL_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
 	
@@ -320,13 +338,17 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	if(CMAKE_BUILD_TYPE STREQUAL "Release")
 		target_link_libraries(LpmsControl libLpSensor.so)
-		target_link_libraries(LpmsControl libqwt.so)
-		target_link_libraries(LpmsControl libboost_thread.so)
+		target_link_libraries(LpmsControl libqwt.so.6.1)
+		target_link_libraries(LpmsControl Qt5::Widgets)
+		target_link_libraries(LpmsControl Qt5::Core)
+		target_link_libraries(LpmsControl Qt5::OpenGL)
 	endif()
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		target_link_libraries(LpmsControl libLpSensorD.so)
-		target_link_libraries(LpmsControl libqwt.so)		
-		target_link_libraries(LpmsControl libboost_thread.so)
+		target_link_libraries(LpmsControl ${LINUX_QWT_PATH}/lib/libqwt.so)
+		target_link_libraries(LpmsControl Qt5::Widgets)
+		target_link_libraries(LpmsControl Qt5::Core)
+		target_link_libraries(LpmsControl Qt5::OpenGL)	
 	endif()
 endif()

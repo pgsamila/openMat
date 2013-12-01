@@ -6,8 +6,6 @@
 
 #include "SensorManager.h"
 
-#define PRESSURE_T 5000
-
 LpVector3i gyrRawData;
 LpVector3i accRawData;
 LpVector3i magRawData;
@@ -135,20 +133,6 @@ void initSensorManager(void)
 	calibrationData.gyrAlignment.data[2][0] = conItoF(gReg.data[LPMS_GYR_ALIG_20]);
 	calibrationData.gyrAlignment.data[2][1] = conItoF(gReg.data[LPMS_GYR_ALIG_21]);
 	calibrationData.gyrAlignment.data[2][2] = conItoF(gReg.data[LPMS_GYR_ALIG_22]);
-
-	calibrationData.gyrTempCalPrmA.data[0] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_PRM_A_X]);
-	calibrationData.gyrTempCalPrmA.data[1] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_PRM_A_Y]);
-	calibrationData.gyrTempCalPrmA.data[2] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_PRM_A_Z]);
-
-	calibrationData.gyrTempCalPrmB.data[0] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_PRM_B_X]);
-	calibrationData.gyrTempCalPrmB.data[1] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_PRM_B_Y]);
-	calibrationData.gyrTempCalPrmB.data[2] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_PRM_B_Z]);
-
-	calibrationData.gyrTempCalBaseV.data[0] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_BASE_V_X]);
-	calibrationData.gyrTempCalBaseV.data[1] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_BASE_V_Y]);
-	calibrationData.gyrTempCalBaseV.data[2] = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_BASE_V_Z]);
-
-	calibrationData.gyrTempCalBaseT = conItoF(gReg.data[LPMS_GYR_TEMP_CAL_BASE_T]);	
 	
 	f2int.u32_val = gReg.data[LPMS_GYR_THRES_X];
 	lpFilterParam.gyrThreshold.data[0] = f2int.float_val;
@@ -171,9 +155,7 @@ void initSensorManager(void)
 		lpFilterParam.useGyrAutoCal = 0;
 	}
 	
-	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) {
-		lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
-	}
+	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
 	
 	f2int.u32_val = gReg.data[LPMS_ACC_GAIN_X];
 	calibrationData.accGain.data[0] = f2int.float_val;
@@ -210,9 +192,7 @@ void initSensorManager(void)
 	
 	calibrationData.accRange = gReg.data[LPMS_ACC_RANGE];
 	
-	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) {
-		lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
-	}
+	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
 
 	f2int.u32_val = gReg.data[LPMS_MAG_GAIN_X];
 	calibrationData.magGain.data[0] = f2int.float_val;
@@ -256,9 +236,7 @@ void initSensorManager(void)
 	
 	lpFilterParam.magInclination = conItoF(gReg.data[LPMS_MAG_FIELD_INC]);
 	
-	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) {
-		lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
-	}	
+	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
 	
 	lpFilterParam.filterMode = gReg.data[LPMS_FILTER_MODE];
 	lpFilterParam.magFieldEstimate = conItoF(gReg.data[LPMS_MAG_FIELD_EST]);
@@ -269,9 +247,7 @@ void initSensorManager(void)
 		lpFilterParam.dynamicCovar = 0;
 	}
 
-	if (!initPressureSensor()) {
-		lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
-	}
+	if (!initPressureSensor()) lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
 	                       
 	qOffset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
 	qOffset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
@@ -305,9 +281,7 @@ void initSensorManager(void)
 	updateCentriCompMode();
                     
 #ifdef USE_HEAVEMOTION
-	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
-		initHeaveMotion();
-	}
+	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
 #endif
 }
 
@@ -331,17 +305,18 @@ void updateSensorData(void)
 #endif
 
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
+
+		cT = getTimeStep();
+		startTimeStepCounting();		
+		
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
 
 #ifdef ENABLE_WATCHDOG
 		WWDG_DeInit();
 #endif
-
-		cT = getTimeStep();
-		startTimeStepCounting();
 		
-		T = (float) cT * 0.0001f;
+		T = (float) cT * 0.00001f;
 		canHeartbeatTime += T;
 		measurementTime += T;
 		heaveTime = T;
@@ -351,11 +326,13 @@ void updateSensorData(void)
 		if (pressureTime > PRESSURE_T) {
 			pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
-					((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
-					((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
-					((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
+				((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
+				((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
+				((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
+				  
 				getTempAndPressure(&rawTemp, &rawPressure, BMP180_STD_MODE);
 				calcAltitude();
+				
 			}
 		}
 #endif
@@ -373,16 +350,6 @@ void processSensorData(void)
 	aRaw.data[2] = (float) accRawData.data[2] * calibrationData.accGain.data[2];
 
 	aRawNoLp = aRaw;
-
-	float curT = 0.0f;
-	int enableTempCal = 0;
-	if (enableTempCal == 1) {
-		for (int i=0; i<3; i++) {
-			calibrationData.gyrOffset.data[i] = calibrationData.gyrTempCalBaseV.data[i] + 
-				calibrationData.gyrTempCalPrmA.data[i] * (curT - calibrationData.gyrTempCalBaseT) + 
-				calibrationData.gyrTempCalPrmB.data[i] * (curT - calibrationData.gyrTempCalBaseT) * (curT - calibrationData.gyrTempCalBaseT);
-		}
-	}
 
 	gRaw.data[0] = ((float) gyrRawData.data[0] * calibrationData.gyrGain.data[0] * d2r) - calibrationData.gyrOffset.data[0];
 	gRaw.data[1] = ((float) gyrRawData.data[1] * calibrationData.gyrGain.data[1] * d2r) - calibrationData.gyrOffset.data[1];
@@ -416,27 +383,31 @@ void processSensorData(void)
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
+		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
+		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
+		  
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
 		quaternionMult(&q, &qOffset, &qAfterOffset);
-		gyroToInertial();
-		quaternionToEuler(&qAfterOffset, &rAfterOffset);
-		calcLinearAcceleration();
+                if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial();
+                if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
 #ifdef USE_HEAVEMOTION
-		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
-			calculateHeaveMotion(heaveTime);
-		}
+		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(heaveTime);
 #endif
+		
 	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
+		
 		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, bInc, &magNoise);
 		quaternionIdentity(&qAfterOffset); 
-		gyroToInertial();
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial();
+		
 	} else {
+	  
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		quaternionIdentity(&qAfterOffset);
-		gyroToInertial();
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial();
+		
 	}
 }    
 
@@ -444,27 +415,27 @@ void applyLowPass(void)
 {
 	int i;
 
-	for (i=0; i<3; ++i) {
-		gyrRawDataLp.data[i] = 	gyrRawDataLp.data[i] * (1.0f - calibrationData.lpAlpha) + 
-								gRaw.data[i] * calibrationData.lpAlpha;
-		gRaw.data[i] = gyrRawDataLp.data[i];
-
-		accRawDataLp.data[i] = 	accRawDataLp.data[i] * (1.0f - calibrationData.lpAlpha) + 
-								aRaw.data[i] * calibrationData.lpAlpha;
-		aRaw.data[i] = accRawDataLp.data[i];
-
-		magRawDataLp.data[i] = 	magRawDataLp.data[i] * (1.0f - calibrationData.lpAlpha) + 
-								tB.data[i] * calibrationData.lpAlpha;
-		tB.data[i] = magRawDataLp.data[i];
+	if (calibrationData.lpAlpha > 0.0f) {
+		for (i=0; i<3; ++i) {
+			gyrRawDataLp.data[i] = 	gyrRawDataLp.data[i] * (1.0f - calibrationData.lpAlpha) + gRaw.data[i] * calibrationData.lpAlpha;
+			gRaw.data[i] = gyrRawDataLp.data[i];
+	
+			accRawDataLp.data[i] = 	accRawDataLp.data[i] * (1.0f - calibrationData.lpAlpha) + aRaw.data[i] * calibrationData.lpAlpha;
+			aRaw.data[i] = accRawDataLp.data[i];
+	
+			magRawDataLp.data[i] = 	magRawDataLp.data[i] * (1.0f - calibrationData.lpAlpha) + tB.data[i] * calibrationData.lpAlpha;
+			tB.data[i] = magRawDataLp.data[i];
+		}
 	}
 }
 
 void calcAltitude(void)
 {
-	if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
+	if (	(	((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 			((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
 			((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
 			((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
+			  
 		pressure = (float) rawPressure * 1.0e-2f;
 		temperature = (float) rawTemp * 1.0e-1f;
 

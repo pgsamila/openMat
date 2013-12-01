@@ -26,7 +26,7 @@ MotionBuilderCommunication::~MotionBuilderCommunication(void)
 
 
 void MotionBuilderCommunication::startServer(void){
-	boost::thread t(&MotionBuilderCommunication::runThread, this);
+	std::thread t(&MotionBuilderCommunication::runThread, this);
 	t.detach();
 	logd("MBServer started");
 }
@@ -86,18 +86,29 @@ void MotionBuilderCommunication::runThread(void)
 				else {
 					LPMSRotationData rotDat;
 					int fps=30;
-					int count=0;
+					int count = 0;
+					
+					char cmd;
+
 					recv(lSocket, (char*)&fps, sizeof(fps), 0); 					
 					logd("MBServer FPS: " + toString(fps));
 					while (bRunning)
 					{  
-						updateImuData(rotDat);
-						rotDat.mTime = getNanoSeconds(); 
+						recv(lSocket, (char*)&cmd, sizeof(cmd), 0); 
+						if (cmd == LPMB_FETCHDATA){
+							updateImuData(rotDat);
+							rotDat.mTime = getNanoSeconds(); 
 				 
-						if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
-							break;  
-						boost::this_thread::sleep(boost::posix_time::microseconds(1000000)/ fps);
-						//Sleep( 1000/fps );
+							if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
+								break;
+						} else if (cmd == LPMB_DISCONNECT){				
+							logd("Disconnecting...");
+							break;
+						} else {		
+							logd("Disconnecting....");
+							break;
+						}
+						cmd = LPMB_READY;
 					}
 				} 
 				/*
@@ -144,7 +155,7 @@ void MotionBuilderCommunication::runThread(void)
 void MotionBuilderCommunication::stopThread(void)
 {
 	bRunning = false;
-	boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 void MotionBuilderCommunication::addSensor(LpmsSensorI* sensor)
@@ -251,10 +262,17 @@ void MotionBuilderCommunication::updateImuData( LPMSRotationData &rd )
 	// update measurement 		 
 	for (it = sensorList.begin(); it != sensorList.end(); ++it) {
 		d = (*it)->getCurrentData();   
-		if (i++ < rd.ChannelCount){
+		if (i < rd.ChannelCount){
 			rd.mChannel[i].id = d.openMatId;
-			decodeRotation(rd.mChannel[i].q, d.q[0], d.q[1], d.q[2], d.q[3]); 
-		} 
+			rd.mChannel[i].q[0] = d.q[0];	// w
+			rd.mChannel[i].q[1] = d.q[1];	// x
+			rd.mChannel[i].q[2] = d.q[2];	// y
+			rd.mChannel[i].q[3] = d.q[3];	// z
+			//decodeRotation(rd.mChannel[i].q, d.q[0], d.q[1], d.q[2], d.q[3]);
+			i++;
+		} else {
+			break;
+		}
 	} 
 }
 

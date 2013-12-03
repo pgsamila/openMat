@@ -6,6 +6,8 @@
 
 #include "stm32f2xx.h"
 
+#define USE_LPMSCU_NEW
+
 #define USER_APPLICATION_ADDRESS	(uint32_t)0x08000000
 #define USER_APPLICATION_BACKUP_ADDRESS	(uint32_t)0x08020000
 
@@ -193,8 +195,13 @@ int main(void)
 	
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	// Configure PC.06 as Output Led 1 Status
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+#ifdef USE_LPMSCU_NEW
+	// Configure PC.05 as Output Led 1 Status
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
+#else
+        // Configure PC.06 as Output Led 1 Status
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+#endif
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;

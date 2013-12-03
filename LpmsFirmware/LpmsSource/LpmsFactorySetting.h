@@ -15,22 +15,22 @@
 // Compile time switches -->
 
 // Enables CAN bus interface
-// #define USE_CANBUS_INTERFACE
+#define USE_CANBUS_INTERFACE
 
 // Enables NEW LPMS-CU
-// #define USE_LPMSCU_NEW
+#define USE_LPMSCU_NEW
 
 // Enables Bluetooth interface
-#define USE_BLUETOOTH_INTERFACE
+//#define USE_BLUETOOTH_INTERFACE
 
 // Enables watchdog timer
 #define ENABLE_WATCHDOG
 
 // Enables heave motion tracking
-// #define USE_HEAVEMOTION
+#define USE_HEAVEMOTION
 
 // To enable pressure sensing
-#define ENABLE_PRESSURE
+//#define ENABLE_PRESSURE
 
 // Enable Bluetooth low-latency
 // #define ENABLE_LOWLATENCY

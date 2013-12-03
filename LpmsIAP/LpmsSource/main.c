@@ -8,6 +8,12 @@
 
 #define USE_LPMSCU_NEW
 
+#ifdef USE_LPMSCU_NEW
+    #define LED_GPIO_PIN GPIO_Pin_5
+#else
+    #define LED_GPIO_PIN GPIO_Pin_6
+#endif
+
 #define USER_APPLICATION_ADDRESS	(uint32_t)0x08000000
 #define USER_APPLICATION_BACKUP_ADDRESS	(uint32_t)0x08020000
 
@@ -195,13 +201,9 @@ int main(void)
 	
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-#ifdef USE_LPMSCU_NEW
-	// Configure PC.05 as Output Led 1 Status
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-#else
-        // Configure PC.06 as Output Led 1 Status
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
-#endif
+	// Configure Output Led 1 Status
+	GPIO_InitStructure.GPIO_Pin = LED_GPIO_PIN;
+
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -241,7 +243,7 @@ int main(void)
 				}
 
 				gIsFlashSuccess = 1;
-				GPIO_WriteBit(GPIOC, GPIO_Pin_6, (BitAction)(1-GPIO_ReadOutputDataBit(GPIOC, GPIO_Pin_6)));
+				GPIO_WriteBit(GPIOC, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(GPIOC, LED_GPIO_PIN)));
 				msDelay(50);
 			}
 		}

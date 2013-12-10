@@ -29,12 +29,7 @@ RequestExecutionLevel admin
  
 !insertmacro MUI_LANGUAGE "English"
 
-/* !include "drvinstall.nsh" */
-
-/* UninstPage uninstConfirm
-UninstPage instfiles */
-
-BrandingText "LP-Research Installer"
+BrandingText "LP-RESEARCH Installer"
 
 Section "OpenMAT (required)"
 	SectionIn RO
@@ -47,23 +42,15 @@ Section "OpenMAT (required)"
 	File "..\LpSensor\build\LpSensor.lib"
 	File "..\LpSensor\build\LpSensor.dll"
 	
-	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
-	/* File "..\Libraries\PcanApi\Win32\PCANBasic.dll" */	
-	
-	/* SetOutPath $INSTDIR\lib\x64	
-	File "..\LpSensor\build\x64\LpSensorD64.lib"
-	File "..\LpSensor\build\x64\LpSensorD64.dll"
-	File "..\LpSensor\build\x64\LpSensor64.lib"
-	File "..\LpSensor\build\x64\LpSensor64.dll"
-	
-	File "..\Libraries\Ftdi\amd64\ftd2xx64.dll"	*/
+	File "c:\ftdi\i386\ftd2xx.dll"
+	File "c:\qwt-6.1.0\lib\qwt.dll"
+	File "c:\pcan-basic\Win32\PCANBasic.dll"
 	
 	SetOutPath $INSTDIR\examples\simple
 	File "..\LpmsSimpleExample\main.cpp"
 	File "..\LpmsSimpleExample\CMakeLists.txt"
 	
 	SetOutPath $INSTDIR\include	
-	
 	File "..\LpSensor\LpmsSensorI.h"
 	File "..\LpSensor\LpmsSensorManagerI.h"
 	File "..\OpenMATCommon\ImuData.h"
@@ -71,46 +58,29 @@ Section "OpenMAT (required)"
 	File "..\LpSensor\DeviceListItem.h"
 	
 	SetOutPath $INSTDIR\bin
-
 	File "..\LpmsControl\build\Release\LpmsControl.exe"
-	# File "..\LpmsControl\*.xml"
 	File "..\LpmsControl\LpSplash.png"
-	
 	File "..\LpmsControl\README"
-	
 	File "..\LpSensor\build\LpSensor.dll"	
-	
-	/* File "C:\Users\klaus\lp-research\ProductDevelopment\branches\SW\LpmsControl\LpmsCase.obj" */
-	
 	File "..\LpmsControl\Icon.ico"
 	File "..\LpmsControl\LpmsStyles.qss"
-
-	File "..\OpenMATCommon\StartOpenMATServer.bat"
-	File "..\OpenMATCommon\config.icebox"
-	File "..\OpenMATCommon\config.service"
-		
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Core.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Widgets.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Gui.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5OpenGL.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Svg.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Network.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5PrintSupport.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icudt51.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icuin51.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icuuc51.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Core.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Widgets.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Gui.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5OpenGL.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Svg.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Network.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5PrintSupport.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\icudt51.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\icuin51.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\icuuc51.dll"
 	
-	/* File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\ice34.dll"
-	File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\icestorm34.dll"
-	File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\bzip2.dll"	
-		
-	File "C:\Program Files (x86)\ZeroC\Ice-3.4.2\bin\vc100\iceutil34.dll" */
-		
-	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
-		
-	File "C:\qwt-6.1.0\lib\qwt.dll"
+	File "c:\ftdi\i386\ftd2xx.dll"
+	File "c:\qwt-6.1.0\lib\qwt.dll"
+	File "c:\pcan-basic\Win32\PCANBasic.dll"	
 	
-	File "..\Lp3rdPartyLibraries\PcanApi\Win32\PCANBasic.dll"	
+	SetOutPath $INSTDIR\bin\platforms	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\plugins\platforms\qwindows.dll"
 	
 	SetOutPath $INSTDIR\bin\icons
 	File "..\LpmsControl\icons\stop_32x32.png"
@@ -157,10 +127,6 @@ Section "Start Menu Shortcuts"
 	CreateDirectory "$SMPROGRAMS\OpenMAT"
 	CreateShortCut "$SMPROGRAMS\OpenMAT\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 	CreateShortCut "$SMPROGRAMS\OpenMAT\LpmsControl.lnk" "$INSTDIR\bin\LpmsControl.exe" "" "$INSTDIR\bin\Icon.ico" 0
-	/* CreateShortCut "$SMPROGRAMS\OpenMAT\HumanBodySimulation.lnk" "$INSTDIR\bin\HumanBodySimulation.exe" "" "$INSTDIR\bin\Icon.ico" 0 */
-	/* CreateShortCut "$SMPROGRAMS\OpenMAT\StartOpenMATServer.lnk" "$INSTDIR\bin\StartOpenMATServer.bat" "" "$INSTDIR\bin\Icon.ico" 0 */
-	/* CreateShortCut "$SMPROGRAMS\OpenMAT\LpmsSimpleExample.lnk" "$INSTDIR\bin\LpmsSimpleExample.exe" "" "$INSTDIR\bin\Icon.ico" 0
-	CreateShortCut "$SMPROGRAMS\OpenMAT\OpenMATTemplateApp.lnk" "$INSTDIR\bin\OpenMATTemplateApp.exe" "" "$INSTDIR\bin\Icon.ico" 0 */ 
 SectionEnd
 
 Section "Desktop Icon"

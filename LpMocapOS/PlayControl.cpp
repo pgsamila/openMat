@@ -54,8 +54,8 @@ void PlayController::setLength(double l)
 	the currently loaded model structure is passed.
 */
 
-MotionPlayer::MotionPlayer(HumanModel* hm) :
-	hm(hm),
+MotionPlayer::MotionPlayer(void /* HumanModel* hm */) :
+	// hm(hm),
 	maxTime(9999),
 	fps(30),
 	recordingStarted(false),
@@ -66,12 +66,12 @@ MotionPlayer::MotionPlayer(HumanModel* hm) :
 	playbackFile("n/a"),
 	recordingFile("n/a")
 {
-	BOOST_FOREACH(Link* l, hm->linkList) {
+	/* BOOST_FOREACH(Link* l, hm->linkList) {
 		linkList.push_back(l);
 		BOOST_FOREACH(Joint *j, l->jointList) {	
 			jointList.push_back(j);
 		}
-	}
+	} */
 }
 
 /*!
@@ -92,7 +92,7 @@ string MotionPlayer::getPlaybackFile(void) {
 
 bool MotionPlayer::updateJointsFromData(double t) 
 {
-	JointDataSet d;
+	// JointDataSet d;
 	
 	if (playPointer < dataList.size()) {
 		d = dataList[playPointer];
@@ -262,7 +262,7 @@ bool MotionPlayer::recordMotionDataFile(string fn)
 	if (writeStream.is_open()) {
 		recordingStarted = true;		
 		
-		boost::thread t(&MotionPlayer::runRecording, this);
+		std::thread t(&MotionPlayer::runRecording, this);
 		t.detach();	
 
 		cout << "[Motion data recorder] Writing motion data to " << fn.c_str() << endl;	
@@ -312,7 +312,7 @@ void MotionPlayer::runRecording(void)
 		recordMutex.lock();
 		writeData();
 		recordMutex.unlock();
-		boost::this_thread::sleep(boost::posix_time::microseconds(1000));
+		// std::this_thread::sleep(boost::posix_time::microseconds(1000));
 	}
 	
 	writeStream.close();

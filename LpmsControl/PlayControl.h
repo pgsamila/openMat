@@ -1,5 +1,5 @@
 /***********************************************************************
-** Copyright (C) 2011 LP-Research
+** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
 **
@@ -43,8 +43,12 @@
 #include <string>
 #include <queue>
 #include <fstream>
+#include <thread>
+#include <mutex>
 
 #include "MicroMeasure.h"
+#include "ImuData.h"
+#include "LpMatrix.h"
 
 // Widget for playback controller
 class PlayController : QWidget {
@@ -58,14 +62,6 @@ public:
 	void setLength(double l);
 };
 
-// One data set of all links and joints for the model
-class JointDataSet {
-public:
-	double timeStamp;
-	/* vector<Eigen::Vector3f> jointPositionData;
-	vector<Eigen::Matrix3f> linkRotationData; */
-};
-
 // Plays and records motion of links / joints
 class MotionPlayer : public QObject {
 Q_OBJECT
@@ -74,7 +70,7 @@ public:
 	MotionPlayer(void /* HumanModel	*hm */);
 	
 	// Retrieves current playback file
-	string getPlaybackFile(void);
+	std::string getPlaybackFile(void);
 	
 	// Updates joints from data read from file
 	bool updateJointsFromData(double t);
@@ -91,29 +87,7 @@ public:
 	// True if a motion is currently played back
 	bool isPlaying(void);
 	
-	// Records motion data to a file
-	bool recordMotionDataFile(std::string fn);
-	
-	// True if a motion is currently recorded
-	bool isRecording(void);
-	
-	// Stops recording
-	void stopRecording(void);
-	
-	// Starts recording
-	void runRecording(void);
-	
-	// Writes data to file
-	void writeData(void);
-	
-	// Retrieves current recording time
-	double currentRecordTime(void);
-	
-	// Retrievs current recording file
-	string getRecordingFile(void);
-	
-	// Writes current motion data to CSV file
-	bool writeCSVData(string fn);
+	ImuData getData(void);
 
 public slots:
 	// Plays motion
@@ -125,20 +99,14 @@ public slots:
 	// Resets playback
 	void reset(void);
 	
-	// Reinitializes
-	void newMotionData(void);
-	
 public:
-	/* HumanModel *hm;
-	vector<Joint*> jointList;
-	vector<Link*> linkList; */
-	vector<JointDataSet> dataList;
+	std::vector<ImuData> dataList;
 	double maxTime;
 	double fps;
 	MicroMeasure frameTimer;
 	std::ofstream writeStream;
 	bool recordingStarted;
-	queue<JointDataSet> writeQueue;	
+	std::queue<ImuData> writeQueue;	
 	unsigned long playPointer;
 	bool playStarted;
 	double playTimerOffset;
@@ -146,6 +114,7 @@ public:
 	double currentTime;
 	std::string playbackFile;
 	std::string recordingFile;
+	ImuData currentData;
 };
 
 #endif

@@ -1,5 +1,5 @@
 /***********************************************************************
-** Copyright (C) 2012 LP-Research
+** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
 **
@@ -75,8 +75,8 @@
 #include "CubeWindowContainer.h"
 #include "MicroMeasure.h"
 #include "GaitTrackingWindow.h"
-//birdy
 #include "MotionBuilderCommunication.h"
+#include "Playcontrol.h"
 
 #include <string>
 #include <iostream>
@@ -150,7 +150,7 @@ public slots:
 	/* Stops measurement. */
 	void stopMeasurement(void);
 	
-	/* Recalibrates gyrsopcope. */
+	/* Recalibrates gyroscope. */
 	void recalibrate(void);
 	
 	/* Starts recording data. */
@@ -180,7 +180,7 @@ public slots:
 	/* Starts uploading a new IAP file. */
 	void uploadIap(void);
 
-	/* Initilizes application menu bar. */
+	/* Initializes application menu bar. */
 	void createMenuAndToolbar(void);
 	
 	/* Updates the upload timer status (firmware or IAP). */
@@ -255,7 +255,7 @@ public slots:
 	/* Selects cube mode 4 (four cubes). */
 	void selectCubeMode4(void);
 	
-	/* Browses record filename. */
+	/* Browses record file name. */
 	void browseRecordFile(void);
 	
 	/* Zeros reference of selected sensor. */
@@ -276,7 +276,7 @@ public slots:
 	/* Updates magnetic field map. */
 	void updateMagneticFieldMap(void);
 	
-	/* Updates current baudrate to selected value. */
+	/* Updates current baud rate to selected value. */
 	void updateCanBaudrate(int i);
 	
 	/* Displays the heave motion graph. */
@@ -288,7 +288,17 @@ public slots:
 	/* Checks if optional features are available for the current sensor. */
 	void checkOptionalFeatures(LpmsSensorI* sensor);
 
+	/* Selects gait tracking window. */
 	void selectGaitTrackingWindow(void);
+	
+	/* Starts data playback. */
+	void startReplay(void);
+	
+	/* Stops data playback. */
+	void stopReplay(void);
+
+	/* Opens browser for playback file. */
+	void browsePlaybackFile(void);
 	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
@@ -387,6 +397,11 @@ private:
 	bool heaveMotionEnabled;
 	bool gaitTrackingEnabled;
 	GaitTrackingWindow *gaitTrackingWindow;
+	MotionPlayer *rePlayer;
+	QAction *replayAction;
+	string globalPlaybackFile;
+	QLineEdit *playbackFileEdit;
+	bool playbackFileSet;	
 	
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		

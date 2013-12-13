@@ -1,5 +1,5 @@
 /***********************************************************************
-** Copyright (C) 2011 LP-Research
+** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
 **
@@ -147,9 +147,10 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addSeparator();
 	QVBoxLayout *v = new QVBoxLayout();
 	recordFileEdit = new QLineEdit();
+	recordFileEdit->setReadOnly(true);	
 	recordFileEdit->setText("Not set, please browse..");
 	recordFileSet = false;
-	v->addWidget(new QLabel("Current filename:"));
+	v->addWidget(new QLabel("Record filename:"));
 	v->addWidget(recordFileEdit);
 	QWidget *w = new QWidget();
 	w->setLayout(v);
@@ -159,6 +160,29 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addAction(saveAction);
 	toolbar->addWidget(w);
 	toolbar->addAction(browseAction);
+	
+	replayAction = new QAction(QIcon("./icons/loop_alt2_32x28.png"), "&Playback data", this);
+	QAction* browseReplayAction = new QAction(QIcon("./icons/folder_stroke_32x32.png"), "&Browse replay file", this);
+	
+	toolbar->addSeparator();
+	QVBoxLayout *v4 = new QVBoxLayout();
+	playbackFileEdit = new QLineEdit();
+	playbackFileEdit->setReadOnly(true);	
+	playbackFileEdit->setText("Not set, please browse..");
+	playbackFileSet = false;
+	v4->addWidget(new QLabel("Playback filename:"));
+	v4->addWidget(playbackFileEdit);
+	QWidget *w4 = new QWidget();
+	w4->setLayout(v4);
+	w4->setFixedWidth(200);
+
+	toolbar->addAction(replayAction);	
+	toolbar->addWidget(w4);
+	toolbar->addAction(browseReplayAction);	
+	
+	measurementMenu->addSeparator();
+	measurementMenu->addAction(browseReplayAction);
+	measurementMenu->addAction(replayAction);	
 	
 	toolbar->addSeparator();
 	QVBoxLayout *v1 = new QVBoxLayout();
@@ -311,6 +335,8 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(cubeMode2Action, SIGNAL(triggered()), this, SLOT(selectCubeMode2()));
 	connect(cubeMode4Action, SIGNAL(triggered()), this, SLOT(selectCubeMode4()));
 	connect(resetTbAction, SIGNAL(triggered()), this, SLOT(resetTbSelected()));
+	connect(replayAction, SIGNAL(triggered()), this, SLOT(startReplay()));
+	connect(browseReplayAction, SIGNAL(triggered()), this, SLOT(browsePlaybackFile()));	
 }
 
 void MainWindow::updateCanBaudrate(int i)
@@ -372,6 +398,8 @@ MainWindow::MainWindow(QWidget *parent)
 	textUpdateCounter = 0;
 	maIsCalibrating = false;
 	mode = MODE_GRAPH_WIN;
+	
+	rePlayer = new MotionPlayer();
 	
 	mm.reset();
 }
@@ -524,6 +552,23 @@ void MainWindow::timerUpdate(void)
 	if (mm.measure() < GRAPH_UPDATE_PERIOD) return;
 	mm.reset();	
 	int i=0;
+	
+	if (rePlayer->isPlaying() == true) {
+		imuData = rePlayer->getData();
+		
+		switch (mode) {
+		case MODE_GRAPH_WIN:
+			graphWindow->plotDataSet(imuData);
+		break;
+
+		case MODE_THREED_WIN:
+			if (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_1) {
+				cubeWindowContainer->getSelectedCube()->updateData(imuData);
+			}
+		break;
+		}		
+	}
+	
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it, ++i) {
 		(*it)->updateData();
 
@@ -700,15 +745,17 @@ void MainWindow::startMeasurement(void)
 {
 	std::list<SensorGuiContainer *>::iterator it;
 
-	if (isConnecting == true) return;
+	if (isConnecting == true) return;	
 	
 	if (isRunning == false && lpmsList.size() > 0) {
+		stopReplay();	
+	
 		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
 			(*it)->getSensor()->run();
 		}
 		
 		startAction->setText("Stop measurement");
-		startAction->setIcon(QIcon("./icons/stop_32x32.png"));
+		startAction->setIcon(QIcon("./icons/pause_24x32.png"));
 
 		graphWindow->clearGraphs();
 		
@@ -763,8 +810,6 @@ void MainWindow::zeroReferenceSelected(void)
 	if (currentLpms == 0 || isConnecting == true) return;
 	
 	currentLpms->getSensor()->startResetReference();
-	
-	// statusBar()->showMessage("Zeroing heading reference for selected sensor", 2000);
 }
 
 void MainWindow::zeroReferenceAll(void)
@@ -776,8 +821,6 @@ void MainWindow::zeroReferenceAll(void)
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
 		(*it)->getSensor()->startResetReference();
 	}
-	
-	// statusBar()->showMessage("Zeroing heading reference for all sensors", 2000);
 }
 
 void MainWindow::zeroAngleSelected(void)
@@ -785,8 +828,6 @@ void MainWindow::zeroAngleSelected(void)
 	if (currentLpms == 0 || isConnecting == true) return;
 		
 	currentLpms->getSensor()->resetOrientation();
-	
-	// statusBar()->showMessage("Zeroing orientation offset for selected sensor", 2000);
 }
 
 void MainWindow::zeroAngleAll(void)
@@ -798,8 +839,6 @@ void MainWindow::zeroAngleAll(void)
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
 		(*it)->getSensor()->resetOrientation();
 	}	
-	
-	// statusBar()->showMessage("Zeroing orientation offset for all sensors", 2000);
 }
 
 void MainWindow::recalibrate(void)
@@ -1004,10 +1043,6 @@ void MainWindow::recordData(void)
 				saveAction->setText("Stop recording");
 				saveAction->setIcon(QIcon("./icons/x_alt_32x32.png"));
 			}
-			
-			// statusBar()->showMessage("Starting to save data", 2000);
-		} else {
-			// statusBar()->showMessage("Filename invalid", 2000);
 		}
 		startMeasurement();	
 	} else {
@@ -1101,8 +1136,6 @@ void MainWindow::selectThreeDWindow(void)
 	cubeWindowContainer->show();
 	
 	mode = MODE_THREED_WIN;
-	
-	// statusBar()->showMessage("3D visualization", 2000);
 }
 
 void MainWindow::selectFieldMapWindow(void)
@@ -1114,8 +1147,6 @@ void MainWindow::selectFieldMapWindow(void)
 	fieldMapWindow->show();
 	
 	mode = MODE_FIELDMAP_WIN;
-	
-	// statusBar()->showMessage("Magnetic field map", 2000);
 }
 
 bool MainWindow::exitWindow(void)
@@ -1501,11 +1532,7 @@ void MainWindow::gyrMisalignmentCal(void)
 	maWizard->addPage(gyrMaOrientationPage("X-AXIS", "right hand"));
 	maWizard->addPage(gyrMaOrientationPage("Y-AXIS", "left hand"));	
 	maWizard->addPage(gyrMaOrientationPage("Z-AXIS", "right hand"));	
-	
-	/* maWizard->addPage(gyrMaOrientationPage("X-axis", "left hand"));
-	maWizard->addPage(gyrMaOrientationPage("Y-axis", "right hand"));
-	maWizard->addPage(gyrMaOrientationPage("Y-axis", "left hand")); */
-	
+		
 	maWizard->addPage(gyrMaFinishedPage());
 	
 	maWizard->setWindowTitle("Gyroscope Misalignment Calibration");
@@ -1538,22 +1565,6 @@ void MainWindow::gyrMaNewPage(int i)
 		maCalibrationFinished = true;		
 		startWaitBar(10);
 	break;
-	
-	/* case 4:
-		currentLpms->getSensor()->startGetGyrMisalign(3);
-		startWaitBar(20);
-	break;
-	
-	case 5:
-		currentLpms->getSensor()->startGetGyrMisalign(4);
-		startWaitBar(20);
-	break;
-	
-	case 6:
-		currentLpms->getSensor()->startGetGyrMisalign(5);
-		maCalibrationFinished = true;
-		startWaitBar(20);
-	break; */
 	}
 }
 
@@ -1591,4 +1602,40 @@ void MainWindow::selectCubeMode4(void)
 	cubeMode4Action->setChecked(true);
 	
 	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_4);
+}
+
+void MainWindow::startReplay(void)
+{
+	if (rePlayer->isPlaying() == false && globalPlaybackFile != "") {
+		stopMeasurement();
+
+		graphWindow->clearGraphs();
+
+		rePlayer->readMotionDataFile(globalPlaybackFile);
+		rePlayer->play();
+		
+		replayAction->setText("Stop playback");
+		replayAction->setIcon(QIcon("./icons/stop_32x32.png"));
+	} else {
+		rePlayer->pause();	
+		replayAction->setIcon(QIcon("./icons/loop_alt2_32x28.png"));		
+	}
+}
+
+void MainWindow::stopReplay(void)
+{
+	rePlayer->pause();
+	replayAction->setIcon(QIcon("./icons/loop_alt2_32x28.png"));	
+}
+
+void MainWindow::browsePlaybackFile(void)
+{
+	QString qFilename = QFileDialog::getOpenFileName(this, "Load sensor data", "./", "");
+	string playbackFilename = qFilename.toStdString();	
+	
+	if (!(playbackFilename == "")) {	
+		globalPlaybackFile = playbackFilename;
+		playbackFileEdit->setText(playbackFilename.c_str());
+		playbackFileSet = true;
+	}
 }

@@ -160,6 +160,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		RescanDialog.cpp
 		GaitTrackingWindow.cpp
 		MotionBuilderCommunication.cpp
+		PlayControl.cpp
+		
+		../LpSensor/LpMatrix.c
 	
 		LpmsControl.rc
 
@@ -193,6 +196,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		GaitTrackingWindow.h
 		VerticalBarGraph.h
 		MotionBuilderCommunication.h
+		PlayControl.h		
 	)
 
 	if (USE_ZEROC_ICE)
@@ -222,6 +226,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		RescanDialog.cpp
 		GaitTrackingWindow.cpp
 		MotionBuilderCommunication.cpp
+	
+		../LpSensor/LpMatrix.cpp	
 	
 		LpmsControl.rc
 

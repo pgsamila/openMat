@@ -47,14 +47,14 @@ set(USE_ZEROC_ICE CACHE BOOL "")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	set(SHOW_CONSOLE TRUE)
-	set(EXECUTABLE_OUTPUT_PATH "./build/release" CACHE STRING "")
-	set(LIBRARY_OUTPUT_PATH "./build/release" CACHE STRING "")
+	set(EXECUTABLE_OUTPUT_PATH "./build/release")
+	set(LIBRARY_OUTPUT_PATH "./build/release")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(SHOW_CONSOLE TRUE)
-	set(EXECUTABLE_OUTPUT_PATH "./build/debug" CACHE STRING "")	
-	set(LIBRARY_OUTPUT_PATH "./build/debug" CACHE STRING "")	
+	set(EXECUTABLE_OUTPUT_PATH "./build/debug")	
+	set(LIBRARY_OUTPUT_PATH "./build/debug")	
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

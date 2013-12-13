@@ -1,5 +1,5 @@
-Name "OpenMAT 1.2.6"
-OutFile "OpenMAT-1.2.6-Setup.exe"
+Name "OpenMAT 1.2.5"
+OutFile "OpenMAT-1.2.5-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin
@@ -29,7 +29,7 @@ RequestExecutionLevel admin
  
 !insertmacro MUI_LANGUAGE "English"
 
-BrandingText "LP-Research Installer"
+BrandingText "LP-RESEARCH Installer"
 
 Section "OpenMAT (required)"
 	SectionIn RO
@@ -42,14 +42,15 @@ Section "OpenMAT (required)"
 	File "..\LpSensor\build\LpSensor.lib"
 	File "..\LpSensor\build\LpSensor.dll"
 	
-	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
+	File "c:\ftdi\i386\ftd2xx.dll"
+	File "c:\qwt-6.1.0\lib\qwt.dll"
+	File "c:\pcan-basic\Win32\PCANBasic.dll"
 	
 	SetOutPath $INSTDIR\examples\simple
 	File "..\LpmsSimpleExample\main.cpp"
 	File "..\LpmsSimpleExample\CMakeLists.txt"
 	
 	SetOutPath $INSTDIR\include	
-	
 	File "..\LpSensor\LpmsSensorI.h"
 	File "..\LpSensor\LpmsSensorManagerI.h"
 	File "..\OpenMATCommon\ImuData.h"
@@ -57,37 +58,29 @@ Section "OpenMAT (required)"
 	File "..\LpSensor\DeviceListItem.h"
 	
 	SetOutPath $INSTDIR\bin
-
 	File "..\LpmsControl\build\Release\LpmsControl.exe"
 	File "..\LpmsControl\LpSplash.png"
-	
 	File "..\LpmsControl\README"
-	
 	File "..\LpSensor\build\LpSensor.dll"	
-		
 	File "..\LpmsControl\Icon.ico"
 	File "..\LpmsControl\LpmsStyles.qss"
-
-	File "..\OpenMATCommon\StartOpenMATServer.bat"
-	File "..\OpenMATCommon\config.icebox"
-	File "..\OpenMATCommon\config.service"
-		
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Core.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Widgets.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Gui.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5OpenGL.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Svg.dll"	
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5Network.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\Qt5PrintSupport.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icudt51.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icuin51.dll"
-	File "C:\qt5\Qt5-Vs2010-32-OpenGl\5.1.1\msvc2010_opengl\bin\icuuc51.dll"
-			
-	File "..\Lp3rdPartyLibraries\Ftdi\i386\ftd2xx.dll"
-		
-	File "C:\qwt-6.1.0\lib\qwt.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Core.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Widgets.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Gui.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5OpenGL.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Svg.dll"	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5Network.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\Qt5PrintSupport.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\icudt51.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\icuin51.dll"
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\bin\icuuc51.dll"
 	
-	File "..\Lp3rdPartyLibraries\PcanApi\Win32\PCANBasic.dll"	
+	File "c:\ftdi\i386\ftd2xx.dll"
+	File "c:\qwt-6.1.0\lib\qwt.dll"
+	File "c:\pcan-basic\Win32\PCANBasic.dll"	
+	
+	SetOutPath $INSTDIR\bin\platforms	
+	File "C:\Qt\Qt5.1.1\5.1.1\msvc2010_opengl\plugins\platforms\qwindows.dll"
 	
 	SetOutPath $INSTDIR\bin\icons
 	File "..\LpmsControl\icons\stop_32x32.png"
@@ -108,8 +101,6 @@ Section "OpenMAT (required)"
 	File "..\LpmsControl\icons\fullscreen_exit_32x32.png"
 	File "..\LpmsControl\icons\bars_32x32.png"
 	File "..\LpmsControl\icons\user_24x32.png"
-	File "..\LpmsControl\icons\pause_24x32.png"
-	File "..\LpmsControl\icons\loop_32x28.png"	
 	
 	WriteRegStr HKLM SOFTWARE\OpenMAT "Install_Dir" "$INSTDIR"
 	

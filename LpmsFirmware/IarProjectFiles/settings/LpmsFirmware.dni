@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1874927297
+Checksum=392432761
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -70,11 +70,6 @@ GraphEnabled=0
 ShowTimeLog=1
 ShowTimeSum=1
 SumSortOrder=0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Bp0=_ 0 "EMUL_DATA" "isSensorMeasurementReady" 0 0 0 0 4294967295
-Count=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -82,10 +77,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Aliases]
-A0=_ "C:\Users\user\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\LpmsSource\main.c" "X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\LpmsSource\main.c"
-Count=1
-SuppressDialog=0
 [Trace2]
 Enabled=0
 [SWOTraceWindow]
@@ -108,3 +99,12 @@ Enabled=0
 Mode=3
 Graph=0
 Symbiont=0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_DATA" "isSensorMeasurementReady" 0 0 0 0 4294967295
+Count=1
+[Aliases]
+A0=_ "C:\Users\user\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\LpmsSource\main.c" "X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\LpmsSource\main.c"
+Count=1
+SuppressDialog=0

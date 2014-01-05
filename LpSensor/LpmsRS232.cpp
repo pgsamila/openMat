@@ -30,28 +30,38 @@ long long LpmsRS232::getConnectWait(void) {
 	return 1000000; 
 }	
 	
-void LpmsRS232::listDevices(vector<DeviceListItem>* deviceList) 
+void LpmsRS232::listDevices(LpmsDeviceList *deviceList) 
 {
-	deviceList->push_back(DeviceListItem("COM18", DEVICE_LPMS_U));
+	int i;
+	
+	for (i=0; i<255; ++i) {
+		std::ostringstream pS;
+		pS << "\\\\.\\COM" << i;
+		std::cout << pS.str() << endl;
+		if (CreateFile(pS.str().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL) != INVALID_HANDLE_VALUE) {
+			std::ostringstream pS;
+			pS << "COM" << i;
+			deviceList->push_back(DeviceListItem(pS.str().c_str(), DEVICE_LPMS_RS232));
+		}
+	}
 }
 
 bool LpmsRS232::connect(string deviceId)
 {
+	std::ostringstream pS;
+	pS << "\\\\.\\" << deviceId;
+
 	this->idNumber = deviceId;
 	
 	isOpen = false;
 	
-	rs232Handle = CreateFile("\\\\.\\COM18", GENERIC_READ | GENERIC_WRITE, 
-		0, NULL, OPEN_EXISTING, 0, NULL);	
-	
-	/* rs232Handle = CreateFile(deviceId.c_str(), GENERIC_READ | GENERIC_WRITE, 
-		0, NULL, OPEN_EXISTING, 0, NULL); */
+	rs232Handle = CreateFile(pS.str().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);	
 
 	if (GetCommState(rs232Handle, &rs232Config) == 0) {
 		return false;
     }
 
-	rs232Config.BaudRate = 230400;
+	rs232Config.BaudRate = 921600;
 	rs232Config.StopBits = ONESTOPBIT;  
 	rs232Config.Parity = NOPARITY;     
 	rs232Config.ByteSize = 8;  
@@ -125,6 +135,7 @@ bool LpmsRS232::sendModbusData(unsigned address, unsigned function, unsigned len
 {
 	unsigned char txData[1024];
 	unsigned int txLrcCheck;
+	// int i;
 	
 	if (length > 1014) return false;
 
@@ -154,6 +165,7 @@ bool LpmsRS232::sendModbusData(unsigned address, unsigned function, unsigned len
 	txData[10 + length] = 0x0a;
 	
 	if (write(txData, length+11) == true) {
+		// for (i=0; i<length+11; ++i) printf("%x ", txData[i]);
 		return true;
 	}
 	
@@ -176,22 +188,22 @@ bool LpmsRS232::parseModbusByte(void)
 				rxState = PACKET_ADDRESS0;
 				oneTx.clear();
 			}
-			break;
+		break;
 			
 		case PACKET_ADDRESS0:
 			currentAddress = b;
 			rxState = PACKET_ADDRESS1;
-			break;
+		break;
 
 		case PACKET_ADDRESS1:
 			currentAddress = currentAddress + ((unsigned) b * 256);
 			rxState = PACKET_FUNCTION0;
-			break;
+		break;
 
 		case PACKET_FUNCTION0:
 			currentFunction = b;
 			rxState = PACKET_FUNCTION1;				
-			break;
+		break;
 
 		case PACKET_FUNCTION1:
 			currentFunction = currentFunction + ((unsigned) b * 256);
@@ -222,26 +234,26 @@ bool LpmsRS232::parseModbusByte(void)
 				oneTx.push_back(b);		
 				--rawDataIndex;		
 			}
-			break;
+		break;
 			
 		case PACKET_LRC_CHECK1:
 			lrcReceived = lrcReceived + ((unsigned) b * 256);
 			
 			if (lrcReceived == lrcCheck) {
 				parseFunction();
-				cout << "[LPMS-U] Finished processing packet: " << c2 << endl;
-				c2++;
+				/* cout << "[LPMS-U] Finished processing packet: " << c2 << endl;
+				c2++; */
 			} else {
 				cout << "[LPMS-U] Checksum fail in data packet" << endl;
 			}
 			
 			rxState = PACKET_END;
-			break;
+		break;
 		
 		default:
 			rxState = PACKET_END;		
 			return false;
-			break;
+		break;
 		}
 	}
 	
@@ -262,6 +274,7 @@ bool LpmsRS232::pollData(void)
 	}	
 
 	for (unsigned int i=0; i < bytesReceived; i++) {
+		// printf("%x ", rxBuffer[i]);
 		dataQueue.push((unsigned char) rxBuffer[i]);
 	}	
 	

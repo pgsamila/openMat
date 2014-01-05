@@ -93,7 +93,11 @@ const float pi = 3.141592f;
 		
 	case DEVICE_LPMS_U:
 		bt = new LpmsU(&(this->configData));
-	break;	
+	break;
+	
+	case DEVICE_LPMS_RS232:
+		bt = new LpmsRS232(&(this->configData));
+	break;
 #endif
 
 #ifdef __GNUC__

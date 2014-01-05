@@ -15,13 +15,15 @@
 // Compile time switches -->
 
 // Enables CAN bus interface
-// #define USE_CANBUS_INTERFACE
+#define USE_CANBUS_INTERFACE
 
 // Enables NEW LPMS-CU
-// #define USE_LPMSCU_NEW
+#define USE_LPMSCU_NEW
+
+#define USE_RS232_INTERFACE
 
 // Enables Bluetooth interface
-#define USE_BLUETOOTH_INTERFACE
+// #define USE_BLUETOOTH_INTERFACE
 
 // Enables watchdog timer
 #define ENABLE_WATCHDOG

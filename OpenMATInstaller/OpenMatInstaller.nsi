@@ -1,5 +1,5 @@
-Name "OpenMAT 1.2.6"
-OutFile "OpenMAT-1.2.6-Setup.exe"
+Name "OpenMAT 1.2.7"
+OutFile "OpenMAT-1.2.7-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin
@@ -101,6 +101,8 @@ Section "OpenMAT (required)"
 	File "..\LpmsControl\icons\fullscreen_exit_32x32.png"
 	File "..\LpmsControl\icons\bars_32x32.png"
 	File "..\LpmsControl\icons\user_24x32.png"
+	File "..\LpmsControl\icons\loop_alt2_32x28.png"
+	File "..\LpmsControl\icons\pause_24x32.png"
 	
 	WriteRegStr HKLM SOFTWARE\OpenMAT "Install_Dir" "$INSTDIR"
 	

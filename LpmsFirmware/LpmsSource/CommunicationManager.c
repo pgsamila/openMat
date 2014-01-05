@@ -38,6 +38,10 @@ void initCommunicationManager(void)
 	getReg(config, 4, LPMS_CONFIG);
 
 #ifdef USE_CANBUS_INTERFACE	
+#ifdef USE_RS232_INTERFACE	
+	rs232PortInit(USART_BAUDRATE_921600);
+	connectedInterface = RS232_CONNECTED;
+#else
 	uint8_t canBaudrate;
 
 	CANInitBaudrate(CANBUS_BAUDRATE_1M_ENABLED);
@@ -46,6 +50,7 @@ void initCommunicationManager(void)
 	CANInitBaudrate(canBaudrate);
 	
 	serialPortInit(USART_BAUDRATE_921600);
+#endif
 #endif
 
 #ifdef USE_BLUETOOTH_INTERFACE	
@@ -142,6 +147,8 @@ void sendQueue(void)
 		CANStartDataTransfer(txBuffer2, txIndex);
 	} else if (connectedInterface == USB_CONNECTED) { 
 	  	serialPortStartTransfer(txBuffer2, txIndex);
+	} else if (connectedInterface == RS232_CONNECTED) {
+		rs232PortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
 
@@ -165,6 +172,8 @@ void updateDataTransmission(void)
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	} else if (connectedInterface == CANOPEN_CONNECTED) {
 		sendCANOpenOrientationData();
+	} else if (connectedInterface == RS232_CONNECTED) {
+		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	}
 #endif
 }
@@ -208,6 +217,8 @@ void sendFirmwareUpdateAck(void)
 		CANStartDataTransfer(data, 11);
 	} else if (connectedInterface == USB_CONNECTED) { 
 	  	serialPortStartTransfer(data, 11);
+	} else if (connectedInterface == RS232_CONNECTED) {
+		rs232PortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
 
@@ -244,6 +255,8 @@ void sendFirmwareUpdateNack(void)
 		CANStartDataTransfer(data, 11);
 	} else if (connectedInterface == USB_CONNECTED) { 
 	  	serialPortStartTransfer(data, 11);
+	} else if (connectedInterface == RS232_CONNECTED) {
+		rs232PortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
 	

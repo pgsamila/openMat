@@ -61,6 +61,11 @@ DiscoveryItem::DiscoveryItem(QTreeWidget* tree, string deviceId, int deviceType,
 		gl->addWidget(interfaceTypeItem = new QLabel("CAN bus"), 1, 1);
 		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-CU (CAN ID: ") + deviceId.c_str() + ")"));
 	break;
+	
+	case DEVICE_LPMS_RS232:
+		gl->addWidget(interfaceTypeItem = new QLabel("RS-232"), 1, 1);
+		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-CUR (Port: ") + deviceId.c_str() + ")"));
+	break;
 	}
 
 	QTreeWidgetItem* subTreeItem = new QTreeWidgetItem(treeItem);

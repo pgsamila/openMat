@@ -45,8 +45,12 @@ int main(void)
 			}
 
 #ifdef USE_CANBUS_INTERFACE
+#ifdef USE_RS232_INTERFACE
+			rs232PortPollData();
+#else
 			pollSerialPortData();
 			pollCanBusData();
+#endif
 #else
 			pollBluetoothData();
 #endif
@@ -69,8 +73,12 @@ int main(void)
 			sendQueue();
 
 #ifdef USE_CANBUS_INTERFACE
+#ifdef USE_RS232_INTERFACE
+			rs232PortPollData();
+#else
 			pollSerialPortData();
 			pollCanBusData();
+#endif
 #else
 			pollBluetoothData();
 #endif
@@ -79,8 +87,12 @@ int main(void)
 		} else if (getCurrentMode() == LPMS_SLEEP_MODE) {
 		  
 #ifdef USE_CANBUS_INTERFACE
+#ifdef USE_RS232_INTERFACE
+			rs232PortPollData();
+#else
 			pollSerialPortData();
 			pollCanBusData();
+#endif
 #else
 			pollBluetoothData();
 #endif

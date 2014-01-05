@@ -23,7 +23,7 @@ public:
 	LpmsRS232(CalibrationData *configData);
 
 	/* Lists devices connected to the system. */
-	static void listDevices(vector<DeviceListItem>* deviceList);
+	static void listDevices(LpmsDeviceList *deviceList);
 
 	/* Connects to LPMS. */
 	bool connect(string deviceId);

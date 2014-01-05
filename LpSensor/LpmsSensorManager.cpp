@@ -210,8 +210,7 @@ void LpmsSensorManager::run(void)
 			ce.listDevices(&deviceList);
 #endif
 
-			// LpmsRS232::listDevices(deviceList);
-			
+			LpmsRS232::listDevices(&deviceList);
 			LpmsU::listDevices(&deviceList);
 			LpmsBBluetooth::listDevices(&deviceList);
 			// LpmsBle::listDevices(&deviceList);
@@ -262,6 +261,11 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 		
 	case DEVICE_LPMS_U:	
 		sensor = new LpmsSensor(DEVICE_LPMS_U, deviceId);
+		sensorList.push_back(sensor);
+	break;
+	
+	case DEVICE_LPMS_RS232:	
+		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
 		sensorList.push_back(sensor);
 	break;
 	}

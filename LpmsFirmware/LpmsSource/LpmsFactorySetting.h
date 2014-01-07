@@ -17,7 +17,8 @@
 // Enables CAN bus interface
 #define USE_CANBUS_INTERFACE
 
-// Enables NEW LPMS-CU
+// Enables NEW LPMS-CU. 
+// Note: For RS-232 version both USE_CANBUS_INTERFACE and USE_LPMSCU_NEW must be selected.
 #define USE_LPMSCU_NEW
 
 #define USE_RS232_INTERFACE
@@ -40,7 +41,7 @@
 // <--
 
 // Firmware version information
-#define FIRMWARE_VERSION_DIGIT0 5
+#define FIRMWARE_VERSION_DIGIT0 7
 #define FIRMWARE_VERSION_DIGIT1 2
 #define FIRMWARE_VERSION_DIGIT2 1
 

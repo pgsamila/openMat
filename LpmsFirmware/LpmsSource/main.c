@@ -46,6 +46,7 @@ int main(void)
 
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
+			pollSerialPortData();
 			rs232PortPollData();
 #else
 			pollSerialPortData();
@@ -74,6 +75,7 @@ int main(void)
 
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
+			pollSerialPortData();
 			rs232PortPollData();
 #else
 			pollSerialPortData();
@@ -88,6 +90,7 @@ int main(void)
 		  
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
+			pollSerialPortData();
 			rs232PortPollData();
 #else
 			pollSerialPortData();

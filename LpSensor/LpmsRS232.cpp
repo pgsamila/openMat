@@ -33,15 +33,18 @@ long long LpmsRS232::getConnectWait(void) {
 void LpmsRS232::listDevices(LpmsDeviceList *deviceList) 
 {
 	int i;
+	HANDLE h;
 	
 	for (i=0; i<255; ++i) {
 		std::ostringstream pS;
 		pS << "\\\\.\\COM" << i;
 		std::cout << pS.str() << endl;
-		if (CreateFile(pS.str().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL) != INVALID_HANDLE_VALUE) {
+		h = CreateFile(pS.str().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+		if (h != INVALID_HANDLE_VALUE) {
 			std::ostringstream pS;
 			pS << "COM" << i;
 			deviceList->push_back(DeviceListItem(pS.str().c_str(), DEVICE_LPMS_RS232));
+			CloseHandle(h);
 		}
 	}
 }

@@ -23,6 +23,7 @@ uint32_t JumpAddress;
 pFunction Jump_To_Application;
 uint8_t isConfigForFirmwareUpdateSent = 0;
 volatile int firstTimeTx = 1;
+volatile int rs232FirstTimeTx = 1;
 
 extern uint8_t rxPacketBufferPtr;
 extern uint8_t processedPacketPtr;
@@ -41,6 +42,8 @@ void initCommunicationManager(void)
 #ifdef USE_RS232_INTERFACE	
 	rs232PortInit(USART_BAUDRATE_921600);
 	connectedInterface = RS232_CONNECTED;
+
+	serialPortInit(USART_BAUDRATE_921600);
 #else
 	uint8_t canBaudrate;
 
@@ -131,6 +134,7 @@ void sendQueue(void)
 #else
 	if (connectedInterface == CANOPEN_CONNECTED) return;
 	if (connectedInterface == USB_CONNECTED && serialPortIsTransferCompleted() == 0 && firstTimeTx == 0) return;
+	if (connectedInterface == RS232_CONNECTED && rs232PortIsTransferCompleted() == 0 && rs232FirstTimeTx == 0) return;
 #endif
 
 	if (txIndex == 0) return;                          
@@ -153,7 +157,13 @@ void sendQueue(void)
 #endif
 
 	txIndex = 0;
+
+#ifdef USE_BLUETOOTH_INTERFACE
 	firstTimeTx = 0;
+#else
+	if (connectedInterface == USB_CONNECTED) firstTimeTx = 0;
+	if (connectedInterface == RS232_CONNECTED) rs232FirstTimeTx = 0;
+#endif
 }
 
 void updateDataTransmission(void)

@@ -379,7 +379,7 @@ MainWindow::MainWindow(QWidget *parent)
 	this->setMinimumSize(800, 600);
 	showMaximized();
 	
-	setWindowTitle("LPMS Control");
+	setWindowTitle("LpmsControl GUI");
 	
 	isRunning = false;
 	isConnecting = false;

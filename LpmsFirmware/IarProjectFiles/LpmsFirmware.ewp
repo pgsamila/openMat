@@ -964,6 +964,9 @@
       <name>$PROJ_DIR$\..\LpmsSource\LpmsTimebase.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsTTLUsart.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\LpmsSource\LpmsUsart.c</name>
     </file>
     <file>

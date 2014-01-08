@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1434723823
+Checksum=898244656
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -74,8 +74,7 @@ SumSortOrder=0
 mode=0
 [Breakpoints2]
 Bp0=_ 0 "EMUL_DATA" "isSensorMeasurementReady" 0 0 0 0 4294967295
-Bp1=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\LpmsSource\CommunicationManager.c}.368.5" 0 0 1 "" 0 "" 0
-Count=2
+Count=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""

@@ -17,6 +17,7 @@
 #include "LpmsCanBus.h"
 #include "LpmsUsart.h"
 #include "LpmsRs232Usart.h"
+#include "LpmsTTLUsart.h"
 
 // Initializes communication manager
 void initCommunicationManager(void);

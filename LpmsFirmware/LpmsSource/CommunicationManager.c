@@ -24,6 +24,7 @@ pFunction Jump_To_Application;
 uint8_t isConfigForFirmwareUpdateSent = 0;
 volatile int firstTimeTx = 1;
 volatile int rs232FirstTimeTx = 1;
+volatile int ttlUsartFirstTimeTx = 1;
 
 extern uint8_t rxPacketBufferPtr;
 extern uint8_t processedPacketPtr;
@@ -42,6 +43,11 @@ void initCommunicationManager(void)
 #ifdef USE_RS232_INTERFACE	
 	rs232PortInit(USART_BAUDRATE_921600);
 	connectedInterface = RS232_CONNECTED;
+
+	serialPortInit(USART_BAUDRATE_921600);
+#elif defined USE_TTL_UART_INTERFACE
+	ttlUsartPortInit(USART_BAUDRATE_921600);
+	connectedInterface = TTL_UART_CONNECTED;
 
 	serialPortInit(USART_BAUDRATE_921600);
 #else
@@ -135,6 +141,7 @@ void sendQueue(void)
 	if (connectedInterface == CANOPEN_CONNECTED) return;
 	if (connectedInterface == USB_CONNECTED && serialPortIsTransferCompleted() == 0 && firstTimeTx == 0) return;
 	if (connectedInterface == RS232_CONNECTED && rs232PortIsTransferCompleted() == 0 && rs232FirstTimeTx == 0) return;
+	if (connectedInterface == TTL_UART_CONNECTED && ttlUsartPortIsTransferCompleted() == 0 && ttlUsartFirstTimeTx == 0) return;
 #endif
 
 	if (txIndex == 0) return;                          
@@ -153,6 +160,8 @@ void sendQueue(void)
 	  	serialPortStartTransfer(txBuffer2, txIndex);
 	} else if (connectedInterface == RS232_CONNECTED) {
 		rs232PortStartTransfer(txBuffer2, txIndex);
+	} else if (connectedInterface == TTL_UART_CONNECTED) {
+		ttlUsartPortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
 
@@ -163,6 +172,7 @@ void sendQueue(void)
 #else
 	if (connectedInterface == USB_CONNECTED) firstTimeTx = 0;
 	if (connectedInterface == RS232_CONNECTED) rs232FirstTimeTx = 0;
+	if (connectedInterface == TTL_UART_CONNECTED) ttlUsartFirstTimeTx = 0;
 #endif
 }
 
@@ -183,6 +193,8 @@ void updateDataTransmission(void)
 	} else if (connectedInterface == CANOPEN_CONNECTED) {
 		sendCANOpenOrientationData();
 	} else if (connectedInterface == RS232_CONNECTED) {
+		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
+	} else if (connectedInterface == TTL_UART_CONNECTED) {
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	}
 #endif
@@ -229,6 +241,8 @@ void sendFirmwareUpdateAck(void)
 	  	serialPortStartTransfer(data, 11);
 	} else if (connectedInterface == RS232_CONNECTED) {
 		rs232PortStartTransfer(txBuffer2, txIndex);
+	} else if (connectedInterface == TTL_UART_CONNECTED) {
+		ttlUsartPortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
 
@@ -267,6 +281,8 @@ void sendFirmwareUpdateNack(void)
 	  	serialPortStartTransfer(data, 11);
 	} else if (connectedInterface == RS232_CONNECTED) {
 		rs232PortStartTransfer(txBuffer2, txIndex);
+	} else if (connectedInterface == TTL_UART_CONNECTED) {
+		ttlUsartPortStartTransfer(txBuffer2, txIndex);
 	}
 #endif
 	

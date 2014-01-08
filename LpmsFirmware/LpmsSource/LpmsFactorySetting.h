@@ -18,10 +18,14 @@
 #define USE_CANBUS_INTERFACE
 
 // Enables NEW LPMS-CU. 
-// Note: For RS-232 version both USE_CANBUS_INTERFACE and USE_LPMSCU_NEW must be selected.
+// Note: USE_CANBUS_INTERFACE and USE_LPMSCU_NEW must both be selected.
 #define USE_LPMSCU_NEW
 
-#define USE_RS232_INTERFACE
+// Enables RS-232 
+// #define USE_RS232_INTERFACE
+
+// Enables TTL UART
+#define USE_TTL_UART_INTERFACE
 
 // Enables Bluetooth interface
 // #define USE_BLUETOOTH_INTERFACE

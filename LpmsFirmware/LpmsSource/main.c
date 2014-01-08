@@ -48,6 +48,9 @@ int main(void)
 #ifdef USE_RS232_INTERFACE
 			pollSerialPortData();
 			rs232PortPollData();
+#elif defined USE_TTL_UART_INTERFACE
+			pollSerialPortData();
+			ttlUsartPortPollData();
 #else
 			pollSerialPortData();
 			pollCanBusData();
@@ -77,6 +80,9 @@ int main(void)
 #ifdef USE_RS232_INTERFACE
 			pollSerialPortData();
 			rs232PortPollData();
+#elif defined USE_TTL_UART_INTERFACE
+			pollSerialPortData();
+			ttlUsartPortPollData();
 #else
 			pollSerialPortData();
 			pollCanBusData();
@@ -92,6 +98,9 @@ int main(void)
 #ifdef USE_RS232_INTERFACE
 			pollSerialPortData();
 			rs232PortPollData();
+#elif defined USE_TTL_UART_INTERFACE
+			pollSerialPortData();
+			ttlUsartPortPollData();
 #else
 			pollSerialPortData();
 			pollCanBusData();

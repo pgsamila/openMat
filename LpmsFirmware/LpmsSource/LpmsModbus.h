@@ -20,6 +20,7 @@
 #define CANBUS_CONNECTED 1
 #define CANOPEN_CONNECTED 2
 #define RS232_CONNECTED 3
+#define TTL_UART_CONNECTED 4
 
 // LpBus byte information
 #define PACKET_START 0

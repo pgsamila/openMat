@@ -1042,7 +1042,7 @@ void LpmsSensor::update(void)
 	case STATE_RESET_ORIENTATION:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->resetOrientation();
-			state = STATE_MEASURE;
+			state = STATE_SET_CONFIG;
 		}	
 	break;
 	
@@ -1677,8 +1677,8 @@ void LpmsSensor::stopMagCalibration(void)
 	magCalibrationDuration = 0.0f;
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
-	// updateParameters();
-	startResetReference();
+	
+	updateParameters();
 }
 
 #define N_ALIGNMENT_SETS 6

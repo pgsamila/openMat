@@ -38,7 +38,6 @@ void LpmsRS232::listDevices(LpmsDeviceList *deviceList)
 	for (i=0; i<255; ++i) {
 		std::ostringstream pS;
 		pS << "\\\\.\\COM" << i;
-		std::cout << pS.str() << endl;
 		h = CreateFile(pS.str().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 		if (h != INVALID_HANDLE_VALUE) {
 			std::ostringstream pS;

@@ -51,8 +51,23 @@ import android.content.pm.ActivityInfo;
 import android.bluetooth.*;
 import android.graphics.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.FragmentTransaction;
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewPager;
+
+import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.AppSectionsPagerAdapter;
+import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.MyFragment;
+import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.MyFragment.MyFragmentListener;
+
 // Main activity. Connects to LPMS-B and displays orientation values
-public class LpmsBMainActivity extends Activity
+public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener
 {
 	BluetoothAdapter mAdapter;
 	LpmsBThread mLpmsB;
@@ -64,6 +79,21 @@ public class LpmsBMainActivity extends Activity
 	TextView eulerXText, eulerYText, eulerZText;
 	
 	Handler handler = new Handler();	
+	
+	private int updateRate = 250;
+	private boolean getImage = true;
+	
+	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
+	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
+	ViewPager mViewPager;
+
+	Handler updateFragmentsHandler = new Handler();
+
+	private Runnable mUpdateFragmentsTask = new Runnable() {
+		public void run() {
+			updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, updateRate);
+		}
+	};	
 	
 	// Initializes application
     @Override
@@ -114,6 +144,56 @@ public class LpmsBMainActivity extends Activity
 		mAdapter = BluetoothAdapter.getDefaultAdapter();				
     }
 
+	// Private methods
+	void initializeViews() {
+		
+		// Setup views
+		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
+		
+		final ActionBar actionBar = getActionBar();
+		
+		actionBar.setHomeButtonEnabled(false);
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setAdapter(mAppSectionsPagerAdapter);
+		mViewPager.setOffscreenPageLimit(2);
+		
+		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+			@Override
+			public void onPageSelected(int position) {
+				actionBar.setSelectedNavigationItem(position);
+			}
+		});
+
+		for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
+			actionBar.addTab(actionBar.newTab().setText(mAppSectionsPagerAdapter.getPageTitle(i)).setTabListener(this));
+		}
+		
+		mViewPager.setCurrentItem(1);
+	}
+
+	public void startUpdateFragments() {
+		updateFragmentsHandler.removeCallbacks(mUpdateFragmentsTask);
+		updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, 100);
+	}
+
+	public void updateFragment() {
+		int key = mViewPager.getCurrentItem();
+		
+		MyFragment statusFragment = (MyFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(key));
+		
+		if (statusFragment != null) {
+			statusFragment.updateView();
+		} else {
+			Log.d(TAG, "null: " + key);
+		}
+	}
+
+	void stopUpdateFragments() {
+		updateFragmentsHandler.removeCallbacks(mUpdateFragmentsTask);
+	}
+
 	// Timer method that is periodically called every 100ms to display data
 	private void timerMethod()
 	{
@@ -148,6 +228,20 @@ public class LpmsBMainActivity extends Activity
 				eulerZText.setText(f0.format(d.euler[2]));
 			}
 		});
+	}
+	
+		// ActionBar.TabListener Overrides
+	@Override
+	public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+	}
+
+	@Override
+	public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+		mViewPager.setCurrentItem(tab.getPosition());
+	}
+
+	@Override
+	public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 	}
 	
 	// Called when acvtivity is started 

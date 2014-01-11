@@ -50,6 +50,7 @@ import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.bluetooth.*;
 import android.graphics.*;
+import android.opengl.GLSurfaceView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +79,8 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	TextView quatXText, quatYText, quatZText, quatWText;
 	TextView eulerXText, eulerYText, eulerZText;
 	
+	LpmsBSurfaceView glView;	
+	
 	Handler handler = new Handler();	
 	
 	private int updateRate = 250;
@@ -101,11 +104,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     {
         super.onCreate(savedInstanceState);
 		
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        setContentView(R.layout.main);	
+		/* setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setContentView(R.layout.main); */
 		
 		// Associates TextViews with resource identifiers for data display
-		gyrXText = (TextView) findViewById(R.id.gyrXText);
+		/* gyrXText = (TextView) findViewById(R.id.gyrXText);
 		gyrYText = (TextView) findViewById(R.id.gyrYText);	
 		gyrZText = (TextView) findViewById(R.id.gyrZText);
 		accXText = (TextView) findViewById(R.id.accXText);
@@ -120,10 +123,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		quatWText = (TextView) findViewById(R.id.quatWText);
 		eulerXText = (TextView) findViewById(R.id.eulerXText);
 		eulerYText = (TextView) findViewById(R.id.eulerYText);	
-		eulerZText = (TextView) findViewById(R.id.eulerZText);
+		eulerZText = (TextView) findViewById(R.id.eulerZText); */
 		
 		// Sets number font to monospace
-		gyrXText.setTypeface(Typeface.MONOSPACE);
+		/* gyrXText.setTypeface(Typeface.MONOSPACE);
 		gyrYText.setTypeface(Typeface.MONOSPACE);
 		gyrZText.setTypeface(Typeface.MONOSPACE);
 		accXText.setTypeface(Typeface.MONOSPACE);
@@ -138,10 +141,16 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		quatWText.setTypeface(Typeface.MONOSPACE);
 		eulerXText.setTypeface(Typeface.MONOSPACE);
 		eulerYText.setTypeface(Typeface.MONOSPACE);
-		eulerZText.setTypeface(Typeface.MONOSPACE);				
+		eulerZText.setTypeface(Typeface.MONOSPACE);	*/			
 		
 		// Gets default Bluetooth adapter
-		mAdapter = BluetoothAdapter.getDefaultAdapter();				
+		mAdapter = BluetoothAdapter.getDefaultAdapter();
+        glView = new LpmsBSurfaceView(this);
+		
+        /* requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);　*/
+		
+        setContentView(glView);
     }
 
 	// Private methods
@@ -200,13 +209,13 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		handler.post(new Runnable() {
 			public void run() {
 				// Adjusts decimal format to keep numbers in line
-				DecimalFormat f0 = new DecimalFormat(" 000.00;-000.00");			
+				// DecimalFormat f0 = new DecimalFormat(" 000.00;-000.00");			
 				
 				// Retrieves data from LPMS-B sensor
 				LpmsBData d = mLpmsB.getLpmsBData();
 				
 				// Dsiplays data in TextViews
-				gyrXText.setText(f0.format(d.gyr[0]));
+				/* gyrXText.setText(f0.format(d.gyr[0]));
 				gyrYText.setText(f0.format(d.gyr[1]));
 				gyrZText.setText(f0.format(d.gyr[2]));
 
@@ -225,7 +234,17 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 
 				eulerXText.setText(f0.format(d.euler[0]));
 				eulerYText.setText(f0.format(d.euler[1]));
-				eulerZText.setText(f0.format(d.euler[2]));
+				eulerZText.setText(f0.format(d.euler[2])); */
+				
+				glView.lmRenderer.q[0] = d.quat[0];
+				glView.lmRenderer.q[1] = d.quat[1];
+				glView.lmRenderer.q[2] = d.quat[2];
+				glView.lmRenderer.q[3] = d.quat[3];
+				
+				Log.e("LpmsMonitor", "q: " + d.quat[0] + " " + d.quat[1] + " " + d.quat[2] + " " + d.quat[3]); 		
+
+				// getSensorData(glView.lmRenderer.q);
+				glView.requestRender();				
 			}
 		});
 	}
@@ -270,7 +289,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			mLpmsB.setAcquisitionParameters(true, true, true, true, true, false);			
 			
 			// Tries to connect to LPMS-B with Bluetooth ID 00:06:66:48:E3:7A
-			mLpmsB.connect("00:06:66:48:E3:62", 0);
+			// mLpmsB.connect("00:06:66:45:DD:EB", 0);
 		}	
 	
         super.onResume();
@@ -284,4 +303,15 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
         super.onPause();
     }
+}
+
+class LpmsBSurfaceView extends GLSurfaceView {
+    public LpmsBRenderer lmRenderer;
+
+	public LpmsBSurfaceView(Context context) {
+		super(context);
+
+		lmRenderer = new LpmsBRenderer(context);		
+		setRenderer(lmRenderer);	
+	}
 }

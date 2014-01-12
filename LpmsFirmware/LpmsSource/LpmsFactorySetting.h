@@ -19,13 +19,13 @@
 
 // Enables NEW LPMS-CU. 
 // Note: USE_CANBUS_INTERFACE and USE_LPMSCU_NEW must both be selected.
-#define USE_LPMSCU_NEW
+// #define USE_LPMSCU_NEW
 
-// Enables RS-232 
+// Enables RS-232 (New LPMS-CU only!)
 // #define USE_RS232_INTERFACE
 
-// Enables TTL UART
-#define USE_TTL_UART_INTERFACE
+// Enables TTL UART (New LPMS-CU only!)
+// #define USE_TTL_UART_INTERFACE
 
 // Enables Bluetooth interface
 // #define USE_BLUETOOTH_INTERFACE
@@ -199,9 +199,9 @@
 #define	LPMS_FACTORY_MAG_REF_Y			1.0f
 #define	LPMS_FACTORY_MAG_REF_Z			0.0f
 
-#define LPMS_FACTORY_GYR_THRES_X		0.0f
-#define LPMS_FACTORY_GYR_THRES_Y		0.0f
-#define LPMS_FACTORY_GYR_THRES_Z		0.0f
+#define LPMS_FACTORY_GYR_THRES_X		0.25f
+#define LPMS_FACTORY_GYR_THRES_Y		0.25f
+#define LPMS_FACTORY_GYR_THRES_Z		0.25f
 
 #define LPMS_FACTORY_MAG_THRES_X		100.0f
 #define LPMS_FACTORY_MAG_THRES_Y		100.0f

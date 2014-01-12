@@ -25,7 +25,8 @@ void lpOrientationFromAccMag(LpVector3f b, LpVector3f a, LpVector3f *r, float *i
 void setReferences(void);
 void setCovariances(void);
 void gyrOnlineCal(float T);
-void gyroToInertial(void);
+void gyroToInertial(LpVector4f qI, LpVector3f *wO);
+void gyroToInertialEuler(void);
 
 #ifdef __cplusplus
 }

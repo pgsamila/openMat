@@ -1,0 +1,4 @@
+2014-1-12 Supressed UNIX-style EOL warnings in IAR
+2014-1-12 Removed angular velocity from CAN bus. Only calibrated gyroscope data makes sense.
+2014-1-12 Set gyroscope threshold to value above 0. Why was it 0 anyway?
+2014-1-12 Tested CAN bus communication at 1000 MB/s and 500 MB/s. Works alright.

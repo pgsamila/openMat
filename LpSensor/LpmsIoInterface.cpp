@@ -424,7 +424,10 @@ bool LpmsIoInterface::parseSensorData(void)
 	}
 	
 	if ((configReg & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) {
-		fromBuffer(oneTx, o, &(imuData.w[0]), &(imuData.w[1]), &(imuData.w[2]));	
+		fromBuffer(oneTx, o, &r0, &r1, &r2);
+		imuData.w[0] = r0 * r2d;
+		imuData.w[1] = r1 * r2d;
+		imuData.w[2] = r2 * r2d;	
 		o = o + 12;
 	}
 	

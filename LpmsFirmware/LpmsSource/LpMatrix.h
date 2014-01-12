@@ -111,6 +111,8 @@ void quaternionMult(LpVector4f* src1, LpVector4f* src2, LpVector4f* dest);
 void quaternionToEuler(LpVector4f *q, LpVector3f *r);
 void quaternionToMatrix(LpVector4f *q, LpMatrix3x3f *M);
 void quaternionIdentity(LpVector4f* dest);
+void quaternionCon(LpVector4f* src, LpVector4f* dest);
+void quatRotVec(LpVector4f q, LpVector3f vI, LpVector3f* vO);
 
 // Conversions
 void convertLpMatrixToArray(LpMatrix3x3f* src, float dest[3][3]);

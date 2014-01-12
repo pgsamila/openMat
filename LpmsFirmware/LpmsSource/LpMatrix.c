@@ -762,6 +762,36 @@ void quaternionMult(LpVector4f* src1, LpVector4f* src2, LpVector4f* dest)
 	dest->data[3] = a*h + b*g - c*f + d*e;	
 }
 
+void quaternionCon(LpVector4f* src, LpVector4f* dest)
+{
+	dest->data[0] = src->data[0];
+	dest->data[1] = -src->data[1];
+	dest->data[2] = -src->data[2];
+	dest->data[3] = -src->data[3];	
+}
+
+void quatRotVec(LpVector4f q, LpVector3f vI, LpVector3f* vO)
+{
+	LpVector4f tQ;
+	LpVector4f tQ2;
+	LpVector4f tQ3;	
+	LpVector4f tQ4;	
+	
+	tQ.data[0] = 0.0f;
+	tQ.data[1] = vI.data[0];
+	tQ.data[2] = vI.data[1];
+	tQ.data[3] = vI.data[2];
+
+	quaternionCon(&q, &tQ2);
+	
+	quaternionMult(&tQ2, &tQ, &tQ3);
+	quaternionMult(&tQ3, &q, &tQ4);
+
+	vO->data[0] = tQ4.data[1];
+	vO->data[1] = tQ4.data[2];
+	vO->data[2] = tQ4.data[3];
+}
+
 #define FLT_EPSILON 1.192092896e-07f
 const float r2d = 57.2958f;	
 

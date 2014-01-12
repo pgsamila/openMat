@@ -389,8 +389,8 @@ void processSensorData(void)
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
 		quaternionMult(&q, &qOffset, &qAfterOffset);
-		
-                if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial();
+
+                if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
                 if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
 		
@@ -402,13 +402,13 @@ void processSensorData(void)
 		
 		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, bInc, &magNoise);
 		quaternionIdentity(&qAfterOffset); 
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial();
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
 		
 	} else {
 	  
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		quaternionIdentity(&qAfterOffset);
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial();
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler();
 		
 	}
 }    

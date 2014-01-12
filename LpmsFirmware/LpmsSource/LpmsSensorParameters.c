@@ -1188,3 +1188,42 @@ uint8_t getHeaveData(uint8_t* data, uint16_t *l, uint8_t prec)
 
 	return 1;
 }
+
+uint8_t getGyroXData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad) 
+{
+	const float r2d = 57.2958f;
+
+	if (degRad == USE_DEGREE) {
+		setFloat(data, gRaw.data[0] * r2d, prec);
+	} else {
+		setFloat(data, gRaw.data[0], prec);
+	}
+
+	return 1;
+}
+
+uint8_t getGyroYData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad) 
+{
+	const float r2d = 57.2958f;
+
+	if (degRad == USE_DEGREE) {
+		setFloat(data, gRaw.data[1] * r2d, prec);
+	} else {
+		setFloat(data, gRaw.data[1], prec);
+	}
+
+	return 1;
+}
+
+uint8_t getGyroZData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad) 
+{
+	const float r2d = 57.2958f;
+
+	if (degRad == USE_DEGREE) {
+		setFloat(data, gRaw.data[2] * r2d, prec);
+	} else {
+		setFloat(data, gRaw.data[2], prec);
+	}
+
+	return 1;
+}

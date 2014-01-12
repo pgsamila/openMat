@@ -296,4 +296,8 @@ uint8_t setCanStartId(uint8_t* data);
 // Retrives heave data
 uint8_t getHeaveData(uint8_t* data, uint16_t *l, uint8_t prec);
 
+uint8_t getGyroXData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
+uint8_t getGyroYData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
+uint8_t getGyroZData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
+
 #endif

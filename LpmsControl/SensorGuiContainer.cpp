@@ -211,9 +211,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 1"), l, 0);
 		gl4->addWidget(canTpdo1ACombo = new QComboBox(), l, 1); ++l;
-		canTpdo1ACombo->addItem(QString("Angular velocity X"));
-		canTpdo1ACombo->addItem(QString("Angular velocity Y"));
-		canTpdo1ACombo->addItem(QString("Angular velocity Z"));
+		canTpdo1ACombo->addItem(QString("Gyroscope X"));
+		canTpdo1ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo1ACombo->addItem(QString("Gyroscope Z"));
 		canTpdo1ACombo->addItem(QString("Euler angle X"));
 		canTpdo1ACombo->addItem(QString("Euler angle Y"));
 		canTpdo1ACombo->addItem(QString("Euler angle Z"));
@@ -234,9 +234,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 2"), l, 0);
 		gl4->addWidget(canTpdo1BCombo = new QComboBox(), l, 1); ++l;
-		canTpdo1BCombo->addItem(QString("Angular velocity X"));
-		canTpdo1BCombo->addItem(QString("Angular velocity Y"));
-		canTpdo1BCombo->addItem(QString("Angular velocity Z"));
+		canTpdo1BCombo->addItem(QString("Gyroscope X"));
+		canTpdo1BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo1BCombo->addItem(QString("Gyroscope Z"));
 		canTpdo1BCombo->addItem(QString("Euler angle X"));
 		canTpdo1BCombo->addItem(QString("Euler angle Y"));
 		canTpdo1BCombo->addItem(QString("Euler angle Z"));
@@ -257,9 +257,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 3"), l, 0);
 		gl4->addWidget(canTpdo2ACombo = new QComboBox(), l, 1); ++l;
-		canTpdo2ACombo->addItem(QString("Angular velocity X"));
-		canTpdo2ACombo->addItem(QString("Angular velocity Y"));
-		canTpdo2ACombo->addItem(QString("Angular velocity Z"));
+		canTpdo2ACombo->addItem(QString("Gyroscope X"));
+		canTpdo2ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo2ACombo->addItem(QString("Gyroscope Z"));
 		canTpdo2ACombo->addItem(QString("Euler angle X"));
 		canTpdo2ACombo->addItem(QString("Euler angle Y"));
 		canTpdo2ACombo->addItem(QString("Euler angle Z"));
@@ -280,9 +280,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 4"), l, 0);
 		gl4->addWidget(canTpdo2BCombo = new QComboBox(), l, 1); ++l;
-		canTpdo2BCombo->addItem(QString("Angular velocity X"));
-		canTpdo2BCombo->addItem(QString("Angular velocity Y"));
-		canTpdo2BCombo->addItem(QString("Angular velocity Z"));
+		canTpdo2BCombo->addItem(QString("Gyroscope X"));
+		canTpdo2BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo2BCombo->addItem(QString("Gyroscope Z"));
 		canTpdo2BCombo->addItem(QString("Euler angle X"));
 		canTpdo2BCombo->addItem(QString("Euler angle Y"));
 		canTpdo2BCombo->addItem(QString("Euler angle Z"));
@@ -303,9 +303,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 5"), l, 0);
 		gl4->addWidget(canTpdo3ACombo = new QComboBox(), l, 1); ++l;
-		canTpdo3ACombo->addItem(QString("Angular velocity X"));
-		canTpdo3ACombo->addItem(QString("Angular velocity Y"));
-		canTpdo3ACombo->addItem(QString("Angular velocity Z"));
+		canTpdo3ACombo->addItem(QString("Gyroscope X"));
+		canTpdo3ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo3ACombo->addItem(QString("Gyroscope Z"));
 		canTpdo3ACombo->addItem(QString("Euler angle X"));
 		canTpdo3ACombo->addItem(QString("Euler angle Y"));
 		canTpdo3ACombo->addItem(QString("Euler angle Z"));
@@ -326,9 +326,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 6"), l, 0);
 		gl4->addWidget(canTpdo3BCombo = new QComboBox(), l, 1); ++l;
-		canTpdo3BCombo->addItem(QString("Angular velocity X"));
-		canTpdo3BCombo->addItem(QString("Angular velocity Y"));
-		canTpdo3BCombo->addItem(QString("Angular velocity Z"));
+		canTpdo3BCombo->addItem(QString("Gyroscope X"));
+		canTpdo3BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo3BCombo->addItem(QString("Gyroscope Z"));
 		canTpdo3BCombo->addItem(QString("Euler angle X"));
 		canTpdo3BCombo->addItem(QString("Euler angle Y"));
 		canTpdo3BCombo->addItem(QString("Euler angle Z"));
@@ -349,9 +349,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 7"), l, 0);
 		gl4->addWidget(canTpdo4ACombo = new QComboBox(), l, 1); ++l;
-		canTpdo4ACombo->addItem(QString("Angular velocity X"));
-		canTpdo4ACombo->addItem(QString("Angular velocity Y"));
-		canTpdo4ACombo->addItem(QString("Angular velocity Z"));
+		canTpdo4ACombo->addItem(QString("Gyroscope X"));
+		canTpdo4ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo4ACombo->addItem(QString("Gyroscope Z"));
 		canTpdo4ACombo->addItem(QString("Euler angle X"));
 		canTpdo4ACombo->addItem(QString("Euler angle Y"));
 		canTpdo4ACombo->addItem(QString("Euler angle Z"));
@@ -372,9 +372,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 8"), l, 0);
 		gl4->addWidget(canTpdo4BCombo = new QComboBox(), l, 1); ++l;
-		canTpdo4BCombo->addItem(QString("Angular velocity X"));
-		canTpdo4BCombo->addItem(QString("Angular velocity Y"));
-		canTpdo4BCombo->addItem(QString("Angular velocity Z"));
+		canTpdo4BCombo->addItem(QString("Gyroscope X"));
+		canTpdo4BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo4BCombo->addItem(QString("Gyroscope Z"));
 		canTpdo4BCombo->addItem(QString("Euler angle X"));
 		canTpdo4BCombo->addItem(QString("Euler angle Y"));
 		canTpdo4BCombo->addItem(QString("Euler angle Z"));

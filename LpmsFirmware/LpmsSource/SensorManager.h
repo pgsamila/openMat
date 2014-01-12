@@ -181,9 +181,6 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l);
 // Initializes watchdog timer
 void initWatchdog(void);
 
-// Converts raw gyroscope data to global angular velocities
-void gyroToInertial(void);
-
 // Applies low pass filter to raw data values
 void applyLowPass(void);
 

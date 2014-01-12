@@ -360,15 +360,15 @@ void getCanData(uint8_t* data, int i, int fixed)
 	if (fixed == 1) {
 		switch (v) {
 		case 0:
-			getWXData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
+			getGyroXData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
 		case 1:
-			getWYData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
+			getGyroYData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
 		case 2:
-			getWZData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
+			getGyroZData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
 		case 3:

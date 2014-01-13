@@ -96,11 +96,19 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 	LpmsBRenderer(Context appContext) {
 		context = appContext;
 		q = new float[4];
+		
+		q[0] = 1.0f;
+		q[1] = 0;
+		q[2] = 0;
+		q[3] = 0;						
+		
 		vertices3 = new float[128];		
 	}
   
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		gl.glClearColor(0.6f, 0.6f, 1.0f, 1.0f);
+		// gl.glClearColor(0.6f, 0.6f, 1.0f, 1.0f);
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL10.GL_LEQUAL);
@@ -267,11 +275,14 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+		
+		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
 
 		InputStream istream = context.getResources().openRawResource(R.drawable.lpmslogo);
 		Bitmap bitmap;
 		
-		Log.e("LpmsMonitor", "Loading texture"); 
+		Log.e("lpms", "Loading texture"); 
 		
 		try {
 			bitmap = BitmapFactory.decodeStream(istream);
@@ -279,13 +290,13 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 			try {
 				istream.close();
 			} catch(IOException e) {
-				Log.e("LpmsMonitor", "Stream problem"); 			
+				Log.e("lpms", "Stream problem"); 			
 			}
 		}
 
 		GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 		bitmap.recycle();
 		
-		Log.e("LpmsMonitor", "Loaded texture"); 
+		Log.e("lpms", "Loaded texture"); 
 	}
 }

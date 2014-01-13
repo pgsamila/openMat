@@ -63,9 +63,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 
-import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.AppSectionsPagerAdapter;
-import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.MyFragment;
-import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.MyFragment.MyFragmentListener;
+import com.LpResearch.LpmsBNativeAndroidLibrary.AppSectionsPagerAdapter;
+import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment;
+import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment.MyFragmentListener;
 
 // Main activity. Connects to LPMS-B and displays orientation values
 public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener
@@ -77,13 +77,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	TextView accXText, accYText, accZText;
 	TextView magXText, magYText, magZText;
 	TextView quatXText, quatYText, quatZText, quatWText;
-	TextView eulerXText, eulerYText, eulerZText;
-	
-	LpmsBSurfaceView glView;	
+	TextView eulerXText, eulerYText, eulerZText;	
 	
 	Handler handler = new Handler();	
 	
-	private int updateRate = 250;
+	private int updateRate = 50;
 	private boolean getImage = true;
 	
 	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
@@ -91,9 +89,14 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	ViewPager mViewPager;
 
 	Handler updateFragmentsHandler = new Handler();
+	
+	LpmsBData imuData = new LpmsBData();
 
 	private Runnable mUpdateFragmentsTask = new Runnable() {
 		public void run() {
+			synchronized (imuData) {
+				updateFragment(imuData);
+			}
 			updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, updateRate);
 		}
 	};	
@@ -104,8 +107,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     {
         super.onCreate(savedInstanceState);
 		
-		/* setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        setContentView(R.layout.main); */
+		Log.d("lpms", "starting app");
+		
+		/* setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); */
+        setContentView(R.layout.main);
+		initializeViews();
 		
 		// Associates TextViews with resource identifiers for data display
 		/* gyrXText = (TextView) findViewById(R.id.gyrXText);
@@ -145,18 +151,18 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
 		// Gets default Bluetooth adapter
 		mAdapter = BluetoothAdapter.getDefaultAdapter();
-        glView = new LpmsBSurfaceView(this);
+		
+        // glView = new LpmsBSurfaceView(this);
 		
         /* requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);　*/
 		
-        setContentView(glView);
+        // setContentView(glView);
     }
 
-	// Private methods
 	void initializeViews() {
+		Log.d("lpms", "initializing views");
 		
-		// Setup views
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
 		
 		final ActionBar actionBar = getActionBar();
@@ -165,7 +171,9 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		
 		mViewPager = (ViewPager) findViewById(R.id.pager);
+		Log.d("lpms", "before");
 		mViewPager.setAdapter(mAppSectionsPagerAdapter);
+		Log.d("lpms", "after");
 		mViewPager.setOffscreenPageLimit(2);
 		
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -180,22 +188,28 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		}
 		
 		mViewPager.setCurrentItem(1);
+		
+		Log.d("lpms", "views initialized");
 	}
 
 	public void startUpdateFragments() {
 		updateFragmentsHandler.removeCallbacks(mUpdateFragmentsTask);
 		updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, 100);
+		
+		Log.d("lpms", "start update fragment");	
 	}
 
-	public void updateFragment() {
+	public void updateFragment(LpmsBData d) {
 		int key = mViewPager.getCurrentItem();
 		
 		MyFragment statusFragment = (MyFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(key));
 		
+		// Log.d("lpms", "update fragment" + key);
+		
 		if (statusFragment != null) {
-			statusFragment.updateView();
+			// Log.d("lpms", "update fragment");		
+			statusFragment.updateView(d);
 		} else {
-			Log.d(TAG, "null: " + key);
 		}
 	}
 
@@ -212,7 +226,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				// DecimalFormat f0 = new DecimalFormat(" 000.00;-000.00");			
 				
 				// Retrieves data from LPMS-B sensor
-				LpmsBData d = mLpmsB.getLpmsBData();
+				synchronized (imuData) {
+					imuData = mLpmsB.getLpmsBData();
+					// Log.e("lpms", "imuData: " + imuData.quat[0] + " " + imuData.quat[1] + " " + imuData.quat[2] + " " + imuData.quat[3]);
+				}
 				
 				// Dsiplays data in TextViews
 				/* gyrXText.setText(f0.format(d.gyr[0]));
@@ -236,20 +253,29 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				eulerYText.setText(f0.format(d.euler[1]));
 				eulerZText.setText(f0.format(d.euler[2])); */
 				
-				glView.lmRenderer.q[0] = d.quat[0];
+				/* glView.lmRenderer.q[0] = d.quat[0];
 				glView.lmRenderer.q[1] = d.quat[1];
 				glView.lmRenderer.q[2] = d.quat[2];
 				glView.lmRenderer.q[3] = d.quat[3];
 				
-				Log.e("LpmsMonitor", "q: " + d.quat[0] + " " + d.quat[1] + " " + d.quat[2] + " " + d.quat[3]); 		
+				Log.e("LpmsMonitor", "q: " + d.quat[0] + " " + d.quat[1] + " " + d.quat[2] + " " + d.quat[3]); 		*/
 
 				// getSensorData(glView.lmRenderer.q);
-				glView.requestRender();				
+				// glView.requestRender();				
 			}
 		});
 	}
 	
-		// ActionBar.TabListener Overrides
+	@Override
+	public void onAttachFragment(Fragment fragment) {
+		super.onAttachFragment(fragment);
+		mFragmentMap.put(((MyFragment) fragment).getMyFragmentTag(), fragment.getTag());
+	}	
+	
+	@Override
+	public void onUserInput(int input, String data) {
+	}	
+	
 	@Override
 	public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 	}
@@ -289,8 +315,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			mLpmsB.setAcquisitionParameters(true, true, true, true, true, false);			
 			
 			// Tries to connect to LPMS-B with Bluetooth ID 00:06:66:48:E3:7A
-			// mLpmsB.connect("00:06:66:45:DD:EB", 0);
+			mLpmsB.connect("00:06:66:48:E3:73", 0);
 		}	
+	
+		startUpdateFragments();	
 	
         super.onResume();
     }
@@ -299,19 +327,8 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     @Override
     protected void onPause() {
 		// Disconnects LPMS-B
-		if (mLpmsB != null) mLpmsB.close();
+		// if (mLpmsB != null) mLpmsB.close();
 	
         super.onPause();
     }
-}
-
-class LpmsBSurfaceView extends GLSurfaceView {
-    public LpmsBRenderer lmRenderer;
-
-	public LpmsBSurfaceView(Context context) {
-		super(context);
-
-		lmRenderer = new LpmsBRenderer(context);		
-		setRenderer(lmRenderer);	
-	}
 }

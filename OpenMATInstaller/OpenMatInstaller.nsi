@@ -1,5 +1,5 @@
-Name "OpenMAT 1.2.7"
-OutFile "OpenMAT-1.2.7-Setup.exe"
+Name "OpenMAT 1.2.8"
+OutFile "OpenMAT-1.2.8-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin

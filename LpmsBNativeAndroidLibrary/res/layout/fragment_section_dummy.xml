@@ -3,13 +3,9 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
-
-    <TextView
-        android:id="@+id/text"
-        style="@style/HeadingTextStyle"
-        android:text="CONNECTION CONTROL" /> 
-	<TextView
-		android:id="@+id/text"
-		style="@style/TagTextStyle"
-		android:text="Robot IP:" />
+		<LinearLayout
+		    android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="166dip"
+			android:id="@+id/graph1" />
 </LinearLayout>

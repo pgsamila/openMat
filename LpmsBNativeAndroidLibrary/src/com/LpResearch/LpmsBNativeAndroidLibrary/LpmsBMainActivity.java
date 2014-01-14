@@ -51,6 +51,12 @@ import android.content.pm.ActivityInfo;
 import android.bluetooth.*;
 import android.graphics.*;
 import android.opengl.GLSurfaceView;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,15 +89,15 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
 	private int updateRate = 50;
 	private boolean getImage = true;
-	
-	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
-	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-	ViewPager mViewPager;
 
 	Handler updateFragmentsHandler = new Handler();
 	
 	LpmsBData imuData = new LpmsBData();
-
+	
+	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
+	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
+	ViewPager mViewPager;	
+	
 	private Runnable mUpdateFragmentsTask = new Runnable() {
 		public void run() {
 			synchronized (imuData) {
@@ -112,7 +118,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		/* setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); */
         setContentView(R.layout.main);
 		initializeViews();
-		
+				
 		// Associates TextViews with resource identifiers for data display
 		/* gyrXText = (TextView) findViewById(R.id.gyrXText);
 		gyrYText = (TextView) findViewById(R.id.gyrYText);	

@@ -101,7 +101,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	samplingRateCombo->addItem(QString("50 Hz"));
 	samplingRateCombo->addItem(QString("100 Hz"));
 	samplingRateCombo->addItem(QString("200 Hz"));	
-	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
+	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C || deviceType == DEVICE_LPMS_RS232) {
 		samplingRateCombo->addItem(QString("300 Hz"));	
 	}
 	connect(samplingRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updatesamplingRate(int)));

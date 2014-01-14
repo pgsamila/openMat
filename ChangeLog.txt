@@ -6,3 +6,5 @@
 2014-1-12 Removed angular velocity output from default outputs.
 2014-1-14 Added angular speed limit for gyro auto-calibration to prevent cancellation for constant motion.
 2014-1-14 Still some versioning trouble, hopefully corrected.
+2014-1-14 Added batch build capability. Old compile time macros are deprecated.
+2014-1-14 Change maximum sampling rate for LPMS-CU Mk RS232 and TTL to 300 Hz.

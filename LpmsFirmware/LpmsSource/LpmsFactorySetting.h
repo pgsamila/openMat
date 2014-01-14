@@ -14,8 +14,11 @@
 
 // Compile time switches -->
 
+/* IMPORTANT: LPMS type switches now selected through compiler command line.
+	Use Project->Edit Configurations to change or batch build */
+
 // Enables CAN bus interface
-#define USE_CANBUS_INTERFACE
+// #define USE_CANBUS_INTERFACE
 
 // Enables NEW LPMS-CU. 
 // Note: USE_CANBUS_INTERFACE and USE_LPMSCU_NEW must both be selected.
@@ -30,11 +33,13 @@
 // Enables Bluetooth interface
 // #define USE_BLUETOOTH_INTERFACE
 
-// Enables watchdog timer
-#define ENABLE_WATCHDOG
-
 // Enables heave motion tracking
 // #define USE_HEAVEMOTION
+
+// <-- Deprecated type switched until here
+
+// Enables watchdog timer
+#define ENABLE_WATCHDOG
 
 // To enable pressure sensing
 #define ENABLE_PRESSURE

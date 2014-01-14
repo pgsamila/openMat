@@ -444,15 +444,15 @@ void getCanData(uint8_t* data, int i, int fixed)
 	} else {
 		switch (v) {
 		case 0:
-			getWXData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
+			getGyroXData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
 		case 1:
-			getWYData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
+			getGyroYData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
 		case 2:
-			getWZData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
+			getGyroZData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
 		case 3:

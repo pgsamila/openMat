@@ -691,7 +691,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>X:\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\IarProjectFiles\LpmsFirmware.icf</state>
+          <state>$PROJ_DIR$\LpmsFirmware.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>

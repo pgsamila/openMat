@@ -8,9 +8,9 @@
         android:minSdkVersion="10"
         android:targetSdkVersion="16" />
 
-    <application android:label="LPMS-B" android:icon="@drawable/lp_logo">
+    <application android:label="LP-RESEARCH LPMS-B" android:icon="@drawable/lp_logo">
         <activity android:name="LpmsBMainActivity"
-				android:label="LPMS-B"
+				android:label="LP-RESEARCH LPMS-B"
 				android:screenOrientation="landscape"
 				android:configChanges="orientation|keyboardHidden">
             <intent-filter>

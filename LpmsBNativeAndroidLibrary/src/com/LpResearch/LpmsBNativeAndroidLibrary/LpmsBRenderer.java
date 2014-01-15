@@ -23,7 +23,7 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 	private FloatBuffer texBuffer; 
 	public float[] verticesBuffer;
 	
-	float[] texCoords = { // Texture coords for the above face (NEW)
+	float[] texCoords = {
 		0.0f, 1.0f,
 		1.0f, 1.0f,
 		0.0f, 0.0f,
@@ -96,11 +96,18 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 	LpmsBRenderer(Context appContext) {
 		context = appContext;
 		q = new float[4];
+		
+		q[0] = 1.0f;
+		q[1] = 0;
+		q[2] = 0;
+		q[3] = 0;						
+		
 		vertices3 = new float[128];		
 	}
   
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		gl.glClearColor(0.6f, 0.6f, 1.0f, 1.0f);
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		
 		gl.glClearDepthf(1.0f);
 		gl.glEnable(GL10.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL10.GL_LEQUAL);
@@ -120,34 +127,10 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 		0, 0, 0, 1.0f };
 		
 	public float[] scaleM = {
-		-1.0f, 0, 0, 0,
-		0, 1.0f, 0, 0,
-		0, 0, 1.0f, 0, 
-		0, 0, 0, 1.0f };
-		
-	/* public float[] quaternionToMatrix(float[] q)
-	{
-		float qw = q[0];
-		float qx = q[1];
-		float qy = q[2];
-		float qz = q[3];	
-		
-		float[] M = new float[16];
-		
-		M[0] = qw*qw + qx*qx - qy*qy - qz*qz;
-		M[1] = 2*qx*qy - 2*qw*qz;
-		M[2] = 2*qx*qz + 2*qw*qy;
-
-		M[3] = 2*qx*qy + 2*qw*qz;
-		M[4] = qw*qw - qx*qx + qy*qy - qz*qz;
-		M[5] = 2*qy*qz - 2*qw*qx;
-
-		M[6] = 2*qx*qz - 2*qw*qy;
-		M[7] = 2*qy*qz + 2*qw*qx;
-		M[8] = qw*qw - qx*qx - qy*qy + qz*qz;
-				
-		return M;
-	} */
+		-1.5f, 0, 0, 0,
+		0, 1.5f, 0, 0,
+		0, 0, 1.5f, 0, 
+		0, 0, 0, 1.5f };
 	
 	public float[] quaternionToMatrix(float[] q)
 	{
@@ -201,8 +184,6 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 			vertices3[i+2] = M[6]*vertices[i+0] + M[7]*vertices[i+1] + M[8]*vertices[i+2];
 		}
 		
-		// Log.e("LpmsMonitor", "q: " + q[0] + " " + q[1] + " " + q[2] + " " + q[3]); 		
-		
 		ByteBuffer vbb = ByteBuffer.allocateDirect(vertices3.length * 4);
 		vbb.order(ByteOrder.nativeOrder());
 		vertexBuffer = vbb.asFloatBuffer();
@@ -212,7 +193,7 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
 		gl.glLoadIdentity();
-		gl.glTranslatef(0.0f, 0.0f, -6.0f);
+		gl.glTranslatef(0.0f, 0.0f, -5.0f);
 		
 		gl.glFrontFace(GL10.GL_CCW);
 		gl.glCullFace(GL10.GL_BACK);
@@ -267,25 +248,23 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
 		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+		
+		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
 
 		InputStream istream = context.getResources().openRawResource(R.drawable.lpmslogo);
 		Bitmap bitmap;
-		
-		Log.e("LpmsMonitor", "Loading texture"); 
 		
 		try {
 			bitmap = BitmapFactory.decodeStream(istream);
 		} finally {
 			try {
 				istream.close();
-			} catch(IOException e) {
-				Log.e("LpmsMonitor", "Stream problem"); 			
+			} catch(IOException e) {		
 			}
 		}
 
 		GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
 		bitmap.recycle();
-		
-		Log.e("LpmsMonitor", "Loaded texture"); 
 	}
 }

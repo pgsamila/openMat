@@ -1,4 +1,4 @@
-package com.LpResearch.LpmsBNativeAndroidLibrary.Fragments;
+package com.LpResearch.LpmsBNativeAndroidLibrary;
 
 import android.support.v4.app.Fragment;
 
@@ -9,5 +9,5 @@ public abstract class MyFragment extends Fragment {
 	}
 
 	public abstract int getMyFragmentTag();
-	public abstract void updateView();
+	public abstract void updateView(LpmsBData d);
 }

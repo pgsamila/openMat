@@ -1,5 +1,5 @@
 /***********************************************************************
-** Copyright (C) 2012 LP-Research
+** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
 **
@@ -51,6 +51,12 @@ import android.content.pm.ActivityInfo;
 import android.bluetooth.*;
 import android.graphics.*;
 import android.opengl.GLSurfaceView;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,9 +69,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 
-import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.AppSectionsPagerAdapter;
-import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.MyFragment;
-import com.LpResearch.LpmsBNativeAndroidLibrary.Fragments.MyFragment.MyFragmentListener;
+import com.LpResearch.LpmsBNativeAndroidLibrary.AppSectionsPagerAdapter;
+import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment;
+import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment.MyFragmentListener;
 
 // Main activity. Connects to LPMS-B and displays orientation values
 public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener
@@ -77,86 +83,45 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	TextView accXText, accYText, accZText;
 	TextView magXText, magYText, magZText;
 	TextView quatXText, quatYText, quatZText, quatWText;
-	TextView eulerXText, eulerYText, eulerZText;
-	
-	LpmsBSurfaceView glView;	
+	TextView eulerXText, eulerYText, eulerZText;	
 	
 	Handler handler = new Handler();	
 	
-	private int updateRate = 250;
+	private int updateRate = 25;
 	private boolean getImage = true;
+
+	Handler updateFragmentsHandler = new Handler();
+	
+	LpmsBData imuData = new LpmsBData();
 	
 	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-	ViewPager mViewPager;
-
-	Handler updateFragmentsHandler = new Handler();
-
+	ViewPager mViewPager;	
+	
 	private Runnable mUpdateFragmentsTask = new Runnable() {
 		public void run() {
+			synchronized (imuData) {
+				updateFragment(imuData);
+			}
 			updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, updateRate);
 		}
 	};	
 	
 	// Initializes application
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		
-		/* setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        setContentView(R.layout.main); */
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		
-		// Associates TextViews with resource identifiers for data display
-		/* gyrXText = (TextView) findViewById(R.id.gyrXText);
-		gyrYText = (TextView) findViewById(R.id.gyrYText);	
-		gyrZText = (TextView) findViewById(R.id.gyrZText);
-		accXText = (TextView) findViewById(R.id.accXText);
-		accYText = (TextView) findViewById(R.id.accYText);	
-		accZText = (TextView) findViewById(R.id.accZText);
-		magXText = (TextView) findViewById(R.id.magXText);
-		magYText = (TextView) findViewById(R.id.magYText);	
-		magZText = (TextView) findViewById(R.id.magZText);
-		quatXText = (TextView) findViewById(R.id.quatXText);
-		quatYText = (TextView) findViewById(R.id.quatYText);	
-		quatZText = (TextView) findViewById(R.id.quatZText);
-		quatWText = (TextView) findViewById(R.id.quatWText);
-		eulerXText = (TextView) findViewById(R.id.eulerXText);
-		eulerYText = (TextView) findViewById(R.id.eulerYText);	
-		eulerZText = (TextView) findViewById(R.id.eulerZText); */
-		
-		// Sets number font to monospace
-		/* gyrXText.setTypeface(Typeface.MONOSPACE);
-		gyrYText.setTypeface(Typeface.MONOSPACE);
-		gyrZText.setTypeface(Typeface.MONOSPACE);
-		accXText.setTypeface(Typeface.MONOSPACE);
-		accYText.setTypeface(Typeface.MONOSPACE);	
-		accZText.setTypeface(Typeface.MONOSPACE);
-		magXText.setTypeface(Typeface.MONOSPACE);
-		magYText.setTypeface(Typeface.MONOSPACE);
-		magZText.setTypeface(Typeface.MONOSPACE);
-		quatXText.setTypeface(Typeface.MONOSPACE);
-		quatYText.setTypeface(Typeface.MONOSPACE);
-		quatZText.setTypeface(Typeface.MONOSPACE);
-		quatWText.setTypeface(Typeface.MONOSPACE);
-		eulerXText.setTypeface(Typeface.MONOSPACE);
-		eulerYText.setTypeface(Typeface.MONOSPACE);
-		eulerZText.setTypeface(Typeface.MONOSPACE);	*/			
-		
+        setContentView(R.layout.main);
+		initializeViews();
+						
 		// Gets default Bluetooth adapter
 		mAdapter = BluetoothAdapter.getDefaultAdapter();
-        glView = new LpmsBSurfaceView(this);
-		
-        /* requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);　*/
-		
-        setContentView(glView);
     }
 
-	// Private methods
 	void initializeViews() {
-		
-		// Setup views
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
 		
 		final ActionBar actionBar = getActionBar();
@@ -187,15 +152,14 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, 100);
 	}
 
-	public void updateFragment() {
+	public void updateFragment(LpmsBData d) {
 		int key = mViewPager.getCurrentItem();
 		
 		MyFragment statusFragment = (MyFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(key));
 		
 		if (statusFragment != null) {
-			statusFragment.updateView();
+			statusFragment.updateView(d);
 		} else {
-			Log.d(TAG, "null: " + key);
 		}
 	}
 
@@ -207,49 +171,25 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	private void timerMethod()
 	{
 		handler.post(new Runnable() {
-			public void run() {
-				// Adjusts decimal format to keep numbers in line
-				// DecimalFormat f0 = new DecimalFormat(" 000.00;-000.00");			
-				
+			public void run() {				
 				// Retrieves data from LPMS-B sensor
-				LpmsBData d = mLpmsB.getLpmsBData();
-				
-				// Dsiplays data in TextViews
-				/* gyrXText.setText(f0.format(d.gyr[0]));
-				gyrYText.setText(f0.format(d.gyr[1]));
-				gyrZText.setText(f0.format(d.gyr[2]));
-
-				accXText.setText(f0.format(d.acc[0]));
-				accYText.setText(f0.format(d.acc[1]));
-				accZText.setText(f0.format(d.acc[2]));
-
-				magXText.setText(f0.format(d.mag[0]));
-				magYText.setText(f0.format(d.mag[1]));
-				magZText.setText(f0.format(d.mag[2]));
-
-				quatXText.setText(f0.format(d.quat[0]));
-				quatYText.setText(f0.format(d.quat[1]));
-				quatZText.setText(f0.format(d.quat[2]));
-				quatWText.setText(f0.format(d.quat[3]));
-
-				eulerXText.setText(f0.format(d.euler[0]));
-				eulerYText.setText(f0.format(d.euler[1]));
-				eulerZText.setText(f0.format(d.euler[2])); */
-				
-				glView.lmRenderer.q[0] = d.quat[0];
-				glView.lmRenderer.q[1] = d.quat[1];
-				glView.lmRenderer.q[2] = d.quat[2];
-				glView.lmRenderer.q[3] = d.quat[3];
-				
-				Log.e("LpmsMonitor", "q: " + d.quat[0] + " " + d.quat[1] + " " + d.quat[2] + " " + d.quat[3]); 		
-
-				// getSensorData(glView.lmRenderer.q);
-				glView.requestRender();				
+				synchronized (imuData) {
+					imuData = mLpmsB.getLpmsBData();
+				}			
 			}
 		});
 	}
 	
-		// ActionBar.TabListener Overrides
+	@Override
+	public void onAttachFragment(Fragment fragment) {
+		super.onAttachFragment(fragment);
+		mFragmentMap.put(((MyFragment) fragment).getMyFragmentTag(), fragment.getTag());
+	}	
+	
+	@Override
+	public void onUserInput(int input, String data) {
+	}	
+	
 	@Override
 	public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 	}
@@ -273,7 +213,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			public void run() {
 				timerMethod();
 			}
-		}, 100, 100);	
+		}, 25, 25);	
 	
         super.onStart();
     }
@@ -289,8 +229,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			mLpmsB.setAcquisitionParameters(true, true, true, true, true, false);			
 			
 			// Tries to connect to LPMS-B with Bluetooth ID 00:06:66:48:E3:7A
-			// mLpmsB.connect("00:06:66:45:DD:EB", 0);
+			mLpmsB.connect("00:06:66:48:E3:73", 0);
 		}	
+	
+		startUpdateFragments();	
 	
         super.onResume();
     }
@@ -303,15 +245,4 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
         super.onPause();
     }
-}
-
-class LpmsBSurfaceView extends GLSurfaceView {
-    public LpmsBRenderer lmRenderer;
-
-	public LpmsBSurfaceView(Context context) {
-		super(context);
-
-		lmRenderer = new LpmsBRenderer(context);		
-		setRenderer(lmRenderer);	
-	}
 }

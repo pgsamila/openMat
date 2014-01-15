@@ -23,5 +23,5 @@
 /Users/nikolaipetersen/Dropbox/klaus/lpmssoftware/openmat/LpmsBNativeAndroidLibrary/bin/classes/com/LpResearch/LpmsBNativeAndroidLibrary/R$style.class \
 /Users/nikolaipetersen/Dropbox/klaus/lpmssoftware/openmat/LpmsBNativeAndroidLibrary/bin/classes/com/LpResearch/LpmsBNativeAndroidLibrary/R.class \
 /Users/nikolaipetersen/Dropbox/klaus/lpmssoftware/openmat/LpmsBNativeAndroidLibrary/bin/classes/com/LpResearch/LpmsBNativeAndroidLibrary/ThreeDeeCubeFragment.class \
-/Users/nikolaipetersen/Dropbox/klaus/lpmssoftware/openmat/LpmsBNativeAndroidLibrary/bin/dexedLibs/graphview-3.1-ae559240da06b5a6917e6504a17da873.jar \
+/Users/nikolaipetersen/Dropbox/klaus/lpmssoftware/openmat/LpmsBNativeAndroidLibrary/bin/dexedLibs/GraphView-3.1.1-b657bdd6293c3aa2d42b05058befe2da.jar \
 /Users/nikolaipetersen/Dropbox/klaus/lpmssoftware/openmat/LpmsBNativeAndroidLibrary/bin/dexedLibs/android-support-v4-f3146e6428675428753a97bdb3c3cc87.jar \

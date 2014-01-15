@@ -8,9 +8,10 @@
         android:minSdkVersion="10"
         android:targetSdkVersion="16" />
 
-    <application android:label="LpmsBSimpleDataAcq" android:icon="@drawable/lp_logo">
+    <application android:label="LPMS-B" android:icon="@drawable/lp_logo">
         <activity android:name="LpmsBMainActivity"
-				android:label="LpmsBSimpleDataAcq"
+				android:label="LPMS-B"
+				android:screenOrientation="landscape"
 				android:configChanges="orientation|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,6 +22,3 @@
 	<uses-permission android:name="android.permission.BLUETOOTH" />
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 </manifest>
-
-<!-- android:screenOrientation="landscape" 
-				  android:configChanges="orientation|keyboardHidden" -->

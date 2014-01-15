@@ -22,7 +22,6 @@ public class ThreeDeeCubeFragment extends MyFragment {
  	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    	Log.d("lpms", "onCreateView()");
         rootView = inflater.inflate(R.layout.fragment_section_dummy, container, false);
         Bundle args = getArguments(); 
       
@@ -34,51 +33,41 @@ public class ThreeDeeCubeFragment extends MyFragment {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		Log.d("lpms", "onAttach()");	 
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		Log.d("lpms", "onStart()");
 	}
 
 	@Override
 	public void onResume() { 
 		super.onResume();
-		Log.d("lpms", "onResume()");
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		Log.d("lpms", "onPause()");
 	}
 
 	@Override
 	public void onStop() {
 		super.onStop();
-		Log.d("lpms", "onStop()");
 	}
 
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		
-		Log.d("lpms", "onDestroyView()");
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.d("lpms", "onDestroy()");
-
 	}
 
 	@Override
 	public void onDetach() {
 		super.onDetach();
-		Log.d("lpms", "onDetach()");
 	}
 
 	@Override
@@ -94,7 +83,5 @@ public class ThreeDeeCubeFragment extends MyFragment {
 		glView.lmRenderer.q[3] = d.quat[3];		
 		
 		glView.requestRender();
-		
-		// Log.d("lpms", "rendering");
 	}
 }

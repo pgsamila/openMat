@@ -1,5 +1,5 @@
 /***********************************************************************
-** Copyright (C) 2012 LP-Research
+** Copyright (C) 2013 LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
 **
@@ -87,7 +87,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
 	Handler handler = new Handler();	
 	
-	private int updateRate = 50;
+	private int updateRate = 25;
 	private boolean getImage = true;
 
 	Handler updateFragmentsHandler = new Handler();
@@ -109,66 +109,19 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
 	// Initializes application
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		
-		Log.d("lpms", "starting app");
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		
-		/* setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); */
         setContentView(R.layout.main);
 		initializeViews();
-				
-		// Associates TextViews with resource identifiers for data display
-		/* gyrXText = (TextView) findViewById(R.id.gyrXText);
-		gyrYText = (TextView) findViewById(R.id.gyrYText);	
-		gyrZText = (TextView) findViewById(R.id.gyrZText);
-		accXText = (TextView) findViewById(R.id.accXText);
-		accYText = (TextView) findViewById(R.id.accYText);	
-		accZText = (TextView) findViewById(R.id.accZText);
-		magXText = (TextView) findViewById(R.id.magXText);
-		magYText = (TextView) findViewById(R.id.magYText);	
-		magZText = (TextView) findViewById(R.id.magZText);
-		quatXText = (TextView) findViewById(R.id.quatXText);
-		quatYText = (TextView) findViewById(R.id.quatYText);	
-		quatZText = (TextView) findViewById(R.id.quatZText);
-		quatWText = (TextView) findViewById(R.id.quatWText);
-		eulerXText = (TextView) findViewById(R.id.eulerXText);
-		eulerYText = (TextView) findViewById(R.id.eulerYText);	
-		eulerZText = (TextView) findViewById(R.id.eulerZText); */
-		
-		// Sets number font to monospace
-		/* gyrXText.setTypeface(Typeface.MONOSPACE);
-		gyrYText.setTypeface(Typeface.MONOSPACE);
-		gyrZText.setTypeface(Typeface.MONOSPACE);
-		accXText.setTypeface(Typeface.MONOSPACE);
-		accYText.setTypeface(Typeface.MONOSPACE);	
-		accZText.setTypeface(Typeface.MONOSPACE);
-		magXText.setTypeface(Typeface.MONOSPACE);
-		magYText.setTypeface(Typeface.MONOSPACE);
-		magZText.setTypeface(Typeface.MONOSPACE);
-		quatXText.setTypeface(Typeface.MONOSPACE);
-		quatYText.setTypeface(Typeface.MONOSPACE);
-		quatZText.setTypeface(Typeface.MONOSPACE);
-		quatWText.setTypeface(Typeface.MONOSPACE);
-		eulerXText.setTypeface(Typeface.MONOSPACE);
-		eulerYText.setTypeface(Typeface.MONOSPACE);
-		eulerZText.setTypeface(Typeface.MONOSPACE);	*/			
-		
+						
 		// Gets default Bluetooth adapter
 		mAdapter = BluetoothAdapter.getDefaultAdapter();
-		
-        // glView = new LpmsBSurfaceView(this);
-		
-        /* requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);　*/
-		
-        // setContentView(glView);
     }
 
 	void initializeViews() {
-		Log.d("lpms", "initializing views");
-		
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
 		
 		final ActionBar actionBar = getActionBar();
@@ -177,9 +130,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		
 		mViewPager = (ViewPager) findViewById(R.id.pager);
-		Log.d("lpms", "before");
 		mViewPager.setAdapter(mAppSectionsPagerAdapter);
-		Log.d("lpms", "after");
 		mViewPager.setOffscreenPageLimit(2);
 		
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -194,15 +145,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		}
 		
 		mViewPager.setCurrentItem(1);
-		
-		Log.d("lpms", "views initialized");
 	}
 
 	public void startUpdateFragments() {
 		updateFragmentsHandler.removeCallbacks(mUpdateFragmentsTask);
 		updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, 100);
-		
-		Log.d("lpms", "start update fragment");	
 	}
 
 	public void updateFragment(LpmsBData d) {
@@ -210,10 +157,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
 		MyFragment statusFragment = (MyFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(key));
 		
-		// Log.d("lpms", "update fragment" + key);
-		
 		if (statusFragment != null) {
-			// Log.d("lpms", "update fragment");		
 			statusFragment.updateView(d);
 		} else {
 		}
@@ -227,47 +171,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	private void timerMethod()
 	{
 		handler.post(new Runnable() {
-			public void run() {
-				// Adjusts decimal format to keep numbers in line
-				// DecimalFormat f0 = new DecimalFormat(" 000.00;-000.00");			
-				
+			public void run() {				
 				// Retrieves data from LPMS-B sensor
 				synchronized (imuData) {
 					imuData = mLpmsB.getLpmsBData();
-					// Log.e("lpms", "imuData: " + imuData.quat[0] + " " + imuData.quat[1] + " " + imuData.quat[2] + " " + imuData.quat[3]);
-				}
-				
-				// Dsiplays data in TextViews
-				/* gyrXText.setText(f0.format(d.gyr[0]));
-				gyrYText.setText(f0.format(d.gyr[1]));
-				gyrZText.setText(f0.format(d.gyr[2]));
-
-				accXText.setText(f0.format(d.acc[0]));
-				accYText.setText(f0.format(d.acc[1]));
-				accZText.setText(f0.format(d.acc[2]));
-
-				magXText.setText(f0.format(d.mag[0]));
-				magYText.setText(f0.format(d.mag[1]));
-				magZText.setText(f0.format(d.mag[2]));
-
-				quatXText.setText(f0.format(d.quat[0]));
-				quatYText.setText(f0.format(d.quat[1]));
-				quatZText.setText(f0.format(d.quat[2]));
-				quatWText.setText(f0.format(d.quat[3]));
-
-				eulerXText.setText(f0.format(d.euler[0]));
-				eulerYText.setText(f0.format(d.euler[1]));
-				eulerZText.setText(f0.format(d.euler[2])); */
-				
-				/* glView.lmRenderer.q[0] = d.quat[0];
-				glView.lmRenderer.q[1] = d.quat[1];
-				glView.lmRenderer.q[2] = d.quat[2];
-				glView.lmRenderer.q[3] = d.quat[3];
-				
-				Log.e("LpmsMonitor", "q: " + d.quat[0] + " " + d.quat[1] + " " + d.quat[2] + " " + d.quat[3]); 		*/
-
-				// getSensorData(glView.lmRenderer.q);
-				// glView.requestRender();				
+				}			
 			}
 		});
 	}
@@ -305,7 +213,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			public void run() {
 				timerMethod();
 			}
-		}, 100, 100);	
+		}, 25, 25);	
 	
         super.onStart();
     }
@@ -333,7 +241,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     @Override
     protected void onPause() {
 		// Disconnects LPMS-B
-		// if (mLpmsB != null) mLpmsB.close();
+		if (mLpmsB != null) mLpmsB.close();
 	
         super.onPause();
     }

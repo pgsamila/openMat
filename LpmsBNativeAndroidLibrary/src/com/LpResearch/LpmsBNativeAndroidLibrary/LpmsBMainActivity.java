@@ -119,7 +119,33 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 						
 		// Gets default Bluetooth adapter
 		mAdapter = BluetoothAdapter.getDefaultAdapter();
+		
+		// Register the BroadcastReceiver
+		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+		registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
     }
+
+	public void startBtDiscovery() {
+		mAdapter.startDiscovery();
+	}
+	
+	Vector<String> dcLpms;
+
+	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+		public void onReceive(Context context, Intent intent) {
+			String action = intent.getAction();
+
+			// When discovery finds a device
+			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+				// Get the BluetoothDevice object from the Intent
+				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				// Add the name and address to an array adapter to show in a ListView
+				if (device.getName() == "LPMS-B") {
+					dcLpms.add(device.getAddress());
+				} 
+			}
+		}
+	};
 
 	void initializeViews() {
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
@@ -131,7 +157,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mAppSectionsPagerAdapter);
-		mViewPager.setOffscreenPageLimit(2);
+		mViewPager.setOffscreenPageLimit(3);
 		
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
@@ -226,10 +252,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			mLpmsB = new LpmsBThread(mAdapter);
 			
 			// Sets acquisition paramters (Must be the same as set in LpmsControl app)
-			mLpmsB.setAcquisitionParameters(true, true, true, true, true, false);			
+			mLpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
 			
 			// Tries to connect to LPMS-B with Bluetooth ID 00:06:66:48:E3:7A
-			mLpmsB.connect("00:06:66:48:E3:73", 0);
+			mLpmsB.connect("00:06:66:62:BB:9B", 0);
 		}	
 	
 		startUpdateFragments();	

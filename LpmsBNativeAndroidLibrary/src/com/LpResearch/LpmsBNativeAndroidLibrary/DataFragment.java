@@ -2,6 +2,8 @@ package com.LpResearch.LpmsBNativeAndroidLibrary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -13,12 +15,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.opengl.GLSurfaceView;
 import android.graphics.Color;
-
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import com.jjoe64.graphview.BarGraphView;
 import com.jjoe64.graphview.GraphView;
@@ -55,8 +53,6 @@ public class DataFragment extends MyFragment {
  	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    	Log.d("lpms", "onCreateView()");
-
         rootView = inflater.inflate(R.layout.fragment_section_dummy, container, false);
         Bundle args = getArguments();
 		
@@ -114,9 +110,9 @@ public class DataFragment extends MyFragment {
 		magGraph.setManualYAxisBounds(200.0, -200.0);
 		
 		String[] xLabels = { "0", "20", "40", "60", "80", "100" };
-		String[] yLabels0 = { "-4", "-2", "0", "2", "4"};
-		String[] yLabels1 = { "-2000", "-1000", "0", "1000", "2000"};		
-		String[] yLabels2 = { "-200", "-100", "0", "100", "200"};		
+		String[] yLabels0 = { "4", "2", "0", "-2", "-4"};
+		String[] yLabels1 = { "2000", "1000", "0", "-1000", "-2000"};		
+		String[] yLabels2 = { "200", "100", "0", "-100", "-200"};		
 		
 		accGraph.setHorizontalLabels(xLabels);
 		accGraph.setVerticalLabels(yLabels0);
@@ -133,58 +129,47 @@ public class DataFragment extends MyFragment {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		Log.d("lpms", "onAttach()");	 
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		Log.d("lpms", "onStart()");
 	}
 
 	@Override
 	public void onResume() { 
 		super.onResume();
-		Log.d("lpms", "onResume()");
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		Log.d("lpms", "onPause()");
 	}
 
 	@Override
 	public void onStop() {
 		super.onStop();
-		Log.d("lpms", "onStop()");
 	}
 
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		Log.d("lpms", "onDestroyView()");
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.d("lpms", "onDestroy()");
-
 	}
 
 	@Override
 	public void onDetach() {
 		super.onDetach();
-		Log.d("lpms", "onDetach()");
 	}
-
 
 	@Override
 	public int getMyFragmentTag() {
 		return FRAGMENT_TAG; 
 	}
-
 
 	@Override
 	public void updateView(LpmsBData d) {		
@@ -205,7 +190,5 @@ public class DataFragment extends MyFragment {
 		magGraph.setViewPort(dataCount-100, 100);	
 
 		dataCount++;
-						
-		Log.d("lpms", "updating data view");
 	}
 }

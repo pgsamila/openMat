@@ -9,30 +9,29 @@ import android.util.Log;
 public class AppSectionsPagerAdapter extends FragmentPagerAdapter {
 	
 	public AppSectionsPagerAdapter(FragmentManager fm) {
-		super(fm); 
-		Log.d("lpms", "AppSectionsPagerAdapter()");
+		super(fm);
 	}
 
 	@Override
 	public Fragment getItem(int i) {
 		switch (i) {
 		case 0:
-			Log.d("AppSectionsPagerAdapter", "new ImageFragment()"); 	 
 			return new ThreeDeeCubeFragment();
 			
 		case 1:
-			Log.d("AppSectionsPagerAdapter", "new ControlSectionFragment()");  
 			return new DataFragment();
+
+		case 2:
+			return new MoreDataFragment();
 				 
 		default:
-			Log.d("AppSectionsPagerAdapter", "new ControlSectionFragment()");  
 			return new DataFragment();
 		}
 	}
 
 	@Override
 	public int getCount() {
-		return 2;
+		return 3;
 	}
 
 	@Override
@@ -40,8 +39,12 @@ public class AppSectionsPagerAdapter extends FragmentPagerAdapter {
 		switch (position) {
 		case 0:
 			return "3D Cube"; 
+			
 		case 1:
-			return "Data View";
+			return "Raw Data";
+			
+		case 2:
+			return "Orientation Data";
 		}
 
 		return "null"; 

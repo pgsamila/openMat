@@ -8,3 +8,4 @@
 2014-1-14 Still some versioning trouble, hopefully corrected.
 2014-1-14 Added batch build capability. Old compile time macros are deprecated.
 2014-1-14 Change maximum sampling rate for LPMS-CU Mk RS232 and TTL to 300 Hz.
+2014-1-20 Added graphs to Android app. Sensor discovery, status, connect / disconnect is possible.

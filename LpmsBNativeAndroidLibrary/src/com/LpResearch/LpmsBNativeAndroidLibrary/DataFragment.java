@@ -13,10 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.opengl.GLSurfaceView;
-import android.graphics.Color;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.opengl.GLSurfaceView;
+import android.graphics.Color;
 
 import com.jjoe64.graphview.BarGraphView;
 import com.jjoe64.graphview.GraphView;
@@ -28,7 +28,7 @@ import com.jjoe64.graphview.LineGraphView;
 
 public class DataFragment extends MyFragment {
 	final static String TAG = "DataFragment";
-	final int FRAGMENT_TAG = 1; 
+	final int FRAGMENT_TAG = 2; 
 	
     public static final String ARG_SECTION_NUMBER = "section_number";
 
@@ -53,15 +53,15 @@ public class DataFragment extends MyFragment {
  	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_section_dummy, container, false);
+        rootView = inflater.inflate(R.layout.data_fragment, container, false);
         Bundle args = getArguments();
 		
-		accGraph = new LineGraphView(getActivity(), "Accelerometer");
-		gyrGraph = new LineGraphView(getActivity(), "Gyroscope");
-		magGraph = new LineGraphView(getActivity(), "Magnetometer");
+		accGraph = new LineGraphView(getActivity(), "");
+		gyrGraph = new LineGraphView(getActivity(), "");
+		magGraph = new LineGraphView(getActivity(), "");
 		
 		GraphViewStyle gvStyle = new GraphViewStyle();
-		gvStyle.setTextSize(16);
+		gvStyle.setTextSize(18);
 		gvStyle.setNumHorizontalLabels(10);
 
 		accGraph.setGraphViewStyle(gvStyle);
@@ -172,7 +172,9 @@ public class DataFragment extends MyFragment {
 	}
 
 	@Override
-	public void updateView(LpmsBData d) {		
+	public void updateView(LpmsBData d, int s) {
+		if (s == 0) return;
+	
 		accSeries0.appendData(new GraphViewData((double)dataCount, d.acc[0]), true, 200);			
 		accSeries1.appendData(new GraphViewData((double)dataCount, d.acc[1]), true, 200);
 		accSeries2.appendData(new GraphViewData((double)dataCount, d.acc[2]), true, 200);

@@ -16,20 +16,32 @@ public final class R {
         public static final int lpmslogo=0x7f020002;
     }
     public static final class id {
-        public static final int accGraph=0x7f060003;
-        public static final int buttonDialogDa=0x7f060002;
-        public static final int dialog_da_parent=0x7f060000;
-        public static final int gyrGraph=0x7f060004;
-        public static final int magGraph=0x7f060005;
-        public static final int pager=0x7f060006;
-        public static final int seekbarDialogDa=0x7f060001;
+        public static final int Heading=0x7f060000;
+        public static final int accGraph=0x7f060006;
+        public static final int buttonDialogDa=0x7f06000b;
+        public static final int button_connect=0x7f060004;
+        public static final int button_disconnect=0x7f060005;
+        public static final int button_discover=0x7f060002;
+        public static final int connection_status=0x7f060003;
+        public static final int dialog_da_parent=0x7f060009;
+        public static final int eulerGraph=0x7f06000e;
+        public static final int gyrGraph=0x7f060007;
+        public static final int linAccGraph=0x7f06000f;
+        public static final int list=0x7f060001;
+        public static final int magGraph=0x7f060008;
+        public static final int pager=0x7f06000c;
+        public static final int quatGraph=0x7f06000d;
+        public static final int seekbarDialogDa=0x7f06000a;
     }
     public static final class layout {
         public static final int blue_button=0x7f030000;
         public static final int blue_button_padded=0x7f030001;
-        public static final int dialog_da=0x7f030002;
-        public static final int fragment_section_dummy=0x7f030003;
-        public static final int main=0x7f030004;
+        public static final int connect_screen=0x7f030002;
+        public static final int data_fragment=0x7f030003;
+        public static final int dialog_da=0x7f030004;
+        public static final int fragment_section_dummy=0x7f030005;
+        public static final int main=0x7f030006;
+        public static final int more_data_fragment_layout=0x7f030007;
     }
     public static final class string {
         public static final int app_name=0x7f040000;
@@ -38,12 +50,8 @@ public final class R {
         /**  API 14 theme customizations can go here. 
          */
         public static final int AppBaseTheme=0x7f050000;
-        /**  <item name="android:textSize">26dp</item> 
-         */
         public static final int HeadingTextStyle=0x7f050003;
         public static final int NormalButtonStyle=0x7f050004;
-        /**  <item name="android:textSize">26dp</item> 
-         */
         public static final int NormalTextStyle=0x7f050001;
         public static final int TagTextStyle=0x7f050002;
     }

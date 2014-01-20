@@ -8,8 +8,7 @@
     <style name="NormalTextStyle" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
-        <!-- <item name="android:textSize">26dp</item> -->
+        <item name="android:textSize">18dp</item>
     </style>
 
     <style name="TagTextStyle" parent="@android:style/TextAppearance.Medium">
@@ -23,23 +22,23 @@
     <style name="HeadingTextStyle" parent="@android:style/TextAppearance.Medium">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
+        <!-- <item name="android:layout_weight">1</item> -->
         <item name="android:textColor">#5555FF</item>
-        <!-- <item name="android:textSize">26dp</item> -->
+        <item name="android:textSize">26dp</item>
     </style>
 
     <style name="NormalButtonStyle" parent="@android:style/TextAppearance.Medium">
-      	<item name="android:layout_width">fill_parent</item>
+      	<!-- <item name="android:layout_width">fill_parent</item> -->
 		<!-- <item name="android:layout_height">wrap_content</item> -->
 		<item name="android:text">Connect</item>
-		<item name="android:layout_weight">1</item>
+		<!-- <item name="android:layout_weight">1</item> -->
 		<item name="android:background">@layout/blue_button</item>
-		<item name="android:textSize">26dp</item>
-		<item name="android:layout_height">90dp</item>
+		<!-- <item name="android:textSize">26dp</item> -->
+		<!-- <item name="android:layout_height">10dp</item> -->
 		<item name="android:layout_marginBottom">8dp</item>			
 		<item name="android:layout_marginTop">8dp</item>
 		<item name="android:layout_marginLeft">8dp</item>
 		<item name="android:layout_marginRight">8dp</item>	
-    </style>
+    </style>	
 
 </resources>

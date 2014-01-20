@@ -28,7 +28,7 @@ import com.jjoe64.graphview.LineGraphView;
 
 public class MoreDataFragment extends MyFragment {
 	final static String TAG = "MoreDataFragment";
-	final int FRAGMENT_TAG = 2; 
+	final int FRAGMENT_TAG = 3; 
 	
     public static final String ARG_SECTION_NUMBER = "section_number";
 
@@ -57,12 +57,12 @@ public class MoreDataFragment extends MyFragment {
         rootView = inflater.inflate(R.layout.more_data_fragment_layout, container, false);
         Bundle args = getArguments();
 		
-		quatGraph = new LineGraphView(getActivity(), "Quaternion");
-		eulerGraph = new LineGraphView(getActivity(), "Euler Angle");
-		linAccGraph = new LineGraphView(getActivity(), "Linear Acceleration");
+		quatGraph = new LineGraphView(getActivity(), "");
+		eulerGraph = new LineGraphView(getActivity(), "");
+		linAccGraph = new LineGraphView(getActivity(), "");
 		
 		GraphViewStyle gvStyle = new GraphViewStyle();
-		gvStyle.setTextSize(16);
+		gvStyle.setTextSize(18);
 		gvStyle.setNumHorizontalLabels(10);
 
 		quatGraph.setGraphViewStyle(gvStyle);
@@ -177,7 +177,9 @@ public class MoreDataFragment extends MyFragment {
 
 
 	@Override
-	public void updateView(LpmsBData d) {		
+	public void updateView(LpmsBData d, int s) {
+		if (s == 0) return;
+	
 		quatSeries0.appendData(new GraphViewData((double)dataCount, d.quat[0]), true, 200);			
 		quatSeries1.appendData(new GraphViewData((double)dataCount, d.quat[1]), true, 200);
 		quatSeries2.appendData(new GraphViewData((double)dataCount, d.quat[2]), true, 200);

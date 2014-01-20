@@ -193,7 +193,7 @@ public class LpmsBRenderer implements GLSurfaceView.Renderer {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
 		gl.glLoadIdentity();
-		gl.glTranslatef(0.0f, 0.0f, -5.0f);
+		gl.glTranslatef(0.0f, 0.0f, -7.0f);
 		
 		gl.glFrontFace(GL10.GL_CCW);
 		gl.glCullFace(GL10.GL_BACK);

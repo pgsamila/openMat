@@ -12,7 +12,7 @@ import android.opengl.GLSurfaceView;
 
 public class ThreeDeeCubeFragment extends MyFragment {
 	final static String TAG = "3dCubeFragment";
-	final int FRAGMENT_TAG = 0; 
+	final int FRAGMENT_TAG = 1; 
 	
     public static final String ARG_SECTION_NUMBER = "section_number";
 
@@ -76,7 +76,9 @@ public class ThreeDeeCubeFragment extends MyFragment {
 	}
 
 	@Override
-	public void updateView(LpmsBData d) {
+	public void updateView(LpmsBData d, int s) {
+		if (s == 0) return;	
+
 		glView.lmRenderer.q[0] = d.quat[0];
 		glView.lmRenderer.q[1] = d.quat[1];
 		glView.lmRenderer.q[2] = d.quat[2];

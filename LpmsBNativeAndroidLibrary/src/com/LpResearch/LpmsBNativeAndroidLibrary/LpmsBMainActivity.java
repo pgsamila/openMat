@@ -40,31 +40,29 @@ import java.util.*;
 import java.io.*;
 import java.text.*;
 import java.lang.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.*;
+import android.app.Activity;
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.view.*;
 import android.widget.*;
+import android.widget.Adapter;
 import android.os.*;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.*;
 import android.content.*;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.bluetooth.*;
 import android.graphics.*;
 import android.opengl.GLSurfaceView;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.FragmentTransaction;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -72,18 +70,21 @@ import android.support.v4.view.ViewPager;
 import com.LpResearch.LpmsBNativeAndroidLibrary.AppSectionsPagerAdapter;
 import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment;
 import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment.MyFragmentListener;
+import com.LpResearch.LpmsBNativeAndroidLibrary.ConnectionFragment.OnConnectListener;
 
 // Main activity. Connects to LPMS-B and displays orientation values
-public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener
+public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener, OnConnectListener
 {
-	BluetoothAdapter mAdapter;
-	LpmsBThread mLpmsB;
 	Timer mTimer;
 	TextView gyrXText, gyrYText, gyrZText;
 	TextView accXText, accYText, accZText;
 	TextView magXText, magYText, magZText;
 	TextView quatXText, quatYText, quatZText, quatWText;
-	TextView eulerXText, eulerYText, eulerZText;	
+	TextView eulerXText, eulerYText, eulerZText;
+	LpmsBThread lpmsB;
+	BluetoothAdapter btAdapter;
+	boolean isLpmsBConnected = false;
+	int imuStatus = 0;
 	
 	Handler handler = new Handler();	
 	
@@ -99,9 +100,9 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	ViewPager mViewPager;	
 	
 	private Runnable mUpdateFragmentsTask = new Runnable() {
-		public void run() {
+		public void run() {	
 			synchronized (imuData) {
-				updateFragment(imuData);
+				updateFragment(imuData, imuStatus);
 			}
 			updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, updateRate);
 		}
@@ -111,41 +112,13 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);		
 		
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		btAdapter = BluetoothAdapter.getDefaultAdapter();		
 		
         setContentView(R.layout.main);
 		initializeViews();
-						
-		// Gets default Bluetooth adapter
-		mAdapter = BluetoothAdapter.getDefaultAdapter();
-		
-		// Register the BroadcastReceiver
-		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-		registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
     }
-
-	public void startBtDiscovery() {
-		mAdapter.startDiscovery();
-	}
-	
-	Vector<String> dcLpms;
-
-	private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-		public void onReceive(Context context, Intent intent) {
-			String action = intent.getAction();
-
-			// When discovery finds a device
-			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-				// Get the BluetoothDevice object from the Intent
-				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				// Add the name and address to an array adapter to show in a ListView
-				if (device.getName() == "LPMS-B") {
-					dcLpms.add(device.getAddress());
-				} 
-			}
-		}
-	};
 
 	void initializeViews() {
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
@@ -157,7 +130,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mAppSectionsPagerAdapter);
-		mViewPager.setOffscreenPageLimit(3);
+		mViewPager.setOffscreenPageLimit(16);
 		
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
@@ -170,7 +143,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			actionBar.addTab(actionBar.newTab().setText(mAppSectionsPagerAdapter.getPageTitle(i)).setTabListener(this));
 		}
 		
-		mViewPager.setCurrentItem(1);
+		mViewPager.setCurrentItem(0);
 	}
 
 	public void startUpdateFragments() {
@@ -178,13 +151,13 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, 100);
 	}
 
-	public void updateFragment(LpmsBData d) {
+	public void updateFragment(LpmsBData d, int s) {
 		int key = mViewPager.getCurrentItem();
 		
 		MyFragment statusFragment = (MyFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(key));
 		
 		if (statusFragment != null) {
-			statusFragment.updateView(d);
+			statusFragment.updateView(d, s);
 		} else {
 		}
 	}
@@ -194,14 +167,15 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	}
 
 	// Timer method that is periodically called every 100ms to display data
-	private void timerMethod()
-	{
+	private void timerMethod() {
 		handler.post(new Runnable() {
-			public void run() {				
-				// Retrieves data from LPMS-B sensor
-				synchronized (imuData) {
-					imuData = mLpmsB.getLpmsBData();
-				}			
+			public void run() {	
+				if (lpmsB != null && isLpmsBConnected == true) {
+					// Retrieves data from LPMS-B sensor
+					synchronized (imuData) {
+						imuData = lpmsB.getLpmsBData();
+					}
+				}
 			}
 		});
 	}
@@ -246,18 +220,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
 	// Everytime the activity is resumed re-connect to LPMS-B
     @Override
-    protected void onResume() {
-		if (mAdapter != null) {
-			// Creates LPMS-B controller object using Bluetooth adapter mAdapter
-			mLpmsB = new LpmsBThread(mAdapter);
-			
-			// Sets acquisition paramters (Must be the same as set in LpmsControl app)
-			mLpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
-			
-			// Tries to connect to LPMS-B with Bluetooth ID 00:06:66:48:E3:7A
-			mLpmsB.connect("00:06:66:62:BB:9B", 0);
-		}	
-	
+    protected void onResume() {	
 		startUpdateFragments();	
 	
         super.onResume();
@@ -267,8 +230,36 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     @Override
     protected void onPause() {
 		// Disconnects LPMS-B
-		if (mLpmsB != null) mLpmsB.close();
+		if (lpmsB != null && isLpmsBConnected == true) {
+			isLpmsBConnected = false;
+			lpmsB.close();
+			imuStatus = 0;
+		}
 	
         super.onPause();
     }
+	
+    @Override
+	public void onConnect(String address) {
+		if (isLpmsBConnected == true) return;
+	
+		lpmsB = new LpmsBThread(btAdapter);
+		
+		lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
+		lpmsB.connect(address, 0);
+		
+		isLpmsBConnected = true;
+		imuStatus = 1;
+		
+		Log.d("lpms", "Connected");
+	}
+	
+    @Override
+	public void onDisconnect() {
+		if (isLpmsBConnected == false) return;
+		
+		isLpmsBConnected = false;
+		if (lpmsB != null) lpmsB.close();
+		imuStatus = 0;
+	}
 }

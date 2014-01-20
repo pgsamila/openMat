@@ -6,6 +6,10 @@
 
 #include "LpMatrix.h"
 
+#define FLT_EPSILON 1.192092896e-07f
+
+const float r2d = 57.2958f;
+
 int matAdd3x3(LpMatrix3x3f* src1, LpMatrix3x3f* src2, LpMatrix3x3f* dest)
 {
 	int i, j;
@@ -792,23 +796,6 @@ void quatRotVec(LpVector4f q, LpVector3f vI, LpVector3f* vO)
 	vO->data[2] = tQ4.data[3];
 }
 
-#define FLT_EPSILON 1.192092896e-07f
-const float r2d = 57.2958f;	
-
-/* void quaternionToEuler(LpVector4f *q, LpVector3f *r)
-{
-	float q0, q1, q2, q3;
-         
-	q0 = q->data[0];
-	q1 = q->data[1];
-	q2 = q->data[2];
-	q3 = q->data[3];   
-
-	r->data[0] = atan2(2 * (q0*q1 + q2*q3), q3*q3 - q2*q2 - q1*q1 + q0*q0);
-	r->data[1] = -asin(2 * (q1*q3 - q0*q2));
-	r->data[2] = atan2(2 * (q0*q3+q1*q2), q1*q1 + q0*q0 - q3*q3 - q2*q2);
-} */
-
 void quaternionToEuler(LpVector4f *q, LpVector3f *r)
 {
 	LpMatrix3x3f tM;
@@ -836,41 +823,6 @@ void quaternionToEuler(LpVector4f *q, LpVector3f *r)
 		r->data[0] = 0;
 	}
 }
-
-/* void quaternionToEuler(LpVector4f *q, LpVector3f *r) 
-{
-	const float r2d = 57.2958f;	
-	const float d2r = 0.01745f;	
-	
-	float qx = q->data[0];
-	float qy = q->data[1];
-	float qz = q->data[2];
-	float qw = q->data[3];
-    
-	float dx = 1.0f-2.0f*(qx*qx+qy*qy);
-	float dy = 2.0f*(qw*qx+qy*qz);
-	
-	if (fabs(dx) > 0) {
-		float t = (float) atan(dy / dx) * r2d;
-
-		if (dx >= 0 && dy >= 0) {
-			r->data[2] = t - 180;
-		} else if (dx <= 0 && dy >= 0) {
-			r->data[2] = t;
-		} else if (dx <= 0 && dy <= 0) {
-			r->data[2] = t;
-		} else if (dx >= 0 && dy <= 0) {
-			r->data[2] = t + 180;
-		} 
-
-		r->data[2] = -r->data[2] * d2r;		
-	}	
-	
-	// r->data[2] = (float) atan2(2*(qw*qx+qy*qz), 1-2*(qx*qx+qy*qy)) * r2d;
-
-	r->data[1] = (float) asin(2*(qw*qy-qz*qx)); // * r2d;
-	r->data[0] = (float) -atan2(2*(qw*qz+qx*qy), 1-2*(qy*qy+qz*qz)); // * r2d;
-} */
 
 void quaternionToMatrix(LpVector4f *q, LpMatrix3x3f* M)
 {	

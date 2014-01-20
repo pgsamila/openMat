@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="vertical">
+	
+		<TextView android:id="@+id/Heading"
+			style="@style/HeadingTextStyle"
+			android:text="Discovered LPMS-B Devices"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:padding="5dp" />
+			
+		<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/list"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content" /> 
+			
+		<Button xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/button_discover"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			style="@style/NormalButtonStyle"			
+			android:text="Discover" />			
+	
+		<TextView android:id="@+id/Heading"
+			style="@style/HeadingTextStyle"
+			android:text="Sensor Status"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="25dp" 
+			android:padding="5dp" />
+			
+		<TextView android:id="@+id/connection_status"
+			style="@style/NormalTextStyle"		
+			android:text="Not connected"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:padding="5dp" />
+			
+		<TextView android:id="@+id/Heading"
+			style="@style/HeadingTextStyle"
+			android:text="Sensor Settings"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="25dp" 
+			android:padding="5dp" />
+			
+		<TextView android:id="@+id/connection_status"
+			style="@style/NormalTextStyle"		
+			android:text="Coming soon.."
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:padding="5dp" />
+			
+		<TextView android:id="@+id/Heading"
+			style="@style/HeadingTextStyle"
+			android:text="Connection Control"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="25dp"
+			android:padding="5dp" />	
+	
+		<Button xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/button_connect"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			style="@style/NormalButtonStyle"			
+			android:text="Connect" />
+			
+		<Button xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/button_disconnect"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			style="@style/NormalButtonStyle"			
+			android:text="Disconnect" />
+
+	</LinearLayout>
+</ScrollView>
+	
+<!-- style="@style/NormalButtonStyle" -->

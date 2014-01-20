@@ -1,21 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical">
-		<LinearLayout
-		    android:orientation="vertical"
-			android:layout_width="fill_parent"
-			android:layout_height="220dip"
-			android:id="@+id/quatGraph" />
-		<LinearLayout
-		    android:orientation="vertical"
-			android:layout_width="fill_parent"
-			android:layout_height="220dip"
-			android:id="@+id/eulerGraph" />
-		<LinearLayout
-		    android:orientation="vertical"
-			android:layout_width="fill_parent"
-			android:layout_height="220dip"
-			android:id="@+id/linAccGraph" />						
-</LinearLayout>
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:orientation="vertical">
+		
+			<TextView android:id="@+id/Heading"
+				style="@style/HeadingTextStyle"
+				android:text="Quaternion"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:padding="5dp" />			
+		
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_width="fill_parent"
+				android:layout_height="300dip"
+				android:id="@+id/quatGraph" />
+
+			<TextView android:id="@+id/Heading"
+				style="@style/HeadingTextStyle"
+				android:text="Euler Angle"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="25dp"
+				android:padding="5dp" />				
+				
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_width="fill_parent"
+				android:layout_height="300dip"
+				android:id="@+id/eulerGraph" />				
+				
+			<TextView android:id="@+id/Heading"
+				style="@style/HeadingTextStyle"
+				android:text="Linear Acceleration"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="25dp"
+				android:padding="5dp" />				
+				
+			<LinearLayout
+				android:orientation="vertical"
+				android:layout_width="fill_parent"
+				android:layout_height="300dip"
+				android:id="@+id/linAccGraph" />						
+	</LinearLayout>
+</ScrollView>

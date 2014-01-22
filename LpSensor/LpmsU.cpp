@@ -86,8 +86,9 @@ bool LpmsU::connect(string deviceId)
 	ftStatus = FT_SetUSBParameters(ftHandle, 64, 0);
 				
 	if (ftStatus == FT_OK) { 
-		setCommandMode();			
-		Sleep(100);
+		setCommandMode();
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
 		read(rxBuffer, &bytesReceived);
 		FT_Purge(ftHandle, FT_PURGE_RX | FT_PURGE_TX);
 	}

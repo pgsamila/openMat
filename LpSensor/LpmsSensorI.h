@@ -197,6 +197,8 @@ public:
 	
 	/* Sets callback for data data acquisition. */
 	virtual void setCallback(LpmsCallback cb) = 0;
+	
+	virtual void startMagMisalignCal(void) = 0;
 }; 
 
 #ifdef _WIN32

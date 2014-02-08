@@ -756,6 +756,36 @@ void parsePacket(void)
 				sendAck();
 			break;
 
+			case SET_MAG_ALIGNMENT_MATRIX:
+				setMagAlignMatrix(packet.data);
+				sendAck();
+			break;
+
+			case SET_MAG_ALIGNMENT_BIAS:
+				setMagAlignBias(packet.data);
+				sendAck();
+			break;
+
+			case SET_MAG_REFRENCE:
+				setMagReference(packet.data);
+				sendAck();
+			break;
+
+			case GET_MAG_ALIGNMENT_MATRIX:
+				getMagAlignMatrix(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_ALIGNMENT_MATRIX, dataLength, dataBuffer);
+			break;			
+
+			case GET_MAG_ALIGNMENT_BIAS:
+				getMagAlignBias(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_ALIGNMENT_BIAS, dataLength, dataBuffer);
+			break;
+
+			case GET_MAG_REFERENCE:
+				getMagReference(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
+			break;
+
 			default:
 			break;
 			}

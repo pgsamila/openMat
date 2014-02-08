@@ -76,6 +76,9 @@ public:
 	int canPointMode;
 	int canChannelMode;
 	int canStartId;
+	LpVector3f magReference;
+	LpVector3f magMAlignmentBias;
+	LpMatrix3x3f magMAlignmentMatrix;
 	
 private:
 	std::mutex calibrationMutex;

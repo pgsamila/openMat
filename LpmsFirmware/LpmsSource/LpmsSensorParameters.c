@@ -652,6 +652,99 @@ uint8_t getSoftIronMatrixData(uint8_t* data, uint16_t *l)
 	return 1;
 }
 
+void updateMagAlignMatrix(void)
+{
+	getRegMatrix3x3f(LPMS_MAG_ALIG_00, &(calibrationData.magAlignmentMatrix));
+}
+
+void setDefaultAlignMatrix(void)
+{
+	gReg.data[LPMS_MAG_ALIG_00] = conFtoI(LPMS_FACTORY_MAG_ALIG_00);
+	gReg.data[LPMS_MAG_ALIG_01] = conFtoI(LPMS_FACTORY_MAG_ALIG_01);
+	gReg.data[LPMS_MAG_ALIG_02] = conFtoI(LPMS_FACTORY_MAG_ALIG_02);
+	gReg.data[LPMS_MAG_ALIG_10] = conFtoI(LPMS_FACTORY_MAG_ALIG_10);
+	gReg.data[LPMS_MAG_ALIG_11] = conFtoI(LPMS_FACTORY_MAG_ALIG_11);
+	gReg.data[LPMS_MAG_ALIG_12] = conFtoI(LPMS_FACTORY_MAG_ALIG_12);
+	gReg.data[LPMS_MAG_ALIG_20] = conFtoI(LPMS_FACTORY_MAG_ALIG_20);
+	gReg.data[LPMS_MAG_ALIG_21] = conFtoI(LPMS_FACTORY_MAG_ALIG_21);
+	gReg.data[LPMS_MAG_ALIG_22] = conFtoI(LPMS_FACTORY_MAG_ALIG_22);
+}
+
+void setDefaultAlignBias(void)
+{
+	gReg.data[LPMS_MAG_ALIG_BIAS_X] = conFtoI(LPMS_FACTORY_MAG_ALIG_BIAS_X);
+	gReg.data[LPMS_MAG_ALIG_BIAS_Y] = conFtoI(LPMS_FACTORY_MAG_ALIG_BIAS_Y);
+	gReg.data[LPMS_MAG_ALIG_BIAS_Z] = conFtoI(LPMS_FACTORY_MAG_ALIG_BIAS_Z);
+}
+
+void updateMagAlignBias(void)
+{
+	getRegVector3f(LPMS_MAG_ALIG_BIAS_X, &(calibrationData.magAlignmentOffset));
+}
+
+void updateMagReference(void)
+{
+	getRegVector3f(LPMS_MAG_REF_X, &(lpFilterParam.magRef));
+}
+
+uint8_t setMagAlignMatrix(uint8_t* data)
+{
+	calibrationData.magAlignmentMatrix = getMatrix3x3f(data);
+	setRegMatrix3x3f(LPMS_MAG_ALIG_00, calibrationData.magAlignmentMatrix);
+
+	return 1;
+}
+
+uint8_t setMagAlignBias(uint8_t* data)
+{
+	calibrationData.magAlignmentOffset = getVector3f(data);
+	setRegVector3f(LPMS_MAG_ALIG_BIAS_X, calibrationData.magAlignmentOffset);
+
+	return 1;
+}
+
+void setDefaultMagReference(void)
+{
+  	gReg.data[LPMS_MAG_REF_X] = conFtoI(LPMS_FACTORY_MAG_REF_X);
+	gReg.data[LPMS_MAG_REF_Y] = conFtoI(LPMS_FACTORY_MAG_REF_Y);
+	gReg.data[LPMS_MAG_REF_Z] = conFtoI(LPMS_FACTORY_MAG_REF_Z);
+}
+
+uint8_t setMagReference(uint8_t* data)
+{
+	lpFilterParam.magRef = getVector3f(data);
+	setRegVector3f(LPMS_MAG_REF_X, lpFilterParam.magRef);
+
+	return 1;
+}
+
+uint8_t getMagAlignMatrix(uint8_t* data, uint16_t *l)
+{
+	setFloatMatrix3x3f(data, 0, calibrationData.magAlignmentMatrix);
+
+	*l = 36;
+
+	return 1;
+}
+
+uint8_t getMagAlignBias(uint8_t* data, uint16_t *l)
+{
+	setFloatVector3f(data, 0, calibrationData.magAlignmentOffset);
+
+	*l = 12;
+
+	return 1;
+}
+
+uint8_t getMagReference(uint8_t* data, uint16_t *l)
+{
+	setFloatVector3f(data, 0, lpFilterParam.magRef);
+
+	*l = 12;
+
+	return 1;
+}
+
 uint8_t setFieldEstimateData(uint8_t* data)
 {	
 	lpFilterParam.magFieldEstimate = getFloat(data);

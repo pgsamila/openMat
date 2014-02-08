@@ -773,7 +773,21 @@ bool LpmsIoInterface::parseFunction(void)
 		for (int i=0; i<3; i++) {
 			fromBuffer(oneTx, i*12, &(configData->gyrMisalignMatrix.data[i][0]), &(configData->gyrMisalignMatrix.data[i][1]), &(configData->gyrMisalignMatrix.data[i][2]));
 		}		
-	break;	
+	break;
+	
+	case GET_MAG_ALIGNMENT_BIAS:
+		fromBuffer(oneTx, 0, &(configData->magMAlignmentBias.data[0]), &(configData->magMAlignmentBias.data[1]), &(configData->magMAlignmentBias.data[2]));
+	break;
+	
+	case GET_MAG_ALIGNMENT_MATRIX:
+		for (int i=0; i<3; i++) {
+			fromBuffer(oneTx, i*12, &(configData->magMAlignmentMatrix.data[i][0]), &(configData->magMAlignmentMatrix.data[i][1]), &(configData->magMAlignmentMatrix.data[i][2]));
+		}		
+	break;
+	
+	case GET_MAG_REFERENCE:
+		fromBuffer(oneTx, 0, &(configData->magReference.data[0]), &(configData->magReference.data[1]), &(configData->magReference.data[2]));
+	break;
 	
 	case GET_RAW_DATA_LP:
 		fromBuffer(oneTx, &l);
@@ -1635,11 +1649,6 @@ bool LpmsIoInterface::resetOrientation(void)
 	return modbusSetNone(SET_OFFSET);
 }
 
-bool LpmsIoInterface::resetReference(void) 
-{
-	return modbusSetNone(RESET_REFERENCE);
-}
-
 bool LpmsIoInterface::setFilterMode(long v)
 {
 	return modbusSetInt32(SET_FILTER_MODE, v);
@@ -1943,4 +1952,34 @@ bool LpmsIoInterface::setCanPointMode(int v)
 bool LpmsIoInterface::setCanStartId(int v)
 {
 	return modbusSetInt32(SET_CAN_START_ID, v);
+}
+
+bool LpmsIoInterface::setMagAlignmentMatrix(LpMatrix3x3f m)
+{
+	return modbusSetMatrix3x3f(SET_MAG_ALIGNMENT_MATRIX, m);
+}
+
+bool LpmsIoInterface::setMagAlignmentBias(LpVector3f v)
+{
+	return modbusSetVector3f(SET_MAG_ALIGNMENT_BIAS, v);
+}
+
+bool LpmsIoInterface::setMagReference(LpVector3f v)
+{
+	return modbusSetVector3f(SET_MAG_REFRENCE, v);
+}
+
+bool LpmsIoInterface::getMagAlignmentMatrix(void)
+{
+	return modbusGet(GET_MAG_ALIGNMENT_MATRIX);
+}
+
+bool LpmsIoInterface::getMagAlignmentBias(void)
+{
+	return modbusGet(GET_MAG_ALIGNMENT_BIAS);
+}
+
+bool LpmsIoInterface::getMagReference(void)
+{
+	return modbusGet(GET_MAG_REFERENCE);
 }

@@ -754,6 +754,12 @@ void CalibrationData::print(void)
 	printMatrix(gyrMisalignMatrix);
 	printf("[CalibrationData] Gyroscope alignment bias:\n");
 	printVector(gyrAlignmentBias);
+	printf("[CalibrationData] Magnetometer misalignment matrix:\n");
+	printMatrix(magMAlignmentMatrix);
+	printf("[CalibrationData] Magnetometer alignment bias:\n");
+	printVector(magMAlignmentBias);
+	printf("[CalibrationData] Magnetometer reference:\n");
+	printVector(magReference);
 	printf("[CalibrationData] Selected data: 0x%d\n", selectedData);
 	printf("[CalibrationData] Firmware version %s\n", firmwareVersion.c_str());
 }

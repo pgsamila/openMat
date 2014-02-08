@@ -97,4 +97,11 @@ void setFloatBigEndian(uint8_t* data, float f);
 // Retrieves LpMatrix3x3f from communication data
 LpMatrix3x3f getMatrix3x3f(uint8_t* data);
 
+uint8_t getRegVector3f(uint8_t i, LpVector3f *v);
+
+
+uint8_t getRegFloat(uint8_t i, float *v);
+
+uint8_t getRegMatrix3x3f(uint8_t i, LpMatrix3x3f *m);
+
 #endif

@@ -179,6 +179,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		set(sources
 			${sources}	
 			../../openmat-closedsource/LpMagnetometerCalibration.c
+			../../openmat-closedsource/LpMagnetometerMAlignment.c
 			../../openmat-closedsource/CalcMisalignment.c
 			../../openmat-closedsource/GaitTracking.cpp
 		)
@@ -220,6 +221,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set(sources
 			${sources}	
 			../../openmat-closedsource/LpMagnetometerCalibration.c
+			../../openmat-closedsource/LpMagnetometerMAlignment.c		
 			../../openmat-closedsource/CalcMisalignment.c
 			../../openmat-closedsource/GaitTracking.cpp
 		)

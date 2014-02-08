@@ -202,38 +202,12 @@ uint8_t resetToFactory(void)
 	f2int.float_val = (float)LPMS_FACTORY_ACC_ALIG_22;
 	gReg.data[LPMS_ACC_ALIG_22] = f2int.u32_val;
 	
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_00;
-	gReg.data[LPMS_MAG_ALIG_00] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_01;
-	gReg.data[LPMS_MAG_ALIG_01] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_02;
-	gReg.data[LPMS_MAG_ALIG_02] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_10;
-	gReg.data[LPMS_MAG_ALIG_10] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_11;
-	gReg.data[LPMS_MAG_ALIG_11] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_12;
-	gReg.data[LPMS_MAG_ALIG_12] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_20;
-	gReg.data[LPMS_MAG_ALIG_20] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_21;
-	gReg.data[LPMS_MAG_ALIG_21] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_ALIG_22;
-	gReg.data[LPMS_MAG_ALIG_22] = f2int.u32_val;
-	
 	f2int.float_val = (float)LPMS_FACTORY_ACC_REF_X;
 	gReg.data[LPMS_ACC_REF_X] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_ACC_REF_Y;
 	gReg.data[LPMS_ACC_REF_Y] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_ACC_REF_Z;
 	gReg.data[LPMS_ACC_REF_Z] = f2int.u32_val;
-	
-	f2int.float_val = (float)LPMS_FACTORY_MAG_REF_X;
-	gReg.data[LPMS_MAG_REF_X] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_REF_Y;
-	gReg.data[LPMS_MAG_REF_Y] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_REF_Z;
-	gReg.data[LPMS_MAG_REF_Z] = f2int.u32_val;
 	
 	f2int.float_val = (float)LPMS_FACTORY_GYR_THRES_X;
 	gReg.data[LPMS_GYR_THRES_X] = f2int.u32_val;
@@ -321,6 +295,10 @@ uint8_t resetToFactory(void)
 	gReg.data[LPMS_FILTER_MODE] = LPMS_FACTORY_FILTER_MODE;
 
 	gReg.data[LPMS_CAN_CONFIGURATION] = LPMS_FACTORY_CAN_CONFIGURATION;
+
+	setDefaultAlignMatrix();
+	setDefaultAlignBias();
+	setDefaultMagReference();
 
 	writeCompleteRegisterSet();
 	

@@ -212,7 +212,6 @@ public:
 	bool getFilterMode(void);
 	bool getFilterPreset(void);	
 	bool resetOrientation(void);
-	bool resetReference(void);
 	bool enableGyrThres(long v);
 	bool writeRegisters(void);
 	bool enableMagAutocalibration(long v);
@@ -267,6 +266,12 @@ public:
 	void clearRxBuffer(void);
 	void clearDataQueue(void);
 	void setTxRxImuId(int id);
+	bool setMagAlignmentMatrix(LpMatrix3x3f m);
+	bool setMagAlignmentBias(LpVector3f v);
+	bool setMagReference(LpVector3f v);
+	bool getMagAlignmentMatrix(void);
+	bool getMagAlignmentBias(void);
+	bool getMagReference(void);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);

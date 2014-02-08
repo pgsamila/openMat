@@ -57,32 +57,25 @@
 typedef struct _LpmsCalibrationData {
 	LpVector3f gyrOffset;
 	LpVector3f gyrGain;     
-
 	uint32_t gyrRange;
 	uint32_t gyrOutputRate;
+	LpMatrix3x3f gyrAlignment;
+	LpVector3f gyrAlignOffset;
 
 	LpVector3f accGain;
 	LpVector3f accOffset;
 	uint32_t accRange;
 	uint32_t accOutputRate;
+	LpMatrix3x3f accAlignment;
 
 	LpVector3f magGain;
 	LpVector3f magOffset;
 	LpMatrix3x3f magSoftIronMatrix;
-	
+	LpMatrix3x3f magAlignmentMatrix;
+	LpVector3f magAlignmentOffset;	
 	uint32_t magRange;
 	uint32_t magOutputRate;
 	
-	LpMatrix3x3f gyrAlignment;
-	LpMatrix3x3f accAlignment;
-	LpMatrix3x3f magAlignment;
-
-	LpVector3f gyrAlignOffset;
-	LpVector3f gyrTempCalPrmA;
-	LpVector3f gyrTempCalPrmB;
-	LpVector3f gyrTempCalBaseV;
-	float gyrTempCalBaseT;
-
 	float lpAlpha;
 
 	uint32_t canMapping[8];

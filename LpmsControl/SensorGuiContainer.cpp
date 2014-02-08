@@ -734,29 +734,6 @@ void SensorGuiContainer::updateData(void) {
 	}
 	
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
-		/* sensor->getConfigurationPrm(PRM_CAN_STREAM_FORMAT, &i);		
-		switch (i) {
-		case SELECT_STREAM_CAN_LPBUS:		
-			canProtocolCombo->setCurrentIndex(0);
-		break;
-	
-		case SELECT_STREAM_CAN_OPEN:
-			canProtocolCombo->setCurrentIndex(1);
-		break;	
-	
-		case SELECT_STREAM_CAN_CUSTOM1:
-			canProtocolCombo->setCurrentIndex(2);
-		break;
-
-		case SELECT_STREAM_CAN_CUSTOM2:
-			canProtocolCombo->setCurrentIndex(3);
-		break;
-		
-		case SELECT_STREAM_CAN_CUSTOM3:
-			canProtocolCombo->setCurrentIndex(4);
-		break;
-		} */
-
 		sensor->getConfigurationPrm(PRM_CAN_BAUDRATE, &i);		
 		switch (i) {
 		case SELECT_CAN_BAUDRATE_1000KBPS:		
@@ -1008,8 +985,7 @@ void SensorGuiContainer::updateData(void) {
 	linAccCompModeCombo->blockSignals(false);
 	centriCompModeCombo->blockSignals(false);
 
-	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
-		// canProtocolCombo->blockSignals(false);	
+	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {	
 		canBaudrateCombo->blockSignals(false);	
 		canHeartbeatCombo->blockSignals(false);	
 		canTpdo1ACombo->blockSignals(false);

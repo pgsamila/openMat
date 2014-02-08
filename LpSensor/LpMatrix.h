@@ -106,6 +106,8 @@ void convertArrayToLpMatrix(float src[9], LpMatrix3x3f* dest);
 void convertArrayToLpVector3f(float src[3], LpVector3f* dest);
 void convertArrayToLpVector4f(float src[4], LpVector4f* dest);
 void quaternionIdentity(LpVector4f* dest);
+void quaternionCon(LpVector4f* src, LpVector4f* dest);
+void quatRotVec(LpVector4f q, LpVector3f vI, LpVector3f* vO);
 
 #ifdef __WIN32
 void print4x4(LpMatrix4x4f m)

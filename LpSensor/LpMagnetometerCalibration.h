@@ -90,6 +90,8 @@ LpVector3f bCalCorrect(LpVector3f b);
 // Retrieves a field element at a specified location
 float bCalGetFieldMapElement(int i, int j, int k, int l);
 
+void getReferenceYZ(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc);
+
 #ifdef __cplusplus
 }
 #endif 

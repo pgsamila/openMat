@@ -299,5 +299,17 @@ uint8_t getHeaveData(uint8_t* data, uint16_t *l, uint8_t prec);
 uint8_t getGyroXData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 uint8_t getGyroYData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 uint8_t getGyroZData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
+uint8_t setMagAlignMatrix(uint8_t* data);
+uint8_t setMagAlignBias(uint8_t* data);
+uint8_t setMagReference(uint8_t* data);
+uint8_t getMagAlignMatrix(uint8_t* data, uint16_t *l);
+uint8_t getMagAlignBias(uint8_t* data, uint16_t *l);
+uint8_t getMagReference(uint8_t* data, uint16_t *l);
+void updateMagAlignMatrix(void);
+void updateMagAlignBias(void);
+void updateMagReference(void);
+void setDefaultMagReference(void);
+void setDefaultAlignBias(void);
+void setDefaultAlignMatrix(void);
 
 #endif

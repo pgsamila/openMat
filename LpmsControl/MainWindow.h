@@ -300,6 +300,8 @@ public slots:
 	/* Opens browser for playback file. */
 	void browsePlaybackFile(void);
 	
+	void magMisalignmentCal(void);
+	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	

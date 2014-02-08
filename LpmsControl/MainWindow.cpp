@@ -223,6 +223,7 @@ void MainWindow::createMenuAndToolbar(void)
 	QAction* resetToFactoryAction = new QAction("Reset to factory settings", this);
 	QAction* mACalculateAction = new QAction("Calibrate acc. misalignment", this);
 	QAction* gyrMaCalculateAction = new QAction("Calibrate gyr. misalignment", this);
+	QAction* magMaCalculateAction = new QAction("Calibrate mag. misalignment", this);
 	QAction* loadFromFileAction = new QAction("Save parameters to file", this);		
 	QAction* saveToFileAction = new QAction("Load parameters from file", this);		
 	
@@ -231,6 +232,7 @@ void MainWindow::createMenuAndToolbar(void)
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(mACalculateAction);
 	calibrationMenu->addAction(gyrMaCalculateAction);
+	calibrationMenu->addAction(magMaCalculateAction);
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(saveCalAction);
 	calibrationMenu->addAction(loadFromFileAction);
@@ -328,6 +330,7 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(resetToFactoryAction, SIGNAL(triggered()), this, SLOT(resetToFactory()));
 	connect(mACalculateAction, SIGNAL(triggered()), this, SLOT(misalignmentCal()));
 	connect(gyrMaCalculateAction, SIGNAL(triggered()), this, SLOT(gyrMisalignmentCal()));
+	connect(magMaCalculateAction, SIGNAL(triggered()), this, SLOT(magMisalignmentCal()));
 	connect(loadFromFileAction, SIGNAL(triggered()), this, SLOT(loadCalibrationData()));
 	connect(saveToFileAction, SIGNAL(triggered()), this, SLOT(saveCalibrationData()));
 	connect(addRemoveAction, SIGNAL(triggered()), this, SLOT(addRemoveDevices()));
@@ -1490,6 +1493,17 @@ QWizardPage *MainWindow::gyrMaFinishedPage(void)
 	page->setLayout(layout);
 
 	return page;
+}
+
+void MainWindow::magMisalignmentCal(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (isRunning == false) startMeasurement();
+	
+	currentLpms->getSensor()->startMagMisalignCal();
+	
+	startWaitBar(45);
 }
 
 void MainWindow::gyrMisalignmentCal(void)

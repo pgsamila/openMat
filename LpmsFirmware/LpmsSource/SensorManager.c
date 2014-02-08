@@ -217,13 +217,6 @@ void initSensorManager(void)
 	calibrationData.magSoftIronMatrix.data[2][0] = conItoF(gReg.data[LPMS_MAG_SOFT_20]);
 	calibrationData.magSoftIronMatrix.data[2][1] = conItoF(gReg.data[LPMS_MAG_SOFT_21]);
 	calibrationData.magSoftIronMatrix.data[2][2] = conItoF(gReg.data[LPMS_MAG_SOFT_22]);
-
-	f2int.u32_val = gReg.data[LPMS_MAG_REF_X];
-	lpFilterParam.magRef.data[0] = f2int.float_val;
-	f2int.u32_val = gReg.data[LPMS_MAG_REF_Y];
-	lpFilterParam.magRef.data[1] = f2int.float_val;
-	f2int.u32_val = gReg.data[LPMS_MAG_REF_Z];
-	lpFilterParam.magRef.data[2] = f2int.float_val;
 	
 	f2int.u32_val = gReg.data[LPMS_MAG_THRES_X];
 	lpFilterParam.magThreshold.data[0] = f2int.float_val;
@@ -279,6 +272,9 @@ void initSensorManager(void)
 	updateCanHeartbeat();
 	updateLinAccCompMode();
 	updateCentriCompMode();
+	updateMagAlignMatrix();
+	updateMagAlignBias();
+	updateMagReference();
                     
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
@@ -385,7 +381,10 @@ void processSensorData(void)
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
-		  
+		
+		matVectMult3(&calibrationData.magAlignmentMatrix, &b, &b);
+		vectAdd3x1(&calibrationData.magAlignmentOffset, &b, &b);
+  
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
 		quaternionMult(&q, &qOffset, &qAfterOffset);

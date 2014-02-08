@@ -49,6 +49,7 @@
 #include "LpMagnetometerCalibration.h"
 #include "CalcMisalignment.h"
 #include "GaitTracking.h"
+#include "LpMagnetometerMAlignment.h"
 
 #ifdef _WIN32
 	#include "LpmsCanIo.h"
@@ -144,6 +145,9 @@
 #define STATE_SET_CAN_CHANNEL_MODE 64
 #define STATE_SET_CAN_POINT_MODE 65
 #define STATE_SET_CAN_START_ID 66
+#define STATE_SET_MAG_ALIGNMENT_MATRIX 67
+#define STATE_SET_MAG_ALIGNMENT_BIAS 68
+#define STATE_SET_MAG_REFERENCE 69
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -174,6 +178,9 @@
 #define C_STATE_CENTRI_COMP_MODE 27
 #define C_STATE_GET_CAN_CONFIGURATION 28
 #define C_RESET_SENSOR_TIMESTAMP 29
+#define C_STATE_GET_MAG_ALIGNMENT_MATRIX 30
+#define C_STATE_GET_MAG_ALIGNMENT_BIAS 31
+#define C_STATE_GET_MAG_REFERENCE 32
 
 #define CAL_STATE_GET_STATUS 1
 #define CAL_STATE_WAIT_FINISH 2
@@ -277,6 +284,12 @@ private:
 	void startPlanarMagCalibration(void);
 	void checkPlanarMagCal(float T);
 	void stopPlanarMagCalibration(void);
+	void startMagMisalignCal(void);
+	void checkMagMisalignCal(float T);
+	void calcMagMisalignCal(void);
+	void startMagReferenceCal(void);
+	void checkMagReferenceCal(float T);
+	void calcMagReferenceCal(void);
 
 	LpmsIoInterface *bt;	
 	std::string deviceId;
@@ -347,6 +360,8 @@ private:
 	LpmsCallback lpmsCallback;
 	bool callbackSet;
 	GaitTracking gm;
+	bool isMagMAlignmentCalEnabled;
+	float magMAlignmentCalDuration;
 }; 
 	
-#endif	
+#endif

@@ -314,8 +314,32 @@ void LpmsSensor::update(void)
 				LOGV("[LpmsSensor] Get field estimate\n");
 				bt->getFieldEstimate();
 				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_ACC_ALIGNMENT;			
+				getConfigState = C_STATE_GET_MAG_ALIGNMENT_MATRIX;
 			break;
+			
+			// Retrieves magnetometer alignment matrix.
+			case C_STATE_GET_MAG_ALIGNMENT_MATRIX:
+				LOGV("[LpmsSensor] Get magnetometer alignment matrix\n");
+				bt->getMagAlignmentMatrix();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_MAG_ALIGNMENT_BIAS;
+			break;			
+
+			// Retrieves magnetometer alignment matrix.
+			case C_STATE_GET_MAG_ALIGNMENT_BIAS:
+				LOGV("[LpmsSensor] Get magnetometer alignment bias\n");
+				bt->getMagAlignmentBias();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_MAG_REFERENCE;
+			break;			
+
+			// Retrieves magnetometer alignment matrix.
+			case C_STATE_GET_MAG_REFERENCE:
+				LOGV("[LpmsSensor] Get magnetometer reference\n");
+				bt->getMagReference();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_ACC_ALIGNMENT;
+			break;			
 			
 			// Retrieves accelerometer alignment matrix.
 			case C_STATE_GET_ACC_ALIGNMENT:
@@ -552,6 +576,8 @@ void LpmsSensor::update(void)
 		checkPlanarMagCal(frameTime);
 		checkMisalignCal(frameTime);
 		checkGyrMisalignCal(frameTime);
+		checkMagMisalignCal(frameTime);
+		checkMagReferenceCal(frameTime);
 		
 		if ((bt->getConfigReg() & LPMS_GAIT_TRACKING_ENABLED) != 0) {
 			gm.update(&imuData);
@@ -768,9 +794,36 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setFieldEstimate(configData.fieldRadius);
 			LOGV("[LpmsSensor] Set field estimate\n");
-			state = STATE_SET_GYR_ALIGNMENT;
+			state = STATE_SET_MAG_ALIGNMENT_MATRIX;
 		}
 	break;
+	
+	// Sets magnetometer alignment matrix.
+	case STATE_SET_MAG_ALIGNMENT_MATRIX:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setMagAlignmentMatrix(configData.magMAlignmentMatrix);
+			LOGV("[LpmsSensor] Set magnetometer alignment matrix\n");
+			state = STATE_SET_MAG_ALIGNMENT_BIAS;
+		}
+	break;	
+	
+	// Sets magnetometer alignment bias.
+	case STATE_SET_MAG_ALIGNMENT_BIAS:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setMagAlignmentBias(configData.magMAlignmentBias);
+			LOGV("[LpmsSensor] Set magnetometer alignment bias\n");
+			state = STATE_SET_MAG_REFERENCE;
+		}
+	break;	
+
+	// Sets magnetometer reference.
+	case STATE_SET_MAG_REFERENCE:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setMagReference(configData.magReference);
+			LOGV("[LpmsSensor] Set magnetometer reference\n");
+			state = STATE_SET_GYR_ALIGNMENT;
+		}
+	break;		
 	
 	// Sets gyroscope alignment.
 	case STATE_SET_GYR_ALIGNMENT:
@@ -1015,6 +1068,16 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
+	// Calibrates magnetometer reference.
+	case STATE_SET_REFERENCE:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
+			startMagReferenceCal();
+
+			state = STATE_CALIBRATING;
+			getConfigState = CAL_STATE_GET_STATUS;
+		}	
+	break;
+	
 	// Waits for calibration to finish.
 	case STATE_CALIBRATING:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
@@ -1043,16 +1106,6 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->resetOrientation();
 			state = STATE_SET_CONFIG;
-		}	
-	break;
-	
-	// Sets accelerometer and magnetometer reference to the currently measured values.
-	case STATE_SET_REFERENCE:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
-			bt->resetReference();
-
-			state = STATE_CALIBRATING;
-			getConfigState = CAL_STATE_GET_STATUS;
 		}	
 	break;
 	
@@ -1942,4 +1995,160 @@ void LpmsSensor::resetTimestamp(void)
 	getConfigState = STATE_RESET_TIMESTAMP;
 	
 	frameNo = 0;
-}	
+}
+
+void LpmsSensor::startMagMisalignCal(void)
+{
+	int p;
+
+  	if (isMagMAlignmentCalEnabled == true) return;
+  	
+	isMagMAlignmentCalEnabled = true;	
+	magMAlignmentCalDuration = 0.0f;
+	
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+	
+	p = SELECT_LPMS_MAG_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
+	
+	configData.setParameter(PRM_SELECT_DATA, p);	
+	updateParameters();
+	
+	printf("[LpmsSensor] Starting magnetometer misalignment calibration.\n");
+	
+	bMACalInitEllipsoidFit();
+}
+
+#define LPMS_REF_CALIBRATION_DURATION_1S	(1000.0f)
+#define LPMS_REF_CALIBRATION_DURATION_20S	(20000.0f)
+
+void LpmsSensor::checkMagMisalignCal(float T)
+{
+	LpVector3f tV, bR;
+	LpVector4f tV2;
+	
+	bR.data[0] = 0.0f;
+	bR.data[1] = -1.0f;
+	bR.data[2] = -1.0f;
+	
+	convertArrayToLpVector3f(currentData.b, &tV);
+	convertArrayToLpVector4f(currentData.q, &tV2);
+	
+	if (isMagMAlignmentCalEnabled == true) {
+		magMAlignmentCalDuration += T;
+		
+		bMAUpdateMap(tV2, tV, configData.magReference);
+		
+		if (magMAlignmentCalDuration >= LPMS_REF_CALIBRATION_DURATION_20S) {
+			calcMagMisalignCal();
+		}
+		
+		printf("[LpmsSensor] b: %f, %f, %f\n", tV.data[0], tV.data[1], tV.data[2]);
+		printf("[LpmsSensor] q: %f, %f, %f, %f\n", tV2.data[0], tV2.data[1], tV2.data[2], tV2.data[3]);
+		printf("[LpmsSensor] T: %f\n", magMAlignmentCalDuration);		
+	} 
+}
+
+void LpmsSensor::calcMagMisalignCal(void)
+{
+	LpMatrix3x3f R;
+	LpVector3f t;
+
+ 	if (isMagMAlignmentCalEnabled == false) return;
+
+	if (bMACalFitEllipsoid(&R, &t) == 1) {
+		configData.magMAlignmentMatrix = R;
+		configData.magMAlignmentBias = t;
+	}
+	
+	isMagMAlignmentCalEnabled = false;
+	magMAlignmentCalDuration = 0.0f;
+
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	
+	updateParameters();
+}
+
+float cumulatedRefData[3] = { 0.0f, 0.0f, 0.0f };
+int cumulatedRefCounter = 0;
+float refCalibrationDuration = 0;
+bool isRefCalibrationEnabled;
+
+void LpmsSensor::startMagReferenceCal(void)
+{
+	int p;
+
+  	if (isRefCalibrationEnabled == true) return;
+  	
+	isRefCalibrationEnabled = true;
+	cumulatedRefCounter = 0;
+	refCalibrationDuration = 0.0f;
+	
+	for (int i = 0; i < 3; i++) cumulatedRefData[i] = 0;
+
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+	
+	p = SELECT_LPMS_MAG_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;
+
+	printf("[LpmsSensor] Starting magnetometer reference calibration.\n");	
+	
+	configData.setParameter(PRM_SELECT_DATA, p);	
+	updateParameters();
+}
+
+void LpmsSensor::checkMagReferenceCal(float T)
+{
+	float bInc;
+	LpVector3f tR, tV, tV2;
+
+	if (isRefCalibrationEnabled == true) {
+		refCalibrationDuration += T;
+
+		cumulatedRefCounter++;
+		
+		convertArrayToLpVector3f(currentData.b, &tV);
+		convertArrayToLpVector3f(currentData.a, &tV2);		
+		
+		printf("[LpmsSensor] b: %f, %f, %f\n", tV.data[0], tV.data[1], tV.data[2]);
+		printf("[LpmsSensor] a: %f, %f, %f\n", tV2.data[0], tV2.data[1], tV2.data[2]);
+		printf("[LpmsSensor] T: %f\n", refCalibrationDuration);
+		
+		getReferenceYZ(tV, tV2, &tR, &bInc);
+		
+		cumulatedRefData[0] = cumulatedRefData[0] + bInc;
+		cumulatedRefData[1] = cumulatedRefData[1] + tR.data[1];
+		cumulatedRefData[2] = cumulatedRefData[2] + tR.data[2];
+	
+		printf("[LpmsSensor] ref: %f, %f, %f\n", cumulatedRefData[0], cumulatedRefData[1], cumulatedRefData[2]);		
+		
+		printf("[LpmsSensor] Calibrating magnetometer reference..\n");		
+		
+		if (refCalibrationDuration >= LPMS_REF_CALIBRATION_DURATION_1S) {
+			calcMagReferenceCal();
+		}	
+	}
+}
+
+void LpmsSensor::calcMagReferenceCal(void)
+{
+	float n;
+
+  	if (isRefCalibrationEnabled == false) return;
+	
+	configData.magReference.data[0] = 0.0f;
+	configData.magReference.data[1] = cumulatedRefData[1] / (float) cumulatedRefCounter;
+	configData.magReference.data[2] = cumulatedRefData[2] / (float) cumulatedRefCounter;
+	
+	n = vect3x1Norm(configData.magReference);
+	scalarVectMult3x1(n, &configData.magReference, &configData.magReference);
+
+	printf("[LpmsSensor] Magnetometer reference: %f, %f, %f\n", 0.0f, configData.magReference.data[1], configData.magReference.data[2]);
+	printf("[LpmsSensor] Magnetometer reference length: %f\n", n);	
+	
+	isRefCalibrationEnabled = false;
+	
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	
+	updateParameters();	
+}

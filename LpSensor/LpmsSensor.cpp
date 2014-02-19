@@ -139,6 +139,7 @@ const float pi = 3.141592f;
 	callbackSet = false;
 	isMagCalibrationEnabled = false;
 	isGetGyrTempCal = false;
+	isPlanarMagCalibrationEnabled = false;
 	
 	bt->zeroImuData(&currentData);
 }
@@ -1578,13 +1579,13 @@ void LpmsSensor::startPlanarMagCalibration(void)
 {
 	int p;
 
-  	if (isMagCalibrationEnabled == true) return;
+  	if (isPlanarMagCalibrationEnabled == true) return;
   	
-	isMagCalibrationEnabled = true;	
+	isPlanarMagCalibrationEnabled = true;	
 	magCalibrationDuration = 0.0f;
-	
-	configData.getParameter(PRM_SELECT_DATA, &p);
-	
+
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+		
 	p |= SELECT_LPMS_MAG_OUTPUT_ENABLED;
 	p |= SELECT_LPMS_EULER_OUTPUT_ENABLED;
 
@@ -1600,14 +1601,22 @@ void LpmsSensor::startPlanarMagCalibration(void)
 
 void LpmsSensor::checkPlanarMagCal(float T)
 {
-	if (isMagCalibrationEnabled == true) {
+	if (isPlanarMagCalibrationEnabled == true) {
+		magCalibrationDuration += T;	
+	
 		for (int i=0; i<3; i++) {
-			if (currentData.bRaw[i] > bMax.data[i]) bMax.data[i] = currentData.bRaw[i];
-			if (currentData.bRaw[i] < bMin.data[i]) bMin.data[i] = currentData.bRaw[i];
+			if (currentData.bRaw[i] > bMax.data[i]) {
+				bMax.data[i] = currentData.bRaw[i];
+				printf("[LpmsSensor] New maximum detected: Axis=%d, field=%f\n", i, currentData.bRaw[i]);
+			}
+			if (currentData.bRaw[i] < bMin.data[i]) {
+				bMin.data[i] = currentData.bRaw[i];
+				printf("[LpmsSensor] New minimum detected: Axis=%d, field=%f\n", i, currentData.bRaw[i]);
+			}
 		}	
 		
 		if (magCalibrationDuration >= LPMS_MAG_CALIBRATION_DURATION_20S) {
-			stopMagCalibration();
+			stopPlanarMagCalibration();
 		}
 	} 
 }
@@ -1619,35 +1628,34 @@ void LpmsSensor::stopPlanarMagCalibration(void)
 	LpVector3f bBias;
 	LpVector3f bRadius;
 
-  	if (isMagCalibrationEnabled == false) return;
+  	if (isPlanarMagCalibrationEnabled == false) return;
 
 	for (i=0; i<3; i++) {
-		bBias.data[i] = (bMax.data[i] - bMin.data[i]) / 2.0f;
+		bBias.data[i] = (bMax.data[i] + bMin.data[i]) / 2.0f;
+		printf("[LpmsSensor] Calculated bias: Axis=%d, field=%f\n", i, bBias.data[i]);
+
 	}
 	
 	for (i=0; i<3; i++) {
 		bRadius.data[i] = bMax.data[i] - bBias.data[i];
-		sqSum += bRadius.data[i] * bRadius.data[i];
+		sqSum += bRadius.data[i]; // * bRadius.data[i];
 	}
 	
-	configData.fieldRadius = sqrt(sqSum);
+	configData.fieldRadius = sqSum / 3; // sqrt(sqSum);
 	
 	matZero3x3(&configData.softIronMatrix);
 	for (int i=0; i<3; i++) {
 		configData.softIronMatrix.data[i][i] = configData.fieldRadius / bRadius.data[i];
+		printf("[LpmsSensor] Calculated radius: Axis=%d, field=%f\n", i, configData.softIronMatrix.data[i][i]);
 		configData.hardIronOffset.data[i] = bBias.data[i];
 	}
-	
-	configData.softIronMatrix = bCalGetSoftIronMatrix();
-	configData.hardIronOffset = bCalGetHardIronOffset();
-	
-	/* mCalGetSoftIronMatrix(&configData.softIronMatrix);
-	mCalGetHardIronOffset(&configData.hardIronOffset); */
-	
+		
 	newFieldMap = true;
-	isMagCalibrationEnabled = false;
+	isPlanarMagCalibrationEnabled = false;
 	magCalibrationDuration = 0.0f;
 
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);	
+	
 	updateParameters();
 }
 
@@ -1702,10 +1710,6 @@ void LpmsSensor::checkMagCal(float T)
 void LpmsSensor::stopMagCalibration(void)
 {
   	if (isMagCalibrationEnabled == false) return;
-
-	/* mCalGetSoftIronMatrix(&configData.softIronMatrix);
-	mCalGetHardIronOffset(&configData.hardIronOffset);
-	configData.fieldRadius = mCalGetFieldRadius(); */
 	
 	if (bCalFitEllipsoid() == 1) {
 		configData.softIronMatrix = bCalGetSoftIronMatrix();
@@ -1717,8 +1721,6 @@ void LpmsSensor::stopMagCalibration(void)
 		for (int j=0; j<ABSMAXROLL; j++) {
 			for (int k=0; k<ABSMAXYAW; k++) {
 				for (int l=0; l<3; l++) {
-					/* configData.fieldMap[i][j][k].data[l] = mCalGetFieldMapElement(i, j, k, l); */
-					
 					configData.fieldMap[i][j][k].data[l] = bCalGetFieldMapElement(i, j, k, l);
 				}
 			}
@@ -1997,14 +1999,14 @@ void LpmsSensor::resetTimestamp(void)
 	frameNo = 0;
 }
 
-void LpmsSensor::startMagMisalignCal(void)
+void LpmsSensor::startAutoMagMisalignCal(void)
 {
 	int p;
 
-  	if (isMagMAlignmentCalEnabled == true) return;
+  	if (isAutoMagMisalignCalEnabled == true) return;
   	
-	isMagMAlignmentCalEnabled = true;	
-	magMAlignmentCalDuration = 0.0f;
+	isAutoMagMisalignCalEnabled = true;	
+	misalignTime = 0.0f;
 	
 	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
 	
@@ -2022,7 +2024,7 @@ void LpmsSensor::startMagMisalignCal(void)
 #define LPMS_REF_CALIBRATION_DURATION_1S	(1000.0f)
 #define LPMS_REF_CALIBRATION_DURATION_20S	(20000.0f)
 
-void LpmsSensor::checkMagMisalignCal(float T)
+void LpmsSensor::checkAutoMagMisalignCal(float T)
 {
 	LpVector3f tV, bR;
 	LpVector4f tV2;
@@ -2034,45 +2036,40 @@ void LpmsSensor::checkMagMisalignCal(float T)
 	convertArrayToLpVector3f(currentData.b, &tV);
 	convertArrayToLpVector4f(currentData.q, &tV2);
 	
-	if (isMagMAlignmentCalEnabled == true) {
-		magMAlignmentCalDuration += T;
+	if (isAutoMagMisalignCalEnabled == true) {
+		misalignTime += T;
 		
 		bMAUpdateMap(tV2, tV, configData.magReference);
 		
-		if (magMAlignmentCalDuration >= LPMS_REF_CALIBRATION_DURATION_20S) {
+		if (misalignTime >= LPMS_REF_CALIBRATION_DURATION_20S) {
 			calcMagMisalignCal();
 		}
 		
 		printf("[LpmsSensor] b: %f, %f, %f\n", tV.data[0], tV.data[1], tV.data[2]);
 		printf("[LpmsSensor] q: %f, %f, %f, %f\n", tV2.data[0], tV2.data[1], tV2.data[2], tV2.data[3]);
-		printf("[LpmsSensor] T: %f\n", magMAlignmentCalDuration);		
+		printf("[LpmsSensor] T: %f\n", misalignTime);		
 	} 
 }
 
-void LpmsSensor::calcMagMisalignCal(void)
+void LpmsSensor::calcAutoMagMisalignCal(void)
 {
 	LpMatrix3x3f R;
 	LpVector3f t;
 
- 	if (isMagMAlignmentCalEnabled == false) return;
+ 	if (isAutoMagMisalignCalEnabled == false) return;
 
 	if (bMACalFitEllipsoid(&R, &t) == 1) {
 		configData.magMAlignmentMatrix = R;
 		configData.magMAlignmentBias = t;
 	}
 	
-	isMagMAlignmentCalEnabled = false;
-	magMAlignmentCalDuration = 0.0f;
+	isAutoMagMisalignCalEnabled = false;
+	misalignTime = 0.0f;
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
 	
 	updateParameters();
 }
-
-float cumulatedRefData[3] = { 0.0f, 0.0f, 0.0f };
-int cumulatedRefCounter = 0;
-float refCalibrationDuration = 0;
-bool isRefCalibrationEnabled;
 
 void LpmsSensor::startMagReferenceCal(void)
 {
@@ -2152,3 +2149,109 @@ void LpmsSensor::calcMagReferenceCal(void)
 	
 	updateParameters();	
 }
+
+void LpmsSensor::initMagMisalignCal(void)
+{
+	int p;
+
+  	if (isMagMisalignCalEnabled == true) return;
+  	
+	isMagMisalignCalEnabled = false;
+	misalignSetIndex = 0;
+	misalignSamples = 0;
+	misalignTime = 0.0f;
+	
+	for (int i=0; i<N_MAG_ALIGNMENT_SETS; i++) {
+		vectZero3x1(&misalignAData[i]);
+		vectZero3x1(&misalignBData[i]);
+		vectZero3x1(&misalignADataAcc);
+	}
+	
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+	
+	printf("prevSelection: %x\n", prevDataSelection);
+	
+	p = SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
+	p |= SELECT_LPMS_MAG_OUTPUT_ENABLED;
+
+	printf("selected: 0x%x\n", p);
+	
+	configData.setParameter(PRM_SELECT_DATA, p);
+	updateParameters();
+}
+
+void LpmsSensor::startMagMisalignCal(int i) 
+{
+	if (i < N_MAG_ALIGNMENT_SETS) {
+		isMagMisalignCalEnabled = true;
+		misalignSetIndex = i;
+		misalignSamples = 0;
+		misalignTime = 0.0f;
+		
+		vectZero3x1(&misalignADataAcc);
+	}
+}
+
+void LpmsSensor::checkMagMisalignCal(float T)
+{
+	if (isMagMisalignCalEnabled == true) {		
+		for (int i=0; i<3; i++) {
+			misalignADataAcc.data[i] += bRaw.data[i];
+		}
+		
+		++misalignSamples;
+				
+		for (int i=0; i<3; i++) {
+			if (aRaw.data[i] > 50.0f) {
+				misalignBData[misalignSetIndex].data[i] = 100.0f;
+			} else if (aRaw.data[i] < -50.0f) {
+				misalignBData[misalignSetIndex].data[i] = -100.0f;
+			} else {
+				misalignBData[misalignSetIndex].data[i] = 0.0f;
+			}
+		}
+
+		misalignTime += T;
+		if (misalignTime > 2000.0f) {
+			isMagMisalignCalEnabled = false;
+
+			printf("Average mag. vector %d: ", misalignSetIndex);
+			
+			for (int i=0; i<3; i++) {
+				if (misalignSamples == 0) break;
+				
+				if ((misalignSetIndex % 2) == 0) {				
+					misalignAData[misalignSetIndex].data[i] = misalignADataAcc.data[i] / misalignSamples;
+				} else {
+					misalignAData[misalignSetIndex].data[i] = (misalignADataAcc.data[i] / misalignSamples) - misalignAData[misalignSetIndex-1].data[i];
+				}
+				
+				printf("%f ", misalignAData[misalignSetIndex].data[i]);
+			}
+			printf("\n");
+			
+			vectZero3x1(&misalignADataAcc);
+			
+			misalignSamples = 0;
+			misalignTime = 0.0f;
+		}
+	}
+}
+
+void LpmsSensor::calcMagMisalignCal(void)
+{
+	float *aTest[N_MAG_ALIGNMENT_SETS];
+	float *bTest[N_MAG_ALIGNMENT_SETS];
+	
+	for (int i=0; i<N_MAG_ALIGNMENT_SETS; i+=2) {
+		aTest[i/2] = misalignAData[i+1].data;
+		bTest[i/2] = misalignBData[i+1].data;
+	}
+
+	maCalCalcMagMisalignment(aTest, bTest, &configData.misalignMatrix, &configData.accBias, N_MAG_ALIGNMENT_SETS/2);
+	
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	updateParameters();
+	
+	printf("updated: %x\n", prevDataSelection);
+}	

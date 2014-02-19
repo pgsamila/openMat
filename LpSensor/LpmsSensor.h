@@ -193,6 +193,9 @@
 
 #define WAIT_FIRMWARE_WRITE_TIME 15000000
 
+#define N_ALIGNMENT_SETS 6
+#define N_MAG_ALIGNMENT_SETS 12
+
 /* See LpmsSensorI for comments on this class. */
 class LpmsSensor : public LpmsSensorI
 {
@@ -284,12 +287,16 @@ private:
 	void startPlanarMagCalibration(void);
 	void checkPlanarMagCal(float T);
 	void stopPlanarMagCalibration(void);
-	void startMagMisalignCal(void);
+	void initMagMisalignCal(void);
+	void startMagMisalignCal(int i);
 	void checkMagMisalignCal(float T);
 	void calcMagMisalignCal(void);
 	void startMagReferenceCal(void);
 	void checkMagReferenceCal(float T);
 	void calcMagReferenceCal(void);
+	void startAutoMagMisalignCal(void);
+	void checkAutoMagMisalignCal(float T);
+	void calcAutoMagMisalignCal(void);
 
 	LpmsIoInterface *bt;	
 	std::string deviceId;
@@ -330,10 +337,13 @@ private:
 	LpVector4f qOffset;
 	LpVector4f currentQ;
 	LpVector4f qAfterOffset;
-	LpVector3f misalignAData[6];
-	LpVector3f misalignBData[6];
-	LpVector3f gyrMisalignAData[6];
-	LpVector3f gyrMisalignBData[6];
+	LpVector3f misalignAData[N_ALIGNMENT_SETS];
+	LpVector3f misalignBData[N_ALIGNMENT_SETS];
+	LpVector3f gyrMisalignAData[N_ALIGNMENT_SETS];
+	LpVector3f gyrMisalignBData[N_ALIGNMENT_SETS];
+	LpVector3f magMisalignAData[N_MAG_ALIGNMENT_SETS];
+	LpVector3f magmisalignBData[N_MAG_ALIGNMENT_SETS];
+	
 	bool isGetMisalign;
 	bool isGetGyrMisalign;
 	int misalignSetIndex;
@@ -360,8 +370,13 @@ private:
 	LpmsCallback lpmsCallback;
 	bool callbackSet;
 	GaitTracking gm;
-	bool isMagMAlignmentCalEnabled;
-	float magMAlignmentCalDuration;
+	bool isMagMisalignCalEnabled;
+	bool isAutoMagMisalignCalEnabled;
+	float cumulatedRefData[3];
+	int cumulatedRefCounter;
+	float refCalibrationDuration;
+	bool isRefCalibrationEnabled;
+	bool isPlanarMagCalibrationEnabled;
 }; 
 	
 #endif

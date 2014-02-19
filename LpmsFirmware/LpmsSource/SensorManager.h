@@ -38,7 +38,7 @@
 #define GYR_CAL_THRES 				45
 
 // Duration of gyroscope auto-calibration sequence
-#define GYR_CAL_TIMEOUT 			5000
+#define GYR_CAL_TIMEOUT 			7500
 
 // Possible durations of manual gyroscope bias clibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)

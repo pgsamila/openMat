@@ -381,9 +381,6 @@ void processSensorData(void)
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
-		
-		matVectMult3(&calibrationData.magAlignmentMatrix, &b, &b);
-		vectAdd3x1(&calibrationData.magAlignmentOffset, &b, &b);
   
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);

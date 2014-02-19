@@ -197,8 +197,14 @@ public:
 	
 	/* Sets callback for data data acquisition. */
 	virtual void setCallback(LpmsCallback cb) = 0;
+
+	virtual void initMagMisalignCal(void) = 0;
 	
-	virtual void startMagMisalignCal(void) = 0;
+	virtual void startMagMisalignCal(int i) = 0;
+	
+	virtual void startAutoMagMisalignCal(void) = 0;	
+	
+	virtual void startPlanarMagCalibration(void) = 0;
 }; 
 
 #ifdef _WIN32

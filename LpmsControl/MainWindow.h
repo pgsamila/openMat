@@ -302,6 +302,18 @@ public slots:
 	
 	void magMisalignmentCal(void);
 	
+	void calibratePlanarMag(void);
+	
+	void magAutoMisalignmentCal(void);
+	
+	void magMaNewPage(int i);
+	
+	void magMaFinished(int i);
+	
+	QWizardPage *magMaFinishedPage(void);
+	
+	QWizardPage *magMaOrientationPage(const char* ts, const char* es);
+	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	

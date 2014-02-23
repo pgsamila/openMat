@@ -212,8 +212,8 @@ void LpmsSensorManager::run(void)
 
 			LpmsRS232::listDevices(&deviceList);
 			LpmsU::listDevices(&deviceList);
-			LpmsBBluetooth::listDevices(&deviceList);
-			// LpmsBle::listDevices(&deviceList);
+			LpmsBBluetooth::listDevices(&deviceList);			
+			LpmsBle::listDevices(&deviceList);
 
 			managerState = SMANAGER_MEASURE;
 		break;

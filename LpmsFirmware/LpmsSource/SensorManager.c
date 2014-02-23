@@ -513,6 +513,8 @@ uint8_t getCurrentMode(void)
 
 void setCommandMode(void)
 {
+	// if (currentMode == LPMS_COMMAND_MODE) return;
+
 	currentMode = LPMS_COMMAND_MODE;
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
@@ -523,6 +525,8 @@ void setCommandMode(void)
 
 void setStreamMode(void)
 {
+	// if (currentMode == LPMS_STREAM_MODE) return;
+
 	currentMode = LPMS_STREAM_MODE;
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
@@ -720,6 +724,25 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
 
+#ifdef LPMS_BLE
+	setI16t(&(data[o]), (int16_t) measurementTime);
+	o = o+2;
+	
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[0] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[1] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[2] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[3] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (heaveY * (float) 0x0fff));
+	o = o+2;
+#else	
 	setFloat(&(data[o]), measurementTime, FLOAT_FULL_PRECISION);	
 	o = o+4;
 	
@@ -793,7 +816,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 		o = o+4;
 	}
 #endif
-
+#endif
 	*l = o;
 	
 	return 1;

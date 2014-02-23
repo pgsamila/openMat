@@ -71,6 +71,9 @@ public:
 	static int read_message(int timeout_ms);
 	void run(void);
 	void runTx(void);
+	bool parseSensorData(void);
+	void setConfiguration(void);
+	int convertHexStringToNumber(const char *s);
 
 private:
 	std::string portname;

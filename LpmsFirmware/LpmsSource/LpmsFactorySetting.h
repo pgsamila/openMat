@@ -17,6 +17,9 @@
 /* IMPORTANT: LPMS type switches now selected through compiler command line.
 	Use Project->Edit Configurations to change or batch build */
 
+// Enabled Bluetooth Low Energy Optimizations based on TTL LPMS-CU
+// #define LPMS_BLE
+
 // Enables CAN bus interface
 // #define USE_CANBUS_INTERFACE
 
@@ -39,10 +42,10 @@
 // <-- Deprecated type switched until here
 
 // Enables watchdog timer
-#define ENABLE_WATCHDOG
+// #define ENABLE_WATCHDOG
 
 // To enable pressure sensing
-#define ENABLE_PRESSURE
+// #define ENABLE_PRESSURE
 
 // Enable Bluetooth low-latency
 // #define ENABLE_LOWLATENCY
@@ -55,7 +58,7 @@
 #define FIRMWARE_VERSION_DIGIT2 1
 
 // Interface dependent factory settings
-#ifdef USE_BLUETOOTH_INTERFACE                      
+#ifdef USE_BLUETOOTH_INTERFACE                    
 	#ifdef USE_HEAVEMOTION
 		#define	LPMS_FACTORY_CONFIG	(LPMS_ACC_COMP_ENABLED | \
 				LPMS_GYR_RAW_OUTPUT_ENABLED | \
@@ -95,31 +98,41 @@
 	#endif
 #endif
 
-#ifdef USE_CANBUS_INTERFACE                         
-	#ifdef USE_HEAVEMOTION
+#ifdef USE_CANBUS_INTERFACE
+	#ifdef LPMS_BLE
 		#define	LPMS_FACTORY_CONFIG	(LPMS_ACC_COMP_ENABLED | \
-				LPMS_GYR_RAW_OUTPUT_ENABLED | \
-				LPMS_ACC_RAW_OUTPUT_ENABLED | \
-				LPMS_MAG_RAW_OUTPUT_ENABLED | \
 				LPMS_QUAT_OUTPUT_ENABLED | \
-				LPMS_EULER_OUTPUT_ENABLED | \
-				LPMS_STREAM_FREQ_100HZ_ENABLED | \
+				LPMS_STREAM_FREQ_30HZ_ENABLED | \
 				LPMS_CAN_BAUDRATE_1M_ENABLED | \
 				LPMS_HEAVEMOTION_ENABLED | \
 				LPMS_HEAVEMOTION_OUTPUT_ENABLED | \
-				LPMS_LINACC_OUTPUT_ENABLED | \
 				LPMS_GYR_AUTOCAL_ENABLED)
-	#else
-		#define	LPMS_FACTORY_CONFIG	(LPMS_ACC_COMP_ENABLED | \
-				LPMS_GYR_RAW_OUTPUT_ENABLED | \
-				LPMS_ACC_RAW_OUTPUT_ENABLED | \
-				LPMS_MAG_RAW_OUTPUT_ENABLED | \
-				LPMS_QUAT_OUTPUT_ENABLED | \
-				LPMS_EULER_OUTPUT_ENABLED | \
-				LPMS_STREAM_FREQ_100HZ_ENABLED | \
-				LPMS_CAN_BAUDRATE_1M_ENABLED | \
-				LPMS_LINACC_OUTPUT_ENABLED | \
-				LPMS_GYR_AUTOCAL_ENABLED)
+	#else   
+		#ifdef USE_HEAVEMOTION
+			#define	LPMS_FACTORY_CONFIG	(LPMS_ACC_COMP_ENABLED | \
+					LPMS_GYR_RAW_OUTPUT_ENABLED | \
+					LPMS_ACC_RAW_OUTPUT_ENABLED | \
+					LPMS_MAG_RAW_OUTPUT_ENABLED | \
+					LPMS_QUAT_OUTPUT_ENABLED | \
+					LPMS_EULER_OUTPUT_ENABLED | \
+					LPMS_STREAM_FREQ_100HZ_ENABLED | \
+					LPMS_CAN_BAUDRATE_1M_ENABLED | \
+					LPMS_HEAVEMOTION_ENABLED | \
+					LPMS_HEAVEMOTION_OUTPUT_ENABLED | \
+					LPMS_LINACC_OUTPUT_ENABLED | \
+					LPMS_GYR_AUTOCAL_ENABLED)
+		#else
+			#define	LPMS_FACTORY_CONFIG	(LPMS_ACC_COMP_ENABLED | \
+					LPMS_GYR_RAW_OUTPUT_ENABLED | \
+					LPMS_ACC_RAW_OUTPUT_ENABLED | \
+					LPMS_MAG_RAW_OUTPUT_ENABLED | \
+					LPMS_QUAT_OUTPUT_ENABLED | \
+					LPMS_EULER_OUTPUT_ENABLED | \
+					LPMS_STREAM_FREQ_100HZ_ENABLED | \
+					LPMS_CAN_BAUDRATE_1M_ENABLED | \
+					LPMS_LINACC_OUTPUT_ENABLED | \
+					LPMS_GYR_AUTOCAL_ENABLED)
+		#endif
 	#endif
 #endif
 

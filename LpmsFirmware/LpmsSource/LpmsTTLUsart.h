@@ -66,6 +66,8 @@ void ttlUsartPortStopTransfer(void);
 // Polls serial port data
 uint8_t ttlUsartPortPollData(void);
 
+uint8_t ttlUsartPortPollDataBle(void);
+
 // Checks if serial port transfer has been completed
 uint8_t ttlUsartPortIsTransferCompleted(void);
 

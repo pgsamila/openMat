@@ -35,7 +35,7 @@
 #include "BleUart.h"
 
 #define MAX_DEVICES 64
-#define UART_TIMEOUT 5
+#define UART_TIMEOUT 0
 
 int found_devices_count = 0;
 bd_addr found_devices[MAX_DEVICES];
@@ -93,6 +93,11 @@ uint16 lpms_handle_configuration = 0;
 bd_addr connect_addr;
 uint8 k_connection_handle = 0;
 uint8 indication_enable_state = 0;
+MicroMeasure performanceTimer;
+float avgDr = 0.0f;
+int pC = 0;
+float avgDt = 0.0f;
+MicroMeasure dataTimer;
 
 void change_state(states new_state)
 {
@@ -154,6 +159,7 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
 	for (i = 0; i < found_devices_count; i++) {
 		if (!cmp_bdaddr(msg->sender, found_devices[i])) return;
 	}
+
 	found_devices_count++;
 	memcpy(found_devices[i].addr, msg->sender.addr, sizeof(bd_addr));
 
@@ -222,17 +228,15 @@ void ble_evt_connection_status(const struct ble_msg_connection_status_evt_t *msg
 
 void ble_evt_attclient_group_found(const struct ble_msg_attclient_group_found_evt_t *msg)
 {
-	int i;
-
 	// printf("[LPMS-BLE] ble_evt_attclient_group_found callback\n");
 
     if (msg->uuid.len < 16) return;
 	
-	printf("[LPMS-BLE] UUID: ");
-	for (i=0; i<msg->uuid.len; ++i) {
+	/* printf("[LPMS-BLE] UUID: ");
+	for (int i=0; i<msg->uuid.len; ++i) {
 		printf("%x ", msg->uuid.data[i]);
 	}
-	printf("\n");
+	printf("\n"); */
 	
 	if (msg->uuid.data[15] == 0x0b &&
 		msg->uuid.data[14] == 0xd5 &&
@@ -294,16 +298,14 @@ void ble_evt_attclient_procedure_completed(const struct ble_msg_attclient_proced
 }
 
 void ble_evt_attclient_find_information_found(const struct ble_msg_attclient_find_information_found_evt_t *msg)
-{
-	int i;
-	
+{	
 	// printf("[LPMS-BLE] ble_evt_attclient_find_information_found callback\n");
 
-	printf("[LPMS-BLE] UUID: ");
-	for (i=0; i<msg->uuid.len; ++i) {
+	/* printf("[LPMS-BLE] UUID: ");
+	for (int i=0; i<msg->uuid.len; ++i) {
 		printf("%x ", msg->uuid.data[i]);
 	}
-	printf("\n");
+	printf("\n"); */
 	
 	if (msg->uuid.data[15] == 0xe7 &&
 		msg->uuid.data[14] == 0xad &&
@@ -332,10 +334,6 @@ void ble_evt_attclient_find_information_found(const struct ble_msg_attclient_fin
 	}
 }
 
-MicroMeasure performanceTimer;
-float avgDr = 0.0f;
-int pC = 0;
-
 void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_value_evt_t *msg)
 {
 	long long pt;
@@ -355,7 +353,7 @@ void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_
 	performanceTimer.reset();
 	dr = (float) msg->value.len / ((float) pt / 1000000.0f);
 	avgDr = dr * 0.1f + avgDr * 0.9f;
-	printf("[LpmsBle] Average data rate (bytes/s): %f\n", avgDr);
+	// printf("[LpmsBle] Average data rate (bytes/s): %f\n", avgDr);
 	
 	rxMutex.unlock();
 }
@@ -464,6 +462,19 @@ void LpmsBle::stopDiscovery(void)
 	isStopDiscovery = true;	
 }
 
+int LpmsBle::convertHexStringToNumber(const char *s)
+{
+	int v = 0;
+	
+	for (int i=0; i<2; ++i) {
+		if (s[i] >= '1' && s[i] <= '9') v += (1 + s[i] - '1') << (4 * (1-i));
+		if (s[i] >= 'a' && s[i] <= 'f') v += (10 + s[i] - 'a') << (4 * (1-i));
+		if (s[i] >= 'A' && s[i] <= 'F') v += (10 + s[i] - 'A') << (4 * (1-i));
+	}	
+	
+	return v;
+}
+
 bool LpmsBle::connect(std::string deviceId)
 {
 	int pn;
@@ -471,7 +482,7 @@ bool LpmsBle::connect(std::string deviceId)
 
 	if (isOpen == true) return true;
 	
-	printf("[LPMS-BLE] Trying to open BG dongle..\n");
+	printf("[LPMS-BLE] Trying to open BlueGiga BLED112 dongle..\n");
 
     bglib_output = output;	
 	
@@ -492,14 +503,14 @@ bool LpmsBle::connect(std::string deviceId)
         Sleep(500);
     } while (uart_open(comStr.c_str()));
 	
-	connect_addr.addr[0] = 0xae;	
-	connect_addr.addr[1] = 0x91;	
-	connect_addr.addr[2] = 0x68;	
-	connect_addr.addr[3] = 0x80;	
-	connect_addr.addr[4] = 0x07;	
-	connect_addr.addr[5] = 0x00;	
+	connect_addr.addr[5] = convertHexStringToNumber(&(deviceId.c_str()[0]));
+	connect_addr.addr[4] = convertHexStringToNumber(&(deviceId.c_str()[3]));
+	connect_addr.addr[3] = convertHexStringToNumber(&(deviceId.c_str()[6]));
+	connect_addr.addr[2] = convertHexStringToNumber(&(deviceId.c_str()[9]));
+	connect_addr.addr[1] = convertHexStringToNumber(&(deviceId.c_str()[12]));
+	connect_addr.addr[0] = convertHexStringToNumber(&(deviceId.c_str()[15]));
 	
-	ble_cmd_gap_connect_direct(&connect_addr, gap_address_type_public, 20, 30, 100, 0);
+	ble_cmd_gap_connect_direct(&connect_addr, gap_address_type_public, 10, 15, 100, 0);
 	
 	mm.reset();
 	oneTx.clear();
@@ -525,6 +536,8 @@ bool LpmsBle::connect(std::string deviceId)
 	std::thread t(&LpmsBle::run, this);	
 	t.detach();
 	
+	setConfiguration();
+	
 	return true;
 }
 
@@ -546,41 +559,32 @@ bool LpmsBle::sendModbusData(unsigned address, unsigned function, unsigned lengt
 	if (length > 1014) return false;
 
 	txData[0] = 0x3a;
-	txData[1] = address & 0xff;
-	txData[2] = (address >> 8) & 0xff;
-	txData[3] = function & 0xff;
-	txData[4] = (function >> 8) & 0xff;
-	txData[5] = length & 0xff;
-	txData[6] = (length >> 8) & 0xff;
+	
+	txData[1] = function & 0xff;
+	txData[2] = length & 0xff;
 	
 	for (unsigned int i=0; i < length; ++i) {
-		txData[7+i] = data[i];
+		txData[3+i] = data[i];
 	}
-	
-	txLrcCheck = address;
-	txLrcCheck += function;
+		
+	txLrcCheck = function;
 	txLrcCheck += length;
 	
 	for (unsigned int i=0; i < length; i++) {
 		txLrcCheck += data[i];
 	}
 	
-	txData[7 + length] = txLrcCheck & 0xff;
-	txData[8 + length] = (txLrcCheck >> 8) & 0xff;
-	txData[9 + length] = 0x0d;
-	txData[10 + length] = 0x0a;
+	txData[3 + length] = txLrcCheck & 0xff;
+	txData[4 + length] = (txLrcCheck >> 8) & 0xff;
 	
-	// printf("[LPMS-BLE] Writing LPBUS command\n");
+	// printf("[LPMS-BLE] Writing LPBUS command: %d LRC=%d\n", function, txLrcCheck);	
 	
 	bleMutex.lock();
-	for (unsigned int i=0; i<11+length; ++i) txQueue.push(txData[i]);
+	for (unsigned int i=0; i<5+length; ++i) txQueue.push(txData[i]);
 	bleMutex.unlock();
 	
 	return false;
 }
-
-float avgDt = 0.0f;
-MicroMeasure dataTimer;
 
 bool LpmsBle::parseModbusByte(void)
 {
@@ -594,45 +598,25 @@ bool LpmsBle::parseModbusByte(void)
 		switch (rxState) {
 		case PACKET_END:
 			if (b == 0x3a) {
-				rxState = PACKET_ADDRESS0;
+				rxState = PACKET_FUNCTION0;
 				oneTx.clear();
 			}
 			break;
 			
-		case PACKET_ADDRESS0:
-			currentAddress = b;
-			rxState = PACKET_ADDRESS1;
-			break;
-
-		case PACKET_ADDRESS1:
-			currentAddress = currentAddress + ((unsigned) b * 256);
-			rxState = PACKET_FUNCTION0;
-			break;
-
 		case PACKET_FUNCTION0:
 			currentFunction = b;
-			rxState = PACKET_FUNCTION1;				
+			rxState = PACKET_LENGTH0;				
 			break;
-
-		case PACKET_FUNCTION1:
-			currentFunction = currentFunction + ((unsigned) b * 256);
-			rxState = PACKET_LENGTH0;			
-		break;
-
+			
 		case PACKET_LENGTH0:
 			currentLength = b;
-			rxState = PACKET_LENGTH1;
-		break;
-				
-		case PACKET_LENGTH1:
-			currentLength = currentLength + ((unsigned) b * 256);
 			rxState = PACKET_RAW_DATA;
 			rawDataIndex = currentLength;
 		break;
-				
+								
 		case PACKET_RAW_DATA:
 			if (rawDataIndex == 0) {
-				lrcCheck = currentAddress + currentFunction + currentLength;
+				lrcCheck = currentFunction + currentLength;
 				for (unsigned i=0; i<oneTx.size(); i++) lrcCheck += oneTx[i];
 				lrcReceived = b;
 				rxState = PACKET_LRC_CHECK1;
@@ -643,19 +627,23 @@ bool LpmsBle::parseModbusByte(void)
 			break;
 			
 		case PACKET_LRC_CHECK1:
-			lrcReceived = lrcReceived + ((unsigned) b * 256);			
+			lrcReceived = lrcReceived + ((unsigned) b * 256);	
+			
+			/* printf("[LPMS-BLE] LRC received: %x\n", lrcReceived);
+			printf("[LPMS-BLE] LRC calculated: %x\n", lrcCheck); */
+			
 			if (lrcReceived == lrcCheck) {
 				if (currentFunction == GET_SENSOR_DATA) {
 					long long dt;					
 					dt = dataTimer.measure();
 					dataTimer.reset();
 					avgDt = 0.1f * ((float) dt / 1000.0f) + 0.9f * avgDt;
-					printf("[LpmsBle] Time between data (ms): %f\n", avgDt);
+					// printf("[LPMS-BLE] Time between data (ms): %f\n", avgDt);
 				}
 			
 				parseFunction();
 			} else {
-				std::cout << "[LpmsBle] Checksum fail in data packet" << std::endl;
+				std::cout << "[LPMS-BLE] Checksum fail in data packet" << std::endl;
 			}
 			
 			rxState = PACKET_END;
@@ -675,8 +663,11 @@ bool LpmsBle::parseModbusByte(void)
 void LpmsBle::run(void)
 {
 	int l=0;
-	unsigned char txData[32];
+	unsigned char txData[256];
+	MicroMeasure sendTimer;	
 
+	sendTimer.reset();
+	
 	while (started == true) {
 		read_message(UART_TIMEOUT);
 		
@@ -687,19 +678,32 @@ void LpmsBle::run(void)
 		
 		bleMutex.lock();
 		if (isOpen == true) {
-			if (txQueue.empty() == false && readyToSend == true) {
-				if (txQueue.size() < 20) {
-					l = txQueue.size();
-				} else {
+			if (txQueue.empty() == false && readyToSend == true && sendTimer.measure() > 50000) {
+				sendTimer.reset();
+				l = txQueue.size();
+				
+				if (l > 20) {
 					l = 20;
+				
+					for (int i=0; i<l; ++i) {
+						txData[i] = txQueue.front();
+						txQueue.pop();
+					}
+				} else {				
+					int nF = l % 20;
+					
+					for (int i=0; i<l; ++i) {
+						txData[i] = txQueue.front();
+						txQueue.pop();
+					}
+					
+					if (nF > 0) {
+						for (int i=l; i < (l + 20 - nF); ++i) txData[i] = 0x0;
+						l += 20 - nF;
+					}					
 				}
 				
-				for (int i=0; i<l; ++i) {
-					txData[i] = txQueue.front();
-					txQueue.pop();
-				}
-				
-				// printf("[LPMS-BLE] Processing queue. %d bytes.\n", l);
+				// printf("[LPMS-BLE] Processing queue: %d bytes.\n", l);
 				
 				ble_cmd_attclient_attribute_write(k_connection_handle, lpms_handle_measurement, l, txData);
 				readyToSend = false;
@@ -717,4 +721,75 @@ bool LpmsBle::pollData(void)
 bool LpmsBle::deviceStarted(void)
 {
 	return isOpen;
+}
+
+bool LpmsBle::parseSensorData(void)
+{
+	unsigned o=0;
+	const float r2d = 57.2958f;
+	int iTimestamp;
+	int iQuat;
+	int iHeave;
+
+	zeroImuData(&imuData); 
+	
+	fromBufferInt16(oneTx, o, &iTimestamp);
+	o = o + 2;
+	currentTimestamp = (float) iTimestamp;
+	
+	if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
+	imuData.timeStamp = currentTimestamp - timestampOffset;
+	
+	fromBufferInt16(oneTx, o, &iQuat);
+	o = o + 2;
+	imuData.q[0] = (float) iQuat / (float) 0x7fff;
+	
+	fromBufferInt16(oneTx, o, &iQuat);
+	o = o + 2;
+	imuData.q[1] = (float) iQuat / (float) 0x7fff;
+
+	fromBufferInt16(oneTx, o, &iQuat);
+	o = o + 2;
+	imuData.q[2] = (float) iQuat / (float) 0x7fff;
+
+	fromBufferInt16(oneTx, o, &iQuat);
+	o = o + 2;
+	imuData.q[3] = (float) iQuat / (float) 0x7fff;
+	
+	fromBufferInt16(oneTx, o, &iHeave);
+	o = o + 2;
+	imuData.hm.yHeave = (float) iHeave / (float) 0x0fff;
+	
+	if (imuDataQueue.size() < 64) {
+		imuDataQueue.push(imuData);
+	}
+
+	return true;
+}
+
+void LpmsBle::setConfiguration(void)
+{	
+	int selectedData = 0;
+
+	configData->setParameter(PRM_GYR_THRESHOLD_ENABLED, SELECT_IMU_GYR_THRESH_DISABLED);
+	
+	configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_ENABLED);
+
+	configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);	
+	configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
+	
+	selectedData &= ~SELECT_LPMS_ACC_OUTPUT_ENABLED;	
+	selectedData &= ~SELECT_LPMS_MAG_OUTPUT_ENABLED;	
+	selectedData &= ~SELECT_LPMS_GYRO_OUTPUT_ENABLED;	
+	selectedData |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;
+	selectedData |= SELECT_LPMS_EULER_OUTPUT_ENABLED;
+	selectedData &= ~SELECT_LPMS_LINACC_OUTPUT_ENABLED;	
+	selectedData &= ~SELECT_LPMS_PRESSURE_OUTPUT_ENABLED;	
+	selectedData &= ~SELECT_LPMS_TEMPERATURE_OUTPUT_ENABLED;	
+	selectedData &= ~SELECT_LPMS_ALTITUDE_OUTPUT_ENABLED;	
+	selectedData &= ~SELECT_LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED;
+	selectedData |= SELECT_LPMS_HEAVEMOTION_OUTPUT_ENABLED;
+	
+	configData->setParameter(PRM_SELECT_DATA, selectedData);
+	configData->setParameter(PRM_HEAVEMOTION_ENABLED, SELECT_HEAVEMOTION_ENABLED);
 }

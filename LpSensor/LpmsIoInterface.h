@@ -299,7 +299,8 @@ protected:
 	bool fromBuffer(unsigned char *data, float *v);
 	bool fromBufferBigEndian(unsigned char *data, float *v);
 	bool fromBufferInt16(unsigned char *data, int *v);
-	bool parseSensorData(void);
+	bool fromBufferInt16(std::vector<unsigned char> data, int start, int *v);
+	virtual bool parseSensorData(void);
 	bool modbusSetMatrix3x3f(unsigned command, LpMatrix3x3f m);
 	bool modbusSetVector3f(unsigned command, LpVector3f v);
 	bool checkUploadTimeout(void);

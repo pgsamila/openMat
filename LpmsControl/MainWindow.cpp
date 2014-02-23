@@ -515,7 +515,7 @@ void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
 {
 	int i;
 	
-	sensor->getConfigurationPrm(PRM_HEAVEMOTION_ENABLED, &i);
+	sensor->getConfigurationPrm(PRM_HEAVEMOTION_ENABLED, &i);	
 	if (i == SELECT_HEAVEMOTION_ENABLED && heaveMotionEnabled == false) {
 		heaveMotionEnabled = true;
 		

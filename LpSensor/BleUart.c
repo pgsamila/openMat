@@ -104,6 +104,7 @@ int uart_list_devices()
 int uart_open(const char *port)
 {
 	char str[20];
+	// DCB portDcb;
 
 	snprintf(str, sizeof(str)-1, "\\\\.\\%s", port);
 	
@@ -159,7 +160,7 @@ int uart_rx(int len, unsigned char *data, int timeout_ms)
 	COMMTIMEOUTS timeouts;
 	timeouts.ReadIntervalTimeout = MAXDWORD;
 	timeouts.ReadTotalTimeoutMultiplier = 0;
-	timeouts.ReadTotalTimeoutConstant = 0; // timeout_ms;
+	timeouts.ReadTotalTimeoutConstant = timeout_ms;
 	timeouts.WriteTotalTimeoutMultiplier = 0;
 	timeouts.WriteTotalTimeoutConstant = 0;
 

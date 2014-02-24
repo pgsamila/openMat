@@ -33,9 +33,7 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 	return true;
 }
 
-bool LpmsCanIo::parseModbusByte(unsigned char b)
+bool LpmsCanIo::parseModbusByte(void)
 {	
-	(void) b;
-
 	return true;
 }

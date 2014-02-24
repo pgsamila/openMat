@@ -76,7 +76,7 @@
 #include "MicroMeasure.h"
 #include "GaitTrackingWindow.h"
 #include "MotionBuilderCommunication.h"
-#include "Playcontrol.h"
+#include "PlayControl.h"
 
 #include <string>
 #include <iostream>

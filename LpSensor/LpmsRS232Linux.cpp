@@ -31,7 +31,7 @@ long long LpmsRS232::getConnectWait(void)
 	return 0; 
 }	
 	
-void LpmsRS232::listDevices(vector<DeviceListItem>* deviceList) 
+void LpmsRS232::listDevices(LpmsDeviceList* deviceList) 
 {
 	(void) deviceList;
 }
@@ -72,10 +72,8 @@ bool LpmsRS232::sendModbusData(unsigned address, unsigned function, unsigned len
 	return false;
 }
 
-bool LpmsRS232::parseModbusByte(unsigned char b)
-{	
-	(void) b;
-
+bool LpmsRS232::parseModbusByte(void)
+{
 	return true;
 }
 

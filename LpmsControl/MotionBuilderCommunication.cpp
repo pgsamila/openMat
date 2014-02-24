@@ -35,8 +35,12 @@ void MotionBuilderCommunication::stopServer(void){
 	if (bRunning){
 		logd("Stopping MBServer");
 		stopThread();
-		if (Soc)  
+		if (Soc) 
+#ifdef _WIN32 
 			closesocket( Soc ); 
+#else
+			close( Soc ); 
+#endif
 		Cleanup(); 
 	}
 }
@@ -57,14 +61,26 @@ void MotionBuilderCommunication::runThread(void)
 		} else { 
 			logd("Waiting for connection");
 			sockaddr_in	lClientAddr;
+
+#ifdef _WIN32
 			int	lSize;
+#else
+			socklen_t lSize;
+#endif
+
 			int	lSocket;
 
 			lSize = sizeof(lClientAddr);
 			bzero((char *)&lClientAddr, sizeof(lClientAddr));
 
 			lSocket = accept(Soc, (struct sockaddr*)&lClientAddr, &lSize);
+
+#ifdef _WIN32
 			if( lSocket != INVALID_SOCKET ) {
+#else
+			if( lSocket != -1 ) {
+#endif
+
 				sockaddr_in	lAddr; 
 				 
 				bzero((char *)&lAddr, sizeof(lAddr));
@@ -80,35 +96,32 @@ void MotionBuilderCommunication::runThread(void)
 
 				// Main MB communication bridge
 				// send version number to MB
+#ifdef _WIN32
 				if (send( lSocket, (char*)&deviceInfo, sizeof(deviceInfo), 0)==SOCKET_ERROR){					
+#else
+				if (send( lSocket, (char*)&deviceInfo, sizeof(deviceInfo), 0)==-1){					
+#endif
 					logd("Connection error"); 
 				}
 				else {
 					LPMSRotationData rotDat;
 					int fps=30;
-					int count = 0;
-					
-					char cmd;
-
+					int count=0;
 					recv(lSocket, (char*)&fps, sizeof(fps), 0); 					
 					logd("MBServer FPS: " + toString(fps));
 					while (bRunning)
 					{  
-						recv(lSocket, (char*)&cmd, sizeof(cmd), 0); 
-						if (cmd == LPMB_FETCHDATA){
-							updateImuData(rotDat);
-							rotDat.mTime = getNanoSeconds(); 
-				 
-							if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
-								break;
-						} else if (cmd == LPMB_DISCONNECT){				
-							logd("Disconnecting...");
+						updateImuData(rotDat);
+						rotDat.mTime = getNanoSeconds(); 
+
+#ifdef _WIN32				 
+						if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
+#else
+						if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==-1)
+#endif
 							break;
-						} else {		
-							logd("Disconnecting....");
-							break;
-						}
-						cmd = LPMB_READY;
+						std::this_thread::sleep_for(std::chrono::microseconds(1000000)/ fps);
+						//Sleep( 1000/fps );
 					}
 				} 
 				/*
@@ -136,7 +149,12 @@ void MotionBuilderCommunication::runThread(void)
 				} 
 				*/
 				shutdown(lSocket, 2);
+
+#ifdef _WIN32
 				closesocket(lSocket);
+#else
+				close(lSocket);
+#endif
 				
 				logd("Connection closed, connection time = "+ toString((getNanoSeconds()-ServerStartedOn)/1000000.0)  +" ms");
 			} else {
@@ -146,7 +164,11 @@ void MotionBuilderCommunication::runThread(void)
 	} // while
 
 	if (Soc)
+#ifdef _WIN32
 		closesocket( Soc );
+#else
+		close( Soc );
+#endif
 	Cleanup();  
 	
 	logd("MBServer Thread Terminated =)");
@@ -173,12 +195,14 @@ void MotionBuilderCommunication::removeSensor(LpmsSensorI* sensor)
 ///////////////////////////////////////////////
 bool MotionBuilderCommunication::initialize()
 {
+#ifdef _WIN32
 	WSADATA wsadata;
 	if (WSAStartup(WS_VERSION_REQUIRED, &wsadata)) 
 	{ 
 		Cleanup();
 		return false;
 	}
+#endif
 	return true;
 }
 
@@ -189,8 +213,13 @@ int MotionBuilderCommunication::initServer(int pPort)
 	struct sockaddr_in  lSin;
 
 	initialize();
+
+#ifdef _WIN32
 	lP = getprotobyname("tcp");
 	lSocket = socket(AF_INET, SOCK_STREAM, lP->p_proto);
+#else
+	lSocket = socket(AF_INET, SOCK_STREAM, 0);
+#endif
 
 	if (lSocket)
 	{
@@ -211,11 +240,13 @@ int MotionBuilderCommunication::initServer(int pPort)
 
 bool MotionBuilderCommunication::Cleanup()
 {
+#ifdef _WIN32
 	if (WSACleanup()) 
 	{ 
 		WSACleanup(); 
 		return false;
 	}
+#endif
 	return true;
 }
 
@@ -224,22 +255,60 @@ void MotionBuilderCommunication::bzero(char *b, size_t length)
 	memset( b,0,length );
 }
 
+#ifndef _WIN32
+static const unsigned usec_per_sec = 1000000;
+static const unsigned usec_per_msec = 1000;
+
+bool QueryPerformanceFrequency(long long *frequency)
+{
+    *frequency = usec_per_sec;
+
+    return true;
+}	
+
+bool QueryPerformanceCounter(long long *performance_count)
+{
+    struct timeval time;
+
+    assert(performance_count != NULL);
+
+    gettimeofday(&time, NULL);
+    *performance_count = time.tv_usec + time.tv_sec * usec_per_sec;
+
+    return true;
+}
+#endif
+
 nsTime MotionBuilderCommunication::getNanoSeconds()
 {
 	static double dmUnits = 0.0;
 
+#ifdef _WIN32
 	LARGE_INTEGER	t;
+#else
+	long long t;
+#endif
 
 	if(QueryPerformanceCounter(&t)) 
 	{
 		double	count;
+
+#ifdef _WIN32
 		count = (double) t.QuadPart;
+#else
+		count = (double) t;
+#endif
+
 		if (!dmUnits) 
 		{
 			QueryPerformanceFrequency(&t);
+#ifdef _WIN32
 			dmUnits = 1000000000.0 / (double) t.QuadPart;
+#else
+			dmUnits = 1000000000.0 / (double) t;
+#endif
 		}
-		return (unsigned __int64) (count * dmUnits);
+		return (nsTime) (count * dmUnits);
 	}
 	return 0;
 }

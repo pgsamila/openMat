@@ -1,5 +1,5 @@
-Name "OpenMAT 1.2.8"
-OutFile "OpenMAT-1.2.8-Setup.exe"
+Name "OpenMAT 1.2.9"
+OutFile "OpenMAT-1.2.9-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin
@@ -59,28 +59,29 @@ Section "OpenMAT (required)"
 	
 	SetOutPath $INSTDIR\bin
 	File "..\LpmsControl\build\Release\LpmsControl.exe"
+	File "..\LpMocap\build\Release\LpMocap.exe"
 	File "..\LpmsControl\LpSplash.png"
 	File "..\LpmsControl\README"
 	File "..\LpSensor\build\LpSensor.dll"	
 	File "..\LpmsControl\Icon.ico"
 	File "..\LpmsControl\LpmsStyles.qss"
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5Core.dll"
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5Widgets.dll"	
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5Gui.dll"	
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5OpenGL.dll"	
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5Svg.dll"	
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5Network.dll"
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\Qt5PrintSupport.dll"
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\icudt51.dll"
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\icuin51.dll"
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\bin\icuuc51.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5Core.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5Widgets.dll"	
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5Gui.dll"	
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5OpenGL.dll"	
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5Svg.dll"	
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5Network.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\Qt5PrintSupport.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\icudt51.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\icuin51.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\icuuc51.dll"
 	
 	File "c:\ftdi\i386\ftd2xx.dll"
 	File "c:\qwt-6.1.0\lib\qwt.dll"
 	File "c:\pcan-basic\Win32\PCANBasic.dll"	
 	
 	SetOutPath $INSTDIR\bin\platforms	
-	File "C:\Qt\Qt5.2.0\5.2.0\msvc2010_opengl\plugins\platforms\qwindows.dll"
+	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\plugins\platforms\qwindows.dll"
 	
 	SetOutPath $INSTDIR\bin\icons
 	File "..\LpmsControl\icons\stop_32x32.png"
@@ -129,10 +130,7 @@ Section "Start Menu Shortcuts"
 	CreateDirectory "$SMPROGRAMS\OpenMAT"
 	CreateShortCut "$SMPROGRAMS\OpenMAT\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 	CreateShortCut "$SMPROGRAMS\OpenMAT\LpmsControl.lnk" "$INSTDIR\bin\LpmsControl.exe" "" "$INSTDIR\bin\Icon.ico" 0
-SectionEnd
-
-Section "Desktop Icon"
-	CreateShortCut "$DESKTOP\LpmsControl.lnk" "$INSTDIR\bin\LpmsControl.exe" "" "$INSTDIR\bin\Icon.ico" 0
+	CreateShortCut "$SMPROGRAMS\OpenMAT\LpMocap.lnk" "$INSTDIR\bin\LpMocap.exe" "" "$INSTDIR\bin\Icon.ico" 0
 SectionEnd
 
 Section "Uninstall"

@@ -44,6 +44,7 @@ using namespace std;
 
 #include "ImuData.h"
 #include "HumanModel.h"
+#include "LinkJoint.h"
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -97,7 +98,7 @@ public:
     void resizeGL(int width, int height);
 	
 	// Draws a link
-	void drawLink(Link* l);	
+	void drawLink(void /* Link* l */);	
 	
 	// Rotates scene
 	void rotateBy(int xAngle, int yAngle, int zAngle);
@@ -120,6 +121,8 @@ public slots:
 	
 	// Is called in case mouse is moved
 	void mouseMoveEvent(QMouseEvent *event);
+
+	void wheelEvent(QWheelEvent *event);
 	
 public:
 	HumanModel *hm;
@@ -131,6 +134,9 @@ public:
 	int xSRot;
 	int ySRot;
 	int zSRot;
+	float glob_translate_x;
+	float glob_translate_y;
+	float glob_translate_z;
 };
 
 #endif

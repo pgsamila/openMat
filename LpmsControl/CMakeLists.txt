@@ -199,7 +199,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		GaitTrackingWindow.h
 		VerticalBarGraph.h
 		MotionBuilderCommunication.h
-		PlayControl.h		
+		PlayControl.h
 	)
 
 	if (USE_ZEROC_ICE)

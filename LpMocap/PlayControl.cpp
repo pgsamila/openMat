@@ -78,7 +78,7 @@ MotionPlayer::MotionPlayer(void /* HumanModel* hm */) :
 	Returns the currently loaded playback file.
 */
 
-string MotionPlayer::getPlaybackFile(void) {
+std::string MotionPlayer::getPlaybackFile(void) {
 	return playbackFile;
 }
 
@@ -92,7 +92,7 @@ string MotionPlayer::getPlaybackFile(void) {
 
 bool MotionPlayer::updateJointsFromData(double t) 
 {
-	// JointDataSet d;
+	JointDataSet d;
 	
 	if (playPointer < dataList.size()) {
 		d = dataList[playPointer];
@@ -107,7 +107,7 @@ bool MotionPlayer::updateJointsFromData(double t)
 			(*i)->linkRotM.block<3, 3>(0, 0) = mat;
 			++i;
 		}
-		hm->recalculateJoints();
+		// hm->recalculateJoints();
 					
 		currentTime = d.timeStamp;		
 					
@@ -127,13 +127,13 @@ bool MotionPlayer::updateJointsFromData(double t)
 	model. Will be added for safety later on.
 */
 
-bool MotionPlayer::readMotionDataFile(string fn) {
-	string line;
+bool MotionPlayer::readMotionDataFile(std::string fn) {
+	std::string line;
 	double x;
 	int i;
 	int mSet;
 	Eigen::Vector3f v;	
-	ifstream dataFile(fn.c_str(), ios::in | ios::binary);	
+	std::ifstream dataFile(fn.c_str(), std::ios::in | std::ios::binary);	
 
 	dataList.clear();
 
@@ -141,20 +141,20 @@ bool MotionPlayer::readMotionDataFile(string fn) {
 		while (dataFile.good()) {				
 			JointDataSet d;
 			getline(dataFile, line);
-			char_separator<char> sep(", ");
-			tokenizer<char_separator<char>> tokens(line, sep);
-			tokenizer<char_separator<char>>::iterator ti;
+			boost::char_separator<char> sep(", ");
+			boost::tokenizer<boost::char_separator<char>> tokens(line, sep);
+			boost::tokenizer<boost::char_separator<char>>::iterator ti;
 			
 			if (tokens.begin() == tokens.end()) break;
 			
 			ti = tokens.begin();
-			d.timeStamp = lexical_cast<double>(*ti);
+			d.timeStamp = boost::lexical_cast<double>(*ti);
 			i = 0;
 			++ti;
 							
 			for (; ti != tokens.end(); ++ti) {
 				Eigen::Matrix3f mat;				
-				x = lexical_cast<double>(*ti);
+				x = boost::lexical_cast<double>(*ti);
 				mSet = i%9;
 				mat(mSet/3, mSet%3) = x;
 				if (mSet%3 == 2 && mSet/3 == 2) d.linkRotationData.push_back(mat);
@@ -170,9 +170,9 @@ bool MotionPlayer::readMotionDataFile(string fn) {
 		play();
 		
 		playbackFile = fn;
-		cout << "[Motion data player] Playing motion data from " << fn.c_str() << endl;			
+		cout << "[Motion data player] Playing motion data from " << fn.c_str() << std::endl;			
 	} else {
-		cout << "[Motion data player] Could not open file " << fn << endl;
+		std::cout << "[Motion data player] Could not open file " << fn << endl;
 		return false;
 	}
 	return true;
@@ -190,7 +190,7 @@ void MotionPlayer::runPlay(void)
 	playTimer.reset();
 	while (playStarted == true) {
 		updateJointsFromData((double) playTimer.measure() / 1000.0 + playTimerOffset);
-		boost::this_thread::sleep(boost::posix_time::microseconds(1000));
+		std::this_thread::sleep_for(std::chrono::microseconds(1000));
 	}
 }
 
@@ -220,7 +220,7 @@ void MotionPlayer::play(void)
 {
 	if (playStarted == false) {		
 		playStarted = true;		
-		boost::thread t(&MotionPlayer::runPlay, this);
+		std::thread t(&MotionPlayer::runPlay, this);
 		t.detach();
 	}
 }
@@ -254,9 +254,9 @@ void MotionPlayer::reset(void)
 	Opens recording file for motion recording and starts the recording thread.
 */
 
-bool MotionPlayer::recordMotionDataFile(string fn)
+bool MotionPlayer::recordMotionDataFile(std::string fn)
 {
-	writeStream.open(fn.c_str(), ios::out | ios::binary);
+	writeStream.open(fn.c_str(), std::ios::out | std::ios::binary);
 	frameTimer.reset();
 	
 	if (writeStream.is_open()) {
@@ -265,13 +265,13 @@ bool MotionPlayer::recordMotionDataFile(string fn)
 		std::thread t(&MotionPlayer::runRecording, this);
 		t.detach();	
 
-		cout << "[Motion data recorder] Writing motion data to " << fn.c_str() << endl;	
+		std::cout << "[Motion data recorder] Writing motion data to " << fn.c_str() << std::endl;	
 		
 		recordingFile = fn;			
 		return true;
 	}
 
-	cout << "[Motion data recorder] Failed to open " << fn.c_str() << endl;		
+	std::cout << "[Motion data recorder] Failed to open " << fn.c_str() << std::endl;		
 
 	return false;
 }
@@ -300,7 +300,7 @@ void MotionPlayer::stopRecording(void)
 	be some mutexing issues here. To be checked.
 */
 
-mutex recordMutex;
+std::mutex recordMutex;
 	
 void MotionPlayer::runRecording(void)
 {		
@@ -341,7 +341,7 @@ void MotionPlayer::writeData(void)
 					"," << mat(1, 0) << "," << mat(1, 1) << "," << mat(1, 2) <<
 					"," << mat(2, 0) << "," << mat(2, 1) << "," << mat(2, 2);
 			}
-			writeStream << endl;
+			writeStream << std::endl;
 		}
 	}
 }
@@ -350,7 +350,7 @@ void MotionPlayer::writeData(void)
 	Exports the current motion data file as .csv file.
 */
 
-bool MotionPlayer::writeCSVData(string fn)
+bool MotionPlayer::writeCSVData(std::string fn)
 {
 	JointDataSet d;
 	ofstream csvStream;
@@ -359,16 +359,16 @@ bool MotionPlayer::writeCSVData(string fn)
 	
 	if (csvStream.is_open() == false) return false;	
 	
-	csvStream << "OpenMAT human model csv data output file" << endl;
-	csvStream << "TS: Timestamp (s)" << endl;
-	csvStream << "LN: Link name" << endl;
-	csvStream << "SP: Sagittal plane angle (degree)" << endl;
-	csvStream << "TP: Transverse plane angle (degree)" << endl;
-	csvStream << "CP: Coronal plane angle (degree)" << endl;
-	csvStream << "JN: Joint name" << endl;	
-	csvStream << "XP: Joint x-axis position (rel. units)" << endl;	
-	csvStream << "YP: Joint y-axis position (rel. units)" << endl;	
-	csvStream << "ZP: Joint z-axis position (rel. units)" << endl << endl;	
+	csvStream << "OpenMAT human model csv data output file" << std::endl;
+	csvStream << "TS: Timestamp (s)" << std::endl;
+	csvStream << "LN: Link name" << std::endl;
+	csvStream << "SP: Sagittal plane angle (degree)" << std::endl;
+	csvStream << "TP: Transverse plane angle (degree)" << std::endl;
+	csvStream << "CP: Coronal plane angle (degree)" << std::endl;
+	csvStream << "JN: Joint name" << std::endl;	
+	csvStream << "XP: Joint x-axis position (rel. units)" << std::endl;	
+	csvStream << "YP: Joint y-axis position (rel. units)" << std::endl;	
+	csvStream << "ZP: Joint z-axis position (rel. units)" << std::endl << std::endl;	
 	
 	csvStream << "TS";		
 	BOOST_FOREACH(Link* l, linkList) {
@@ -380,7 +380,7 @@ bool MotionPlayer::writeCSVData(string fn)
 			csvStream << " XP, YP, ZP";
 		}
 	}
-	csvStream << endl;
+	csvStream << std::endl;
 	
 	for (unsigned int j=0; j<dataList.size(); ++j) {
 		d = dataList[j];
@@ -390,7 +390,7 @@ bool MotionPlayer::writeCSVData(string fn)
 			(*i)->linkRotM.block<3, 3>(0, 0) = mat;
 			++i;
 		}
-		hm->recalculateJoints();
+		// hm->recalculateJoints();
 
 		csvStream << d.timeStamp;		
 		BOOST_FOREACH(Link* l, linkList) {
@@ -405,7 +405,7 @@ bool MotionPlayer::writeCSVData(string fn)
 			}
 		}
 		
-		csvStream << endl;
+		csvStream << std::endl;
 	}
 	
 	writeStream.close();	
@@ -426,7 +426,7 @@ double MotionPlayer::currentRecordTime(void)
 	Returns the name of the current motion data file.
 */
 
-string MotionPlayer::getRecordingFile(void) {
+std::string MotionPlayer::getRecordingFile(void) {
 	return recordingFile;
 }	
 

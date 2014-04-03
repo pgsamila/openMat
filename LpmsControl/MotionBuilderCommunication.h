@@ -35,15 +35,42 @@ typedef unsigned long long nsTime;
 // #include <boost/thread/thread.hpp>
 #include <Eigen/Geometry> 
 
-//#include "ImuMonitor.h"
 #include "ImuData.h"
 #include "LpmsSensorI.h"
-//#include "MicroMeasure.h" 
 
-struct LPMSRotationData;
+
+struct LPMSRotationData {	
+	static const int ChannelCount = 11; // total number of sensors available
+	int deviceOnline;	// number of device online
+	struct {
+		int id;
+		float q[4]; // w,x,y,z
+	}mChannel[ChannelCount];
+
+	LPMSRotationData(){
+		reset();
+	}
+
+	void reset(){
+		float qIdentity[4] = {1.0,0.0,0.0,0.0};
+		deviceOnline = 0;
+		for (int i=0; i<ChannelCount; ++i){
+			mChannel[i].id = -1;
+			memcpy(mChannel[i].q, qIdentity,sizeof(mChannel[i].q));
+		}
+	}
+};
+
 
 class MotionBuilderCommunication
 {
+
+// LP-MB Communication Protocol
+static const char LPMB_READY        = 0x00;
+static const char LPMB_GET_INFO     = 0x01;
+static const char LPMB_GET_DATA     = 0x02;
+static const char LPMB_DISCONNECT   = 0x03;
+
 public:
 	static const std::string mTag;
 	/* Constructor */
@@ -85,34 +112,17 @@ private:
 	template <typename T> std::string toString(const T data) const;
 	 
 private:	
-	static const int PORTNUMBER		= 8889;		// Port number for communication
-	static const int SIM_FPS		= 30;		// Tested for 30,60,120
+	static const int PORTNUMBER	= 8889;		// Port number for communication
+
 	std::list<LpmsSensorI*> sensorList;
 	bool bRunning;		// server thread status
 	int Soc;
-};
-
-struct LPMSRotationData {	
-	static const int ChannelCount = 6; // total number of sensors available
-	int deviceOnline;	// number of device online
-	nsTime 	mTime;
+	
+	LPMSRotationData rotDat;
 	struct {
-		int id;
-		double q[4]; // x, y, z, w
-	}mChannel[ChannelCount];
-
-	LPMSRotationData(){
-		reset();
-	}
-
-	void reset(){
-		double qIdentity[4] = {0,0,0,1};
-		mTime = 0;
-		deviceOnline = 0;
-		for (int i=0; i<ChannelCount; ++i){
-			mChannel[i].id = -1;
-			memcpy(mChannel[i].q, qIdentity,sizeof(mChannel[i].q));
-		}
-	}
+        char info[50];
+        int numSensors;
+	} serverInfo ;
 };
+
 #endif

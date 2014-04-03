@@ -33,6 +33,7 @@
 #define MAIN_WINDOW
 
 #include <QWidget>
+#include <QMainWindow>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QLabel>
@@ -41,19 +42,27 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QSplitter>
+#include <QToolbar>
+#include <QMenu>
+#include <QMenuBar>
+#include <QLineEdit>
+#include <QFileInfo>
 
 #include <iostream>
 #include <limits>
 using namespace std;
 
 #include "ImuData.h"
-#include "IceStormSubscriber.h"
 #include "HumanModelWindow.h"
 #include "PlayControl.h"
 #include "GraphWindow.h"
+#include "LinkJoint.h"
+#include "LPMSRotationData.h"
+#include "MotionBuilderSocketInterface.h"
+
+#include <winsock.h>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/thread/thread.hpp> 
 using namespace boost;
 
 // Representation of human model joint in QT tree
@@ -74,20 +83,25 @@ public:
 class ModelTreeLink : public QTreeWidgetItem 
 {
 public:
-	Link* itemLink;
+	std::string link_name_;
+	int link_id_;
+	int sensor_id_;
+	int parent_link_id_;
+	HumanModel *human_model_;
+	
 	QTreeWidgetItem* coronalAngleItem;
 	QTreeWidgetItem* transverseAngleItem;
 	QTreeWidgetItem* sagittalAngleItem;
 
 	// Constructor
-	ModelTreeLink(Link* l, int iLink);
+	ModelTreeLink(int link_id, std::string link_name, int sensor_id, int parent_link_id, HumanModel *human_model);
 	
 	// Updates displayed link information
 	void update(void);
 };
 
 // Main window
-class MainWindow : public QWidget
+class MainWindow : public QMainWindow
 {
 Q_OBJECT
 public:
@@ -103,40 +117,38 @@ public:
 	// Destructor
 	~MainWindow();
 	
+	void closeConnection(void);
+	bool connectToHost(int PortNo, char* IPAddress);
+	void initializeSensors(void);
+	
 public slots:
 	// Updates current IMU data
-	void updateImuData(ImuData ld);
-	
-	// Connects to server
-	void connectServer(void);
+	void updateImuData(void);
 	
 	// Updates window
 	void updateWindow(void);
-	
-	// Starts recording
-	void recordMotion(void);
-	
-	// Loads motion data
-	void loadMotion(void);
-	
-	// Plays motions
-	void playMotion(void);
-	
+		
 	// Exits application
 	void exitWindow(void);
 	
 	// Called when tree item is changed
 	void treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 	
-	// Exports motion data to CSV file
-	void exportCsv(void);
-	
-	// Resets offset data for initialization
-	void resetOffset(void);
-	
+	void createModelTree(void);
+
+	void ConnectServer(void);
+	void DisconnectServer(void);
+	void BrowseRecordFile(void);
+	void StartRecording(void);
+	void ExportToCsv(void);
+	void StartPlayback(void);
+	void BrowsePlaybackFile(void);
+	void ResetOffset(void);
+
 public:
-	IceStormSubscriber *iss;
-	HumanModel *hm;
+	QToolBar *toolbar;
+	QMenu* viewMenu;
+	HumanModel hm;
 	MotionPlayer *mp;
 	HumanModelWindow *hmWin;
 	GraphWindow *graphWin;
@@ -150,11 +162,42 @@ public:
 	QTreeWidget *humanModelTree;
 	vector<ModelTreeJoint*> treeJointList;
 	vector<ModelTreeLink*> treeLinkList;		
-	QLabel *recordingTimeLabel;
-	QLabel *playbackTimeLabel;
-	QLabel *recordingFileLabel;
-	QLabel *playbackFileLabel;
+	QLabel *record_time_label;
+	QLabel *play_time_label;
+	QLabel *record_file_label;
+	QLabel *play_file_label;
+	QLineEdit *record_file_edit;
 	Link* selectedLink;
+	QLineEdit *ip_address_edit;
+	QLineEdit *server_port_edit;
+	QLabel *connection_status_label;
+	bool playback_file_set;
+	bool record_file_set;
+	QLineEdit *playback_file_edit;
+	QAction* start_rec_action;
+	QAction* start_playback_action;
+	float current_timestamp;
+	bool set_offset_all;
+
+	struct {
+		char info[50];
+		int numSensors;
+	} serverInfo;
+	
+	bool isGetServerInfo;
+	int	mChannelCount;
+	int	mPassCount;
+	int mSocket;
+	char mNetworkAddress[64];
+	char versionInfo[50];
+	int mNetworkPort;
+	int mNumSensors;
+	FBTCPIP	mTCP;
+	int mFps;
+	LPMSRotationData mLpmsRotData;
+	string record_filename;
+	string playback_filename;
+	MicroMeasure global_timer;
 };
 
 #endif

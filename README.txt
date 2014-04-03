@@ -8,10 +8,10 @@ This directory contains the following folders:
 CORE APPLICATIONS
 - LpSensor: The core library to manage communication with LPMS devices. Most applications in this directory use this library.
 - LpmsControl: An application to control and use LPMS devices.
+- LpMocap: LpMocap human motion capture software.
 
 EXAMPLE APPLICATIONS
 - LpmsSimpleExample: A simple example on how to use the LpSensor library
-- LpMocapOS: Open-source version of the LpMocap human motion capture software
 - LpmsSanAngeles: Virtual reality application demo using an LPMS device for viewpoint control in a 3D environment
 - LpmsBNativeAndroidLibrary: Java class for acquiring data from LPMS-B on an Android device
 
@@ -22,5 +22,5 @@ SUPPORT COMPONENTS
 - LpSensorCWrapperTest: Simple test application for C language wrapper
 
 SENSOR FIRMWARE
-- LpmsFirmware: Open-souce version of the LPMS firmware
+- LpmsFirmware: Open-source version of the LPMS firmware
 - LpmsIAP: In-application programmer for LPMS

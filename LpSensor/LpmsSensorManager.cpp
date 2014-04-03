@@ -93,9 +93,11 @@ LpmsSensorManager::~LpmsSensorManager(void)
 	deviceList.clear();
 }
 
-void LpmsSensorManager::startListDevices(void)
+void LpmsSensorManager::startListDevices(bool scan_serial_ports)
 {
 	if (listDevicesBusy() == true) return;
+	
+	scan_serial_ports_ = scan_serial_ports;
 	
 	deviceList.clear();
 	managerState = SMANAGER_LIST;
@@ -210,7 +212,9 @@ void LpmsSensorManager::run(void)
 			ce.listDevices(&deviceList);
 #endif
 
-			LpmsRS232::listDevices(&deviceList);
+			if (scan_serial_ports_ == true) {
+				LpmsRS232::listDevices(&deviceList);
+			}
 			LpmsU::listDevices(&deviceList);
 			LpmsBBluetooth::listDevices(&deviceList);
 			// LpmsBle::listDevices(&deviceList);

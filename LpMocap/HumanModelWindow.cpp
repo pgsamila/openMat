@@ -34,13 +34,6 @@
 #include <iostream>
 using namespace std;
 
-/*!
-	Constructor of HumanModelWindow. The HumanModelWindow class contains 
-	functions to draw a human model from a HumanModel object (which 
-	probably has been created by parsing a human model XML file). 
-	\a parent and \a shareWidget are 0 by default. 
-*/
-
 HumanModelWindow::HumanModelWindow(HumanModel *hm, 
 	QWidget *parent, 
 	QGLWidget *shareWidget) : 
@@ -57,6 +50,9 @@ HumanModelWindow::HumanModelWindow(HumanModel *hm,
 	QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateWindow()));
     timer->start(40);
+	glob_translate_x = 0.0f;
+	glob_translate_y = 0.0f;
+	glob_translate_z = 0.0f;
 }
 
 void HumanModelWindow::updateWindow(void)
@@ -64,32 +60,26 @@ void HumanModelWindow::updateWindow(void)
 	updateGL();
 }
 
-/*!
-	Destructor of HumanModelWindow.
-*/
-
 HumanModelWindow::~HumanModelWindow(void)
 {
 }
 
 QSize HumanModelWindow::minimumSizeHint() const
 {
-    return QSize(640, 480);
+    return QSize(960, 480);
 }
 
 QSize HumanModelWindow::sizeHint() const
 {
-    return QSize(640, 480);
+    return QSize(960, 480);
 }
-
-/*!
-	Initilization of the OpenGL window. Shading, lighting etc. are 
-	initialized. The are two lighting sources that are arranged 
-	around the coordinate center.
-*/	
 
 void HumanModelWindow::initializeGL()
 {
+	glEnable(GL_MULTISAMPLE);
+	// glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_NORMALIZE);	
@@ -100,47 +90,36 @@ void HumanModelWindow::initializeGL()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glEnable(GL_COLOR_MATERIAL);
 	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+	
+	glLineWidth(1.0f);
 }
-
-/*!
-	Triggers a repaint of the OpenGL window. Passing of any
-	data is not really needed in this application. Data ist stored 
-	in the HumanModel object.
-*/
 
 void HumanModelWindow::updateQuaternion(ImuData imuData)
 {
 	this->imuData = imuData;
-	
-	hm->updateSensorData(imuData);
 }
-
-/*!
-	Draws the OpenGL window. Actual drawing code is contained in the 
-	drawHumanModel function.
-*/
 
 void HumanModelWindow::paintGL()
 {	
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslatef(0.0, 0.0, -10.0);
-    glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
+
+	glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
     glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);	
+    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
+
+    glTranslatef(glob_translate_x, glob_translate_y, glob_translate_z);
+
+    glTranslatef(0.0, -1.0, -10.0);
 
 	glRotatef(15, 1.0f, 0.0f, 0.0f);
-	glRotatef(-30, 0.0f, 1.0f, 0.0f);
+	/* glRotatef(-30, 0.0f, 1.0f, 0.0f); */
 	
-	drawBackground();	
-	// drawFloor();
-	drawAxes();	
+	// drawBackground();	
+	drawFloor();
+	// drawAxes();	
 	drawHumanModel();
 }
-
-/*!
-	Draws the human model.
-*/
 
 void HumanModelWindow::drawHumanModel(void)
 {
@@ -155,46 +134,57 @@ void HumanModelWindow::drawHumanModel(void)
 
 	glColor3f(1.0, 0, 0);
 
-	BOOST_FOREACH(Link* l, hm->linkList) {
-		drawLink(l);
+	bool joint_done[64];
+	for (int i=0; i < hm->mChannelCount; ++i) joint_done[i] = false;
+	
+	for (int i=0; i < hm->mChannelCount; ++i) {
+		for (int j=0; j < hm->mChannelCount; ++j) {
+			if (hm->GetChannelParent(j) == i && joint_done[j] == false) {
+				joint_done[j] = true;
+				
+				Eigen::Matrix3f rotation_matrix;
+				Eigen::Vector3f vector_1;
+				Eigen::Vector3f vector_2;
+				Eigen::Vector3f dir_vector;
+				float vector_length;
+				
+				vector_1 << hm->GetDataTX(i), hm->GetDataTY(i), hm->GetDataTZ(i);
+				vector_2 << hm->GetDataTX(j), hm->GetDataTY(j), hm->GetDataTZ(j);
+
+				vector_1 = vector_1 * 0.01f;
+				vector_2 = vector_2 * 0.01f;
+				dir_vector = vector_2 - vector_1;
+				
+				rotation_matrix = Eigen::Quaternionf().setFromTwoVectors(Eigen::Vector3f(1.0f, 0, 0), dir_vector);
+				
+				vector_length = (vector_1 - vector_2).norm();
+				
+				/* glDisable(GL_LIGHTING);
+				glColor3f(1.0f, 0.0f, 0.0f);		
+				glLineWidth(3.0f);
+				glBegin(GL_LINES);
+				glVertex3f(vector_1(0),  vector_1(1), vector_1(2));
+				glVertex3f(vector_2(0),  vector_2(1), vector_2(2));
+				glEnd();
+				glEnable(GL_LIGHTING); */
+
+				drawDiamond(rotation_matrix, vector_1, vector_length, blue, true);
+			}
+		}
 	}
 
 	glPopMatrix();
 }
 
-/*!
-	Draws a link. A link consists of one to several joint that form 
-	a rigid connection. The orientation of a joint within a link is
-	therefore fixed by the initial configuration. The orientation of
-	a link is determined by the quaternion data of its conncted orinetation
-	sensor. jointLocalRotM is the rotation matrix of a joint within a 
-	link structure, linkRotM is the orientation of a while link. 
-	localSysV is the vector to the tip of a joint within the local
-	link coordinate system. globalSysV is the tip of the joint within 
-	the global (model) coordinate system. The unscaled base vector of each
-	joint has the form (1, 0, 0, 1).
-*/
-
-void HumanModelWindow::drawLink(Link* l)
+void HumanModelWindow::drawLink(void)
 {
 	const double d2r = 0.01745;	
-	
-	BOOST_FOREACH(Joint *j, l->jointList)
-	{		
-		Eigen::Matrix3f diamondR = j->globalT.block<3, 3>(0, 0);
-		Eigen::Vector3f diamondT = j->globalT.block<3, 1>(0, 3) + l->connector->globalSysV.head(3);
-		
-		drawDiamond(diamondR, diamondT, j->length, l->color, l->active);
-		
-		glColor3f(1.0f, 1.0f, 1.0f);
-		// renderText(j->globalSysV(0), j->globalSysV(1), j->globalSysV(2)+0.2, QString(j->name.c_str()));
-	}
 }
 
 void HumanModelWindow::drawDiamond(Eigen::Matrix3f R, Eigen::Vector3f t, double l, enum COLORS c, bool active)
 {
-	int s = 64;	
-	double r = l / 8;
+	int s = 4;	
+	double r = l / 7;
 	
 	for (int i=0; i < s; i++) {
 		if (active == true) {
@@ -293,6 +283,10 @@ void HumanModelWindow::drawDiamond(Eigen::Matrix3f R, Eigen::Vector3f t, double 
 		
 		drawTri(p0, p1, p2, true);
 		drawTri(p3, p2, p1, true);
+		
+		glColor4f(0.0f, 0.0f, 0.5f, 1.0f);
+		drawTri(p0, p1, p2, false);
+		drawTri(p3, p2, p1, false);		
 	}
 	
 	glPopMatrix();		
@@ -302,6 +296,8 @@ void HumanModelWindow::drawAxes(void)
 {
 	QFont qf; 
 	qf.setPixelSize(30);
+	
+	// glLineWidth(2.0f);
 
 	glDisable(GL_LIGHTING);
 	glColor3f(1.0, 0.0, 0.0);
@@ -328,6 +324,8 @@ void HumanModelWindow::drawAxes(void)
 	glColor3f(0.0f, 0.0f, 1.0f);
 	// renderText(0.1, 0.0, -1.2, QString("Z"), qf);	
 	glEnable(GL_LIGHTING);	
+	
+	glLineWidth(1.0f);	
 }
 
 void HumanModelWindow::drawFloor(void)
@@ -342,15 +340,15 @@ void HumanModelWindow::drawFloor(void)
 		} else { 
 			glColor3f(0.8f, 0.8f, 0.8f); 
 		};
-		glVertex3f(i, -1.5f, -10.0f);
-		glVertex3f(i, -1.5f, 10.0f);
+		glVertex3f(i, -0.01f, -10.0f);
+		glVertex3f(i, -0.01f, 10.0f);
 		if (i==0) { 
 			glColor3f(0.7f, 0.7f, 0.7f); 
 		} else { 
 			glColor3f(0.6f, 0.6f, 0.6f); 
 		};
-		glVertex3f(-10.0f, -1.5f, i);
-		glVertex3f(10.0f, -1.5f, i);
+		glVertex3f(-10.0f, -0.01f, i);
+		glVertex3f(10.0f, -0.01f, i);
 	};
 	glEnd();
 	glEnable(GL_LIGHTING);	
@@ -359,11 +357,12 @@ void HumanModelWindow::drawFloor(void)
 void HumanModelWindow::resizeGL(int width, int height)
 {
     int side = qMin(width, height);
-    glViewport((width - side) / 2, (height - side) / 2, side, side);
+    glViewport((width - side*2) / 2, (height - side) / 2, side*2, side);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	glFrustum(-0.6, +0.6, -0.6, +0.6, 4.0, 100.0);
+	//glFrustum(-0.6, +0.6, -0.6, +0.6, 4.0, 100.0);
+	glFrustum(-1.2, +1.2, -0.6, +0.6, 4.0, 100.0);
     glMatrixMode(GL_MODELVIEW);	
 }
 
@@ -442,11 +441,17 @@ void HumanModelWindow::mouseMoveEvent(QMouseEvent *event)
 	int dy = event->y() - lastPos.y();
 
 	if (event->buttons() & Qt::LeftButton) {
-		rotateBy(8 * dy, 8 * dx, 0);
+		rotateBy(8*dy, 8*dx, 0);
 	} else if (event->buttons() & Qt::RightButton) {
-		rotateSceneBy(8 * dy, 8 * dy, 8 * dx);
+		glob_translate_x -= (float)dx / 32.0f;
+		glob_translate_y += (float)dy / 32.0f;
 	}
 	lastPos = event->pos();
+}
+
+void HumanModelWindow::wheelEvent(QWheelEvent *event)
+{
+	glob_translate_z += (float)event->angleDelta().y() / 100.0f;
 }
 
 void HumanModelWindow::drawBackground(void)

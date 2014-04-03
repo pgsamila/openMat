@@ -29,60 +29,52 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifndef SINUS_PLOT
-#define SINUS_PLOT
+#ifndef GRAPH_WINDOW
+#define GRAPH_WINDOW
 
 #include <QWidget>
-#include <QFont>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QComboBox>
+#include <QGroupBox>
+#include <QPalette>
 
-#include <qwt_plot.h>
-#include <qwt_plot_marker.h>
-#include <qwt_plot_curve.h>
-#include <qwt_legend.h>
-#include <qwt_series_data.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_plot_grid.h>
-#include <qwt_plot_panner.h>
-#include <qwt_plot_magnifier.h>
-#include <qwt_text.h>
-#include <qwt_text_label.h>
-#include <qwt_math.h>
-
-#include <string>
 #include <iostream>
+#include <string>
+#include <limits>
 using namespace std;
 
-#define MAX_DATA 512
+#include <Eigen/Dense>
 
-#define STD_SPACING 5
+#include "Plot.h"
 
-// Curve data
-class Curve 
-{
-public:
-	QwtPlotCurve *qwtCurve;
-	int nData;
-	double xData[MAX_DATA];
-	double yData[MAX_DATA];
-};
-
-// Class for plotting data to a 2D plot (QWT based)
-class Plot : public QwtPlot
+// Contains sagittal, transversal and coronal graphs
+class GraphWindow : public QWidget
 {
 Q_OBJECT
-public:
-    Plot(string title, string xAxis, string yAxis, int color, int maxData, int nCurves,  double yMax, double yMin, QWidget *parent = NULL);
-	void addData(int i, double y);
-	void clearData(void);
-	void setData(int i);
-	void setXMarker(string text);
-	void clearXMarker(void);
 	
 public:
-	vector<Curve> curves;
-	int maxData;
-	int nCurves;
-	vector<QwtPlotMarker *> markerX;
+	// Contructor
+	GraphWindow(QWidget *parent = 0);
+	
+	// Clears graphs
+	void clearGraphs(void);
+	
+public slots:
+	// Plots current data
+	void plotData(Eigen::Vector3f planeAngle);
+	
+public:
+	QwtLegend *sagittal_legend;
+	QwtLegend *transverse_legend;
+	QwtLegend *coronal_legend;
+
+	Plot *sagittal_graph;
+	Plot *transverse_graph;
+	Plot *coronal_graph;
 };
 
 #endif

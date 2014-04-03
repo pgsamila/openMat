@@ -37,6 +37,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QDialog>
+#include <QCheckBox>
 
 #include "DeviceListItem.h"
 #include "DiscoveryTree.h"
@@ -57,6 +58,7 @@ public:
 	LpmsSensorManagerI *sm;
 	QComboBox *comboDeviceList;
 	LpmsDeviceList *deviceList;
+	QCheckBox *check_com_ports;
 	
 public slots:
 	void addPreferredDevice(void);

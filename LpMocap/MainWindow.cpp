@@ -327,7 +327,9 @@ void MainWindow::BrowsePlaybackFile(void)
 
 void MainWindow::ResetOffset(void)
 {
-	set_offset_all = true;
+	initializeSensors();
+
+	// set_offset_all = true;
 }
 
 void MainWindow::createModelTree(void)
@@ -434,7 +436,11 @@ void MainWindow::updateImuData(void)
 		if (mTCP.ReadBlocking(mSocket, (char*)&mLpmsRotData, sizeof(mLpmsRotData), &tmpByteCount)) {
 			for (int i=0; i != mLpmsRotData.ChannelCount; ++i) {
 				if (set_offset_all == true) {
-					hm.setOffset(i, mLpmsRotData.mChannel[i].q);
+					int sensorId = mLpmsRotData.mChannel[i].id;
+					
+					if (sensorId > 0 && sensorId <= hm.mChannelCount){
+						hm.setOffset(sensorId-1, mLpmsRotData.mChannel[i].q);			 
+					} 
 				}
 				hm.decodeSensorRotation(mLpmsRotData.mChannel[i].id, mLpmsRotData.mChannel[i].q);
 			}

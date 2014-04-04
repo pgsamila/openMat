@@ -27,6 +27,7 @@
 #define FLOAT_FIXED_POINT_10 2
 #define FLOAT_FIXED_POINT_100 3
 #define FLOAT_FIXED_POINT_1000 4
+#define FLOAT_FIXED_POINT_1 5
 
 // Sets register
 void setReg(uint16_t length, uint8_t* data, uint32_t address);

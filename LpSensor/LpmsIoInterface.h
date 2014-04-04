@@ -267,6 +267,7 @@ public:
 	void clearRxBuffer(void);
 	void clearDataQueue(void);
 	void setTxRxImuId(int id);
+	bool setLpBusDataMode(int v);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);

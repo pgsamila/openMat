@@ -575,9 +575,15 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_250KBPS);
 		} else if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_500K_ENABLED) {
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_500KBPS);
-		} else /* ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_1M_ENABLED) */ {
+		} else {
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
 		}
+		
+		if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
+			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_16);
+		} else {
+			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_32);
+		}		
 		
 		if ((configReg & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
 			selectedData |= SELECT_LPMS_ACC_OUTPUT_ENABLED;
@@ -825,9 +831,17 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK);				
 		break;
 		
+		case LPMS_LIN_ACC_COMP_MODE_MEDIUM:
+			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM);				
+		break;
+		
 		case LPMS_LIN_ACC_COMP_MODE_STRONG:
 			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG);				
-		break;	
+		break;
+
+		case LPMS_LIN_ACC_COMP_MODE_ULTRA:
+			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA);
+		break;		
 		}
 	break;
 	
@@ -1887,7 +1901,7 @@ bool LpmsIoInterface::getCanMapping(void)
 
 bool LpmsIoInterface::setCanMapping(int *a)
 {
-	return modbusSetInt32Array(SET_CAN_MAPPING, (long *) a, 8);
+	return modbusSetInt32Array(SET_CAN_MAPPING, (long *) a, 16);
 }
 
 bool LpmsIoInterface::getCanHeartbeat(void)
@@ -1943,4 +1957,9 @@ bool LpmsIoInterface::setCanPointMode(int v)
 bool LpmsIoInterface::setCanStartId(int v)
 {
 	return modbusSetInt32(SET_CAN_START_ID, v);
+}
+
+bool LpmsIoInterface::setLpBusDataMode(int v)
+{
+	return modbusSetInt32(SET_LPBUS_DATA_MODE, v);
 }

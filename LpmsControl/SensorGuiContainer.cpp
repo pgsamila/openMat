@@ -53,7 +53,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 
 	l = 0;
 	gl->addWidget(new QLabel("IMU ID:"), l, 0); ++l;	
-	gl->addWidget(new QLabel("Sampling rate:"), l, 0); ++l;
+	gl->addWidget(new QLabel("Transmission rate:"), l, 0); ++l;
 	
 	l = 0;
 	gl1->addWidget(new QLabel("GYR range:"), l, 0); ++l;
@@ -114,7 +114,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	
 	linAccCompModeCombo->addItem(QString("Off"));
 	linAccCompModeCombo->addItem(QString("Weak"));
+	linAccCompModeCombo->addItem(QString("Medium"));	
 	linAccCompModeCombo->addItem(QString("Strong"));
+	linAccCompModeCombo->addItem(QString("Ultra"));	
 	connect(linAccCompModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLinAccCompMode(int)));
 	
 	centriCompModeCombo->addItem(QString("Disable"));
@@ -392,9 +394,198 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo4BCombo->addItem(QString("Accelerometer Y"));
 		canTpdo4BCombo->addItem(QString("Accelerometer Z"));				
 		connect(canTpdo4BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 9"), l, 0);
+		gl4->addWidget(canTpdo5ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo5ACombo->addItem(QString("Gyroscope X"));
+		canTpdo5ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo5ACombo->addItem(QString("Gyroscope Z"));
+		canTpdo5ACombo->addItem(QString("Euler angle X"));
+		canTpdo5ACombo->addItem(QString("Euler angle Y"));
+		canTpdo5ACombo->addItem(QString("Euler angle Z"));
+		canTpdo5ACombo->addItem(QString("Lin. acceleration X"));
+		canTpdo5ACombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo5ACombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo5ACombo->addItem(QString("Magnetometer X"));
+		canTpdo5ACombo->addItem(QString("Magnetometer Y"));
+		canTpdo5ACombo->addItem(QString("Magnetometer Z"));
+		canTpdo5ACombo->addItem(QString("Quaternion W"));
+		canTpdo5ACombo->addItem(QString("Quaternion X"));
+		canTpdo5ACombo->addItem(QString("Quaternion Y"));
+		canTpdo5ACombo->addItem(QString("Quaternion Z"));
+		canTpdo5ACombo->addItem(QString("Accelerometer X"));
+		canTpdo5ACombo->addItem(QString("Accelerometer Y"));
+		canTpdo5ACombo->addItem(QString("Accelerometer Z"));		
+		connect(canTpdo5ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 10"), l, 0);
+		gl4->addWidget(canTpdo5BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo5BCombo->addItem(QString("Gyroscope X"));
+		canTpdo5BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo5BCombo->addItem(QString("Gyroscope Z"));
+		canTpdo5BCombo->addItem(QString("Euler angle X"));
+		canTpdo5BCombo->addItem(QString("Euler angle Y"));
+		canTpdo5BCombo->addItem(QString("Euler angle Z"));
+		canTpdo5BCombo->addItem(QString("Lin. acceleration X"));
+		canTpdo5BCombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo5BCombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo5BCombo->addItem(QString("Magnetometer X"));
+		canTpdo5BCombo->addItem(QString("Magnetometer Y"));
+		canTpdo5BCombo->addItem(QString("Magnetometer Z"));
+		canTpdo5BCombo->addItem(QString("Quaternion W"));
+		canTpdo5BCombo->addItem(QString("Quaternion X"));
+		canTpdo5BCombo->addItem(QString("Quaternion Y"));
+		canTpdo5BCombo->addItem(QString("Quaternion Z"));
+		canTpdo5BCombo->addItem(QString("Accelerometer X"));
+		canTpdo5BCombo->addItem(QString("Accelerometer Y"));
+		canTpdo5BCombo->addItem(QString("Accelerometer Z"));				
+		connect(canTpdo5BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 11"), l, 0);
+		gl4->addWidget(canTpdo6ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo6ACombo->addItem(QString("Gyroscope X"));
+		canTpdo6ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo6ACombo->addItem(QString("Gyroscope Z"));
+		canTpdo6ACombo->addItem(QString("Euler angle X"));
+		canTpdo6ACombo->addItem(QString("Euler angle Y"));
+		canTpdo6ACombo->addItem(QString("Euler angle Z"));
+		canTpdo6ACombo->addItem(QString("Lin. acceleration X"));
+		canTpdo6ACombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo6ACombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo6ACombo->addItem(QString("Magnetometer X"));
+		canTpdo6ACombo->addItem(QString("Magnetometer Y"));
+		canTpdo6ACombo->addItem(QString("Magnetometer Z"));
+		canTpdo6ACombo->addItem(QString("Quaternion W"));
+		canTpdo6ACombo->addItem(QString("Quaternion X"));
+		canTpdo6ACombo->addItem(QString("Quaternion Y"));
+		canTpdo6ACombo->addItem(QString("Quaternion Z"));
+		canTpdo6ACombo->addItem(QString("Accelerometer X"));
+		canTpdo6ACombo->addItem(QString("Accelerometer Y"));
+		canTpdo6ACombo->addItem(QString("Accelerometer Z"));		
+		connect(canTpdo6ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 12"), l, 0);
+		gl4->addWidget(canTpdo6BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo6BCombo->addItem(QString("Gyroscope X"));
+		canTpdo6BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo6BCombo->addItem(QString("Gyroscope Z"));
+		canTpdo6BCombo->addItem(QString("Euler angle X"));
+		canTpdo6BCombo->addItem(QString("Euler angle Y"));
+		canTpdo6BCombo->addItem(QString("Euler angle Z"));
+		canTpdo6BCombo->addItem(QString("Lin. acceleration X"));
+		canTpdo6BCombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo6BCombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo6BCombo->addItem(QString("Magnetometer X"));
+		canTpdo6BCombo->addItem(QString("Magnetometer Y"));
+		canTpdo6BCombo->addItem(QString("Magnetometer Z"));
+		canTpdo6BCombo->addItem(QString("Quaternion W"));
+		canTpdo6BCombo->addItem(QString("Quaternion X"));
+		canTpdo6BCombo->addItem(QString("Quaternion Y"));
+		canTpdo6BCombo->addItem(QString("Quaternion Z"));
+		canTpdo6BCombo->addItem(QString("Accelerometer X"));
+		canTpdo6BCombo->addItem(QString("Accelerometer Y"));
+		canTpdo6BCombo->addItem(QString("Accelerometer Z"));				
+		connect(canTpdo6BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 13"), l, 0);
+		gl4->addWidget(canTpdo7ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo7ACombo->addItem(QString("Gyroscope X"));
+		canTpdo7ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo7ACombo->addItem(QString("Gyroscope Z"));
+		canTpdo7ACombo->addItem(QString("Euler angle X"));
+		canTpdo7ACombo->addItem(QString("Euler angle Y"));
+		canTpdo7ACombo->addItem(QString("Euler angle Z"));
+		canTpdo7ACombo->addItem(QString("Lin. acceleration X"));
+		canTpdo7ACombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo7ACombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo7ACombo->addItem(QString("Magnetometer X"));
+		canTpdo7ACombo->addItem(QString("Magnetometer Y"));
+		canTpdo7ACombo->addItem(QString("Magnetometer Z"));
+		canTpdo7ACombo->addItem(QString("Quaternion W"));
+		canTpdo7ACombo->addItem(QString("Quaternion X"));
+		canTpdo7ACombo->addItem(QString("Quaternion Y"));
+		canTpdo7ACombo->addItem(QString("Quaternion Z"));
+		canTpdo7ACombo->addItem(QString("Accelerometer X"));
+		canTpdo7ACombo->addItem(QString("Accelerometer Y"));
+		canTpdo7ACombo->addItem(QString("Accelerometer Z"));				
+		connect(canTpdo7ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 14"), l, 0);
+		gl4->addWidget(canTpdo7BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo7BCombo->addItem(QString("Gyroscope X"));
+		canTpdo7BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo7BCombo->addItem(QString("Gyroscope Z"));
+		canTpdo7BCombo->addItem(QString("Euler angle X"));
+		canTpdo7BCombo->addItem(QString("Euler angle Y"));
+		canTpdo7BCombo->addItem(QString("Euler angle Z"));
+		canTpdo7BCombo->addItem(QString("Lin. acceleration X"));
+		canTpdo7BCombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo7BCombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo7BCombo->addItem(QString("Magnetometer X"));
+		canTpdo7BCombo->addItem(QString("Magnetometer Y"));
+		canTpdo7BCombo->addItem(QString("Magnetometer Z"));
+		canTpdo7BCombo->addItem(QString("Quaternion W"));
+		canTpdo7BCombo->addItem(QString("Quaternion X"));
+		canTpdo7BCombo->addItem(QString("Quaternion Y"));
+		canTpdo7BCombo->addItem(QString("Quaternion Z"));
+		canTpdo7BCombo->addItem(QString("Accelerometer X"));
+		canTpdo7BCombo->addItem(QString("Accelerometer Y"));
+		canTpdo7BCombo->addItem(QString("Accelerometer Z"));				
+		connect(canTpdo7BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 15"), l, 0);
+		gl4->addWidget(canTpdo8ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo8ACombo->addItem(QString("Gyroscope X"));
+		canTpdo8ACombo->addItem(QString("Gyroscope Y"));
+		canTpdo8ACombo->addItem(QString("Gyroscope Z"));
+		canTpdo8ACombo->addItem(QString("Euler angle X"));
+		canTpdo8ACombo->addItem(QString("Euler angle Y"));
+		canTpdo8ACombo->addItem(QString("Euler angle Z"));
+		canTpdo8ACombo->addItem(QString("Lin. acceleration X"));
+		canTpdo8ACombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo8ACombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo8ACombo->addItem(QString("Magnetometer X"));
+		canTpdo8ACombo->addItem(QString("Magnetometer Y"));
+		canTpdo8ACombo->addItem(QString("Magnetometer Z"));
+		canTpdo8ACombo->addItem(QString("Quaternion W"));
+		canTpdo8ACombo->addItem(QString("Quaternion X"));
+		canTpdo8ACombo->addItem(QString("Quaternion Y"));
+		canTpdo8ACombo->addItem(QString("Quaternion Z"));
+		canTpdo8ACombo->addItem(QString("Accelerometer X"));
+		canTpdo8ACombo->addItem(QString("Accelerometer Y"));
+		canTpdo8ACombo->addItem(QString("Accelerometer Z"));				
+		connect(canTpdo8ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
+		
+		gl4->addWidget(new QLabel("Channel 16"), l, 0);
+		gl4->addWidget(canTpdo8BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo8BCombo->addItem(QString("Gyroscope X"));
+		canTpdo8BCombo->addItem(QString("Gyroscope Y"));
+		canTpdo8BCombo->addItem(QString("Gyroscope Z"));
+		canTpdo8BCombo->addItem(QString("Euler angle X"));
+		canTpdo8BCombo->addItem(QString("Euler angle Y"));
+		canTpdo8BCombo->addItem(QString("Euler angle Z"));
+		canTpdo8BCombo->addItem(QString("Lin. acceleration X"));
+		canTpdo8BCombo->addItem(QString("Lin. acceleration Y"));
+		canTpdo8BCombo->addItem(QString("Lin. acceleration Z"));
+		canTpdo8BCombo->addItem(QString("Magnetometer X"));
+		canTpdo8BCombo->addItem(QString("Magnetometer Y"));
+		canTpdo8BCombo->addItem(QString("Magnetometer Z"));
+		canTpdo8BCombo->addItem(QString("Quaternion W"));
+		canTpdo8BCombo->addItem(QString("Quaternion X"));
+		canTpdo8BCombo->addItem(QString("Quaternion Y"));
+		canTpdo8BCombo->addItem(QString("Quaternion Z"));
+		canTpdo8BCombo->addItem(QString("Accelerometer X"));
+		canTpdo8BCombo->addItem(QString("Accelerometer Y"));
+		canTpdo8BCombo->addItem(QString("Accelerometer Z"));				
+		connect(canTpdo8BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));	
 	}
-	
+		
 	l = 0;
+	selectedDataGl->addWidget(new QLabel("LpBus data mode:"), l, 0);
+	selectedDataGl->addWidget(lpBusDataModeCombo = new QComboBox(), l, 1); ++l;
+	lpBusDataModeCombo->addItem(QString("32-bit floating point"));
+	lpBusDataModeCombo->addItem(QString("16-bit integer"));
+	
 	selectedDataGl->addWidget(new QLabel("Enabled data:"), l, 0);
 	selectedDataGl->addWidget(selectAcc = new QCheckBox("Raw accelerometer"), l, 1); ++l;
 	selectedDataGl->addWidget(selectMag = new QCheckBox("Raw magnetometer"), l, 1); ++l;
@@ -482,7 +673,15 @@ void SensorGuiContainer::checkOptionalFeatures(void) {
 			canTpdo3ACombo->addItem(QString("Heave height"));	
 			canTpdo3BCombo->addItem(QString("Heave height"));	
 			canTpdo4ACombo->addItem(QString("Heave height"));	
-			canTpdo4BCombo->addItem(QString("Heave height"));			
+			canTpdo4BCombo->addItem(QString("Heave height"));
+			canTpdo5ACombo->addItem(QString("Heave height"));
+			canTpdo5BCombo->addItem(QString("Heave height"));	
+			canTpdo6ACombo->addItem(QString("Heave height"));	
+			canTpdo6BCombo->addItem(QString("Heave height"));	
+			canTpdo7ACombo->addItem(QString("Heave height"));	
+			canTpdo7BCombo->addItem(QString("Heave height"));	
+			canTpdo8ACombo->addItem(QString("Heave height"));	
+			canTpdo8BCombo->addItem(QString("Heave height"));			
 		}
 		
 		heaveMotionEnabled = true;
@@ -494,7 +693,7 @@ void SensorGuiContainer::updateData(void) {
 	std::string s;
 	char cStr[64];
 	int omId;
-	int a[8];
+	int a[32];
 	
 	checkOptionalFeatures();	
 	
@@ -517,9 +716,9 @@ void SensorGuiContainer::updateData(void) {
 	lowPassCombo->blockSignals(true);
 	linAccCompModeCombo->blockSignals(true);
 	centriCompModeCombo->blockSignals(true);
+	lpBusDataModeCombo->blockSignals(true);
 		
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
-		// canProtocolCombo->blockSignals(false);	
 		canBaudrateCombo->blockSignals(true);	
 		canHeartbeatCombo->blockSignals(true);
 		canTpdo1ACombo->blockSignals(true);
@@ -529,7 +728,15 @@ void SensorGuiContainer::updateData(void) {
 		canTpdo3ACombo->blockSignals(true);
 		canTpdo3BCombo->blockSignals(true);
 		canTpdo4ACombo->blockSignals(true);
-		canTpdo4BCombo->blockSignals(true);		
+		canTpdo4BCombo->blockSignals(true);
+		canTpdo5ACombo->blockSignals(true);
+		canTpdo5BCombo->blockSignals(true);
+		canTpdo6ACombo->blockSignals(true);
+		canTpdo6BCombo->blockSignals(true);
+		canTpdo7ACombo->blockSignals(true);
+		canTpdo7BCombo->blockSignals(true);
+		canTpdo8ACombo->blockSignals(true);
+		canTpdo8BCombo->blockSignals(true);			
 		canChannelModeCombo->blockSignals(true);
 		canPointModeCombo->blockSignals(true);
 		canStartIdSpin->blockSignals(true);
@@ -734,29 +941,6 @@ void SensorGuiContainer::updateData(void) {
 	}
 	
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
-		/* sensor->getConfigurationPrm(PRM_CAN_STREAM_FORMAT, &i);		
-		switch (i) {
-		case SELECT_STREAM_CAN_LPBUS:		
-			canProtocolCombo->setCurrentIndex(0);
-		break;
-	
-		case SELECT_STREAM_CAN_OPEN:
-			canProtocolCombo->setCurrentIndex(1);
-		break;	
-	
-		case SELECT_STREAM_CAN_CUSTOM1:
-			canProtocolCombo->setCurrentIndex(2);
-		break;
-
-		case SELECT_STREAM_CAN_CUSTOM2:
-			canProtocolCombo->setCurrentIndex(3);
-		break;
-		
-		case SELECT_STREAM_CAN_CUSTOM3:
-			canProtocolCombo->setCurrentIndex(4);
-		break;
-		} */
-
 		sensor->getConfigurationPrm(PRM_CAN_BAUDRATE, &i);		
 		switch (i) {
 		case SELECT_CAN_BAUDRATE_1000KBPS:		
@@ -785,6 +969,14 @@ void SensorGuiContainer::updateData(void) {
 		canTpdo3BCombo->setCurrentIndex(a[5]);
 		canTpdo4ACombo->setCurrentIndex(a[6]);
 		canTpdo4BCombo->setCurrentIndex(a[7]);
+		canTpdo5ACombo->setCurrentIndex(a[8]);
+		canTpdo5BCombo->setCurrentIndex(a[9]);
+		canTpdo6ACombo->setCurrentIndex(a[10]);
+		canTpdo6BCombo->setCurrentIndex(a[11]);
+		canTpdo7ACombo->setCurrentIndex(a[12]);
+		canTpdo7BCombo->setCurrentIndex(a[13]);
+		canTpdo8ACombo->setCurrentIndex(a[14]);
+		canTpdo8BCombo->setCurrentIndex(a[15]);		
 		
 		sensor->getConfigurationPrm(PRM_CAN_HEARTBEAT, &i);		
 		switch (i) {
@@ -970,11 +1162,19 @@ void SensorGuiContainer::updateData(void) {
 	
 	case SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK:		
 		linAccCompModeCombo->setCurrentIndex(1);
-	break;	
+	break;
+	
+	case SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM:		
+		linAccCompModeCombo->setCurrentIndex(2);
+	break;		
 	
 	case SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG:		
-		linAccCompModeCombo->setCurrentIndex(2);
+		linAccCompModeCombo->setCurrentIndex(3);
 	break;
+	
+	case SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA:		
+		linAccCompModeCombo->setCurrentIndex(4);
+	break;	
 	}
 	
 	sensor->getConfigurationPrm(PRM_CENTRI_COMP_MODE, &i);		
@@ -987,6 +1187,17 @@ void SensorGuiContainer::updateData(void) {
 		centriCompModeCombo->setCurrentIndex(1);
 	break;
 	}
+	
+	sensor->getConfigurationPrm(PRM_LPBUS_DATA_MODE, &i);		
+	switch (i) {
+	case SELECT_LPMS_LPBUS_DATA_MODE_32:		
+		lpBusDataModeCombo->setCurrentIndex(0);
+	break;
+	
+	case SELECT_LPMS_LPBUS_DATA_MODE_16:		
+		lpBusDataModeCombo->setCurrentIndex(1);
+	break;
+	}	
 
 	selectAcc->blockSignals(false);
 	selectMag->blockSignals(false);	
@@ -1007,9 +1218,9 @@ void SensorGuiContainer::updateData(void) {
 	selectTemperature->blockSignals(false);
 	linAccCompModeCombo->blockSignals(false);
 	centriCompModeCombo->blockSignals(false);
+	lpBusDataModeCombo->blockSignals(false);
 
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
-		// canProtocolCombo->blockSignals(false);	
 		canBaudrateCombo->blockSignals(false);	
 		canHeartbeatCombo->blockSignals(false);	
 		canTpdo1ACombo->blockSignals(false);
@@ -1020,6 +1231,14 @@ void SensorGuiContainer::updateData(void) {
 		canTpdo3BCombo->blockSignals(false);
 		canTpdo4ACombo->blockSignals(false);
 		canTpdo4BCombo->blockSignals(false);
+		canTpdo5ACombo->blockSignals(false);
+		canTpdo5BCombo->blockSignals(false);
+		canTpdo6ACombo->blockSignals(false);
+		canTpdo6BCombo->blockSignals(false);
+		canTpdo7ACombo->blockSignals(false);
+		canTpdo7BCombo->blockSignals(false);
+		canTpdo8ACombo->blockSignals(false);
+		canTpdo8BCombo->blockSignals(false);		
 		canChannelModeCombo->blockSignals(false);
 		canPointModeCombo->blockSignals(false);
 		canStartIdSpin->blockSignals(false);
@@ -1172,27 +1391,6 @@ void SensorGuiContainer::updateMagRange(int i)
 
 void SensorGuiContainer::updateCanProtocol(int i)
 {	
-	/* switch (canProtocolCombo->currentIndex()) {
-	case 0:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_LPBUS);
-	break;
-		
-	case 1:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_OPEN);
-	break;
-	
-	case 2:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM1);
-	break;
-	
-	case 3:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM2);
-	break;
-	
-	case 4:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM3);
-	break;
-	} */
 }
 
 void SensorGuiContainer::updateCanBaudrate(int i)
@@ -1450,7 +1648,7 @@ void SensorGuiContainer::updateSelectHeaveMotion(int i)
 
 void SensorGuiContainer::updateCanMapping(int i)
 {
-	int a[8];
+	int a[32];
 
 	a[0] = canTpdo1ACombo->currentIndex();
 	a[1] = canTpdo1BCombo->currentIndex();
@@ -1460,6 +1658,14 @@ void SensorGuiContainer::updateCanMapping(int i)
 	a[5] = canTpdo3BCombo->currentIndex();
 	a[6] = canTpdo4ACombo->currentIndex();
 	a[7] = canTpdo4BCombo->currentIndex();
+	a[8] = canTpdo5ACombo->currentIndex();
+	a[9] = canTpdo5BCombo->currentIndex();
+	a[10] = canTpdo6ACombo->currentIndex();
+	a[11] = canTpdo6BCombo->currentIndex();
+	a[12] = canTpdo7ACombo->currentIndex();
+	a[13] = canTpdo7BCombo->currentIndex();
+	a[14] = canTpdo8ACombo->currentIndex();
+	a[15] = canTpdo8BCombo->currentIndex();
 
 	sensor->setConfigurationPrm(PRM_CAN_MAPPING, a);
 }
@@ -1501,7 +1707,15 @@ void SensorGuiContainer::updateLinAccCompMode(int i)
 	break;
 
 	case 2:
+		sensor->setConfigurationPrm(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM);
+	break;
+	
+	case 3:
 		sensor->setConfigurationPrm(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG);
+	break;
+	
+	case 4:
+		sensor->setConfigurationPrm(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA);
 	break;
 	}
 }
@@ -1546,6 +1760,19 @@ void SensorGuiContainer::updateCanChannelMode(int i)
 	
 	case 1:
 		sensor->setConfigurationPrm(PRM_CAN_CHANNEL_MODE, SELECT_CAN_CHANNEL_MODE_SEQUENTIAL);
+	break;
+	}
+}
+
+void SensorGuiContainer::updateLpBusDataMode(int i)
+{
+	switch (lpBusDataModeCombo->currentIndex()) {
+	case 0:
+		sensor->setConfigurationPrm(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_32);
+	break;
+	
+	case 1:
+		sensor->setConfigurationPrm(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_16);
 	break;
 	}
 }

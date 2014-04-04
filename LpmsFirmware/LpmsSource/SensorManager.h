@@ -85,7 +85,7 @@ typedef struct _LpmsCalibrationData {
 
 	float lpAlpha;
 
-	uint32_t canMapping[8];
+	uint32_t canMapping[16];
 	float canHeartbeatTiming;
 } LpmsCalibrationData;
 

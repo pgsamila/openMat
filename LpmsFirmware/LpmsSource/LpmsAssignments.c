@@ -235,6 +235,14 @@ void setFloat(uint8_t* data, float v, uint8_t prec)
 		}
 	break;
 
+	case FLOAT_FIXED_POINT_1:
+		h = (int16_t)v;
+
+		for (int i=0; i<2; i++) {
+			data[i] = (h >> (i * 8)) & (uint8_t) 0xff;
+		}
+	break;
+
 	case FLOAT_FIXED_POINT_10:
 		h = (int16_t)(v * 10.0f);
 

@@ -8,7 +8,7 @@
     <txpower power="15" bias="5" />
     <script enable="true" />
 	<wakeup_pin enable="false" />	
-    <usart channel="1" alternate="1" baud="921600" flow="false" endpoint="none" />
+    <usart channel="1" alternate="1" baud="9600" flow="false" endpoint="none" />
     <pmux regulator="7" />
     <port index="0" pull="down" />	
 </hardware>

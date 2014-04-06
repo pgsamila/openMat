@@ -48,6 +48,8 @@
 #include <QLineEdit>
 #include <QFileInfo>
 
+#include <thread>
+#include <mutex>
 #include <iostream>
 #include <limits>
 using namespace std;
@@ -122,20 +124,12 @@ public:
 	void initializeSensors(void);
 	
 public slots:
-	// Updates current IMU data
-	void updateImuData(void);
-	
-	// Updates window
-	void updateWindow(void);
-		
-	// Exits application
+	void updateImuData(void);	
+	void UpdateWindow(void);
 	void exitWindow(void);
-	
-	// Called when tree item is changed
 	void treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
-	
+	void UpdateHumanModel(void);
 	void createModelTree(void);
-
 	void ConnectServer(void);
 	void DisconnectServer(void);
 	void BrowseRecordFile(void);
@@ -144,6 +138,7 @@ public slots:
 	void StartPlayback(void);
 	void BrowsePlaybackFile(void);
 	void ResetOffset(void);
+	void ExportAviOfPlayback(void);
 
 public:
 	QToolBar *toolbar;
@@ -178,6 +173,7 @@ public:
 	QAction* start_playback_action;
 	float current_timestamp;
 	bool set_offset_all;
+	bool offscreen_recording_started_;
 
 	struct {
 		char info[50];
@@ -198,6 +194,7 @@ public:
 	string record_filename;
 	string playback_filename;
 	MicroMeasure global_timer;
+	bool real_time_thread_stopped;
 };
 
 #endif

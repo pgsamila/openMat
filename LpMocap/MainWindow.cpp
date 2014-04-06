@@ -136,6 +136,7 @@ MainWindow::MainWindow(QWidget *parent) :
 // Playback toolbar
 	start_playback_action = new QAction(QIcon("./icons/play_24x32.png"), "&Playback data", this);
 	QAction* browse_playback_file_action = new QAction(QIcon("./icons/folder_stroke_32x32.png"), "&Browse replay file", this);
+	QAction* export_video_action = new QAction(QIcon("./icons/target_32x32.png"), "&Export to AVI", this); 
 	
 	toolbar->addSeparator();
 	QVBoxLayout *v4 = new QVBoxLayout();
@@ -161,10 +162,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	toolbar->addWidget(w4);
 	toolbar->addAction(browse_playback_file_action);	
 	toolbar->addWidget(play_time_widget);
+	toolbar->addAction(export_video_action);
 
 	measurementMenu->addSeparator();
 	measurementMenu->addAction(start_playback_action);
 	measurementMenu->addAction(browse_playback_file_action);
+	measurementMenu->addAction(export_video_action);
 
 	QAction* reset_offset_action = new QAction(QIcon("./icons/fullscreen_exit_32x32.png"), "Rese&t offset", this);
 
@@ -189,6 +192,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(start_playback_action, SIGNAL(triggered()), this, SLOT(StartPlayback()));
 	connect(browse_playback_file_action, SIGNAL(triggered()), this, SLOT(BrowsePlaybackFile()));
+	connect(export_video_action, SIGNAL(triggered()), this, SLOT(ExportAviOfPlayback()));
 
 	connect(reset_offset_action, SIGNAL(triggered()), this, SLOT(ResetOffset()));
 	
@@ -205,8 +209,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	set_offset_all = false;
 
 	QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateWindow()));
-    timer->start(1);
+    connect(timer, SIGNAL(timeout()), this, SLOT(UpdateWindow()));
+    timer->start(3);
+	
+	offscreen_recording_started_ = false;
 	
 	global_timer.reset();
 
@@ -292,7 +298,7 @@ void MainWindow::StartPlayback(void)
 	if (hm.IsPlaybackOn() == false) {
 		if (playback_file_set == true) {
 			printf("[LpMocap] Starting playback of %s\n", playback_filename.c_str());
-			hm.StartPlayBinaryMotionData(playback_filename.c_str());
+			hm.StartPlayBinaryMotionData(playback_filename.c_str(), true);
 			start_playback_action->setText("Stop playback");
 			start_playback_action->setIcon(QIcon("./icons/x_alt_32x32.png"));
 		}
@@ -300,6 +306,24 @@ void MainWindow::StartPlayback(void)
 		hm.StopPlayBinaryMotionData();
 		start_playback_action->setIcon(QIcon("./icons/play_24x32.png"));
 		start_playback_action->setText("Playback data");
+	}
+}
+
+void MainWindow::ExportAviOfPlayback(void)
+{
+	if (hm.IsPlaybackOn() == true) StartPlayback();
+	
+	if (playback_file_set == true) {
+		printf("[LpMocap] Starting playback of %s\n", playback_filename.c_str());
+		
+		int dot_index = playback_filename.find_last_of(".");
+		string name_wo_extension = playback_filename.substr(0, dot_index);
+		
+		if (hmWin->OpenVideoFile((name_wo_extension + ".avi").c_str()) == true) {
+			hm.StartPlayBinaryMotionData(playback_filename.c_str(), false);
+		}
+	} else {
+		printf("[LpMocap] Playback file not set\n");
 	}
 }
 
@@ -328,8 +352,6 @@ void MainWindow::BrowsePlaybackFile(void)
 void MainWindow::ResetOffset(void)
 {
 	initializeSensors();
-
-	// set_offset_all = true;
 }
 
 void MainWindow::createModelTree(void)
@@ -385,20 +407,35 @@ QString MainWindow::getRecordingTimestamp(void)
 	return ts;
 }
 
-void MainWindow::updateWindow(void)
-{	
-	current_timestamp += (float) global_timer.measure() / 1000.0f;
-	global_timer.reset();
+void MainWindow::UpdateHumanModel(void)
+{
+}
 
-	hm.UpdateTimestamp(current_timestamp);
+void MainWindow::UpdateWindow(void)
+{
+	if (global_timer.measure() > 33333) {
+		current_timestamp += (float) global_timer.measure() / 1000.0f;
+		global_timer.reset();
 
-	updateImuData();
+		hm.UpdateTimestamp(current_timestamp);
 
-	hm.UpdateSaveBinaryMotionData();
-	hm.UpdateModelFromData();
+		updateImuData();
 
-	play_time_label->setText(getPlaybackTimestamp());
-	record_time_label->setText(getRecordingTimestamp());
+		hm.UpdateSaveBinaryMotionData();
+		hm.UpdateModelFromData();		
+		
+		play_time_label->setText(getPlaybackTimestamp());
+		record_time_label->setText(getRecordingTimestamp());
+		
+		hmWin->updateGL();	
+		
+		if (hmWin->IsVideoRecordingStarted() == true && hm.IsPlaybackOn() == true) {
+			hmWin->WriteVideoFrame();
+		} if (hmWin->IsVideoRecordingStarted() == true && hm.IsPlaybackOn() == false) {
+			hmWin->CloseVideoFile();
+			printf("[LpMocap] Rendering finished\n");
+		}
+	}
 }
 	
 MainWindow::~MainWindow()
@@ -435,27 +472,16 @@ void MainWindow::updateImuData(void)
 		
 		if (mTCP.ReadBlocking(mSocket, (char*)&mLpmsRotData, sizeof(mLpmsRotData), &tmpByteCount)) {
 			for (int i=0; i != mLpmsRotData.ChannelCount; ++i) {
-				if (set_offset_all == true) {
-					int sensorId = mLpmsRotData.mChannel[i].id;
-					
-					if (sensorId > 0 && sensorId <= hm.mChannelCount){
-						hm.setOffset(sensorId-1, mLpmsRotData.mChannel[i].q);			 
-					} 
-				}
 				hm.decodeSensorRotation(mLpmsRotData.mChannel[i].id, mLpmsRotData.mChannel[i].q);
 			}
 		} else {
 			return;
-		}		
-
-		if (set_offset_all) hm.resetSkeleton();
+		}
 		
 		hm.updateBodyData();
 
 		set_offset_all = false;
 	}
-
-	hmWin->updateGL();
 }
 
 void MainWindow::exitWindow(void)

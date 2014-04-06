@@ -34,6 +34,8 @@
 #include <iostream>
 using namespace std;
 
+std::mutex render_mutex;
+
 HumanModelWindow::HumanModelWindow(HumanModel *hm, 
 	QWidget *parent, 
 	QGLWidget *shareWidget) : 
@@ -46,13 +48,13 @@ HumanModelWindow::HumanModelWindow(HumanModel *hm,
 	ySRot(0),
 	zSRot(0),
 	hm(hm)
-{			
-	QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateWindow()));
-    timer->start(40);
+{	
 	glob_translate_x = 0.0f;
 	glob_translate_y = 0.0f;
 	glob_translate_z = 0.0f;
+	
+	video_writer = new cv::VideoWriter();
+	video_recording_started_ = false;
 }
 
 void HumanModelWindow::updateWindow(void)
@@ -62,6 +64,7 @@ void HumanModelWindow::updateWindow(void)
 
 HumanModelWindow::~HumanModelWindow(void)
 {
+	delete video_writer;
 }
 
 QSize HumanModelWindow::minimumSizeHint() const
@@ -77,7 +80,6 @@ QSize HumanModelWindow::sizeHint() const
 void HumanModelWindow::initializeGL()
 {
 	glEnable(GL_MULTISAMPLE);
-	// glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
@@ -93,6 +95,61 @@ void HumanModelWindow::initializeGL()
 	
 	glLineWidth(1.0f);
 }
+
+bool HumanModelWindow::OpenVideoFile(const char *fn)
+{
+	cv::Size image_size(this->width(), this->height());
+	if (video_writer->open(fn, CV_FOURCC('M', 'J', 'P', 'G'), 30, image_size) == false) {
+		printf("[HumanModelWindow] Couldn't open video file %s\n", fn);	
+		return false;
+	}
+	
+	video_recording_started_ = true;
+	
+	return true;
+}
+
+cv::Mat QImage2Mat(QImage const& src)
+{
+	src.convertToFormat(QImage::Format_RGB888);
+	cv::Mat tmp(src.height(), src.width(), CV_8UC3, (uchar*)src.bits(), src.bytesPerLine());
+	cv::Mat result;
+	cv::cvtColor(tmp, result, CV_BGR2RGB);
+	
+	return result;
+}
+
+void HumanModelWindow::WriteVideoFrame(void)
+{
+	cv::Mat reversed_image;
+	cv::Mat flipped_image;
+
+	if (video_writer->isOpened() == false) return;
+		
+	int width = this->width();
+	int height = this->height();
+	
+	unsigned char* buffer = new unsigned char[width*height*3];
+	
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	cv::Mat opengl_image(height, width, CV_8UC3, buffer);
+	cv::cvtColor(opengl_image, reversed_image, CV_BGR2RGB);
+	cv::flip(reversed_image, flipped_image, 0);
+	video_writer->write(flipped_image);
+	
+	delete buffer;
+}
+
+void HumanModelWindow::CloseVideoFile(void)
+{
+	if (video_writer->isOpened() == false) return;
+	
+	video_recording_started_ = false;
+	
+	delete video_writer;
+	
+	video_writer = new cv::VideoWriter();	
+}	
 
 void HumanModelWindow::updateQuaternion(ImuData imuData)
 {
@@ -361,7 +418,7 @@ void HumanModelWindow::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	//glFrustum(-0.6, +0.6, -0.6, +0.6, 4.0, 100.0);
+	// glFrustum(-0.6, +0.6, -0.6, +0.6, 4.0, 100.0);
 	glFrustum(-1.2, +1.2, -0.6, +0.6, 4.0, 100.0);
     glMatrixMode(GL_MODELVIEW);	
 }
@@ -419,6 +476,7 @@ void HumanModelWindow::rotateBy(int xAngle, int yAngle, int zAngle)
     xRot += xAngle;
     yRot += yAngle;
     zRot += zAngle;
+	
     updateGL();
 }
 
@@ -427,6 +485,7 @@ void HumanModelWindow::rotateSceneBy(int xAngle, int yAngle, int zAngle)
     xSRot += xAngle;
     ySRot += yAngle;
     zSRot += zAngle;
+	
     updateGL();
 }
 
@@ -470,4 +529,9 @@ void HumanModelWindow::drawBackground(void)
 	glEnd();	
 	glEnable(GL_LIGHTING);	
 	glEnable(GL_CULL_FACE);
+}
+
+bool HumanModelWindow::IsVideoRecordingStarted(void)
+{
+	return video_recording_started_;
 }

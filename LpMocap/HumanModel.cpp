@@ -7,31 +7,12 @@
 #define _USE_MATH_DEFINES
 
 #include <math.h> 
-#include <stdlib.h>     /* atof */
+#include <stdlib.h>
 
 #include "quateuler.h"
 
 using namespace std;
 using Eigen::Quaternion;
-
-
-/* std::ostream& operator<<(std::ostream& os, const double q[])
-{
-  os << " w: " << setw(13) << q[0]
-		<< " x: " << setw(13) << q[1] 
-		<< " y: " << setw(13) << q[2]
-		<< " z: " << setw(13) << q[3]; 
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Eigen::Quaternion<double>& q)
-{
-  os << " w: " << setw(13) << q.w()
-		<< " x: " << setw(13) << q.x() 
-		<< " y: " << setw(13) << q.y()
-		<< " z: " << setw(13) << q.z(); 
-  return os;
-} */
 
 HumanModel::HumanModel():
 	 enableHorizontalMovement(true)
@@ -64,6 +45,7 @@ HumanModel::HumanModel():
 	latest_timestamp = 0;
 	is_playing_data = false;
 	is_saving_data = false;
+	loop_is_on_ = false;
 }
 
 void HumanModel::resetSkeleton()
@@ -684,7 +666,7 @@ Eigen::Vector3f HumanModel::getProjectionAngle(int channel_id)
 
 bool HumanModel::StartSaveBinaryMotionData(const char* fn)
 {	
-	save_data_handle.open(fn, std::ios::out /*| std::ios::binary */);
+	save_data_handle.open(fn, std::ios::out /* | std::ios::binary */);
 
 	if (save_data_handle.is_open() == true) {
 		is_saving_data = true;
@@ -848,11 +830,12 @@ bool HumanModel::ReadBinaryMotionDataFile(const char* fn)
 	return true;
 }
 
-void HumanModel::StartPlayBinaryMotionData(const char* fn)
+void HumanModel::StartPlayBinaryMotionData(const char* fn, bool loop_playback)
 {
 	playback_pointer = 0;
 	first_play_step = true;
 	is_playing_data = true;
+	loop_is_on_ = loop_playback;
 }
 
 void HumanModel::StopPlayBinaryMotionData(void)
@@ -863,6 +846,7 @@ void HumanModel::StopPlayBinaryMotionData(void)
 bool HumanModel::UpdateModelFromData(void) 
 {
 	MotionData single_motion_data;
+	double avg_alpha = 0.5;
 
 	if (is_playing_data == false) return false;
 
@@ -877,17 +861,18 @@ bool HumanModel::UpdateModelFromData(void)
 		playback_pointer = 0;
 		single_motion_data = motion_data_list[playback_pointer];
 		first_play_step = true;
+		if (loop_is_on_ == false) is_playing_data = false;
 	}
 		
 	if ((latest_timestamp - play_time_offset) > single_motion_data.timestamp) {
 		for (int i = 0; i < mChannelCount; i++) {
-			mChannel[i].mT[0] = single_motion_data.mChannel[i].mT[0];
-			mChannel[i].mT[1] = single_motion_data.mChannel[i].mT[1];		
-			mChannel[i].mT[2] = single_motion_data.mChannel[i].mT[2];		
+			mChannel[i].mT[0] = mChannel[i].mT[0] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[0] * avg_alpha;
+			mChannel[i].mT[1] = mChannel[i].mT[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[1] * avg_alpha;		
+			mChannel[i].mT[2] = mChannel[i].mT[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[2] * avg_alpha;		
 			
-			mChannel[i].mR[0] = single_motion_data.mChannel[i].mR[0];
-			mChannel[i].mR[1] = single_motion_data.mChannel[i].mR[1];		
-			mChannel[i].mR[2] = single_motion_data.mChannel[i].mR[2];		
+			mChannel[i].mR[0] = mChannel[i].mR[0] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[0] * avg_alpha;
+			mChannel[i].mR[1] = mChannel[i].mR[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[1] * avg_alpha;		
+			mChannel[i].mR[2] = mChannel[i].mR[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[2] * avg_alpha;		
 		}
 		++playback_pointer;
 	}

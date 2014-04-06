@@ -6,6 +6,8 @@
 
 #include <boost/cstdint.hpp>
 
+#include "windows.h"
+
 class C3dParser {
 public:
 	std::ifstream input_file_stream;	

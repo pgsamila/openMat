@@ -78,7 +78,7 @@ public:
 	double GetRecordTime(void);
 	bool IsPlaybackOn(void);
 	bool IsRecordOn(void);
-	void StartPlayBinaryMotionData(const char* fn);
+	void StartPlayBinaryMotionData(const char* fn, bool loop_playback);
 	void StopPlayBinaryMotionData(void);
 	void UpdateTimestamp(float t);
 	void setOffsetAll(void);
@@ -105,6 +105,7 @@ private:
 	double play_time_offset;
 	bool first_play_step;
 	bool first_save_step;
+	bool loop_is_on_;
 
 	double lHead;
 	double lNeck;

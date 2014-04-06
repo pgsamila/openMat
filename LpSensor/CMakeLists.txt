@@ -105,7 +105,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		link_directories("${WINDOWS_FTDI_PATH}/amd64")
 		link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")
 		link_directories("${WINDOWS_SDK_PATH}/Lib/x64")
-		link_directories("${WINDOWS_ICE_PATH}/lib/vc110/x64")		
+		link_directories("${WINDOWS_ICE_PATH}/lib/vc110/x64")	
 	endif()
 	
 	ADD_DEFINITIONS(-DUSE_EIGEN)

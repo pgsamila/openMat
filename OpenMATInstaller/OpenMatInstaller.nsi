@@ -1,5 +1,5 @@
-Name "OpenMAT 1.2.9"
-OutFile "OpenMAT-1.2.9-Setup.exe"
+Name "OpenMAT 1.2.9-LPMOCAP"
+OutFile "OpenMAT-1.2.9-LPMOCAP-Setup.exe"
 InstallDir "C:\OpenMAT"
 InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
 RequestExecutionLevel admin

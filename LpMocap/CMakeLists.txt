@@ -58,12 +58,13 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
 	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.1" CACHE STRING "")
 	set(WINDOWS_EIGEN_PATH "C:/eigen-3.2.0")
+	set(WINDOWS_OPENCV_PATH "C:/opencv" CACHE STRING "")	
 
 	include_directories("${WINDOWS_BOOST_PATH}")
 	include_directories("${WINDOWS_PUGIXML_PATH}/src")
 	include_directories("${WINDOWS_FTDI_PATH}")
 	include_directories("${WINDOWS_EIGEN_PATH}")
-
+	
 	include_directories("../OpenMATCommon")
 	include_directories("../LpSensor")
 
@@ -76,6 +77,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	include_directories("${WINDOWS_ICE_PATH}/Ice/include")	
 	link_directories("${WINDOWS_ICE_PATH}/Ice/lib")
 
+	include_directories("${WINDOWS_OPENCV_PATH}/build/include")
+	link_directories("${WINDOWS_OPENCV_PATH}/build/x86/vc10/lib")	
+	
 	link_directories("../openmat/LpSensor/build")
 
 	ADD_DEFINITIONS(-DUSE_EIGEN)
@@ -166,7 +170,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(LpMocap Qt5::Xml)
 		target_link_libraries(LpMocap qwt.lib)
 		target_link_libraries(LpMocap Ws2_32.lib)
-
+		target_link_libraries(LpMocap opencv_core248.lib)		
+		target_link_libraries(LpMocap opencv_highgui248.lib)
+		target_link_libraries(LpMocap opencv_imgproc248.lib)
+		target_link_libraries(LpMocap opencv_contrib248.lib)		
+		
 		if (USE_JUSTTHREAD)	
 			target_link_libraries(LpMocap justthread_vc10_mt.lib)
 		endif()	
@@ -179,6 +187,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(LpMocap Qt5::Xml)
 		target_link_libraries(LpMocap qwtd.lib)
 		target_link_libraries(LpMocap Ws2_32.lib)
+		target_link_libraries(LpMocap opencv_core248d.lib)
+		target_link_libraries(LpMocap opencv_highgui248d.lib)
+		target_link_libraries(LpMocap opencv_imgproc248d.lib)
+		target_link_libraries(LpMocap opencv_contrib248d.lib)		
 	
 		if (USE_JUSTTHREAD)	
 			target_link_libraries(LpMocap justthread_vc10_mtd.lib)

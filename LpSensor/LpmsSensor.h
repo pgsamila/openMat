@@ -55,7 +55,7 @@
 	#include "LpmsU.h"
 	#include "LpmsBBluetooth.h"	
 	#include "LpmsRS232.h"
-	#include "LpmsBle.h"
+	#include "LpmsBle2.h"
 	
 	#ifdef USE_ZEROC_ICE
 		#include "IceImuDriver.h"

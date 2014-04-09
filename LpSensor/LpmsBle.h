@@ -74,6 +74,7 @@ public:
 	bool parseSensorData(void);
 	void setConfiguration(void);
 	int convertHexStringToNumber(const char *s);
+	bool getTxMessage(std::queue<unsigned char> *topTxQ);
 
 private:
 	std::string portname;
@@ -84,6 +85,7 @@ private:
 	std::queue<unsigned char> txQueue;
 	bool started;
 	std::string comStr;
+	std::queue<unsigned char> txQ;	
 };
 
 #endif

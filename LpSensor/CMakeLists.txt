@@ -165,7 +165,8 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 		PCANBasicClass.cpp
 
-		LpmsBle.cpp
+		LpmsBle2.cpp
+		BleEngine.cpp
 		BleUart.c
 		BleCmdDef.c
 		BleCommands.c

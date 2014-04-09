@@ -99,6 +99,13 @@ int pC = 0;
 float avgDt = 0.0f;
 MicroMeasure dataTimer;
 
+struct ConnectionLookup {
+	bd_addr address;
+	uint8 handle;
+};
+
+std::vector<ConnectionLookup> connection_lookup_table;
+
 void change_state(states new_state)
 {
 	state = new_state;
@@ -215,6 +222,11 @@ void ble_evt_connection_status(const struct ble_msg_connection_status_evt_t *msg
 		printf("[LPMS-BLE] Connected!\n");
 
 		k_connection_handle = msg->connection;
+		
+		ConnectionLookup lookup;
+		lookup.address = connect_addr;
+		lookup.handle = msg->connection;
+		connection_lookup_table.push_back(lookup);
 
 		if (lpms_handle_configuration) {
 			change_state(state_listening_measurements);
@@ -792,4 +804,16 @@ void LpmsBle::setConfiguration(void)
 	
 	configData->setParameter(PRM_SELECT_DATA, selectedData);
 	configData->setParameter(PRM_HEAVEMOTION_ENABLED, SELECT_HEAVEMOTION_ENABLED);
+}
+
+bool LpmsBle::getTxMessage(std::queue<unsigned char> *topTxQ)
+{
+	int i = txQ.size();
+	
+	if (i <= 0) return false;
+
+	topTxQ->push(txQ.front());
+	txQ.pop();
+
+	return true;
 }

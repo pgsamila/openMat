@@ -756,11 +756,6 @@ void parsePacket(void)
 				sendAck();
 			break;
 
-                        case SET_LPBUS_DATA_MODE:
-                                setLpBusDataMode(packet.data);
-				sendAck();
-                        break;
-
 			default:
 			break;
 			}

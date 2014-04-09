@@ -156,12 +156,12 @@ void updateCanHeartbeat(void)
 
 uint8_t setCanMapping(uint8_t* data)
 {   
-	uint32_t v[16];
+	uint32_t v[8];
 	int i;
 
-	getMultiUi32t(data, 16, v);
+	getMultiUi32t(data, 8, v);
 
-	for (i=0; i<16; ++i) {
+	for (i=0; i<8; ++i) {
 		gReg.data[LPMS_CAN_MAPPING+i] = v[i];
 	}
 
@@ -173,9 +173,9 @@ uint8_t setCanMapping(uint8_t* data)
 uint8_t getCanMapping(uint8_t* data, uint16_t *l)
 {       
 	int i;
-	uint32_t v[16];
+	uint32_t v[8];
 
-	for (i=0; i<16; ++i) {
+	for (i=0; i<8; ++i) {
 		v[i] = gReg.data[LPMS_CAN_MAPPING+i];
 	}
 
@@ -1223,23 +1223,6 @@ uint8_t getGyroZData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad)
 		setFloat(data, gRaw.data[2] * r2d, prec);
 	} else {
 		setFloat(data, gRaw.data[2], prec);
-	}
-
-	return 1;
-}
-
-uint8_t setLpBusDataMode(uint8_t* data)
-{
-	uint32_t v = getUi32t(data);
-
-	switch(v) {
-	case LPMS_LPBUS_DATA_MODE_16:     
-		 gReg.data[LPMS_CONFIG] |= LPMS_LPBUS_DATA_MODE_16BIT_ENABLED;
-	break;
-
-	default:
-		gReg.data[LPMS_CONFIG] &= ~LPMS_LPBUS_DATA_MODE_16BIT_ENABLED;
-	break;
 	}
 
 	return 1;

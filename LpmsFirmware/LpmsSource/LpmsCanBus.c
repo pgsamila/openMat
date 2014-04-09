@@ -557,7 +557,7 @@ void canSendCanOpenFixedPoint(void)
 
 	l = 0;
 
-	for (j=0; j<4; ++j) {
+	for (j=0; j<2; ++j) {
 		for (i=0; i<8; ++i) data[i] = 0;
 
 		for (k=0; k<4; ++k) {
@@ -581,7 +581,7 @@ void canSendCustomFixedPoint(void)
 
 	startId = (gReg.data[LPMS_CAN_CONFIGURATION] & 0xffff0000) >> 16;
 
-	for (j=0; j<4; ++j) {
+	for (j=0; j<2; ++j) {
 		for (i=0; i<8; ++i) data[i] = 0;
 
 		for (k=0; k<4; ++k) {

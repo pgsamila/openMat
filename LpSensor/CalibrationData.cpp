@@ -281,7 +281,7 @@ bool CalibrationData::setParameter(int parameterIndex, int *parameter)
 {	
 	switch (parameterIndex) {
 	case PRM_CAN_MAPPING:
-		for (int i=0; i<16; ++i) {
+		for (int i=0; i<8; ++i) {
 			canMapping[i] = parameter[i];
 		}
 	break;
@@ -399,7 +399,7 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 	break;
 	
 	case PRM_CAN_MAPPING:
-		for (int i=0; i<16; ++i) {
+		for (int i=0; i<8; ++i) {
 			parameter[i] = canMapping[i];
 		}
 	break;

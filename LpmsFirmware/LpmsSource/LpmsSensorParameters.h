@@ -300,6 +300,4 @@ uint8_t getGyroXData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 uint8_t getGyroYData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 uint8_t getGyroZData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 
-uint8_t setLpBusDataMode(uint8_t* data);
-
 #endif

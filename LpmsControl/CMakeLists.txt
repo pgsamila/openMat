@@ -42,8 +42,8 @@ endif(COMMAND cmake_policy)
 # set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 # set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-# set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Debug")
 
 set(USE_JUST_THREAD CACHE BOOL "")
 set(USE_ZEROC_ICE CACHE BOOL "")

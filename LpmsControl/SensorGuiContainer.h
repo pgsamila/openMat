@@ -103,20 +103,11 @@ public:
 	QComboBox* canTpdo3BCombo;
 	QComboBox* canTpdo4ACombo;
 	QComboBox* canTpdo4BCombo;
-	QComboBox* canTpdo5ACombo;
-	QComboBox* canTpdo5BCombo;
-	QComboBox* canTpdo6ACombo;
-	QComboBox* canTpdo6BCombo;
-	QComboBox* canTpdo7ACombo;
-	QComboBox* canTpdo7BCombo;
-	QComboBox* canTpdo8ACombo;
-	QComboBox* canTpdo8BCombo;	
 	QComboBox* canHeartbeatCombo;
 	QComboBox* linAccCompModeCombo;
 	QComboBox* centriCompModeCombo;
 	QComboBox* canChannelModeCombo;
-	QComboBox* canPointModeCombo;
-	QComboBox* lpBusDataModeCombo;
+	QComboBox* canPointModeCombo;	
 	QSpinBox* canStartIdSpin;
 	int openMatId;
 	LpmsSensorI* sensor;
@@ -165,7 +156,6 @@ public slots:
 	void updateCanStartId(int i);
 	void updateCanPointMode(int i);
 	void updateCanChannelMode(int i);
-	void updateLpBusDataMode(int i);
 };
 
 #endif

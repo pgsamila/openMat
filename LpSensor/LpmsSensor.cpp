@@ -233,14 +233,6 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_CONFIG;
 			break;
 			
-			// Retrieves firmware version
-			case C_STATE_GET_FIRMWARE_VERSION:
-				LOGV("[LpmsSensor] Get firmware version\n");
-				bt->getFirmwareVersion();
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_CONFIG;			
-			break;			
-			
 			// Gets the current configuration word. 
 			case C_STATE_GET_CONFIG:
 				LOGV("[LpmsSensor] Get configuration data\n");
@@ -252,7 +244,7 @@ void LpmsSensor::update(void)
 					getConfigState = C_STATE_FILTER_MODE;
 				}
 			break;
-						
+			
 			// Retrieves the current filter mode.
 			case C_STATE_FILTER_MODE:
 				LOGV("[LpmsSensor] Get filter mode\n");			
@@ -354,7 +346,15 @@ void LpmsSensor::update(void)
 				LOGV("[LpmsSensor] Get gyr. alignment bias\n");
 				bt->getGyrAlignmentBias();
 				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_LOW_PASS;
+				getConfigState = C_STATE_GET_FIRMWARE_VERSION;
+			break;
+						
+			// Retrieves firmware version
+			case C_STATE_GET_FIRMWARE_VERSION:
+				LOGV("[LpmsSensor] Get firmware version\n");
+				bt->getFirmwareVersion();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_LOW_PASS;			
 			break;
 			
 			// Retrieves low-pass filter settings
@@ -830,29 +830,6 @@ void LpmsSensor::update(void)
 	// Sets linear acceleration compensation mode
 	case STATE_SET_LIN_ACC_COMP_MODE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			configData.getParameter(PRM_LPBUS_DATA_MODE, &p);
-			switch(p) {
-			case SELECT_LPMS_LIN_ACC_COMP_MODE_OFF:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_OFF);	
-			break;
-			
-			case SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_WEAK);	
-			break;
-			
-			case SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_MEDIUM);	
-			break;	
-
-			case SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_STRONG);	
-			break;				
-			
-			case SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_ULTRA);	
-			break;			
-			}
-		
 			bt->setLinAccCompMode(configData.linAccCompMode);
 			LOGV("[LpmsSensor] Set linear acceleration compensation mode\n");
 			state = STATE_SET_CENTRI_COMP_MODE;

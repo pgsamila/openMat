@@ -34,8 +34,8 @@ cmake_minimum_required(VERSION 2.4.6)
 # set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
 # set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
-# set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Release")
+# set(CMAKE_BUILD_TYPE "Debug")
 
 set(BUILD_ARCHITECTURE "32-bit" CACHE STRING "")
 set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")

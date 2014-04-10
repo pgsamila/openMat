@@ -1069,16 +1069,6 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Calibrates magnetometer reference.
-	case STATE_SET_REFERENCE:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
-			startMagReferenceCal();
-
-			state = STATE_CALIBRATING;
-			getConfigState = CAL_STATE_GET_STATUS;
-		}	
-	break;
-	
 	// Waits for calibration to finish.
 	case STATE_CALIBRATING:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
@@ -1281,15 +1271,6 @@ void LpmsSensor::startCalibrateGyro(void)
 void LpmsSensor::checkGyroCalibration(ImuData d)
 {
 }
-
-/* void LpmsSensor::startResetReference(void)
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;
-	
-	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_SET_REFERENCE;
-} */
 
 void LpmsSensor::checkResetReference(void)
 {

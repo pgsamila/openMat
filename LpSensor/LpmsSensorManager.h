@@ -101,7 +101,7 @@ public:
 	void run(void);		
 	LpmsSensorI* addSensor(int mode, const char *deviceId);
 	void removeSensor(LpmsSensorI *sensor);	
-	void startListDevices(void);
+	void startListDevices(bool scan_serial_ports);
 	bool listDevicesBusy(void);
 	void stopListDevices(void);
 	LpmsDeviceList getDeviceList(void);
@@ -123,6 +123,7 @@ private:
 	std::mutex lm;
 	int threadDelay;
 	char writeBuffer[65536];
+	bool scan_serial_ports_;
 	
 #ifdef _WIN32	
 	CanEngine ce;

@@ -1,7 +1,7 @@
 /***********************************************************************
-** Copyright (C) 2011 LP-Research
+** Copyright (C) 2013 LP-Research
 ** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** Contact: LP-Research (info@lp-research.com)
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -29,35 +29,75 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "GraphWindow.h"
+#ifndef SINUS_PLOT
+#define SINUS_PLOT
 
-GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
+#include <QWidget>
+#include <QFont>
+
+#include <qwt_plot.h>
+#include <qwt_plot_marker.h>
+#include <qwt_plot_curve.h>
+#include <qwt_legend.h>
+#include <qwt_series_data.h>
+#include <qwt_plot_canvas.h>
+#include <qwt_plot_grid.h>
+#include <qwt_plot_panner.h>
+#include <qwt_plot_magnifier.h>
+#include <qwt_text.h>
+#include <qwt_text_label.h>
+#include <qwt_math.h>
+#include <qwt_scale_widget.h>
+#include <qwt_dyngrid_layout.h>
+
+#include <string>
+
+using namespace std;
+
+#define MAX_DATA 512
+
+#define STD_SPACING 5
+
+/* Contains all information for one data graph curve. */
+class Curve 
 {
-	sagittalGraph = new Plot("Sagittal plane angle (degree)", "No. samples", "", 1, 150, 1, 0, 180);	
-	transverseGraph = new Plot("Transverse plane angle (degree)", "No. samples", "", 2, 150, 1, 0, 180);	
-	coronalGraph = new Plot("Coronal plane angle (degree)", "No. samples", "", 3, 150, 1, 0, 180);	
-	
-	QVBoxLayout *graphLayout = new QVBoxLayout();
-	graphLayout->addWidget(sagittalGraph);
-	graphLayout->addWidget(transverseGraph);
-	graphLayout->addWidget(coronalGraph);
+public:
+	QwtPlotCurve *qwtCurve;
+	int nData;
+	double xData[MAX_DATA];
+	double yData[MAX_DATA];
+	int xPos;
+	bool first;
+};
 
-	this->setLayout(graphLayout);
-	
-    setAutoFillBackground(true);
-    setPalette(QPalette(QColor(255, 255, 255)));	
-}
-
-void GraphWindow::plotData(Eigen::Vector3f planeAngle)
-{	
-	sagittalGraph->addData(0, planeAngle(0));
-	transverseGraph->addData(0, planeAngle(1));
-	coronalGraph->addData(0, planeAngle(2));
-}
-
-void GraphWindow::clearGraphs(void)
+/* QwtPlot window that contains a data graph. */
+class Plot : public QwtPlot
 {
-	sagittalGraph->clearData();
-	transverseGraph->clearData();
-	coronalGraph->clearData();
-}
+Q_OBJECT	
+	
+public:
+	Plot(string title, string xAxis, string yAxis, 
+		string aName, string bName, string cName, string dName, 
+		int color, int maxData, int nCurves, 
+		float yMax, float yMin, 
+		QwtLegend *legend,
+		QWidget *parent = 0);	
+	void addData(int i, float y);
+	void clearData(void);
+	void setData(int i);
+	void setXMarker(string text);
+	void clearXMarker(void);
+	QSize minimumSizeHint() const;
+	
+public:
+	vector<Curve> curves;
+	int maxData;
+	int nCurves;
+	vector<QwtPlotMarker *> markerX;
+	std::string curveName[4];
+	int textRedraw[4];
+	float yMax;
+	float yMin;
+};
+
+#endif

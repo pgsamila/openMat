@@ -241,7 +241,7 @@ uint8_t ttlUsartPortPollData(void)
 				ttlUsartPortRxState = PACKET_START;
 				if (ttlUsartPortNewPacket.lrcCheck == computeCheckSum(ttlUsartPortNewPacket)) {
 					addPacketToBuffer(ttlUsartPortNewPacket);
-					connectedInterface = RS232_CONNECTED;
+					connectedInterface = TTL_UART_CONNECTED;
 				}
 			} else {
 				ttlUsartPortRxState = PACKET_START;

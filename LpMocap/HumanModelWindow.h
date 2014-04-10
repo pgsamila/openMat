@@ -36,6 +36,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QMouseEvent>
+#include <QImage>
 
 #include <string>
 #include <iostream>
@@ -44,6 +45,7 @@ using namespace std;
 
 #include "ImuData.h"
 #include "HumanModel.h"
+#include "LinkJoint.h"
 
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
@@ -52,74 +54,44 @@ using namespace boost;
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
+#include <mutex>
+
+#include "opencv2/opencv.hpp"
+
 class QGLShaderProgram;
 
-// Contains a 3D representation of the human model
 class HumanModelWindow : public QGLWidget
 {
     Q_OBJECT
 
 public:
-	// Constructor
     HumanModelWindow(HumanModel *hm, QWidget *parent = 0, QGLWidget *shareWidget = 0);
-	
-	// Destructor
     ~HumanModelWindow(void);
-	
-	// Returns minimum size of windo
     QSize minimumSizeHint() const;
-	
-	// Returns size hint
     QSize sizeHint() const;
-	
-	// Draws coordinate system
 	void drawAxes(void);
-
-	// Draws a triangle
 	void drawTri(Eigen::Vector3f p0, Eigen::Vector3f p1, Eigen::Vector3f p2, bool fill);
-	
-	// Draws the current human model data
 	void drawHumanModel(void);
-	
-	// Draws a Vicon Blade inspired diamond to represent a joing in the model
 	void drawDiamond(Eigen::Matrix3f R, Eigen::Vector3f t, double l, enum COLORS c, bool active);
-	
-	// Draws the floor of the scene
 	void drawFloor(void);
-	
-	// Initializes OpenGL
     void initializeGL();
-	
-	// Redraws scene
     void paintGL();
-	
-	// Resizes scene
     void resizeGL(int width, int height);
-	
-	// Draws a link
-	void drawLink(Link* l);	
-	
-	// Rotates scene
+	void drawLink(void);	
 	void rotateBy(int xAngle, int yAngle, int zAngle);
-	
-	// Rotates scene by a relative angle
 	void rotateSceneBy(int xAngle, int yAngle, int zAngle);
-	
-	// Draws scene background
 	void drawBackground(void);
+	bool OpenVideoFile(const char *fn);
+	void WriteVideoFrame(void);
+	void CloseVideoFile(void);
+	bool IsVideoRecordingStarted(void);
 	
 public slots:	
-	// Updates current rotations quaternion data
 	void updateQuaternion(ImuData imuData);
-	
-	// Updates whole window
 	void updateWindow(void);	
-	
-	// Is called in case of a mouse button pressed event
 	void mousePressEvent(QMouseEvent *event);
-	
-	// Is called in case mouse is moved
 	void mouseMoveEvent(QMouseEvent *event);
+	void wheelEvent(QWheelEvent *event);
 	
 public:
 	HumanModel *hm;
@@ -131,6 +103,12 @@ public:
 	int xSRot;
 	int ySRot;
 	int zSRot;
+	float glob_translate_x;
+	float glob_translate_y;
+	float glob_translate_z;
+	cv::VideoWriter *video_writer;
+	QImage current_frame_buffer_;
+	bool video_recording_started_;	
 };
 
 #endif

@@ -83,10 +83,11 @@ public:
 	int progressCount;
 	QWidget* mainWin;
 	bool isDiscovering;
+	bool scan_serial_ports_;
 	
 public slots:
 	void discoverDevices(void);	
-	void startDiscoverDevices(void);
+	void startDiscoverDevices(bool scan_serial_ports);
 	void updateDevices(void);
 	void progressTimerUpdate(void);
 

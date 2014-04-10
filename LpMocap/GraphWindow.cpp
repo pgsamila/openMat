@@ -29,48 +29,48 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifndef GRAPH_WINDOW
-#define GRAPH_WINDOW
+#include "GraphWindow.h"
 
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QComboBox>
-#include <QGroupBox>
-#include <QPalette>
-
-#include <iostream>
-#include <string>
-#include <limits>
-using namespace std;
-
-#include <Eigen/Dense>
-
-#include "Plot.h"
-
-// Contains sagittal, transversal and coronal graphs
-class GraphWindow : public QWidget
+GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
 {
-Q_OBJECT
-	
-public:
-	// Contructor
-	GraphWindow(QWidget *parent = 0);
-	
-	// Clears graphs
-	void clearGraphs(void);
-	
-public slots:
-	// Plots current data
-	void plotData(Eigen::Vector3f planeAngle);
-	
-public:
-	Plot *sagittalGraph;
-	Plot *transverseGraph;
-	Plot *coronalGraph;	
-};
+	sagittal_legend = new QwtLegend();
+	transverse_legend = new QwtLegend();
+	coronal_legend = new QwtLegend();
 
-#endif
+	sagittal_graph = new Plot("", "Samples", "Sagittal angle (degree)", 
+		"X", "", "", "",
+		0, 150, 1, 0.0f, 180.0f, sagittal_legend);
+
+	transverse_graph = new Plot("", "Samples", "Transverse angle (degree)", 
+		"Y", "", "", "",
+		0, 150, 1, 0.0f, 180.0f, transverse_legend);
+
+	coronal_graph = new Plot("", "Samples", "Coronal angle (degree)", 
+		"Z", "", "", "",
+		0, 150, 1, 0.0f, 180.0f, coronal_legend);
+
+	QVBoxLayout *graphLayout = new QVBoxLayout();
+
+	graphLayout->addWidget(sagittal_graph);
+	graphLayout->addWidget(transverse_graph);	
+	graphLayout->addWidget(coronal_graph);
+
+	this->setLayout(graphLayout);
+	
+    setAutoFillBackground(true);
+    setPalette(QPalette(QColor(255, 255, 255)));	
+}
+
+void GraphWindow::plotData(Eigen::Vector3f planeAngle)
+{	
+	sagittal_graph->addData(0, planeAngle(0));
+	transverse_graph->addData(1, planeAngle(1));
+	coronal_graph->addData(2, planeAngle(2));
+}
+
+void GraphWindow::clearGraphs(void)
+{
+	sagittal_graph->clearData();
+	transverse_graph->clearData();
+	coronal_graph->clearData();
+}

@@ -58,7 +58,7 @@ public:
 	virtual void removeSensor(LpmsSensorI* sensor) = 0;
 
 	/* Lists all connected LPMS devices. The device desicovery runs in a seperate thread. */
-	virtual void startListDevices(void) = 0;
+	virtual void startListDevices(bool scan_serial_ports) = 0;
 
 	/* Indicates if device detection is busy. */
 	virtual bool listDevicesBusy(void) = 0;

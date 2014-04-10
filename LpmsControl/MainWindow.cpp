@@ -249,13 +249,6 @@ void MainWindow::createMenuAndToolbar(void)
 	calibrationMenu->addSeparator();	
 	calibrationMenu->addAction(resetToFactoryAction);
 	
-	QMenu* openMatMenu = menuBar()->addMenu("&OpenMAT");
-	QAction* versionAction = new QAction("Version info", this);
-	QAction* openmatAction = new QAction("Connect to &OpenMAT server", this);	
-	openMatMenu->addAction(openmatAction);
-	openMatMenu->addSeparator();
-	openMatMenu->addAction(versionAction);
-	
 	viewMenu = menuBar()->addMenu("&View");
 	QAction* graphAction = new QAction(QIcon("./icons/rss_alt_32x32.png"), "Graph &window", this);
 	QAction* orientationGraphAction = new QAction(QIcon("./icons/target_32x32.png"), "Orien&tation window", this);
@@ -294,17 +287,23 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addAction(threedAction);
 	toolbar->addAction(fieldMapAction); 	
 
-	QMenu* expertMenu = menuBar()->addMenu("&Expert");
+	QMenu* expertMenu = menuBar()->addMenu("&Advanced");
 	QAction* firmwareAction = new QAction("Upload firmware", this);
 	QAction* iapAction = new QAction("Upload IAP", this);
 	selfTestAction = new QAction("Start self test", this);
 	QAction* latencyAction = new QAction("Measure latency", this);
 	QAction* getFieldMapAction = new QAction("Get field map", this);
+	QAction* versionAction = new QAction("Version info", this);
 
 	expertMenu->addAction(firmwareAction);
 	expertMenu->addAction(iapAction);	
 	expertMenu->addSeparator();
 	expertMenu->addAction(selfTestAction);
+	expertMenu->addSeparator();
+	expertMenu->addAction(mACalculateAction);
+	expertMenu->addAction(gyrMaCalculateAction);	
+	expertMenu->addSeparator();
+	expertMenu->addAction(versionAction);	
 	
 	connect(startMagAction, SIGNAL(triggered()), this, SLOT(calibrateMag()));
 	connect(startPlanarMagAction, SIGNAL(triggered()), this, SLOT(calibratePlanarMag()));	
@@ -317,7 +316,6 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(resetSingleOrientationAction, SIGNAL(triggered()), this, SLOT(zeroAngleSelected()));
 	connect(resetAllRefAction, SIGNAL(triggered()), this, SLOT(zeroReferenceAll()));
 	connect(resetAllOrientationAction, SIGNAL(triggered()), this, SLOT(zeroAngleAll()));
-	connect(openmatAction, SIGNAL(triggered()), this, SLOT(startServer()));	
 	connect(connectAction, SIGNAL(triggered()), this, SLOT(openSensor()));	
 	connect(disconnectAction, SIGNAL(triggered()), this, SLOT(closeSensor()));
 	connect(graphAction, SIGNAL(triggered()), this, SLOT(selectGraphWindow()));
@@ -361,10 +359,6 @@ MainWindow::MainWindow(QWidget *parent)
 	gaitTrackingEnabled = false;
 	
 	sm = LpmsSensorManagerFactory();
-	
-#ifdef USE_ZEROC_ICE
-	isp = new IceStormPublisher();
-#endif
 
 	QSplitter *s0 = new QSplitter();
 	
@@ -396,9 +390,7 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	startServer();
 
-#ifdef USE_MB_SERVER
 	mbcom.startServer();
-#endif
 	
 	QTimer* timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -446,16 +438,6 @@ void MainWindow::calibratePlanarMag(void)
 
 void MainWindow::startServer(void)
 {
-#ifdef USE_ZEROC_ICE
-	if (isp->checkConnected() == true) {
-		isp->disconnect();
-	} else {
-		isp->connect();
-		if (isp->checkConnected() == true) {
-		} else {
-		}
-	}
-#endif
 }	 
 
 void MainWindow::updateMagneticFieldMap(void)
@@ -599,9 +581,6 @@ void MainWindow::timerUpdate(void)
 			(*it)->checkOptionalFeatures();
 			checkOptionalFeatures((*it)->getSensor());
 			
-#ifdef USE_ZEROC_ICE
-			isp->updateImuData(imuData);
-#endif	
 			if (mode == MODE_THREED_WIN && ((cubeWindowContainer->getMode() == CUBE_VIEW_MODE_2) || (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_4))) {
 				imuData = (*it)->getSensor()->getCurrentData();
 				cubeWindowContainer->getSelectedCube()->updateData(imuData);			
@@ -691,13 +670,7 @@ void MainWindow::openSensor(void)
 	LpmsSensorI *lpmsDevice = sm->addSensor(mode, deviceAddress.c_str());
 	currentLpms = new SensorGuiContainer(lpmsDevice, lpmsTree);
 
-#ifdef USE_ZEROC_ICE
-	isp->addSensor(lpmsDevice);
-#endif	
-
-#ifdef USE_MB_SERVER
 	mbcom.addSensor(lpmsDevice);
-#endif
 	
 	currentLpms->updateData();
 
@@ -723,16 +696,10 @@ void MainWindow::closeSensor(void)
 	stopMeasurement();
 	
 	if (currentLpms) {
-		SensorGuiContainer *temp = currentLpms;	
+		SensorGuiContainer *temp = currentLpms;
 
-#ifdef USE_ZEROC_ICE
-		isp->removeSensor(temp->getSensor());
-#endif
-
-#ifdef USE_MB_SERVER
 		mbcom.removeSensor(temp->getSensor());
-#endif
-
+		
 		sm->removeSensor(temp->getSensor());
 		lpmsList.remove(temp);
 
@@ -1175,9 +1142,7 @@ bool MainWindow::exitWindow(void)
 	
 	closeSensor();
 	
-#ifdef USE_MB_SERVER
 	mbcom.stopServer();
-#endif
 	
 	return true;
 }

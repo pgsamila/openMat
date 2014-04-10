@@ -15,6 +15,9 @@ const string MotionBuilderCommunication::mTag="MBCommunication";
 MotionBuilderCommunication::MotionBuilderCommunication(void):
 bRunning(false)
 { 
+  std::string info = "LpmsControl v"+(string)LPMS_CONTROL_VERSION;
+  strcpy( serverInfo.info, info.c_str() ); 
+  serverInfo.numSensors = rotDat.ChannelCount;
 }
 
 
@@ -35,8 +38,12 @@ void MotionBuilderCommunication::stopServer(void){
 	if (bRunning){
 		logd("Stopping MBServer");
 		stopThread();
-		if (Soc)  
+		if (Soc) 
+#ifdef _WIN32 
 			closesocket( Soc ); 
+#else
+			close( Soc ); 
+#endif
 		Cleanup(); 
 	}
 }
@@ -57,14 +64,26 @@ void MotionBuilderCommunication::runThread(void)
 		} else { 
 			logd("Waiting for connection");
 			sockaddr_in	lClientAddr;
+
+#ifdef _WIN32
 			int	lSize;
+#else
+			socklen_t lSize;
+#endif
+
 			int	lSocket;
 
 			lSize = sizeof(lClientAddr);
 			bzero((char *)&lClientAddr, sizeof(lClientAddr));
 
 			lSocket = accept(Soc, (struct sockaddr*)&lClientAddr, &lSize);
+
+#ifdef _WIN32
 			if( lSocket != INVALID_SOCKET ) {
+#else
+			if( lSocket != -1 ) {
+#endif
+
 				sockaddr_in	lAddr; 
 				 
 				bzero((char *)&lAddr, sizeof(lAddr));
@@ -73,70 +92,58 @@ void MotionBuilderCommunication::runThread(void)
 				}
 				logd("Connection established");
 				ServerStartedOn = (double)getNanoSeconds();  
-				
-				string sDeviceInfo = "LPMS " + (string)LPMS_CONTROL_VERSION;
-				char deviceInfo[50];
-				strcpy( deviceInfo, sDeviceInfo.c_str() ); 
-
-				// Main MB communication bridge
-				// send version number to MB
-				if (send( lSocket, (char*)&deviceInfo, sizeof(deviceInfo), 0)==SOCKET_ERROR){					
-					logd("Connection error"); 
-				}
-				else {
-					LPMSRotationData rotDat;
-					int fps=30;
-					int count = 0;
+				  
+				char cmd;
+				while (bRunning)
+				{
+#ifdef _WIN32
+					recv(lSocket, (char*)&cmd, sizeof(cmd), 0);
+#else
+					read( lSocket, &cmd, sizeof(cmd) );
+#endif
+					if ( cmd == LPMB_GET_INFO )
+					{   
+#ifdef _WIN32				 
+						if (send( lSocket, (char*)&serverInfo, sizeof(serverInfo), 0)==SOCKET_ERROR)
+#else
+						if (send( lSocket, (char*)&serverInfo, sizeof(serverInfo), 0)==-1)
+#endif 
+						{
+							logd("Connection error"); 
 					
-					char cmd;
-
-					recv(lSocket, (char*)&fps, sizeof(fps), 0); 					
-					logd("MBServer FPS: " + toString(fps));
-					while (bRunning)
-					{  
-						recv(lSocket, (char*)&cmd, sizeof(cmd), 0); 
-						if (cmd == LPMB_FETCHDATA){
-							updateImuData(rotDat);
-							rotDat.mTime = getNanoSeconds(); 
-				 
-							if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
-								break;
-						} else if (cmd == LPMB_DISCONNECT){				
-							logd("Disconnecting...");
-							break;
-						} else {		
-							logd("Disconnecting....");
+						}
+					}
+					else if ( cmd == LPMB_GET_DATA )
+					{
+						updateImuData(rotDat); 
+#ifdef _WIN32
+						if (send( lSocket, (char*)&rotDat,sizeof(rotDat), 0)==SOCKET_ERROR)
+#else
+						if (send( lSocket, (char*)&rotDat, sizeof(rotDat), 0)==-1)
+#endif
+						{
 							break;
 						}
-						cmd = LPMB_READY;
+					} 
+					else if (cmd == LPMB_DISCONNECT)
+					{				
+						logd("Disconnecting...");
+						break;
+					} else {		
+						logd("Disconnecting....");
+						break;
 					}
+					cmd = LPMB_READY;
+		
 				} 
-				/*
-				else {
-					
-					list<LpmsSensorI*>::iterator it;	
-					int i=0;
-					ImuData d;
-					ImuData imuVec[2];
-					while (bRunning)
-					{ 		 
-						for (it = sensorList.begin(); it != sensorList.end(); ++it) {
-							d = (*it)->getCurrentData(); 
-							i=d.openMatId-1;
-							if (i < 2){
-								imuVec[i]=d;
-							}
-						}
-						if (send( lSocket, (char*)&imuVec, 2*sizeof(ImuData), 0)==SOCKET_ERROR)
-							break;  
-						
-						boost::this_thread::sleep(boost::posix_time::microseconds(1000000)/SIM_FPS);
-						//Sleep( 1000);///sSKDataBuffer::SIM_FPS );
-					}
-				} 
-				*/
+
 				shutdown(lSocket, 2);
+
+#ifdef _WIN32
 				closesocket(lSocket);
+#else
+				close(lSocket);
+#endif
 				
 				logd("Connection closed, connection time = "+ toString((getNanoSeconds()-ServerStartedOn)/1000000.0)  +" ms");
 			} else {
@@ -146,7 +153,11 @@ void MotionBuilderCommunication::runThread(void)
 	} // while
 
 	if (Soc)
+#ifdef _WIN32
 		closesocket( Soc );
+#else
+		close( Soc );
+#endif
 	Cleanup();  
 	
 	logd("MBServer Thread Terminated =)");
@@ -173,12 +184,14 @@ void MotionBuilderCommunication::removeSensor(LpmsSensorI* sensor)
 ///////////////////////////////////////////////
 bool MotionBuilderCommunication::initialize()
 {
+#ifdef _WIN32
 	WSADATA wsadata;
 	if (WSAStartup(WS_VERSION_REQUIRED, &wsadata)) 
 	{ 
 		Cleanup();
 		return false;
 	}
+#endif
 	return true;
 }
 
@@ -189,8 +202,13 @@ int MotionBuilderCommunication::initServer(int pPort)
 	struct sockaddr_in  lSin;
 
 	initialize();
+
+#ifdef _WIN32
 	lP = getprotobyname("tcp");
 	lSocket = socket(AF_INET, SOCK_STREAM, lP->p_proto);
+#else
+	lSocket = socket(AF_INET, SOCK_STREAM, 0);
+#endif
 
 	if (lSocket)
 	{
@@ -211,11 +229,13 @@ int MotionBuilderCommunication::initServer(int pPort)
 
 bool MotionBuilderCommunication::Cleanup()
 {
+#ifdef _WIN32
 	if (WSACleanup()) 
 	{ 
 		WSACleanup(); 
 		return false;
 	}
+#endif
 	return true;
 }
 
@@ -224,22 +244,60 @@ void MotionBuilderCommunication::bzero(char *b, size_t length)
 	memset( b,0,length );
 }
 
+#ifndef _WIN32
+static const unsigned usec_per_sec = 1000000;
+static const unsigned usec_per_msec = 1000;
+
+bool QueryPerformanceFrequency(long long *frequency)
+{
+    *frequency = usec_per_sec;
+
+    return true;
+}	
+
+bool QueryPerformanceCounter(long long *performance_count)
+{
+    struct timeval time;
+
+    assert(performance_count != NULL);
+
+    gettimeofday(&time, NULL);
+    *performance_count = time.tv_usec + time.tv_sec * usec_per_sec;
+
+    return true;
+}
+#endif
+
 nsTime MotionBuilderCommunication::getNanoSeconds()
 {
 	static double dmUnits = 0.0;
 
+#ifdef _WIN32
 	LARGE_INTEGER	t;
+#else
+	long long t;
+#endif
 
 	if(QueryPerformanceCounter(&t)) 
 	{
 		double	count;
+
+#ifdef _WIN32
 		count = (double) t.QuadPart;
+#else
+		count = (double) t;
+#endif
+
 		if (!dmUnits) 
 		{
 			QueryPerformanceFrequency(&t);
+#ifdef _WIN32
 			dmUnits = 1000000000.0 / (double) t.QuadPart;
+#else
+			dmUnits = 1000000000.0 / (double) t;
+#endif
 		}
-		return (unsigned __int64) (count * dmUnits);
+		return (nsTime) (count * dmUnits);
 	}
 	return 0;
 }
@@ -253,7 +311,6 @@ nsTime MotionBuilderCommunication::getNanoSeconds()
 // according to sensor id.
 void MotionBuilderCommunication::updateImuData( LPMSRotationData &rd )
 {
-//	MicroMeasure mm;
 	list<LpmsSensorI*>::iterator it;	
 	int i=0;
 	ImuData d;
@@ -268,27 +325,11 @@ void MotionBuilderCommunication::updateImuData( LPMSRotationData &rd )
 			rd.mChannel[i].q[1] = d.q[1];	// x
 			rd.mChannel[i].q[2] = d.q[2];	// y
 			rd.mChannel[i].q[3] = d.q[3];	// z
-			//decodeRotation(rd.mChannel[i].q, d.q[0], d.q[1], d.q[2], d.q[3]);
 			i++;
 		} else {
 			break;
 		}
 	} 
-}
-
-// Decode LPMS quaternion data into XYZ quaternion rotation.
-// q*p = p_
-void MotionBuilderCommunication::decodeRotation(double dst[], float x, float y, float z, float w){
-	Quaternion<double> p_(w,x,y,z);
-	Quaternion<double> p(0,1,0,0); 
-	Quaternion<double> q; 
-	q = p_*p.inverse();
-	q.normalize();
-	// XYZ original frame 
-	dst[0] = q.x();
-	dst[1] = q.y();
-	dst[2] = q.z();
-	dst[3] = q.w();
 }
 
 

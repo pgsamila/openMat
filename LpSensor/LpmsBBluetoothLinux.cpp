@@ -140,7 +140,7 @@ bool LpmsBBluetooth::connect(string deviceId)
 	timestampOffset = 0.0f;
 	currentTimestamp = 0.0f;
 
-	boost::thread t(&LpmsBBluetooth::runRead, this);	
+	std::thread t(&LpmsBBluetooth::runRead, this);	
 	t.detach();
 	
 	return true;
@@ -150,7 +150,7 @@ void LpmsBBluetooth::close(void)
 {
 	isOpen = false;
 	
-	boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	::close(bzSocket);
 }
 
@@ -221,7 +221,7 @@ bool LpmsBBluetooth::sendModbusData(unsigned address, unsigned function, unsigne
 	return false;
 }
 
-bool LpmsBBluetooth::parseModbusByte(unsigned char b)
+bool LpmsBBluetooth::parseModbusByte(void)
 {
 	unsigned char b;
 

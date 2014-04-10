@@ -139,7 +139,7 @@
 #define SELECT_SELF_TEST_ON				0
 #define SELECT_SELF_TEST_OFF			1
 
-/* CAN bus streaming frequency. */
+/* Data streaming frequency. */
 #define SELECT_STREAM_FREQ_5HZ 			5
 #define SELECT_STREAM_FREQ_10HZ 		10
 #define SELECT_STREAM_FREQ_30HZ 		30

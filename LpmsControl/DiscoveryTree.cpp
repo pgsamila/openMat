@@ -46,11 +46,13 @@ DiscoveryTree::DiscoveryTree(LpmsSensorManagerI* sm, string title, QWidget *main
 	connect(this, SIGNAL(devicesChanged()), this, SLOT(updateDevices()));
 	
 	isDiscovering = false;
+	scan_serial_ports_ = false;
 }
 
-void DiscoveryTree::startDiscoverDevices(void) {
+void DiscoveryTree::startDiscoverDevices(bool scan_serial_ports) {
 	if (isDiscovering == true) return;
 	isDiscovering = true;
+	scan_serial_ports_ = scan_serial_ports;
 
 	deviceVector.clear();
 
@@ -99,7 +101,7 @@ void DiscoveryTree::updateDevices(void) {
 
 void DiscoveryTree::discoverDevices(void) 
 {
-	sm->startListDevices();
+	sm->startListDevices(scan_serial_ports_);
 
 	while (sm->listDevicesBusy() == true) {
         if (discoverProgress->wasCanceled()) {

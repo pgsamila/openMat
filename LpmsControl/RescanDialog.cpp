@@ -58,6 +58,9 @@ RescanDialog::RescanDialog(LpmsSensorManagerI *sm, QComboBox *comboDeviceList, L
 	h1->addWidget(saveDevicesB);
 	h1->addWidget(rescanDevicesB);
 	
+	check_com_ports = new QCheckBox("Scan system serial ports (only for LPMS-UART)");
+	
+	v0->addWidget(check_com_ports);
 	v0->addLayout(h0);
 	v0->addLayout(h1);
 		
@@ -95,7 +98,7 @@ void RescanDialog::saveDevices(void)
 
 void RescanDialog::startRescan(void)
 {
-	detectedDevices->startDiscoverDevices();
+	detectedDevices->startDiscoverDevices(check_com_ports->isChecked());
 }
 
 void RescanDialog::addPreferredDevice(void)

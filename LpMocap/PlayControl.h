@@ -43,8 +43,13 @@
 #include <string>
 #include <queue>
 #include <fstream>
+#include <thread>
+#include <mutex>
+
+#include <Eigen/Dense>
 
 #include "MicroMeasure.h"
+#include "LinkJoint.h"
 
 // Widget for playback controller
 class PlayController : QWidget {
@@ -62,8 +67,8 @@ public:
 class JointDataSet {
 public:
 	double timeStamp;
-	/* vector<Eigen::Vector3f> jointPositionData;
-	vector<Eigen::Matrix3f> linkRotationData; */
+	vector<Eigen::Vector3f> jointPositionData;
+	vector<Eigen::Matrix3f> linkRotationData;
 };
 
 // Plays and records motion of links / joints
@@ -74,7 +79,7 @@ public:
 	MotionPlayer(void /* HumanModel	*hm */);
 	
 	// Retrieves current playback file
-	string getPlaybackFile(void);
+	std::string getPlaybackFile(void);
 	
 	// Updates joints from data read from file
 	bool updateJointsFromData(double t);
@@ -110,10 +115,10 @@ public:
 	double currentRecordTime(void);
 	
 	// Retrievs current recording file
-	string getRecordingFile(void);
+	std::string getRecordingFile(void);
 	
 	// Writes current motion data to CSV file
-	bool writeCSVData(string fn);
+	bool writeCSVData(std::string fn);
 
 public slots:
 	// Plays motion
@@ -129,16 +134,16 @@ public slots:
 	void newMotionData(void);
 	
 public:
-	/* HumanModel *hm;
+	/* HumanModel *hm; */
 	vector<Joint*> jointList;
-	vector<Link*> linkList; */
-	vector<JointDataSet> dataList;
+	vector<Link*> linkList;
+	std::vector<JointDataSet> dataList;
 	double maxTime;
 	double fps;
 	MicroMeasure frameTimer;
 	std::ofstream writeStream;
 	bool recordingStarted;
-	queue<JointDataSet> writeQueue;	
+	std::queue<JointDataSet> writeQueue;	
 	unsigned long playPointer;
 	bool playStarted;
 	double playTimerOffset;

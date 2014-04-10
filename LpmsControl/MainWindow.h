@@ -76,7 +76,7 @@
 #include "MicroMeasure.h"
 #include "GaitTrackingWindow.h"
 #include "MotionBuilderCommunication.h"
-#include "Playcontrol.h"
+#include "PlayControl.h"
 
 #include <string>
 #include <iostream>
@@ -95,8 +95,9 @@ using namespace boost;
 #define MODE_GAIT_TRACKING_WIN 3
 
 #define USE_HEAVEMOTION
+#define USE_MB_SERVER
 
-#define LPMS_CONTROL_VERSION "1.2.5"
+#define LPMS_CONTROL_VERSION "1.2.9"
 
 /* LPMS Control main window. */
 class MainWindow : public QMainWindow

@@ -396,78 +396,87 @@ bool LpmsIoInterface::parseSensorData(void)
 	unsigned o=0;
 	float r0, r1, r2;
 	const float r2d = 57.2958f;
+	int ri0, ri1, ri2;
+	int v;
 
 	zeroImuData(&imuData);
 	
-	fromBuffer(oneTx, o, &currentTimestamp);
-	o = o + 4;
+	if (configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED != 0) {
+		fromBuffer(oneTx, o, &v);
+		currentTimestamp = (float) v / 10000.0f;
+		o = o + 4;	
+		
+	} else {
+		fromBuffer(oneTx, o, &currentTimestamp);
+		o = o + 4;
+		
+		if ((configReg & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
+			fromBuffer(oneTx, o, &r0, &r1, &r2);
+			imuData.gRaw[0] = r0 * r2d;
+			imuData.gRaw[1] = r1 * r2d;
+			imuData.gRaw[2] = r2 * r2d;	
+			o = o + 12;
+		}
+		
+		if ((configReg & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
+			fromBuffer(oneTx, o, &(imuData.aRaw[0]), &(imuData.aRaw[1]), &(imuData.aRaw[2]));	
+			o = o + 12;
+		}	
+
+		if ((configReg & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
+			fromBuffer(oneTx, o, &(imuData.bRaw[0]), &(imuData.bRaw[1]), &(imuData.bRaw[2]));	
+			o = o + 12;
+		}
+		
+		if ((configReg & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) {
+			fromBuffer(oneTx, o, &r0, &r1, &r2);
+			imuData.w[0] = r0 * r2d;
+			imuData.w[1] = r1 * r2d;
+			imuData.w[2] = r2 * r2d;	
+			o = o + 12;
+		}
+		
+		if ((configReg & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
+			fromBuffer(oneTx, o, &(imuData.q[0]), &(imuData.q[1]), &(imuData.q[2]), &(imuData.q[3]));	
+			o = o + 16;
+		}	
+			
+		if ((configReg & LPMS_EULER_OUTPUT_ENABLED) != 0)  {
+			fromBuffer(oneTx, o, &r0, &r1, &r2);
+			imuData.r[0] = r0 * r2d;
+			imuData.r[1] = r1 * r2d;
+			imuData.r[2] = r2 * r2d;	
+			o = o + 12;
+		}	
+
+		if ((configReg & LPMS_LINACC_OUTPUT_ENABLED) != 0)  {
+			fromBuffer(oneTx, o, &(imuData.linAcc[0]), &(imuData.linAcc[1]), &(imuData.linAcc[2]));
+			o = o + 12;
+		}	
+	 
+		if ((configReg & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
+			fromBuffer(oneTx, o, &imuData.pressure);
+			o = o + 4;
+		}
+		
+		if ((configReg & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
+			fromBuffer(oneTx, o, &imuData.altitude);
+			o = o + 4;
+		}
+
+		if ((configReg & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
+			fromBuffer(oneTx, o, &imuData.temperature);
+			o = o + 4;
+		}
+		
+		if ((configReg & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0)  {
+			fromBuffer(oneTx, o, &imuData.hm.yHeave);
+			o = o + 4;
+		}
+	}
 	
 	if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
-	imuData.timeStamp = currentTimestamp - timestampOffset;
-	
-	if ((configReg & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
-		fromBuffer(oneTx, o, &r0, &r1, &r2);
-		imuData.gRaw[0] = r0 * r2d;
-		imuData.gRaw[1] = r1 * r2d;
-		imuData.gRaw[2] = r2 * r2d;	
-		o = o + 12;
-	}
-	
-	if ((configReg & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
-		fromBuffer(oneTx, o, &(imuData.aRaw[0]), &(imuData.aRaw[1]), &(imuData.aRaw[2]));	
-		o = o + 12;
-	}	
-
-	if ((configReg & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
-		fromBuffer(oneTx, o, &(imuData.bRaw[0]), &(imuData.bRaw[1]), &(imuData.bRaw[2]));	
-		o = o + 12;
-	}
-	
-	if ((configReg & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) {
-		fromBuffer(oneTx, o, &r0, &r1, &r2);
-		imuData.w[0] = r0 * r2d;
-		imuData.w[1] = r1 * r2d;
-		imuData.w[2] = r2 * r2d;	
-		o = o + 12;
-	}
-	
-	if ((configReg & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
-		fromBuffer(oneTx, o, &(imuData.q[0]), &(imuData.q[1]), &(imuData.q[2]), &(imuData.q[3]));	
-		o = o + 16;
-	}	
-	  	
-	if ((configReg & LPMS_EULER_OUTPUT_ENABLED) != 0)  {
-		fromBuffer(oneTx, o, &r0, &r1, &r2);
-		imuData.r[0] = r0 * r2d;
-		imuData.r[1] = r1 * r2d;
-		imuData.r[2] = r2 * r2d;	
-		o = o + 12;
-	}	
-
-	if ((configReg & LPMS_LINACC_OUTPUT_ENABLED) != 0)  {
-		fromBuffer(oneTx, o, &(imuData.linAcc[0]), &(imuData.linAcc[1]), &(imuData.linAcc[2]));
-		o = o + 12;
-	}	
- 
-	if ((configReg & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
-		fromBuffer(oneTx, o, &imuData.pressure);
-		o = o + 4;
-	}
-	
-	if ((configReg & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
-		fromBuffer(oneTx, o, &imuData.altitude);
-		o = o + 4;
-	}
-
-	if ((configReg & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
-		fromBuffer(oneTx, o, &imuData.temperature);
-		o = o + 4;
-	}
-	
-	if ((configReg & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0)  {
-		fromBuffer(oneTx, o, &imuData.hm.yHeave);
-		o = o + 4;
-	}
+	imuData.timeStamp = currentTimestamp - timestampOffset;	
 	
 	if (imuDataQueue.size() < 64) {
 		imuDataQueue.push(imuData);
@@ -580,8 +589,10 @@ bool LpmsIoInterface::parseFunction(void)
 		}
 		
 		if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
+			printf("Received data mode 16\n");
 			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_16);
 		} else {
+			printf("Received data mode 32\n");		
 			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_32);
 		}		
 		
@@ -768,6 +779,10 @@ bool LpmsIoInterface::parseFunction(void)
 	
 	case GET_FIRMWARE_VERSION:
 		fromBuffer(oneTx, &i0, &i1, &i2);
+		configData->firmwareVersionDig0 = i0;
+		configData->firmwareVersionDig1 = i1;
+		configData->firmwareVersionDig2 = i2;
+				
 		configData->firmwareVersion = static_cast<ostringstream*>(&(ostringstream() << i2))->str() + std::string(".") + static_cast<ostringstream*>(&(ostringstream() << i1))->str() + std::string(".") + static_cast<ostringstream*>(&(ostringstream() << i0))->str();
 	break;
 
@@ -811,8 +826,8 @@ bool LpmsIoInterface::parseFunction(void)
 	break;
 	
 	case GET_CAN_MAPPING:
-		fromBuffer(oneTx, a, 8);	
-		configData->setParameter(PRM_CAN_MAPPING, (int *) a);
+		fromBuffer(oneTx, a, 16);	
+		configData->setParameter(PRM_CAN_MAPPING, (int *) a);		
 	break;
 	
 	case GET_CAN_HEARTBEAT:
@@ -1900,7 +1915,7 @@ bool LpmsIoInterface::getCanMapping(void)
 }
 
 bool LpmsIoInterface::setCanMapping(int *a)
-{
+{	
 	return modbusSetInt32Array(SET_CAN_MAPPING, (long *) a, 16);
 }
 

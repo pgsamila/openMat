@@ -179,9 +179,9 @@ uint8_t getCanMapping(uint8_t* data, uint16_t *l)
 		v[i] = gReg.data[LPMS_CAN_MAPPING+i];
 	}
 
-	setMultiUi32t(&(data[0]), v, 8);
+	setMultiUi32t(&(data[0]), v, 16);
 
-	*l = 32;
+	*l = 64;
 
 	return 0;
 }

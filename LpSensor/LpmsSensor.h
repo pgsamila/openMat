@@ -144,6 +144,7 @@
 #define STATE_SET_CAN_CHANNEL_MODE 64
 #define STATE_SET_CAN_POINT_MODE 65
 #define STATE_SET_CAN_START_ID 66
+#define STATE_SET_LPBUS_DATA_MODE 67
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -245,6 +246,7 @@ public:
 	void checkSaveData(void);
 	void stopSaveData(void);
 	void setCallback(LpmsCallback cb);
+	bool assertFwVersion(int d0, int d1, int d2);
 	
 private:
 	void checkResetReference(void);

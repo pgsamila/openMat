@@ -230,7 +230,7 @@ void LpmsSensor::update(void)
 				LOGV("[LpmsSensor] Switch to command mode\n");
 				bt->setCommandMode();
 				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_CONFIG;
+				getConfigState = C_STATE_GET_FIRMWARE_VERSION;
 			break;
 			
 			// Retrieves firmware version
@@ -909,9 +909,34 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setCanStartId(configData.canStartId);
 			LOGV("[LpmsSensor] Set CAN start ID\n");
-			state = STATE_SELECT_DATA;
+			state = STATE_SET_LPBUS_DATA_MODE;
 		}
 	break;
+	
+	// Sets CAN point mode
+	case STATE_SET_LPBUS_DATA_MODE:
+		if (assertFwVersion(1, 3, 0) == false) {
+			state = STATE_SELECT_DATA;
+			break;
+		}
+			
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			configData.getParameter(PRM_LPBUS_DATA_MODE, &p);
+			switch(p) {
+			case SELECT_LPMS_LPBUS_DATA_MODE_32:
+				bt->setLpBusDataMode(LPMS_LPBUS_DATA_MODE_32);
+				printf("Data mode 32\n");
+			break;
+			
+			case SELECT_LPMS_LPBUS_DATA_MODE_16:
+				bt->setLpBusDataMode(LPMS_LPBUS_DATA_MODE_16);
+				printf("Data mode 16\n");				
+			break;
+			}
+			LOGV("[LpmsSensor] Set CAN point mode\n");
+			state = STATE_SELECT_DATA;
+		}
+	break;	
 		
 	// Selects transmission data
 	case STATE_SELECT_DATA:
@@ -1110,6 +1135,15 @@ void LpmsSensor::update(void)
 	break;
 	}
 }	
+
+bool LpmsSensor::assertFwVersion(int d0, int d1, int d2)
+{
+	if (configData.firmwareVersionDig0 > d0) return true;
+	if (configData.firmwareVersionDig0 == d0 && configData.firmwareVersionDig1 > d1) return true;
+	if (configData.firmwareVersionDig0 == d0 && configData.firmwareVersionDig1 == d1 && configData.firmwareVersionDig2 >= d2) return true;
+	
+	return false;
+}
 
 bool LpmsSensor::hasNewFieldMap(void)
 {

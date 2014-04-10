@@ -585,6 +585,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	selectedDataGl->addWidget(lpBusDataModeCombo = new QComboBox(), l, 1); ++l;
 	lpBusDataModeCombo->addItem(QString("32-bit floating point"));
 	lpBusDataModeCombo->addItem(QString("16-bit integer"));
+	connect(lpBusDataModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLpBusDataMode(int)));
 	
 	selectedDataGl->addWidget(new QLabel("Enabled data:"), l, 0);
 	selectedDataGl->addWidget(selectAcc = new QCheckBox("Raw accelerometer"), l, 1); ++l;

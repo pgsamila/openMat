@@ -67,7 +67,7 @@ public:
 	int selectedData;
 	std::string firmwareVersion;
 	int lowPassFilter;
-	int canMapping[8];
+	int canMapping[16];
 	int canHeartbeat;
 	int heavemotionEnabled;
 	int gaitTrackingEnabled;
@@ -76,6 +76,10 @@ public:
 	int canPointMode;
 	int canChannelMode;
 	int canStartId;
+	int lpBusDataMode;
+	int firmwareVersionDig0;
+	int firmwareVersionDig1;
+	int firmwareVersionDig2;	
 	
 private:
 	std::mutex calibrationMutex;

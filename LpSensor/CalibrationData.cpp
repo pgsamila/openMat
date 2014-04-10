@@ -243,6 +243,10 @@ bool CalibrationData::setParameter(int parameterIndex, int parameter)
 	case PRM_CAN_START_ID:
 		canStartId = parameter;
 	break;
+	
+	case PRM_LPBUS_DATA_MODE:
+		lpBusDataMode = parameter;
+	break;	
 	}
 
 	calibrationMutex.unlock();
@@ -422,6 +426,10 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 	
 	case PRM_CAN_START_ID:
 		*parameter = canStartId;
+	break;
+	
+	case PRM_LPBUS_DATA_MODE:
+		*parameter = lpBusDataMode;
 	break;
 	}
 

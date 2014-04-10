@@ -62,7 +62,7 @@ endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(WINDOWS_QWT_PATH "C:/qwt-6.1.0" CACHE STRING "")
-	set(WINDOWS_QT5_PATH "C:/Qt/Qt5.1.1/5.1.1/msvc2010_opengl" CACHE STRING "")
+	set(WINDOWS_QT5_PATH "C:/Qt/Qt5.2.1/5.2.1/msvc2010_opengl" CACHE STRING "")
 	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
 	set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
 	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")

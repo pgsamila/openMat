@@ -81,9 +81,6 @@ public:
 	/* Retrieves the current framerate. */
 	virtual float getFps(void) = 0;
 
-	/* Resets the current accelerometer and magnetometer reference. */
-	virtual void startResetReference(void) = 0;
-
 	/* Starts the calibration of the gyroscope. */
 	virtual void startCalibrateGyro(void) = 0;
 
@@ -205,6 +202,8 @@ public:
 	virtual void startAutoMagMisalignCal(void) = 0;	
 	
 	virtual void startPlanarMagCalibration(void) = 0;
+	
+	virtual void startMagReferenceCal(void) = 0;
 }; 
 
 #ifdef _WIN32

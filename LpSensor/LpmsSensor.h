@@ -219,7 +219,6 @@ public:
 	int getSensorStatus(void);
 	int getConnectionStatus(void);
 	float getFps(void);
-	void startResetReference(void);
 	void startCalibrateGyro(void);
 	void startCalibrateMag(void);
 	void stopCalibrateMag(void);

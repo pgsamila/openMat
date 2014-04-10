@@ -829,7 +829,7 @@ void MainWindow::zeroReferenceSelected(void)
 {
 	if (currentLpms == 0 || isConnecting == true) return;
 	
-	currentLpms->getSensor()->startResetReference();
+	currentLpms->getSensor()->startMagReferenceCal();
 }
 
 void MainWindow::zeroReferenceAll(void)
@@ -839,7 +839,7 @@ void MainWindow::zeroReferenceAll(void)
 	if (currentLpms == 0 || isConnecting == true) return;
 	
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-		(*it)->getSensor()->startResetReference();
+		(*it)->getSensor()->startMagReferenceCal();
 	}
 }
 
@@ -1463,7 +1463,7 @@ void MainWindow::magAutoMisalignmentCal(void)
 	
 	if (isRunning == false) startMeasurement();
 	
-	currentLpms->getSensor()->startMagMisalignCal();
+	currentLpms->getSensor()->startAutoMagMisalignCal();
 	
 	startWaitBar(45);
 }

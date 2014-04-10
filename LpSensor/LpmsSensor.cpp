@@ -1282,14 +1282,14 @@ void LpmsSensor::checkGyroCalibration(ImuData d)
 {
 }
 
-void LpmsSensor::startResetReference(void)
+/* void LpmsSensor::startResetReference(void)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
 	if (state != STATE_MEASURE) return;
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
 	getConfigState = STATE_SET_REFERENCE;
-}
+} */
 
 void LpmsSensor::checkResetReference(void)
 {
@@ -1336,7 +1336,10 @@ bool LpmsSensor::updateParameters(void)
 	bool r = true;
 
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
-	if (state != STATE_MEASURE) return false;	
+	if (state != STATE_MEASURE) {
+		printf("State isn't STATE_MEASURE\n");
+		return false;
+	}
 
 	state = PREPARE_PARAMETER_ADJUSTMENT;
 	getConfigState = STATE_SET_CONFIG;
@@ -2078,14 +2081,16 @@ void LpmsSensor::startMagReferenceCal(void)
   	if (isRefCalibrationEnabled == true) return;
   	
 	isRefCalibrationEnabled = true;
+	
 	cumulatedRefCounter = 0;
 	refCalibrationDuration = 0.0f;
 	
 	for (int i = 0; i < 3; i++) cumulatedRefData[i] = 0;
 
-	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
-	
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);
+		
 	p = SELECT_LPMS_MAG_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_ACC_OUTPUT_ENABLED;	
 	p |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;
 
 	printf("[LpmsSensor] Starting magnetometer reference calibration.\n");	

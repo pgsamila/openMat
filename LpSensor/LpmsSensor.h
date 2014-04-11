@@ -87,7 +87,7 @@
 #define STATE_CALIBRATE_GYRO 6
 #define STATE_CALIBRATE_MAG 7
 #define STATE_WAIT_AFTER_CONNECT 8
-#define STATE_RESET_ORIENTATION 9
+#define STATE_SET_ORIENTATION_OFFSET 9
 #define STATE_SET_REFERENCE 10
 #define STATE_ENABLE_THRESHOLD 11
 #define STATE_SET_RANGE 12
@@ -148,6 +148,7 @@
 #define STATE_SET_MAG_ALIGNMENT_MATRIX 67
 #define STATE_SET_MAG_ALIGNMENT_BIAS 68
 #define STATE_SET_MAG_REFERENCE 69
+#define STATE_RESET_ORIENTATION_OFFSET 70
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -220,8 +221,6 @@ public:
 	int getConnectionStatus(void);
 	float getFps(void);
 	void startCalibrateGyro(void);
-	void startCalibrateMag(void);
-	void stopCalibrateMag(void);
 	void resetTimestamp(void);
 	CalibrationData* getConfigurationData(void);
 	bool setConfigurationPrm(int parameterIndex, int parameter);
@@ -231,7 +230,6 @@ public:
 	void pollData(void);
 	bool uploadFirmware(const char *fn);
 	bool uploadIap(const char *fn);
-	void resetOrientation(void);
 	void saveCalibrationData(void);
 	LpmsIoInterface *getIoInterface(void);
 	void getCalibratedSensorData(float g[3], float a[3], float b[3]);
@@ -254,6 +252,9 @@ public:
 	void checkSaveData(void);
 	void stopSaveData(void);
 	void setCallback(LpmsCallback cb);
+	void setOrientationOffset(void);
+	void resetOrientationOffset(void);
+	void startMagCalibration(void);	
 	
 private:
 	void checkResetReference(void);
@@ -267,7 +268,6 @@ private:
 	void restoreGyroThresholdSetting(void);
 	long getStreamFrequency(void);
 	void zeroFieldMap(void);
-	void startMagCalibration(void);
 	void checkMagCal(float T);
 	void stopMagCalibration(void);
 	void initMisalignCal(void);

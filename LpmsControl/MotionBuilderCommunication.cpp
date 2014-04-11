@@ -160,7 +160,7 @@ void MotionBuilderCommunication::runThread(void)
 #endif
 	Cleanup();  
 	
-	logd("MBServer Thread Terminated =)");
+	logd("MBServer Thread Terminated");
 }
 
 void MotionBuilderCommunication::stopThread(void)

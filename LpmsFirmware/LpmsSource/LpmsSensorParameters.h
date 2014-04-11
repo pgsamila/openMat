@@ -63,7 +63,10 @@ uint8_t setMagOutputRate(uint8_t* data);
 uint8_t setAccOutputRate(uint8_t* data);
 
 // Sets orientation offset
-uint8_t setOffset(uint8_t* data);
+uint8_t setOrientationOffset(uint8_t* data);
+
+// Resets the orientation offset
+uint8_t resetOrientationOffset(uint8_t* data);
 
 // Sets gyroscope bias
 uint8_t setGyrBias(uint8_t* data);

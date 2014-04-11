@@ -46,7 +46,6 @@ set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_BUILD_TYPE "Debug")
 
 set(USE_JUST_THREAD CACHE BOOL "")
-set(USE_ZEROC_ICE CACHE BOOL "")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
 	set(SHOW_CONSOLE TRUE)
@@ -83,9 +82,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	
 	include_directories("${WINDOWS_QWT_PATH}/src")
 	link_directories("${WINDOWS_QWT_PATH}/lib")
-
-	include_directories("${WINDOWS_ICE_PATH}/Ice/include")	
-	link_directories("${WINDOWS_ICE_PATH}/Ice/lib")
 
 	link_directories("../LpSensor/build")
 

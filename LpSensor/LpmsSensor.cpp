@@ -39,6 +39,12 @@ const float pi = 3.141592f;
 #define STREAM_N_PREPARE 100
 #define FIRMWARE_BACKUP_FILE "LpmsFirmwareBackupFile.txt"
 
+
+
+/***********************************************************************
+** CONSTRUCTORS / DESTRUCTORS
+***********************************************************************/
+
 #ifdef WIN32
 	LpmsSensorI* APIENTRY LpmsSensorFactory(int deviceType, const char *deviceId) 
 	{
@@ -151,19 +157,11 @@ LpmsSensor::~LpmsSensor(void)
 	delete bt;
 }
 
-void LpmsSensor::getDeviceId(char *str)
-{
-	std::string deviceId;
 
-	configData.getParameter(PRM_DEVICE_ID, &deviceId);
-	
-	strcpy(str, deviceId.c_str());
-}
 
-CalibrationData *LpmsSensor::getConfigurationData(void)
-{
-	return &configData;
-}
+/***********************************************************************
+** POLL / UPDATE DATA FROM SENSORS
+***********************************************************************/
 
 void LpmsSensor::pollData(void)
 {
@@ -187,8 +185,9 @@ void LpmsSensor::update(void)
 	// Initiates the connection to the sensor using the hardware interface.
 	case STATE_CONNECT:
 		setConnectionStatus(SENSOR_CONNECTION_CONNECTING);
+		setSensorStatus(SENSOR_STATUS_PAUSED);
+		lpmsTimer.reset();		
 		bt->connect(deviceId);
-		lpmsTimer.reset();
 		LOGV("[LpmsSensor] Trying to connect..\n");
 		retrialsCommandMode = 0;
 		prepareStream = 0;
@@ -441,9 +440,6 @@ void LpmsSensor::update(void)
 			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
 			case C_STATE_SETTINGS_DONE:	
 				LOGV("[LpmsSensor] Done reading configuration\n");			
-
-				bCalSetSoftIronMatrix(configData.softIronMatrix);
-				bCalSetHardIronOffset(configData.hardIronOffset);
 			
 				lpmsTimer.reset();
 				statusTimer.reset();				
@@ -557,14 +553,20 @@ void LpmsSensor::update(void)
 		}
 		
 		convertArrayToLpVector3f(imuData.aRaw, &aRaw);
-		convertArrayToLpVector3f(imuData.bRaw, &b);
+		convertArrayToLpVector3f(imuData.bRaw, &bRaw);
 		convertArrayToLpVector3f(imuData.gRaw, &gRaw);
 
-		// Corrects magnetometer measurement.
+		// Corrects magnetometer measurement
 		if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
-			b = bCalCorrect(b);
+			vectSub3x1(&configData.hardIronOffset, &bRaw, &b);		
+			matVectMult3(&configData.softIronMatrix, &b, &b);
 		}
-		matVectMult3(&configData.misalignMatrix, &aRaw, &a);
+
+		// Corrects accelerometer measurement
+		if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {		
+			matVectMult3(&configData.misalignMatrix, &aRaw, &a);
+			vectAdd3x1(&configData.accBias, &a, &a);
+		}
 
 		g = gRaw;
 	
@@ -1092,13 +1094,21 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Resets orientation.
-	case STATE_RESET_ORIENTATION:
+	// Resets offset.
+	case STATE_RESET_ORIENTATION_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->resetOrientation();
+			bt->resetOrientationOffset();
 			state = STATE_SET_CONFIG;
 		}	
 	break;
+	
+	// Sets offset.
+	case STATE_SET_ORIENTATION_OFFSET:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setOrientationOffset();
+			state = STATE_SET_CONFIG;
+		}	
+	break;	
 	
 	// Restores factory defaults.
 	case STATE_RESET_TO_FACTORY_DEFAULTS:
@@ -1130,7 +1140,27 @@ void LpmsSensor::update(void)
 	default:
 	break;
 	}
-}	
+}
+
+
+
+/***********************************************************************
+** DIRECT GET / SET DEVICE PARAMETERS
+***********************************************************************/
+
+void LpmsSensor::getDeviceId(char *str)
+{
+	std::string deviceId;
+
+	configData.getParameter(PRM_DEVICE_ID, &deviceId);
+	
+	strcpy(str, deviceId.c_str());
+}
+
+CalibrationData *LpmsSensor::getConfigurationData(void)
+{
+	return &configData;
+}
 
 bool LpmsSensor::hasNewFieldMap(void)
 {
@@ -1268,23 +1298,22 @@ void LpmsSensor::startCalibrateGyro(void)
 	getConfigState = STATE_CALIBRATE_GYRO;
 }
 
-void LpmsSensor::checkGyroCalibration(ImuData d)
-{
-}
-
-void LpmsSensor::checkResetReference(void)
-{
-}
-
-void LpmsSensor::resetOrientation(void)
+void LpmsSensor::setOrientationOffset(void)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;
-	
-	quaternionInv(&currentQ, &qOffset);
+	if (state != STATE_MEASURE) return;	
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_RESET_ORIENTATION;
+	getConfigState = STATE_SET_ORIENTATION_OFFSET;
+}
+
+void LpmsSensor::resetOrientationOffset(void)
+{
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
+	if (state != STATE_MEASURE) return;	
+	
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_RESET_ORIENTATION_OFFSET;
 }
 	
 void LpmsSensor::setOpenMatId(int id)
@@ -1297,28 +1326,13 @@ int LpmsSensor::getOpenMatId(void)
 	return configData.openMatId;
 }
 
-void LpmsSensor::checkMagCalibration(ImuData d)
-{	
-}
-
-void LpmsSensor::startCalibrateMag(void)
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	
-	startMagCalibration();
-}
-
-void LpmsSensor::stopCalibrateMag(void)
-{
-}
-
 bool LpmsSensor::updateParameters(void)
 {
 	bool r = true;
 
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
+	
 	if (state != STATE_MEASURE) {
-		printf("State isn't STATE_MEASURE\n");
 		return false;
 	}
 
@@ -1586,7 +1600,7 @@ void LpmsSensor::startPlanarMagCalibration(void)
 void LpmsSensor::checkPlanarMagCal(float T)
 {
 	if (isPlanarMagCalibrationEnabled == true) {
-		magCalibrationDuration += T;	
+		magCalibrationDuration += T;
 	
 		for (int i=0; i<3; i++) {
 			if (currentData.bRaw[i] > bMax.data[i]) {
@@ -1639,7 +1653,7 @@ void LpmsSensor::stopPlanarMagCalibration(void)
 	magCalibrationDuration = 0.0f;
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);	
-	
+
 	updateParameters();
 }
 
@@ -1741,13 +1755,9 @@ void LpmsSensor::initMisalignCal(void)
 	
 	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
 	
-	printf("prevSelection: %x\n", prevDataSelection);
-	
 	p = SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
 	p |= SELECT_LPMS_ACC_OUTPUT_ENABLED;
 
-	printf("selected: 0x%x\n", p);
-	
 	configData.setParameter(PRM_SELECT_DATA, p);
 	updateParameters();
 }
@@ -1787,7 +1797,7 @@ void LpmsSensor::checkMisalignCal(float T)
 		if (misalignTime > 2000.0f) {
 			isGetMisalign = false;
 
-			printf("Average acc. vector %d: ", misalignSetIndex);
+			printf("[LpmsSensor] Average acc. vector %d: ", misalignSetIndex);
 			
 			for (int i=0; i<3; i++) {
 				if (misalignSamples == 0) break;
@@ -1820,13 +1830,11 @@ void LpmsSensor::calcMisalignMatrix(void)
 	
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
 	updateParameters();
-	
-	printf("updated: %x\n", prevDataSelection);
 }	
 
 void LpmsSensor::saveCalibrationData(const char* fn)
 {
-	printf("Saving calibration data to %s\n", fn);
+	printf("[LpmsSensor] Saving calibration data to %s\n", fn);
 	configData.save(fn);
 }
 
@@ -2154,13 +2162,9 @@ void LpmsSensor::initMagMisalignCal(void)
 	}
 	
 	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
-	
-	printf("prevSelection: %x\n", prevDataSelection);
-	
+		
 	p = SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
 	p |= SELECT_LPMS_MAG_OUTPUT_ENABLED;
-
-	printf("selected: 0x%x\n", p);
 	
 	configData.setParameter(PRM_SELECT_DATA, p);
 	updateParameters();
@@ -2240,4 +2244,4 @@ void LpmsSensor::calcMagMisalignCal(void)
 	updateParameters();
 	
 	printf("updated: %x\n", prevDataSelection);
-}	
+}

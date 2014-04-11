@@ -72,6 +72,8 @@ public:
 	
 	// Virtual functions to be overwritten by hardware dependent modules -->
 	
+	virtual ~LpmsIoInterface() { };	
+	
 	// Connects to device
 	virtual bool connect(std::string deviceId) ;
 	
@@ -272,6 +274,8 @@ public:
 	bool getMagAlignmentMatrix(void);
 	bool getMagAlignmentBias(void);
 	bool getMagReference(void);
+	bool setOrientationOffset(void);
+	bool resetOrientationOffset(void);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);

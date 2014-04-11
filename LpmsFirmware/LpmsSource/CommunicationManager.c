@@ -404,8 +404,16 @@ void parsePacket(void)
 				}
 			break;
 				
-			case SET_OFFSET:
-				if (setOffset(packet.data)) {
+			case SET_ORIENTATION_OFFSET:
+				if (setOrientationOffset(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case RESET_ORIENTATION_OFFSET:
+				if (resetOrientationOffset(packet.data)) {
 					sendAck();
 				} else {
 					sendNack();

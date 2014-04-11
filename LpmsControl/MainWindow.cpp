@@ -185,16 +185,6 @@ void MainWindow::createMenuAndToolbar(void)
 	measurementMenu->addAction(replayAction);	
 	
 	toolbar->addSeparator();
-	QVBoxLayout *v1 = new QVBoxLayout();
-	resetCombo = new QComboBox();
-	resetCombo->addItem("Reset heading");
-	resetCombo->addItem("Reset offset");
-	v1->addWidget(new QLabel("Reset method:"));
-	v1->addWidget(resetCombo);
-	QWidget *w1 = new QWidget();
-	w1->setLayout(v1);
-	w1->setFixedWidth(150);	
-	toolbar->addWidget(w1);
 	
 	QVBoxLayout *v2 = new QVBoxLayout();
 	targetCombo = new QComboBox();
@@ -207,8 +197,12 @@ void MainWindow::createMenuAndToolbar(void)
 	w2->setFixedWidth(150);	
 	toolbar->addWidget(w2);
 	
-	QAction* resetTbAction = new QAction(QIcon("./icons/fullscreen_exit_32x32.png"), "Reset sensors", this);
-	toolbar->addAction(resetTbAction);
+	QAction* setOffsetAction = new QAction(QIcon("./icons/fullscreen_exit_32x32.png"), "Set offset", this);
+	toolbar->addAction(setOffsetAction);
+	QAction* resetOffsetAction = new QAction(QIcon("./icons/denied_32x32.png"), "Reset offset", this);
+	toolbar->addAction(resetOffsetAction);
+	QAction* resetHeadingAction = new QAction(QIcon("./icons/compass_32x32.png"), "Reset heading", this);
+	toolbar->addAction(resetHeadingAction);	
 	
 	QMenu* calibrationMenu = menuBar()->addMenu("&Calibration");
 	
@@ -242,10 +236,9 @@ void MainWindow::createMenuAndToolbar(void)
 	calibrationMenu->addAction(loadFromFileAction);
 	calibrationMenu->addAction(saveToFileAction);	
 	calibrationMenu->addSeparator();
-	calibrationMenu->addAction(resetSingleRefAction);
-	calibrationMenu->addAction(resetAllRefAction);
-	calibrationMenu->addAction(resetSingleOrientationAction);
-	calibrationMenu->addAction(resetAllOrientationAction);
+	calibrationMenu->addAction(setOffsetAction);
+	calibrationMenu->addAction(resetOffsetAction);
+	calibrationMenu->addAction(resetHeadingAction);
 	calibrationMenu->addSeparator();	
 	calibrationMenu->addAction(resetToFactoryAction);
 	
@@ -311,11 +304,7 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(gyroAction, SIGNAL(triggered()), this, SLOT(recalibrate()));
 	connect(saveAction, SIGNAL(triggered()), this, SLOT(recordData()));	
 	connect(browseAction, SIGNAL(triggered()), this, SLOT(browseRecordFile()));	
-	connect(saveCalAction, SIGNAL(triggered()), this, SLOT(saveCalibration()));		
-	connect(resetSingleRefAction, SIGNAL(triggered()), this, SLOT(zeroReferenceSelected()));
-	connect(resetSingleOrientationAction, SIGNAL(triggered()), this, SLOT(zeroAngleSelected()));
-	connect(resetAllRefAction, SIGNAL(triggered()), this, SLOT(zeroReferenceAll()));
-	connect(resetAllOrientationAction, SIGNAL(triggered()), this, SLOT(zeroAngleAll()));
+	connect(saveCalAction, SIGNAL(triggered()), this, SLOT(saveCalibration()));
 	connect(connectAction, SIGNAL(triggered()), this, SLOT(openSensor()));	
 	connect(disconnectAction, SIGNAL(triggered()), this, SLOT(closeSensor()));
 	connect(graphAction, SIGNAL(triggered()), this, SLOT(selectGraphWindow()));
@@ -341,9 +330,11 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(cubeMode1Action, SIGNAL(triggered()), this, SLOT(selectCubeMode1()));
 	connect(cubeMode2Action, SIGNAL(triggered()), this, SLOT(selectCubeMode2()));
 	connect(cubeMode4Action, SIGNAL(triggered()), this, SLOT(selectCubeMode4()));
-	connect(resetTbAction, SIGNAL(triggered()), this, SLOT(resetTbSelected()));
 	connect(replayAction, SIGNAL(triggered()), this, SLOT(startReplay()));
 	connect(browseReplayAction, SIGNAL(triggered()), this, SLOT(browsePlaybackFile()));	
+	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
+	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));	
+	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));	
 }
 
 void MainWindow::updateCanBaudrate(int i)
@@ -388,8 +379,6 @@ MainWindow::MainWindow(QWidget *parent)
 	isConnecting = false;
 	calibratingMag	= false;
 	
-	startServer();
-
 	mbcom.startServer();
 	
 	QTimer* timer = new QTimer(this);
@@ -420,7 +409,7 @@ void MainWindow::calibrateMag(void)
 	
 	if (isRunning == false) startMeasurement();
 	
-	currentLpms->getSensor()->startCalibrateMag();
+	currentLpms->getSensor()->startMagCalibration();
 	
 	startWaitBar(45);
 }
@@ -434,11 +423,7 @@ void MainWindow::calibratePlanarMag(void)
 	currentLpms->getSensor()->startPlanarMagCalibration();
 	
 	startWaitBar(45);
-}
-
-void MainWindow::startServer(void)
-{
-}	 
+} 
 
 void MainWindow::updateMagneticFieldMap(void)
 {
@@ -475,17 +460,24 @@ void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *pr
 
 	QTreeWidgetItem *temp;	
 	QTreeWidgetItem *wi = lpmsTree->currentItem();
-
 	if (wi->childCount() > 0) {
 		QTreeWidgetItem *si = wi->child(0);
 		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(si, 0);
 	} else {
 		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(wi, 0);
-	}		
+	}	
 	
+	QTreeWidgetItem *checkItem = lpmsTree->currentItem();
+	int itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
+	
+	while (itemIndex == -1) {
+		checkItem = checkItem->parent();
+		itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
+	}
+		
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {
 		(*it)->updateData();
-		if (lpmsTree->indexOfTopLevelItem(lpmsTree->currentItem()) == lpmsTree->indexOfTopLevelItem((*it)->treeItem)) {
+		if (itemIndex == lpmsTree->indexOfTopLevelItem((*it)->treeItem)) {
 			f = true;
 			fit = it;
 			fi = i;
@@ -617,11 +609,11 @@ void MainWindow::timerUpdate(void)
 						(*it)->getSensor()->getFieldMap((*it)->fieldMap);
 						(*it)->getSensor()->getHardIronOffset((*it)->hardIronOffset);
 						(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
-						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius,
-						imuData.b);
+						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius, imuData.b);
 					}
-								
-					(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
+				
+					char id[64];
+					(*it)->getSensor()->getDeviceId(id);
 					fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
 				break;
 				
@@ -773,59 +765,49 @@ void MainWindow::stopMeasurement(void)
 	isRunning = false;
 }
 
-void MainWindow::resetTbSelected(void)
+void MainWindow::setOffset(void)
 {
+	std::list<SensorGuiContainer *>::iterator it;
+
 	if (currentLpms == 0 || isConnecting == true) return;
 
-	if (resetCombo->currentIndex() == 0) {
-		if (targetCombo->currentIndex() == 0) {
-			zeroReferenceAll();
-		} else {
-			zeroReferenceSelected();
+	if (targetCombo->currentIndex() == 0) {		
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->setOrientationOffset();
 		}
 	} else {
-		if (targetCombo->currentIndex() == 0) {
-			zeroAngleAll();
-		} else {
-			zeroAngleSelected();
-		}	
+		currentLpms->getSensor()->setOrientationOffset();
 	}
 }
 
-void MainWindow::zeroReferenceSelected(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-	
-	currentLpms->getSensor()->startMagReferenceCal();
-}
-
-void MainWindow::zeroReferenceAll(void)
+void MainWindow::resetOffset(void)
 {
 	std::list<SensorGuiContainer *>::iterator it;
 
 	if (currentLpms == 0 || isConnecting == true) return;
 	
-	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-		(*it)->getSensor()->startMagReferenceCal();
-	}
-}
-
-void MainWindow::zeroAngleSelected(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-		
-	currentLpms->getSensor()->resetOrientation();
-}
-
-void MainWindow::zeroAngleAll(void)
-{
-	std::list<SensorGuiContainer *>::iterator it;
-
-	if (currentLpms == 0 || isConnecting == true) return;
-		
-	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-		(*it)->getSensor()->resetOrientation();
+	if (targetCombo->currentIndex() == 0) {		
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->resetOrientationOffset();
+		}
+	} else {
+		currentLpms->getSensor()->resetOrientationOffset();
 	}	
+}
+
+void MainWindow::resetHeading(void)
+{
+	std::list<SensorGuiContainer *>::iterator it;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (targetCombo->currentIndex() == 0) {	
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->startMagReferenceCal();
+		}
+	} else {
+		currentLpms->getSensor()->startMagReferenceCal();
+	}
 }
 
 void MainWindow::recalibrate(void)

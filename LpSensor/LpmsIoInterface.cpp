@@ -1644,11 +1644,6 @@ bool LpmsIoInterface::enableGyrAutocalibration(long v)
 	return modbusSetInt32(ENABLE_GYR_AUTOCAL, v);
 }
 
-bool LpmsIoInterface::resetOrientation(void) 
-{
-	return modbusSetNone(SET_OFFSET);
-}
-
 bool LpmsIoInterface::setFilterMode(long v)
 {
 	return modbusSetInt32(SET_FILTER_MODE, v);
@@ -1982,4 +1977,14 @@ bool LpmsIoInterface::getMagAlignmentBias(void)
 bool LpmsIoInterface::getMagReference(void)
 {
 	return modbusGet(GET_MAG_REFERENCE);
+}
+
+bool LpmsIoInterface::setOrientationOffset(void)
+{
+	return modbusSetNone(SET_ORIENTATION_OFFSET);
+}
+
+bool LpmsIoInterface::resetOrientationOffset(void)
+{
+	return modbusSetNone(RESET_ORIENTATION_OFFSET);
 }

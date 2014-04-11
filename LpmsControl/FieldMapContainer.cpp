@@ -85,7 +85,7 @@ void FieldMapContainer::updateGraphs(int v)
 
 void FieldMapContainer::updateCurrentField(float fieldRadius, float currentField[3])
 {
-	fmi->updateFieldModule(fieldRadius, Eigen::Vector3f(currentField[0], currentField[1], currentField[2]));
+	fmi->updateFieldModule(fieldRadius, Eigen::Vector3f(0.0f, 0.0f, 0.0f));
 }
 
 void FieldMapContainer::updateFieldMap(float magField[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3],

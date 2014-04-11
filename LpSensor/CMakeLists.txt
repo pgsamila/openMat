@@ -40,7 +40,6 @@ set(CMAKE_BUILD_TYPE "Release")
 set(BUILD_ARCHITECTURE "32-bit" CACHE STRING "")
 set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
 
-set(USE_ICE FALSE CACHE BOOL "")
 set(BUILD_OPENSOURCE CACHE BOOL "")
 set(USE_JUST_THREAD CACHE BOOL "")
 
@@ -80,7 +79,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(WINDOWS_PCAN_PATH "C:/pcan-basic" CACHE STRING "")
 	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
 	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
-	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.1" CACHE STRING "")
 
 	include_directories("${WINDOWS_PCAN_PATH}/Include")
 	include_directories("${WINDOWS_BOOST_PATH}")

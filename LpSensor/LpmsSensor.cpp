@@ -104,6 +104,10 @@ const float pi = 3.141592f;
 	case DEVICE_LPMS_RS232:
 		bt = new LpmsRS232(&(this->configData));
 	break;
+	
+	case DEVICE_LPMS_BLE:
+		bt = new LpmsBle(&(this->configData));
+	break;	
 #endif
 
 #ifdef __GNUC__
@@ -215,8 +219,14 @@ void LpmsSensor::update(void)
 		if (lpmsTimer.measure() > WAIT_AFTER_CONNECT) {
 			lpmsTimer.reset();	
 			LOGV("[LpmsSensor] Waiting after connect..\n");
-			state = STATE_GET_SETTINGS;
-			getConfigState = C_STATE_GOTO_COMMAND_MODE;
+			
+			/* if (deviceType == DEVICE_LPMS_BLE) {
+				state = STATE_MEASURE;
+				setSensorStatus(SENSOR_STATUS_RUNNING);			
+			} else { */
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GOTO_COMMAND_MODE;
+			//}
 		}
 	break;
 
@@ -247,11 +257,7 @@ void LpmsSensor::update(void)
 				LOGV("[LpmsSensor] Get configuration data\n");
 				bt->getConfig();
 				state = STATE_GET_SETTINGS;
-				if (deviceType == DEVICE_LPMS_BLE) {
-					getConfigState = C_STATE_SETTINGS_DONE;
-				} else {
-					getConfigState = C_STATE_FILTER_MODE;
-				}
+				getConfigState = C_STATE_FILTER_MODE;
 			break;
 			
 			// Retrieves the current filter mode.
@@ -447,11 +453,7 @@ void LpmsSensor::update(void)
 				
 				newFieldMap = true;		
 					
-				if (deviceType != DEVICE_LPMS_BLE) {
-					bt->startStreaming();
-				} else {
-					bt->getSensorData();
-				}
+				bt->startStreaming();
 				
 				setSensorStatus(SENSOR_STATUS_RUNNING);	
 				
@@ -487,7 +489,7 @@ void LpmsSensor::update(void)
 				setConnectionStatus(SENSOR_CONNECTION_FAILED);
 				state = STATE_NONE;	
 			}
-		} 	
+		}
 	break;	
 		
 	// Main measurement state
@@ -502,13 +504,9 @@ void LpmsSensor::update(void)
 		// LOGV("[LpmsSensor] STATE MEASURE");	
 		// Start next measurement step only if program is not waiting for data or ACK.
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			if (deviceType != DEVICE_LPMS_BLE) {
-				if (bt->getMode() != SELECT_LPMS_MODE_STREAM) {
-					bt->setStreamMode();
-					prepareStream = 0;
-				}
-			} else {
-				bt->getSensorData();
+			if (bt->getMode() != SELECT_LPMS_MODE_STREAM) {
+				bt->setStreamMode();
+				prepareStream = 0;
 			}
 		}
 		
@@ -694,7 +692,7 @@ void LpmsSensor::update(void)
 				bt->setFilterMode(LPMS_FILTER_GYR_ACC_EULER);
 			break;
 			}
-			LOGV("[LpmsSensor] Set filter mode\n", p);
+			LOGV("[LpmsSensor] Set filter mode\n");
 			state = STATE_SET_PARAMETER_SET;	
 		}
 	break;	
@@ -720,7 +718,7 @@ void LpmsSensor::update(void)
 				bt->setFilterPreset(LPMS_FILTER_PRM_SET_4);	
 			break;				
 			}
-			LOGV("[LpmsSensor] Set parameter set\n", p);
+			LOGV("[LpmsSensor] Set parameter set\n");
 			state = STATE_SET_LP_FILTER;
 		}
 	break;
@@ -1390,7 +1388,9 @@ bool LpmsSensor::updateParameters(void)
 	if (state != STATE_MEASURE) {
 		return false;
 	}
-
+	
+	// if (deviceType == DEVICE_LPMS_BLE) return false;
+	
 	state = PREPARE_PARAMETER_ADJUSTMENT;
 	getConfigState = STATE_SET_CONFIG;
 	
@@ -1401,6 +1401,8 @@ bool LpmsSensor::setConfigurationPrm(int parameterIndex, int parameter)
 {	
 	bool f = true;
 
+	// if (deviceType == DEVICE_LPMS_BLE) return f;	
+	
 	configData.setParameter(parameterIndex, parameter);
 
 	switch (parameterIndex) {
@@ -1420,6 +1422,8 @@ bool LpmsSensor::setConfigurationPrm(int parameterIndex, int parameter)
 bool LpmsSensor::setConfigurationPrm(int parameterIndex, int *parameter)
 {	
 	bool f = true;
+	
+	// if (deviceType == DEVICE_LPMS_BLE) return f;
 	
 	configData.setParameter(parameterIndex, parameter);	
 	

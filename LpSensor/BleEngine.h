@@ -29,8 +29,8 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifndef LPMS_BLE
-#define LPMS_BLE
+#ifndef BLE_ENGINE
+#define BLE_ENGINE
 
 #include <iostream>
 #include <string>
@@ -38,6 +38,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <list>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,43 +50,35 @@
 #include "MicroMeasure.h"
 #include "LpmsIoInterface.h"
 #include "DeviceListItem.h"
+#include "LpmsBle2.h"
 
 #ifdef _WIN32
 	#include "windows.h"
 #endif
 
-class LpmsBle : public LpmsIoInterface {
-public:
-	LpmsBle(CalibrationData *configData);
-	~LpmsBle(void);
-	
-	bool connect(std::string deviceId);
-	void close(void);
-	bool pollData(void);
-	bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
-	bool parseModbusByte(void);
-	bool deviceStarted(void);
-	long long getConnectWait(void);
-	static void listDevices(LpmsDeviceList *deviceList);	
-	static void stopDiscovery(void);
-	static int read_message(int timeout_ms);
-	void run(void);
-	void runTx(void);
-	bool parseSensorData(void);
-	void setConfiguration(void);
+class BleEngine {
+public:	
+	BleEngine(void);
+	~BleEngine(void);
+	int read_message(int timeout_ms);
+	void listDevices(LpmsDeviceList *deviceList);
+	void stopDiscovery(void);
 	int convertHexStringToNumber(const char *s);
-	bool getTxMessage(std::queue<unsigned char> *topTxQ);
-
+	bool addSensor(LpmsBle *s);
+	void close(void);
+	void run(void);
+	void connect(void);
+	void removeSensor(LpmsBle *s);
+	
 private:
 	std::string portname;
 	bool isOpen;
 	std::string idNumber;
 	std::string bluetoothAddress;
 	MicroMeasure mm;
-	std::queue<unsigned char> txQueue;
 	bool started;
 	std::string comStr;
-	std::queue<unsigned char> txQ;	
+	std::queue<BleBlock> txQ;	
 };
 
 #endif

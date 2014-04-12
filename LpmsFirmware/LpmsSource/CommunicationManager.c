@@ -7,6 +7,7 @@
 #include "CommunicationManager.h"
 
 #define MAX_BUFFER 2048
+#define MAX_BUFFER_BLE 128
 
 typedef void (*pFunction)(void);
 
@@ -46,9 +47,13 @@ void initCommunicationManager(void)
 
 	serialPortInit(USART_BAUDRATE_921600);
 #elif defined USE_TTL_UART_INTERFACE
+#ifdef LPMS_BLE	
+	ttlUsartPortInit(USART_BAUDRATE_9600);
+#else
 	ttlUsartPortInit(USART_BAUDRATE_921600);
+#endif
+	
 	connectedInterface = TTL_UART_CONNECTED;
-
 	serialPortInit(USART_BAUDRATE_921600);
 #else
 	uint8_t canBaudrate;
@@ -80,7 +85,39 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 
 	uint8_t txData[MAX_PACKET_DATA_LENGTH];
 	uint16_t txLrcCheck;
+
+#ifdef LPMS_BLE
+	txData[0] = 0x3a;
+	txData[1] = function & 0xff;
+	txData[2] = length & 0xff;
 	
+	if (length != 0) {
+		for (uint16_t i = 0; i < length; i++) {
+			txData[3 + i] = data[i];
+		}
+	}
+	
+	txLrcCheck = function;
+	txLrcCheck += length;
+	
+	if (length != 0) {
+		for (uint16_t i = 0; i < length; i++) {
+			txLrcCheck += data[i];
+		}
+	}
+	
+	txData[3 + length] = txLrcCheck & 0xff;
+	txData[4 + length] = (txLrcCheck >> 8) & 0xff;
+	
+	if (txIndex+5+length < MAX_BUFFER) {
+		for (i=0; i<(5+length); ++i) {
+			txBuffer[txIndex] = txData[i];
+			++txIndex;
+		}
+	} else {
+		asm("NOP");
+	}	
+#else	
 	txData[0] = 0x3a;
 	txData[1] = address & 0xff;
 	txData[2] = (address >> 8) & 0xff;
@@ -110,14 +147,19 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 
+#ifdef LPMS_BLE
+	if (txIndex+11+length < MAX_BUFFER_BLE) {
+#else
 	if (txIndex+11+length < MAX_BUFFER) {
+#endif
 		for (i=0; i<(11+length); ++i) {
 			txBuffer[txIndex] = txData[i];
 			++txIndex;
 		}
 	} else {
 		asm("NOP");
-	}	
+	}
+#endif
 
 	return 1;
 }
@@ -133,7 +175,7 @@ void waitForSendCompleted(void)
 
 void sendQueue(void)
 {
-	int i;
+	int i, j, nTx;
 	
 #ifdef USE_BLUETOOTH_INTERFACE
 	if (bluetoothIsReadyForSend() == 0 && firstTimeTx == 0) return;
@@ -146,26 +188,56 @@ void sendQueue(void)
 
 	if (txIndex == 0) return;                          
 
+#ifdef LPMS_BLE
+	if (txIndex > 20) {
+	  	nTx = 20;
+
+		for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
+
+		j = 0;
+		for (i=nTx; i<txIndex; ++i) {
+			txBuffer[j] = txBuffer[i];
+			++j;
+		}
+
+		txIndex -= 20;
+	} else {
+	  	nTx = txIndex;
+
+		for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
+
+		int nF = nTx % 20;
+		if (nF > 0) {
+			for (int i=nTx; i < (nTx + 20 - nF); ++i) txBuffer2[i] = 0x0;
+			nTx += 20 - nF;
+		}
+
+		txIndex = 0;
+	}
+#else
+	nTx = txIndex;
+	
 	for (i=0; i<txIndex; ++i) txBuffer2[i] = txBuffer[i];
 
+	txIndex = 0;
+#endif
+
 #ifdef USE_BLUETOOTH_INTERFACE
-	bluetoothStartDataTransfer(txBuffer2, txIndex);
+	bluetoothStartDataTransfer(txBuffer2, nTx);
 #endif
 
 #ifdef USE_CANBUS_INTERFACE
 	if (	connectedInterface == CANBUS_CONNECTED || 
 		connectedInterface == CANOPEN_CONNECTED) {
-		CANStartDataTransfer(txBuffer2, txIndex);
+		CANStartDataTransfer(txBuffer2, nTx);
 	} else if (connectedInterface == USB_CONNECTED) { 
-	  	serialPortStartTransfer(txBuffer2, txIndex);
+	  	serialPortStartTransfer(txBuffer2, nTx);
 	} else if (connectedInterface == RS232_CONNECTED) {
-		rs232PortStartTransfer(txBuffer2, txIndex);
+		rs232PortStartTransfer(txBuffer2, nTx);
 	} else if (connectedInterface == TTL_UART_CONNECTED) {
-		ttlUsartPortStartTransfer(txBuffer2, txIndex);
+		ttlUsartPortStartTransfer(txBuffer2, nTx);
 	}
 #endif
-
-	txIndex = 0;
 
 #ifdef USE_BLUETOOTH_INTERFACE
 	firstTimeTx = 0;
@@ -437,11 +509,15 @@ void parsePacket(void)
 			break;
 				
 			case SET_STREAM_FREQ:
+#ifdef LPMS_BLE
+				sendAck();
+#else
 				if (setStreamFreq(packet.data)) {
 					sendAck();
 				} else {
 					sendNack();
 				}
+#endif
 			break;
 				
 			case START_GYR_CALIBRA:
@@ -680,8 +756,12 @@ void parsePacket(void)
 			break;
 
 			case SET_TRANSMIT_DATA:
+#ifdef LPMS_BLE
+				sendAck();
+#else
 				setTransmitData(packet.data);
 				sendAck();
+#endif
 			break;	
 
 			case GET_FIRMWARE_VERSION:

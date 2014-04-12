@@ -105,4 +105,6 @@ uint8_t getRegFloat(uint8_t i, float *v);
 
 uint8_t getRegMatrix3x3f(uint8_t i, LpMatrix3x3f *m);
 
+void setI16t(uint8_t* data, int16_t v);
+
 #endif

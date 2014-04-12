@@ -157,6 +157,72 @@ uint8_t ttlUsartPortIsTransferCompleted(void)
 	return 0;
 }
 
+uint8_t ttlUsartPortPollDataBle(void) 
+{
+	uint8_t b;
+ 	while(ttlUsartPortRxDmaBufferPtr != (TTL_USART_MAX_RX_BUFFER_LENGTH - 
+		DMA_GetCurrDataCounter(TTL_USART_RX_DMA_STREAM))) {
+		b = ttlUsartPortRxBuffer[ttlUsartPortRxDmaBufferPtr];
+		
+		switch (ttlUsartPortRxState) {
+		case PACKET_START:
+			if (b == 0x3a) {
+				ttlUsartPortRxState = PACKET_FUNCTION_LB;
+				ttlUsartPortNewPacket.start = b;
+				ttlUsartPortRawDataCounter = 0;
+			}
+			break;
+
+		case PACKET_FUNCTION_LB:
+			ttlUsartPortNewPacket.function = b;
+			ttlUsartPortRxState = PACKET_LENGTH_HB;				
+			break;
+			
+		case PACKET_LENGTH_HB:
+			ttlUsartPortNewPacket.length = b;
+			if (ttlUsartPortNewPacket.length != 0) {
+				ttlUsartPortRxState = PACKET_RAW_DATA;
+			} else {
+				ttlUsartPortRxState = PACKET_LRC_CHECK_LB;
+			}
+			break;
+			
+		case PACKET_RAW_DATA:
+			ttlUsartPortNewPacket.data[ttlUsartPortRawDataCounter] = b;
+			ttlUsartPortRawDataCounter++;
+			if (ttlUsartPortRawDataCounter == ttlUsartPortNewPacket.length) {
+			  	ttlUsartPortRawDataCounter = 0;
+				ttlUsartPortRxState = PACKET_LRC_CHECK_LB;
+			}
+			break;
+		
+		case PACKET_LRC_CHECK_LB:
+			ttlUsartPortNewPacket.lrcCheck = b;
+			ttlUsartPortRxState = PACKET_LRC_CHECK_HB;
+			break;
+			
+		case PACKET_LRC_CHECK_HB:
+			ttlUsartPortNewPacket.lrcCheck = ttlUsartPortNewPacket.lrcCheck | (((uint16_t)b) << 8);
+			ttlUsartPortRxState = PACKET_START;
+			if (ttlUsartPortNewPacket.lrcCheck == computeCheckSum(ttlUsartPortNewPacket)) {
+				addPacketToBuffer(ttlUsartPortNewPacket);
+				connectedInterface = TTL_UART_CONNECTED;
+			}			
+			break;
+				
+		default:
+			ttlUsartPortRxState = PACKET_START;		
+			break;
+		}
+		
+		ttlUsartPortRxDmaBufferPtr++;
+		if (ttlUsartPortRxDmaBufferPtr == TTL_USART_MAX_RX_BUFFER_LENGTH)
+			ttlUsartPortRxDmaBufferPtr = 0;
+	}
+	
+	return 1;
+}
+
 uint8_t ttlUsartPortPollData(void) 
 {
 	uint8_t b;

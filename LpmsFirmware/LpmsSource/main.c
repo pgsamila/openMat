@@ -14,7 +14,7 @@ int main(void)
 {
 	msDelay(100);
 
-	setSystemStepTimer(); 
+	setSystemStepTimer();
 	msDelay(100);
 	
 	setTimeoutTimer();
@@ -49,8 +49,12 @@ int main(void)
 			pollSerialPortData();
 			rs232PortPollData();
 #elif defined USE_TTL_UART_INTERFACE
-			pollSerialPortData();
-			ttlUsartPortPollData();
+			pollSerialPortData();			
+#ifdef LPMS_BLE
+			ttlUsartPortPollDataBle();
+#else
+			ttlUsartPortPollData();			
+#endif
 #else
 			pollSerialPortData();
 			pollCanBusData();
@@ -60,7 +64,14 @@ int main(void)
 #endif
 			parsePacket();
 
+#ifdef LPMS_BLE
+			if (isStreamModeTransferReady() == 1) {
+				clearStreamModeTransferReady();			  
+				sendQueue();
+			}
+#else		
 			sendQueue();
+#endif
 			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
 		  
@@ -72,9 +83,15 @@ int main(void)
 			if (isStreamModeTransferReady() == 1) {
 				clearStreamModeTransferReady();
 				updateDataTransmission();
+				
+#ifdef LPMS_BLE
+				sendQueue();
+#endif
 			}
-			
+
+#ifndef LPMS_BLE			
 			sendQueue();
+#endif
 
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
@@ -82,7 +99,13 @@ int main(void)
 			rs232PortPollData();
 #elif defined USE_TTL_UART_INTERFACE
 			pollSerialPortData();
-			ttlUsartPortPollData();
+			
+#ifdef LPMS_BLE
+			ttlUsartPortPollDataBle();
+#else
+			ttlUsartPortPollData();			
+#endif
+			
 #else
 			pollSerialPortData();
 			pollCanBusData();
@@ -111,7 +134,6 @@ int main(void)
 			parsePacket();
 
 			sendQueue();
-
 		}
   	}
 }

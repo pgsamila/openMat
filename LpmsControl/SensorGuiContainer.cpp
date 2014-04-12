@@ -98,6 +98,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 
 	samplingRateCombo->addItem(QString("5 Hz"));
 	samplingRateCombo->addItem(QString("10 Hz"));
+	samplingRateCombo->addItem(QString("30 Hz"));	
 	samplingRateCombo->addItem(QString("50 Hz"));
 	samplingRateCombo->addItem(QString("100 Hz"));
 	samplingRateCombo->addItem(QString("200 Hz"));	
@@ -1039,21 +1040,25 @@ void SensorGuiContainer::updateData(void) {
 	case SELECT_STREAM_FREQ_10HZ:		
 		samplingRateCombo->setCurrentIndex(1);
 	break;	
-	
-	case SELECT_STREAM_FREQ_50HZ:		
+
+	case SELECT_STREAM_FREQ_30HZ:		
 		samplingRateCombo->setCurrentIndex(2);
 	break;
-		
-	case SELECT_STREAM_FREQ_100HZ:
+	
+	case SELECT_STREAM_FREQ_50HZ:		
 		samplingRateCombo->setCurrentIndex(3);
 	break;
 		
-	case SELECT_STREAM_FREQ_200HZ:
+	case SELECT_STREAM_FREQ_100HZ:
 		samplingRateCombo->setCurrentIndex(4);
+	break;
+		
+	case SELECT_STREAM_FREQ_200HZ:
+		samplingRateCombo->setCurrentIndex(5);
 	break;
 	
 	case SELECT_STREAM_FREQ_500HZ:
-		samplingRateCombo->setCurrentIndex(5);
+		samplingRateCombo->setCurrentIndex(6);
 	break;	
 	}	
 		
@@ -1479,18 +1484,22 @@ void SensorGuiContainer::updatesamplingRate(int i)
 	break;
 
 	case 2:
+		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);
+	break;
+	
+	case 3:
 		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_50HZ);
 	break;
 		
-	case 3:
+	case 4:
 		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);
 	break;
 		
-	case 4:
+	case 5:
 		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_200HZ);
 	break;
 	
-	case 5:
+	case 6:
 		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_500HZ);
 	break;
 	}

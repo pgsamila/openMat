@@ -345,6 +345,7 @@
 // Stream cycle period values
 #define LPMS_STREAM_T_5HZ 	(uint32_t)2000
 #define LPMS_STREAM_T_10HZ 	(uint32_t)1000
+#define LPMS_STREAM_T_20HZ 	(uint32_t)500
 #define LPMS_STREAM_T_30HZ 	(uint32_t)334
 #define LPMS_STREAM_T_50HZ 	(uint32_t)200
 #define LPMS_STREAM_T_100HZ 	(uint32_t)100

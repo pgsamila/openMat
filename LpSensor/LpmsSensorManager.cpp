@@ -160,6 +160,7 @@ void LpmsSensorManager::run(void)
 	}
 	
 	ce.connect();
+	be.connect();
 #endif	
 
 #ifdef ANDROID
@@ -210,14 +211,14 @@ void LpmsSensorManager::run(void)
 
 #ifdef _WIN32
 			ce.listDevices(&deviceList);
+			be.listDevices(&deviceList);			
 #endif
 
 			if (scan_serial_ports_ == true) {
 				LpmsRS232::listDevices(&deviceList);
 			}
 			LpmsU::listDevices(&deviceList);
-			LpmsBBluetooth::listDevices(&deviceList);
-			// LpmsBle::listDevices(&deviceList);
+			LpmsBBluetooth::listDevices(&deviceList);			
 
 			managerState = SMANAGER_MEASURE;
 		break;
@@ -226,6 +227,7 @@ void LpmsSensorManager::run(void)
 
 #ifdef _WIN32		
 	ce.close();
+	be.close();
 #endif
 }
 
@@ -251,6 +253,9 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	case DEVICE_LPMS_BLE:	
 		sensor = new LpmsSensor(DEVICE_LPMS_BLE, deviceId);
 		sensorList.push_back(sensor);
+		
+		((LpmsBle *)sensor->getIoInterface())->deviceId = deviceId;
+		be.addSensor((LpmsBle *)sensor->getIoInterface());
 	break;		
 		
 	case DEVICE_LPMS_C:		
@@ -285,6 +290,7 @@ void LpmsSensorManager::removeSensor(LpmsSensorI *sensor)
 	
 #ifdef _WIN32	
 	ce.removeSensor((LpmsCanIo*) ((LpmsSensor*) sensor)->getIoInterface());
+	be.removeSensor((LpmsBle*) ((LpmsSensor*) sensor)->getIoInterface());	
 #endif
 	
 	sensor->close();

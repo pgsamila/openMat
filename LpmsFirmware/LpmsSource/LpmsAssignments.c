@@ -171,6 +171,13 @@ void setUi8t(uint8_t* data, uint8_t v)
 	*data = v;
 }
 
+void setI16t(uint8_t* data, int16_t v)
+{
+	for (int i=0; i<2; i++) {
+		data[i] = (v >> (i * 8)) & (uint8_t) 0xff;
+	}
+}
+
 /* uint16_t basetable[512];
 uint16_t shifttable[512];
 uint16_t isGeneratedTable = 0;

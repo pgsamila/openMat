@@ -29,22 +29,13 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "LpmsBle.h"
+#include "BleEngine.h"
 
 #include "BleCmdDef.h"
 #include "BleUart.h"
 
 #define MAX_DEVICES 64
 #define UART_TIMEOUT 0
-
-int found_devices_count = 0;
-bd_addr found_devices[MAX_DEVICES];
-
-std::queue<unsigned char> *bleQueue;
-static volatile bool isStopDiscovery = false;
-
-std::mutex bleMutex;
-std::mutex rxMutex;
 
 enum actions {
 	action_none,
@@ -65,8 +56,6 @@ typedef enum {
 	state_last
 } states;
 
-states state = state_disconnected;
-
 const char *state_names[state_last] = {
     "disconnected",
     "connecting",
@@ -85,7 +74,6 @@ const char *state_names[state_last] = {
 #define LPMS_DATA_UUID e7add780-b042-4876-aae1-112855353cc1
 
 uint8 primary_service_uuid[] = {0x00, 0x28};
-
 uint16 lpms_handle_start = 0;
 uint16 lpms_handle_end = 0;
 uint16 lpms_handle_measurement = 0;
@@ -98,13 +86,16 @@ float avgDr = 0.0f;
 int pC = 0;
 float avgDt = 0.0f;
 MicroMeasure dataTimer;
+LpmsBle* currentlyConnectingDevice;
+std::list<LpmsBle *> sensorList;
+int found_devices_count = 0;
+bd_addr found_devices[MAX_DEVICES];
+states state = state_disconnected;
+std::mutex bleMutex;
+std::mutex rxMutex;
+bool readyToSend = true;
 
-struct ConnectionLookup {
-	bd_addr address;
-	uint8 handle;
-};
-
-std::vector<ConnectionLookup> connection_lookup_table;
+static volatile bool isStopDiscovery = false;
 
 void change_state(states new_state)
 {
@@ -129,7 +120,7 @@ void print_raw_packet(struct ble_header *hdr, unsigned char *data)
 {
 	int i;
 
-	printf("[LPMS-BLE] Incoming packet: ");
+	printf("[BleEngine] Incoming packet: ");
 
 	for (i = 0; i < sizeof(*hdr); i++) {
 		printf("%02x ", ((unsigned char *)hdr)[i]);
@@ -143,7 +134,7 @@ void print_raw_packet(struct ble_header *hdr, unsigned char *data)
 void output(uint8 len1, uint8* data1, uint16 len2, uint8* data2)
 {
 	if (uart_tx(len1, data1) || uart_tx(len2, data2)) {
-		printf("[LPMS-BLE] Writing to serial port failed\n");
+		printf("[BleEngine] Writing to serial port failed\n");
 	}
 }
 
@@ -153,7 +144,7 @@ void enable_indications(uint8 connection_handle, uint16 client_configuration_han
 	ble_cmd_attclient_attribute_write(connection_handle, lpms_handle_configuration, 2, &configuration);
 	indication_enable_state = 1;
 
-	printf("[LPMS-BLE] Enabling indications\n");
+	printf("[BleEngine] Enabling indications\n");
 }
 
 void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg)
@@ -190,10 +181,12 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
 
 	print_bdaddr(msg->sender);
 	printf(" RSSI:%u", msg->rssi);
-
 	printf(" Name:");
-	if (name) printf("%s", name);
-	else printf("Unknown");
+	if (name) {
+		printf("%s", name);
+	} else {
+		printf("Unknown");
+	}
 	printf("\n");
 
 	free(name);
@@ -201,12 +194,12 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
 
 void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
 {
-	printf("[LPMS-BLE] Build: %u, protocol_version: %u, hardware: ", msg->build, msg->protocol_version);
+	printf("[BleEngine] Build: %u, protocol_version: %u, hardware: ", msg->build, msg->protocol_version);
 
 	switch (msg->hw) {
-	case 0x01: printf("BLE112"); break;
-	case 0x02: printf("BLED112"); break;
-	default: printf("Unknown");
+		case 0x01: printf("BLE112"); break;
+		case 0x02: printf("BLED112"); break;
+		default: printf("Unknown");
 	}
 	printf("\n");
 
@@ -215,19 +208,14 @@ void ble_rsp_system_get_info(const struct ble_msg_system_get_info_rsp_t *msg)
 
 void ble_evt_connection_status(const struct ble_msg_connection_status_evt_t *msg)
 {
-	// printf("[LPMS-BLE] ble_evt_connection_status callback\n");
+	printf("[BleEngine] ble_evt_connection_status callback\n");
 
 	if (msg->flags & connection_connected) {
 		change_state(state_connected);
-		printf("[LPMS-BLE] Connected!\n");
-
+		printf("[BleEngine] Device %s assigned to connection handle %x\n", currentlyConnectingDevice->deviceId, msg->connection);
 		k_connection_handle = msg->connection;
+		currentlyConnectingDevice->setConnectionHandle(k_connection_handle);
 		
-		ConnectionLookup lookup;
-		lookup.address = connect_addr;
-		lookup.handle = msg->connection;
-		connection_lookup_table.push_back(lookup);
-
 		if (lpms_handle_configuration) {
 			change_state(state_listening_measurements);
 			enable_indications(msg->connection, lpms_handle_configuration);			
@@ -273,15 +261,18 @@ void ble_evt_attclient_group_found(const struct ble_msg_attclient_group_found_ev
 	}
 }
 
-bool readyToSend = true;
-
 void ble_rsp_attclient_attribute_write(const struct ble_msg_attclient_attribute_write_rsp_t * msg) {
 	if (indication_enable_state == 1) {
 		indication_enable_state = 2;
-		printf("[LPMS-BLE] Indications enabled. Ready to write/receive.\n");
+		currentlyConnectingDevice->setConnectionStatus(true);
+		printf("[BleEngine] Indications enabled. Ready to write/receive.\n");
 	}
-	
-	readyToSend = true;
+
+	BOOST_FOREACH(LpmsBle *b, sensorList) {	
+		if (b->getConnectionHandle() == msg->connection) {
+			b->setReadyToSend(true);
+		}
+	}
 		
 	// printf("[LPMS-BLE] Write acknowledged\n");
 }
@@ -292,7 +283,7 @@ void ble_evt_attclient_procedure_completed(const struct ble_msg_attclient_proced
 
 	if (state == state_finding_services) {
 		if (lpms_handle_start == 0) {
-			printf("[LPMS-BLE] No LPMS service found\n");
+			printf("[BleEngine] No LPMS service found\n");
 			change_state(state_finish);
 		} else {
 			change_state(state_finding_attributes);
@@ -300,7 +291,7 @@ void ble_evt_attclient_procedure_completed(const struct ble_msg_attclient_proced
 		}
 	} else if (state == state_finding_attributes) {
 		if (lpms_handle_configuration == 0) {
-			printf("[LPMS-BLE] No client characteristic configuration found for LPMS service\n");
+			printf("[BleEngine] No client characteristic configuration found for LPMS service\n");
 			change_state(state_finish);
 		} else {
 			change_state(state_listening_measurements);
@@ -336,13 +327,14 @@ void ble_evt_attclient_find_information_found(const struct ble_msg_attclient_fin
 		msg->uuid.data[1] == 0x3c &&
 		msg->uuid.data[0] == 0xc1) {
 		lpms_handle_measurement = msg->chrhandle;
+		currentlyConnectingDevice->setMeasurementHandle(lpms_handle_measurement);
 		
-		printf("[LPMS-BLE] Measurement handle received\n");	
+		printf("[BleEngine] Measurement handle received: %x\n", lpms_handle_measurement);	
 	} else if (msg->uuid.data[1] == 0x29 && 
 		msg->uuid.data[0] == 0x02) {
 		lpms_handle_configuration = msg->chrhandle;
 		
-		printf("[LPMS-BLE] Configuration handle received\n");
+		printf("[BleEngine] Configuration handle received: %x\n", lpms_handle_configuration);
 	}
 }
 
@@ -355,9 +347,15 @@ void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_
 	// printf("[LPMS-BLE] ble_evt_attclient_attribute_value callback\n");
 
 	// printf("[LPMS-BLE] Data received: ");
-	for (unsigned int i=0; i < msg->value.len; i++) {
-		// printf("%x ", msg->value.data[i]);
-		bleQueue->push((unsigned char) msg->value.data[i]);
+	BOOST_FOREACH(LpmsBle *b, sensorList) {
+		if (msg->connection == b->getConnectionHandle()) {
+			for (unsigned int i=0; i < msg->value.len; i++) {
+				b->parseModbusByte(msg->value.data[i]);
+
+				// printf("%x ", msg->value.data[i]);
+				// bleQueue->push((unsigned char) msg->value.data[i]);
+			}
+		}
 	}
 	// printf("\n");
 	
@@ -365,6 +363,7 @@ void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_
 	performanceTimer.reset();
 	dr = (float) msg->value.len / ((float) pt / 1000000.0f);
 	avgDr = dr * 0.1f + avgDr * 0.9f;
+	
 	// printf("[LpmsBle] Average data rate (bytes/s): %f\n", avgDr);
 	
 	rxMutex.unlock();
@@ -373,21 +372,60 @@ void ble_evt_attclient_attribute_value(const struct ble_msg_attclient_attribute_
 void ble_evt_connection_disconnected(const struct ble_msg_connection_disconnected_evt_t *msg)
 {
 	change_state(state_disconnected);
-	printf("[LPMS-BLE] Connection terminated.\n");
+	
+	printf("[LPMS-BLE] Connection %x terminated.\n", msg->connection);
 }
 
-LpmsBle::LpmsBle(CalibrationData *configData) :
-	LpmsIoInterface(configData)
+BleEngine::BleEngine(void)
 {
-	bleQueue = &this->dataQueue;
 }
 
-LpmsBle::~LpmsBle(void)
+void BleEngine::connect(void)
+{
+	int pn;
+	std::ostringstream oss;
+	
+	printf("[BleEngine] Trying to open BlueGiga BLED112 dongle..\n");
+
+    bglib_output = output;	
+	
+	pn = uart_list_devices();
+	if (pn > 0) {	
+		oss << pn;
+		comStr = std::string("COM") + oss.str();			
+	} else {
+		printf("[BleEngine] Failed to open BlueGiga BLED112 dongle\n");
+		return;
+	}
+	
+	uart_open(comStr.c_str());
+	
+    ble_cmd_system_reset(0);
+    uart_close();
+    
+	do {
+        Sleep(500);
+    } while (uart_open(comStr.c_str()));	
+	
+	ble_cmd_sm_delete_bonding(0xff);
+	
+	mm.reset();
+
+	indication_enable_state	= 0;
+	state = state_disconnected;	
+	
+	started = true;
+	
+	std::thread t(&BleEngine::run, this);	
+	t.detach();
+}
+
+BleEngine::~BleEngine(void)
 {
 	close();
 }
 
-int LpmsBle::read_message(int timeout_ms)
+int BleEngine::read_message(int timeout_ms)
 {
 	unsigned char data[256];
 	struct ble_header hdr;
@@ -398,14 +436,14 @@ int LpmsBle::read_message(int timeout_ms)
 	if (!r) {
 		return -1;
 	} else if (r < 0) {
-		printf("[LPMS-BLE] Reading header failed. Error code:%d\n", r);
+		printf("[BleEngine] Reading header failed. Error code:%d\n", r);
 		return 1;
 	}
 
 	if (hdr.lolen) {
 		r = uart_rx(hdr.lolen, data, UART_TIMEOUT);
 		if (r <= 0) {
-			printf("[LPMS-BLE] Reading data failed. Error code:%d\n", r);
+			printf("[BleEngine] Reading data failed. Error code:%d\n", r);
 			return 1;
 		}
 	}
@@ -413,7 +451,7 @@ int LpmsBle::read_message(int timeout_ms)
 	const struct ble_msg *msg = ble_get_msg_hdr(hdr);
 
 	if (!msg) {
-		printf("[LPMS-BLE] Unknown message received\n");
+		printf("[BleEngine] Unknown message received\n");
 	}
 
 	msg->handler(data);
@@ -421,12 +459,7 @@ int LpmsBle::read_message(int timeout_ms)
 	return 0;
 }
 
-long long LpmsBle::getConnectWait(void) 
-{ 
-	return 6000000; 
-}
-
-void LpmsBle::listDevices(LpmsDeviceList *deviceList)
+void BleEngine::listDevices(LpmsDeviceList *deviceList)
 {
     bglib_output = output;
 	MicroMeasure mm;
@@ -436,24 +469,7 @@ void LpmsBle::listDevices(LpmsDeviceList *deviceList)
 	int l=0;
 	char a[256];
 	int i;
-	
-	pn = uart_list_devices();
-	if (pn > 0) {	
-		oss << pn;
-		cs = std::string("COM") + oss.str();			
-	} else {
-		return;
-	}
-	
-	uart_open(cs.c_str());
-	
-    ble_cmd_system_reset(0);
-    uart_close();
-    
-	do {
-        Sleep(500);
-    } while (uart_open(cs.c_str()));
-	
+		
 	ble_cmd_gap_discover(gap_discover_observation);
 
 	mm.reset();
@@ -465,16 +481,14 @@ void LpmsBle::listDevices(LpmsDeviceList *deviceList)
 		sprintf(a, "%02x:%02x:%02x:%02x:%02x:%02x", found_devices[i].addr[5], found_devices[i].addr[4], found_devices[i].addr[3], found_devices[i].addr[2], found_devices[i].addr[1], found_devices[i].addr[0]);	
 		deviceList->push_back(DeviceListItem(a, DEVICE_LPMS_BLE));
 	}
-	
-	uart_close();
 }
 
-void LpmsBle::stopDiscovery(void)
+void BleEngine::stopDiscovery(void)
 {
 	isStopDiscovery = true;	
 }
 
-int LpmsBle::convertHexStringToNumber(const char *s)
+int BleEngine::convertHexStringToNumber(const char *s)
 {
 	int v = 0;
 	
@@ -487,34 +501,10 @@ int LpmsBle::convertHexStringToNumber(const char *s)
 	return v;
 }
 
-bool LpmsBle::connect(std::string deviceId)
+bool BleEngine::addSensor(LpmsBle *s)
 {
-	int pn;
-	std::ostringstream oss;
+	std::string deviceId = s->deviceId;
 
-	if (isOpen == true) return true;
-	
-	printf("[LPMS-BLE] Trying to open BlueGiga BLED112 dongle..\n");
-
-    bglib_output = output;	
-	
-	pn = uart_list_devices();
-	if (pn > 0) {	
-		oss << pn;
-		comStr = std::string("COM") + oss.str();			
-	} else {
-		return false;
-	}
-	
-	uart_open(comStr.c_str());
-	
-    ble_cmd_system_reset(0);
-    uart_close();
-    
-	do {
-        Sleep(500);
-    } while (uart_open(comStr.c_str()));
-	
 	connect_addr.addr[5] = convertHexStringToNumber(&(deviceId.c_str()[0]));
 	connect_addr.addr[4] = convertHexStringToNumber(&(deviceId.c_str()[3]));
 	connect_addr.addr[3] = convertHexStringToNumber(&(deviceId.c_str()[6]));
@@ -524,36 +514,39 @@ bool LpmsBle::connect(std::string deviceId)
 	
 	ble_cmd_gap_connect_direct(&connect_addr, gap_address_type_public, 10, 15, 100, 0);
 	
-	mm.reset();
-	oneTx.clear();
+	printf("[BleEngine] Started connection process for device %s\n", deviceId.c_str());
 
-	rxState = PACKET_END;
-	currentState = IDLE_STATE;
-	waitForAck = false;
-	waitForData = false;
-	ackReceived = false;
-	ackTimeout = 0;	
-	lpmsStatus = 0;
-	configReg = 0;
-	dataReceived = false;
-	dataTimeout = 0;
-	pCount = 0;
-	isOpen = false;	
-	timestampOffset = 0.0f;
-	currentTimestamp = 0.0f;
-	indication_enable_state	= 0;
+	sensorList.push_back(s);	
 	
-	started = true;
-	
-	std::thread t(&LpmsBle::run, this);	
-	t.detach();
-	
-	setConfiguration();
+	currentlyConnectingDevice = s;
+
+	indication_enable_state = 0;
+	state = state_disconnected;
+	lpms_handle_start = 0;
+	lpms_handle_end = 0;
+	lpms_handle_measurement = 0;
+	lpms_handle_configuration = 0;
+	k_connection_handle = 0;
+	indication_enable_state = 0;	
 	
 	return true;
 }
 
-void LpmsBle::close(void)
+void BleEngine::removeSensor(LpmsBle *s)
+{
+	std::list<LpmsBle*>::iterator it = sensorList.begin();
+
+	BOOST_FOREACH(LpmsBle *b, sensorList) {
+		if (s == b) {
+			ble_cmd_connection_disconnect(b->getConnectionHandle());
+			sensorList.erase(it);
+			break;
+		}
+		it++;
+	}
+}
+
+void BleEngine::close(void)
 {
 	started = false;
 	isOpen = false;
@@ -563,257 +556,34 @@ void LpmsBle::close(void)
 	uart_close();
 }
 
-bool LpmsBle::sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data)
-{
-	char txData[1024];
-	unsigned int txLrcCheck;
-	
-	if (length > 1014) return false;
-
-	txData[0] = 0x3a;
-	
-	txData[1] = function & 0xff;
-	txData[2] = length & 0xff;
-	
-	for (unsigned int i=0; i < length; ++i) {
-		txData[3+i] = data[i];
-	}
-		
-	txLrcCheck = function;
-	txLrcCheck += length;
-	
-	for (unsigned int i=0; i < length; i++) {
-		txLrcCheck += data[i];
-	}
-	
-	txData[3 + length] = txLrcCheck & 0xff;
-	txData[4 + length] = (txLrcCheck >> 8) & 0xff;
-	
-	// printf("[LPMS-BLE] Writing LPBUS command: %d LRC=%d\n", function, txLrcCheck);	
-	
-	bleMutex.lock();
-	for (unsigned int i=0; i<5+length; ++i) txQueue.push(txData[i]);
-	bleMutex.unlock();
-	
-	return false;
-}
-
-bool LpmsBle::parseModbusByte(void)
-{
-	unsigned char b;
-
-	rxMutex.lock();
-	while (dataQueue.size() > 0) {	
-		b = dataQueue.front();
-		dataQueue.pop();
-
-		switch (rxState) {
-		case PACKET_END:
-			if (b == 0x3a) {
-				rxState = PACKET_FUNCTION0;
-				oneTx.clear();
-			}
-			break;
-			
-		case PACKET_FUNCTION0:
-			currentFunction = b;
-			rxState = PACKET_LENGTH0;				
-			break;
-			
-		case PACKET_LENGTH0:
-			currentLength = b;
-			rxState = PACKET_RAW_DATA;
-			rawDataIndex = currentLength;
-		break;
-								
-		case PACKET_RAW_DATA:
-			if (rawDataIndex == 0) {
-				lrcCheck = currentFunction + currentLength;
-				for (unsigned i=0; i<oneTx.size(); i++) lrcCheck += oneTx[i];
-				lrcReceived = b;
-				rxState = PACKET_LRC_CHECK1;
-			} else {
-				oneTx.push_back(b);
-				--rawDataIndex;
-			}
-			break;
-			
-		case PACKET_LRC_CHECK1:
-			lrcReceived = lrcReceived + ((unsigned) b * 256);	
-			
-			/* printf("[LPMS-BLE] LRC received: %x\n", lrcReceived);
-			printf("[LPMS-BLE] LRC calculated: %x\n", lrcCheck); */
-			
-			if (lrcReceived == lrcCheck) {
-				if (currentFunction == GET_SENSOR_DATA) {
-					long long dt;					
-					dt = dataTimer.measure();
-					dataTimer.reset();
-					avgDt = 0.1f * ((float) dt / 1000.0f) + 0.9f * avgDt;
-					// printf("[LPMS-BLE] Time between data (ms): %f\n", avgDt);
-				}
-			
-				parseFunction();
-			} else {
-				std::cout << "[LPMS-BLE] Checksum fail in data packet" << std::endl;
-			}
-			
-			rxState = PACKET_END;
-			break;
-		
-		default:
-			rxState = PACKET_END;		
-			return false;
-			break;
-		}
-	}
-	rxMutex.unlock();
-		
-	return true;
-}
-
-void LpmsBle::run(void)
+void BleEngine::run(void)
 {
 	int l=0;
 	unsigned char txData[256];
-	MicroMeasure sendTimer;	
+	MicroMeasure sendTimer;
+	BleBlock bleBlock;
 
 	sendTimer.reset();
 	
 	while (started == true) {
 		read_message(UART_TIMEOUT);
 		
-		if (indication_enable_state == 2 && isOpen == false) {
-			printf("[LPMS-BLE] Connection OPEN\n");
-			isOpen = true;
-		}
-		
 		bleMutex.lock();
-		if (isOpen == true) {
-			if (txQueue.empty() == false && readyToSend == true && sendTimer.measure() > 50000) {
-				sendTimer.reset();
-				l = txQueue.size();
+		
+		BOOST_FOREACH(LpmsBle *b, sensorList) {		
+			if (b->deviceStarted() == true && b->isReadyToSend() == true && b->isTimeToSend() == true) {
+				if (b->getTxMessage(&bleBlock) == true) {
+					b->resetSendTimer();
+								
+					ble_cmd_attclient_attribute_write(b->getConnectionHandle(), b->getMeasurementHandle(), 20, bleBlock.txData);
 				
-				if (l > 20) {
-					l = 20;
-				
-					for (int i=0; i<l; ++i) {
-						txData[i] = txQueue.front();
-						txQueue.pop();
-					}
-				} else {				
-					int nF = l % 20;
-					
-					for (int i=0; i<l; ++i) {
-						txData[i] = txQueue.front();
-						txQueue.pop();
-					}
-					
-					if (nF > 0) {
-						for (int i=l; i < (l + 20 - nF); ++i) txData[i] = 0x0;
-						l += 20 - nF;
-					}					
+					b->setReadyToSend(false);
 				}
-				
-				// printf("[LPMS-BLE] Processing queue: %d bytes.\n", l);
-				
-				ble_cmd_attclient_attribute_write(k_connection_handle, lpms_handle_measurement, l, txData);
-				readyToSend = false;
 			}
 		}
+
 		bleMutex.unlock();
+		
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));		
 	}
-}
-
-bool LpmsBle::pollData(void) 
-{	
-	return true;
-}
-
-bool LpmsBle::deviceStarted(void)
-{
-	return isOpen;
-}
-
-bool LpmsBle::parseSensorData(void)
-{
-	unsigned o=0;
-	const float r2d = 57.2958f;
-	int iTimestamp;
-	int iQuat;
-	int iHeave;
-
-	zeroImuData(&imuData); 
-	
-	fromBufferInt16(oneTx, o, &iTimestamp);
-	o = o + 2;
-	currentTimestamp = (float) iTimestamp;
-	
-	if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
-	imuData.timeStamp = currentTimestamp - timestampOffset;
-	
-	fromBufferInt16(oneTx, o, &iQuat);
-	o = o + 2;
-	imuData.q[0] = (float) iQuat / (float) 0x7fff;
-	
-	fromBufferInt16(oneTx, o, &iQuat);
-	o = o + 2;
-	imuData.q[1] = (float) iQuat / (float) 0x7fff;
-
-	fromBufferInt16(oneTx, o, &iQuat);
-	o = o + 2;
-	imuData.q[2] = (float) iQuat / (float) 0x7fff;
-
-	fromBufferInt16(oneTx, o, &iQuat);
-	o = o + 2;
-	imuData.q[3] = (float) iQuat / (float) 0x7fff;
-	
-	fromBufferInt16(oneTx, o, &iHeave);
-	o = o + 2;
-	imuData.hm.yHeave = (float) iHeave / (float) 0x0fff;
-	
-	if (imuDataQueue.size() < 64) {
-		imuDataQueue.push(imuData);
-	}
-
-	return true;
-}
-
-void LpmsBle::setConfiguration(void)
-{	
-	int selectedData = 0;
-
-	configData->setParameter(PRM_GYR_THRESHOLD_ENABLED, SELECT_IMU_GYR_THRESH_DISABLED);
-	
-	configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_ENABLED);
-
-	configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);	
-	configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
-	
-	selectedData &= ~SELECT_LPMS_ACC_OUTPUT_ENABLED;	
-	selectedData &= ~SELECT_LPMS_MAG_OUTPUT_ENABLED;	
-	selectedData &= ~SELECT_LPMS_GYRO_OUTPUT_ENABLED;	
-	selectedData |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;
-	selectedData |= SELECT_LPMS_EULER_OUTPUT_ENABLED;
-	selectedData &= ~SELECT_LPMS_LINACC_OUTPUT_ENABLED;	
-	selectedData &= ~SELECT_LPMS_PRESSURE_OUTPUT_ENABLED;	
-	selectedData &= ~SELECT_LPMS_TEMPERATURE_OUTPUT_ENABLED;	
-	selectedData &= ~SELECT_LPMS_ALTITUDE_OUTPUT_ENABLED;	
-	selectedData &= ~SELECT_LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED;
-	selectedData |= SELECT_LPMS_HEAVEMOTION_OUTPUT_ENABLED;
-	
-	configData->setParameter(PRM_SELECT_DATA, selectedData);
-	configData->setParameter(PRM_HEAVEMOTION_ENABLED, SELECT_HEAVEMOTION_ENABLED);
-}
-
-bool LpmsBle::getTxMessage(std::queue<unsigned char> *topTxQ)
-{
-	int i = txQ.size();
-	
-	if (i <= 0) return false;
-
-	topTxQ->push(txQ.front());
-	txQ.pop();
-
-	return true;
 }

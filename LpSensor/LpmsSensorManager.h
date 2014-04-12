@@ -43,6 +43,7 @@
 	#include "LpmsU.h"
 	#include "CanEngine.h"
 	#include "LpmsRS232.h"
+	#include "BleEngine.h"
 #endif
 
 #ifdef __GNUC__
@@ -127,6 +128,7 @@ private:
 	
 #ifdef _WIN32	
 	CanEngine ce;
+	BleEngine be;
 #endif
 
 #ifdef ANDROID

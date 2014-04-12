@@ -64,6 +64,13 @@ typedef union _float2uint {
 	boost::uint32_t up;
 } float2uint;
 
+class BleBlock {
+public:
+	int bleConnectionHandle;
+	int bleMeasurementHandle;
+	unsigned char txData[32];
+};
+
 // Class for low-level communication with LPMS devices
 class LpmsIoInterface {
 public:

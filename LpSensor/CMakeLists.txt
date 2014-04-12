@@ -162,7 +162,13 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		RingBuffer.c
 
 		PCANBasicClass.cpp
-			
+
+		LpmsBle2.cpp
+		BleEngine.cpp
+		BleUart.c
+		BleCmdDef.c
+		BleCommands.c
+		
 		${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
 	)
 	

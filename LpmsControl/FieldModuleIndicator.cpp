@@ -44,7 +44,6 @@ void FieldModuleIndicator::updateFieldModule(float m, Eigen::Vector3f b)
 {
 	if (m < 0 || m > 1.0e4f) return; 
 
-	float d = fabs(m - b.norm());
 	cFN = 0.9 * cFN + 0.1 * m; 
 	
 	if (cFN > 100) {

@@ -77,8 +77,11 @@ public:
 	int canChannelMode;
 	int canStartId;
 	int lpBusDataMode;
+	LpVector3f magReference;
 	int firmwareVersionDig0;
+	LpVector3f magMAlignmentBias;
 	int firmwareVersionDig1;
+	LpMatrix3x3f magMAlignmentMatrix;
 	int firmwareVersionDig2;	
 	
 private:

@@ -49,6 +49,7 @@
 #include "LpMagnetometerCalibration.h"
 #include "CalcMisalignment.h"
 #include "GaitTracking.h"
+#include "LpMagnetometerMAlignment.h"
 
 #ifdef _WIN32
 	#include "LpmsCanIo.h"
@@ -86,7 +87,7 @@
 #define STATE_CALIBRATE_GYRO 6
 #define STATE_CALIBRATE_MAG 7
 #define STATE_WAIT_AFTER_CONNECT 8
-#define STATE_RESET_ORIENTATION 9
+#define STATE_SET_ORIENTATION_OFFSET 9
 #define STATE_SET_REFERENCE 10
 #define STATE_ENABLE_THRESHOLD 11
 #define STATE_SET_RANGE 12
@@ -145,6 +146,10 @@
 #define STATE_SET_CAN_POINT_MODE 65
 #define STATE_SET_CAN_START_ID 66
 #define STATE_SET_LPBUS_DATA_MODE 67
+#define STATE_SET_MAG_ALIGNMENT_MATRIX 68
+#define STATE_SET_MAG_ALIGNMENT_BIAS 69
+#define STATE_SET_MAG_REFERENCE 70
+#define STATE_RESET_ORIENTATION_OFFSET 71
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -175,6 +180,9 @@
 #define C_STATE_CENTRI_COMP_MODE 27
 #define C_STATE_GET_CAN_CONFIGURATION 28
 #define C_RESET_SENSOR_TIMESTAMP 29
+#define C_STATE_GET_MAG_ALIGNMENT_MATRIX 30
+#define C_STATE_GET_MAG_ALIGNMENT_BIAS 31
+#define C_STATE_GET_MAG_REFERENCE 32
 
 #define CAL_STATE_GET_STATUS 1
 #define CAL_STATE_WAIT_FINISH 2
@@ -186,6 +194,9 @@
 #define WAIT_CONNECT_ERROR 1000000
 
 #define WAIT_FIRMWARE_WRITE_TIME 15000000
+
+#define N_ALIGNMENT_SETS 6
+#define N_MAG_ALIGNMENT_SETS 12
 
 /* See LpmsSensorI for comments on this class. */
 class LpmsSensor : public LpmsSensorI
@@ -210,10 +221,7 @@ public:
 	int getSensorStatus(void);
 	int getConnectionStatus(void);
 	float getFps(void);
-	void startResetReference(void);
 	void startCalibrateGyro(void);
-	void startCalibrateMag(void);
-	void stopCalibrateMag(void);
 	void resetTimestamp(void);
 	CalibrationData* getConfigurationData(void);
 	bool setConfigurationPrm(int parameterIndex, int parameter);
@@ -223,7 +231,6 @@ public:
 	void pollData(void);
 	bool uploadFirmware(const char *fn);
 	bool uploadIap(const char *fn);
-	void resetOrientation(void);
 	void saveCalibrationData(void);
 	LpmsIoInterface *getIoInterface(void);
 	void getCalibratedSensorData(float g[3], float a[3], float b[3]);
@@ -247,6 +254,9 @@ public:
 	void stopSaveData(void);
 	void setCallback(LpmsCallback cb);
 	bool assertFwVersion(int d0, int d1, int d2);
+	void setOrientationOffset(void);
+	void resetOrientationOffset(void);
+	void startMagCalibration(void);	
 	
 private:
 	void checkResetReference(void);
@@ -260,7 +270,6 @@ private:
 	void restoreGyroThresholdSetting(void);
 	long getStreamFrequency(void);
 	void zeroFieldMap(void);
-	void startMagCalibration(void);
 	void checkMagCal(float T);
 	void stopMagCalibration(void);
 	void initMisalignCal(void);
@@ -279,6 +288,16 @@ private:
 	void startPlanarMagCalibration(void);
 	void checkPlanarMagCal(float T);
 	void stopPlanarMagCalibration(void);
+	void initMagMisalignCal(void);
+	void startMagMisalignCal(int i);
+	void checkMagMisalignCal(float T);
+	void calcMagMisalignCal(void);
+	void startMagReferenceCal(void);
+	void checkMagReferenceCal(float T);
+	void calcMagReferenceCal(void);
+	void startAutoMagMisalignCal(void);
+	void checkAutoMagMisalignCal(float T);
+	void calcAutoMagMisalignCal(void);
 
 	LpmsIoInterface *bt;	
 	std::string deviceId;
@@ -319,10 +338,13 @@ private:
 	LpVector4f qOffset;
 	LpVector4f currentQ;
 	LpVector4f qAfterOffset;
-	LpVector3f misalignAData[6];
-	LpVector3f misalignBData[6];
-	LpVector3f gyrMisalignAData[6];
-	LpVector3f gyrMisalignBData[6];
+	LpVector3f misalignAData[N_ALIGNMENT_SETS];
+	LpVector3f misalignBData[N_ALIGNMENT_SETS];
+	LpVector3f gyrMisalignAData[N_ALIGNMENT_SETS];
+	LpVector3f gyrMisalignBData[N_ALIGNMENT_SETS];
+	LpVector3f magMisalignAData[N_MAG_ALIGNMENT_SETS];
+	LpVector3f magmisalignBData[N_MAG_ALIGNMENT_SETS];
+	
 	bool isGetMisalign;
 	bool isGetGyrMisalign;
 	int misalignSetIndex;
@@ -349,6 +371,13 @@ private:
 	LpmsCallback lpmsCallback;
 	bool callbackSet;
 	GaitTracking gm;
+	bool isMagMisalignCalEnabled;
+	bool isAutoMagMisalignCalEnabled;
+	float cumulatedRefData[3];
+	int cumulatedRefCounter;
+	float refCalibrationDuration;
+	bool isRefCalibrationEnabled;
+	bool isPlanarMagCalibrationEnabled;
 }; 
 	
-#endif	
+#endif

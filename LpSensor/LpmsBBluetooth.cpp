@@ -202,6 +202,8 @@ bool LpmsBBluetooth::connect(string deviceId)
 	unsigned long iMode = 1;
 	ioctlsocket(sock, FIONBIO, &iMode);
 	
+	std::cout << "[LpmsBBluetooth] Connected!" << std::endl;	
+	
 	mm.reset();
 	
 	oneTx.clear();

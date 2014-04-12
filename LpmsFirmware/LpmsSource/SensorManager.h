@@ -38,7 +38,7 @@
 #define GYR_CAL_THRES 				45
 
 // Duration of gyroscope auto-calibration sequence
-#define GYR_CAL_TIMEOUT 			5000
+#define GYR_CAL_TIMEOUT 			7500
 
 // Possible durations of manual gyroscope bias clibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)
@@ -57,19 +57,22 @@
 typedef struct _LpmsCalibrationData {
 	LpVector3f gyrOffset;
 	LpVector3f gyrGain;     
-
 	uint32_t gyrRange;
 	uint32_t gyrOutputRate;
+	LpMatrix3x3f gyrAlignment;
+	LpVector3f gyrAlignOffset;
 
 	LpVector3f accGain;
 	LpVector3f accOffset;
 	uint32_t accRange;
 	uint32_t accOutputRate;
+	LpMatrix3x3f accAlignment;
 
 	LpVector3f magGain;
 	LpVector3f magOffset;
 	LpMatrix3x3f magSoftIronMatrix;
-	
+	LpMatrix3x3f magAlignmentMatrix;
+	LpVector3f magAlignmentOffset;	
 	uint32_t magRange;
 	uint32_t magOutputRate;
 	

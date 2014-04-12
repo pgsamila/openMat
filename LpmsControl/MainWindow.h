@@ -165,9 +165,6 @@ public slots:
 	
 	/* Saves current calibration data to sensor. */
 	void saveCalibration(void);
-		
-	/* Connects to OpenMAT server. */
-	void startServer(void);
 
 	/* Updates currently displayed FPS. */
 	void updateLpmsFps(int v, int lpmsId);
@@ -258,22 +255,7 @@ public slots:
 	
 	/* Browses record file name. */
 	void browseRecordFile(void);
-	
-	/* Zeros reference of selected sensor. */
-	void zeroReferenceSelected(void);
-
-	/* Zeros reference of all sensors. */
-	void zeroReferenceAll(void);
-	
-	/* Zeros selected angle offset. */
-	void zeroAngleSelected(void);
-	
-	/* Zeros all angle offsets. */
-	void zeroAngleAll(void);
-	
-	/* Initiates actual zeroing. */
-	void resetTbSelected(void);
-	
+		
 	/* Updates magnetic field map. */
 	void updateMagneticFieldMap(void);
 	
@@ -300,6 +282,26 @@ public slots:
 
 	/* Opens browser for playback file. */
 	void browsePlaybackFile(void);
+	
+	void magMisalignmentCal(void);
+	
+	void calibratePlanarMag(void);
+	
+	void magAutoMisalignmentCal(void);
+	
+	void magMaNewPage(int i);
+	
+	void magMaFinished(int i);
+	
+	QWizardPage *magMaFinishedPage(void);
+	
+	QWizardPage *magMaOrientationPage(const char* ts, const char* es);
+	
+	void setOffset(void);
+	
+	void resetOffset(void);
+
+	void resetHeading(void);
 	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;

@@ -297,6 +297,13 @@ uint8_t setRegFloat(uint8_t i, float v)
 	return 1;
 }
 
+uint8_t getRegFloat(uint8_t i, float *v)
+{
+	*v = conItoF(gReg.data[i]);
+	
+	return 1;
+}
+
 uint8_t setRegUInt32(uint8_t i, uint32_t v)
 {
 	gReg.data[i] = v;
@@ -311,7 +318,16 @@ uint8_t setRegVector3f(uint8_t i, LpVector3f v)
 	}
 	
 	return 1;
-}     
+}
+
+uint8_t getRegVector3f(uint8_t i, LpVector3f *v)
+{
+	for (uint8_t j=0; j<3; j++) {
+		if (getRegFloat(i+j, &(v->data[j])) == 0) return 0;
+	}
+	
+	return 1;
+} 
 
 uint8_t setRegVector4f(uint8_t i, LpVector4f v)
 {
@@ -329,6 +345,19 @@ uint8_t setRegMatrix3x3f(uint8_t i, LpMatrix3x3f m)
 	for (j=0; j<3; j++) {
 		for (k=0; k<3; k++) {
 			if (setRegFloat(i+j*3+k, m.data[j][k]) == 0) return 0;
+		}
+	}
+
+	return 1;
+}
+
+uint8_t getRegMatrix3x3f(uint8_t i, LpMatrix3x3f *m)
+{
+	uint8_t j, k;
+
+	for (j=0; j<3; j++) {
+		for (k=0; k<3; k++) {
+			if (getRegFloat(i+j*3+k, &(m->data[j][k])) == 0) return 0;
 		}
 	}
 

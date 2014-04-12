@@ -81,17 +81,8 @@ public:
 	/* Retrieves the current framerate. */
 	virtual float getFps(void) = 0;
 
-	/* Resets the current accelerometer and magnetometer reference. */
-	virtual void startResetReference(void) = 0;
-
 	/* Starts the calibration of the gyroscope. */
 	virtual void startCalibrateGyro(void) = 0;
-
-	/* Starts the calibration of the magnetometer. */
-	virtual void startCalibrateMag(void) = 0;
-
-	/* Stops the magnetometer calibration. */
-	virtual void stopCalibrateMag(void) = 0;
 
 	/* Resets the current sensor timestamp. */ 
 	virtual void resetTimestamp(void) = 0;
@@ -113,9 +104,6 @@ public:
 
 	/* Starts uploading the in-application programmer. */
 	virtual bool uploadIap(const char *fn) = 0;
-
-	/* Resets the orientation offset of the sensor. */
-	virtual void resetOrientation(void) = 0;
 
 	/* Starts saving the current parameter settings to the sensor flash memory. */
 	virtual void saveCalibrationData(void) = 0;
@@ -197,6 +185,22 @@ public:
 	
 	/* Sets callback for data data acquisition. */
 	virtual void setCallback(LpmsCallback cb) = 0;
+
+	virtual void initMagMisalignCal(void) = 0;
+	
+	virtual void startMagMisalignCal(int i) = 0;
+	
+	virtual void startAutoMagMisalignCal(void) = 0;	
+	
+	virtual void startPlanarMagCalibration(void) = 0;
+	
+	virtual void startMagReferenceCal(void) = 0;
+	
+	virtual void setOrientationOffset(void) = 0;
+	
+	virtual void resetOrientationOffset(void) = 0;
+	
+	virtual void startMagCalibration(void) = 0;	
 }; 
 
 #ifdef _WIN32

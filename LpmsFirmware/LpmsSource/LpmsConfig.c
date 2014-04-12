@@ -329,6 +329,10 @@ uint8_t resetToFactory(void)
 
 	gReg.data[LPMS_CAN_CONFIGURATION] = LPMS_FACTORY_CAN_CONFIGURATION;
 
+	setDefaultAlignMatrix();
+	setDefaultAlignBias();
+	setDefaultMagReference();
+
 	writeCompleteRegisterSet();
 	
 	return 1;

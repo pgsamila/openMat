@@ -32,8 +32,8 @@
 ** application note AN4248.
 ***********************************************************************/
 
-#ifndef LP_MAGNETOMETER_CALIBRATION
-#define LP_MAGNETOMETER_CALIBRATION
+#ifndef LP_MAGNETOMETER_MA_CALIBRATION
+#define LP_MAGNETOMETER_MA_CALIBRATION
 
 #include <math.h>
 #include <stdlib.h>
@@ -43,54 +43,13 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
-// Calculates phythagorean distance
-float bCalPythag(float a, float b);
-
-// Calculates current orientation of sensor from acceleration and e-compass
-void bCalOrientationFromAccMag(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc);
-
-// Initializes ellipsoid fitting algorithm
-void bCalInitEllipsoidFit(void);
-
-// Updates the magnetic field map with current raw magnetometer data
-void bCalUpdateBMap(LpVector3f r, LpVector3f bRaw);
-
-// Calculates singular vector decomposition
-int bCalCalcSVD(float **mat, int m, int n, float **w, float **v, int maxCalElements);
-
-// Fits ellpsoid to current field map
-int bCalFitEllipsoid(void);
-
-// Tests ellipsoid fitting algorithm
-void bCalTestEllipsoidFit(void);
-
-// Retrieves current soft iron matrix
-LpMatrix3x3f bCalGetSoftIronMatrix(void);
-
-// Retrieves hard iron offset vector
-LpVector3f bCalGetHardIronOffset(void);
-
-// Retrieves current absolute field strength
-float bCalGetFieldRadius(void);
-
-// Sets current soft iron matrix
-void bCalSetSoftIronMatrix(LpMatrix3x3f m);
-
-// Sets current ard iron offset
-void bCalSetHardIronOffset(LpVector3f v);
-
-// Sets current absolute field strength value
-void bCalSetFieldRadius(float r);
-
-// Corrects raw magnetometer data
-LpVector3f bCalCorrect(LpVector3f b);
-
-// Retrieves a field element at a specified location
-float bCalGetFieldMapElement(int i, int j, int k, int l);
-
-void getReferenceYZ(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc);
+float bMACalPythag(float a, float b);
+void bMACalInitEllipsoidFit(void);
+void bMAUpdateMap(LpVector4f q, LpVector3f b, LpVector3f bR);
+int bMACalCalcSVD(float **mat, int m, int n, float **w, float **v, int maxCalElements);
+int bMACalFitEllipsoid(LpMatrix3x3f *R, LpVector3f *t);
 
 #ifdef __cplusplus
 }

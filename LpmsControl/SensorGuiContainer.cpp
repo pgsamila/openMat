@@ -53,7 +53,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 
 	l = 0;
 	gl->addWidget(new QLabel("IMU ID:"), l, 0); ++l;	
-	gl->addWidget(new QLabel("Transmission rate:"), l, 0); ++l;
+	gl->addWidget(new QLabel("Sampling rate:"), l, 0); ++l;
 	
 	l = 0;
 	gl1->addWidget(new QLabel("GYR range:"), l, 0); ++l;
@@ -114,9 +114,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	
 	linAccCompModeCombo->addItem(QString("Off"));
 	linAccCompModeCombo->addItem(QString("Weak"));
-	linAccCompModeCombo->addItem(QString("Medium"));	
 	linAccCompModeCombo->addItem(QString("Strong"));
-	linAccCompModeCombo->addItem(QString("Ultra"));	
 	connect(linAccCompModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLinAccCompMode(int)));
 	
 	centriCompModeCombo->addItem(QString("Disable"));
@@ -579,7 +577,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo8BCombo->addItem(QString("Accelerometer Z"));				
 		connect(canTpdo8BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));	
 	}
-		
+	
 	l = 0;
 	selectedDataGl->addWidget(new QLabel("LpBus data mode:"), l, 0);
 	selectedDataGl->addWidget(lpBusDataModeCombo = new QComboBox(), l, 1); ++l;
@@ -683,6 +681,7 @@ void SensorGuiContainer::checkOptionalFeatures(void) {
 			canTpdo7BCombo->addItem(QString("Heave height"));	
 			canTpdo8ACombo->addItem(QString("Heave height"));	
 			canTpdo8BCombo->addItem(QString("Heave height"));			
+			canTpdo4BCombo->addItem(QString("Heave height"));			
 		}
 		
 		heaveMotionEnabled = true;
@@ -720,6 +719,7 @@ void SensorGuiContainer::updateData(void) {
 	lpBusDataModeCombo->blockSignals(true);
 		
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
+		// canProtocolCombo->blockSignals(false);	
 		canBaudrateCombo->blockSignals(true);	
 		canHeartbeatCombo->blockSignals(true);
 		canTpdo1ACombo->blockSignals(true);
@@ -1221,7 +1221,7 @@ void SensorGuiContainer::updateData(void) {
 	centriCompModeCombo->blockSignals(false);
 	lpBusDataModeCombo->blockSignals(false);
 
-	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
+	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {	
 		canBaudrateCombo->blockSignals(false);	
 		canHeartbeatCombo->blockSignals(false);	
 		canTpdo1ACombo->blockSignals(false);
@@ -1392,6 +1392,27 @@ void SensorGuiContainer::updateMagRange(int i)
 
 void SensorGuiContainer::updateCanProtocol(int i)
 {	
+	/* switch (canProtocolCombo->currentIndex()) {
+	case 0:
+		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_LPBUS);
+	break;
+		
+	case 1:
+		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_OPEN);
+	break;
+	
+	case 2:
+		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM1);
+	break;
+	
+	case 3:
+		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM2);
+	break;
+	
+	case 4:
+		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM3);
+	break;
+	} */
 }
 
 void SensorGuiContainer::updateCanBaudrate(int i)

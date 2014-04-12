@@ -279,6 +279,9 @@ void initSensorManager(void)
 	updateCanHeartbeat();
 	updateLinAccCompMode();
 	updateCentriCompMode();
+	updateMagAlignMatrix();
+	updateMagAlignBias();
+	updateMagReference();
                     
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
@@ -385,7 +388,7 @@ void processSensorData(void)
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
-		  
+  
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
 		quaternionMult(&q, &qOffset, &qAfterOffset);

@@ -584,7 +584,7 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_250KBPS);
 		} else if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_500K_ENABLED) {
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_500KBPS);
-		} else {
+		} else /* ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_1M_ENABLED) */ {
 			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
 		}
 		
@@ -794,7 +794,21 @@ bool LpmsIoInterface::parseFunction(void)
 		for (int i=0; i<3; i++) {
 			fromBuffer(oneTx, i*12, &(configData->gyrMisalignMatrix.data[i][0]), &(configData->gyrMisalignMatrix.data[i][1]), &(configData->gyrMisalignMatrix.data[i][2]));
 		}		
-	break;	
+	break;
+	
+	case GET_MAG_ALIGNMENT_BIAS:
+		fromBuffer(oneTx, 0, &(configData->magMAlignmentBias.data[0]), &(configData->magMAlignmentBias.data[1]), &(configData->magMAlignmentBias.data[2]));
+	break;
+	
+	case GET_MAG_ALIGNMENT_MATRIX:
+		for (int i=0; i<3; i++) {
+			fromBuffer(oneTx, i*12, &(configData->magMAlignmentMatrix.data[i][0]), &(configData->magMAlignmentMatrix.data[i][1]), &(configData->magMAlignmentMatrix.data[i][2]));
+		}		
+	break;
+	
+	case GET_MAG_REFERENCE:
+		fromBuffer(oneTx, 0, &(configData->magReference.data[0]), &(configData->magReference.data[1]), &(configData->magReference.data[2]));
+	break;
 	
 	case GET_RAW_DATA_LP:
 		fromBuffer(oneTx, &l);
@@ -846,17 +860,9 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK);				
 		break;
 		
-		case LPMS_LIN_ACC_COMP_MODE_MEDIUM:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM);				
-		break;
-		
 		case LPMS_LIN_ACC_COMP_MODE_STRONG:
 			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG);				
-		break;
-
-		case LPMS_LIN_ACC_COMP_MODE_ULTRA:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA);
-		break;		
+		break;	
 		}
 	break;
 	
@@ -1659,16 +1665,6 @@ bool LpmsIoInterface::enableGyrAutocalibration(long v)
 	return modbusSetInt32(ENABLE_GYR_AUTOCAL, v);
 }
 
-bool LpmsIoInterface::resetOrientation(void) 
-{
-	return modbusSetNone(SET_OFFSET);
-}
-
-bool LpmsIoInterface::resetReference(void) 
-{
-	return modbusSetNone(RESET_REFERENCE);
-}
-
 bool LpmsIoInterface::setFilterMode(long v)
 {
 	return modbusSetInt32(SET_FILTER_MODE, v);
@@ -1916,7 +1912,7 @@ bool LpmsIoInterface::getCanMapping(void)
 
 bool LpmsIoInterface::setCanMapping(int *a)
 {	
-	return modbusSetInt32Array(SET_CAN_MAPPING, (long *) a, 16);
+	return modbusSetInt32Array(SET_CAN_MAPPING, (long *) a, 8);
 }
 
 bool LpmsIoInterface::getCanHeartbeat(void)
@@ -1977,4 +1973,44 @@ bool LpmsIoInterface::setCanStartId(int v)
 bool LpmsIoInterface::setLpBusDataMode(int v)
 {
 	return modbusSetInt32(SET_LPBUS_DATA_MODE, v);
+}
+
+bool LpmsIoInterface::setMagAlignmentMatrix(LpMatrix3x3f m)
+{
+	return modbusSetMatrix3x3f(SET_MAG_ALIGNMENT_MATRIX, m);
+}
+
+bool LpmsIoInterface::setMagAlignmentBias(LpVector3f v)
+{
+	return modbusSetVector3f(SET_MAG_ALIGNMENT_BIAS, v);
+}
+
+bool LpmsIoInterface::setMagReference(LpVector3f v)
+{
+	return modbusSetVector3f(SET_MAG_REFRENCE, v);
+}
+
+bool LpmsIoInterface::getMagAlignmentMatrix(void)
+{
+	return modbusGet(GET_MAG_ALIGNMENT_MATRIX);
+}
+
+bool LpmsIoInterface::getMagAlignmentBias(void)
+{
+	return modbusGet(GET_MAG_ALIGNMENT_BIAS);
+}
+
+bool LpmsIoInterface::getMagReference(void)
+{
+	return modbusGet(GET_MAG_REFERENCE);
+}
+
+bool LpmsIoInterface::setOrientationOffset(void)
+{
+	return modbusSetNone(SET_ORIENTATION_OFFSET);
+}
+
+bool LpmsIoInterface::resetOrientationOffset(void)
+{
+	return modbusSetNone(RESET_ORIENTATION_OFFSET);
 }

@@ -80,7 +80,7 @@
 #define SELECT_DEVICE_LPMS_U	1
 #define SELECT_DEVICE_LPMS_C 	2
 
-/* Magnetometer compensation strength. */
+/* LpFilter parameter sets. */
 #define SELECT_IMU_SLOW		0
 #define SELECT_IMU_MEDIUM 	1
 #define SELECT_IMU_FAST 	2

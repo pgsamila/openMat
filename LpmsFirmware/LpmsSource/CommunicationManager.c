@@ -404,8 +404,16 @@ void parsePacket(void)
 				}
 			break;
 				
-			case SET_OFFSET:
-				if (setOffset(packet.data)) {
+			case SET_ORIENTATION_OFFSET:
+				if (setOrientationOffset(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case RESET_ORIENTATION_OFFSET:
+				if (resetOrientationOffset(packet.data)) {
 					sendAck();
 				} else {
 					sendNack();
@@ -756,10 +764,40 @@ void parsePacket(void)
 				sendAck();
 			break;
 
-                        case SET_LPBUS_DATA_MODE:
-                                setLpBusDataMode(packet.data);
+			case SET_LPBUS_DATA_MODE:
+				setLpBusDataMode(packet.data);
 				sendAck();
-                        break;
+			break;
+
+			case SET_MAG_ALIGNMENT_MATRIX:
+				setMagAlignMatrix(packet.data);
+				sendAck();
+			break;
+
+			case SET_MAG_ALIGNMENT_BIAS:
+				setMagAlignBias(packet.data);
+				sendAck();
+			break;
+
+			case SET_MAG_REFRENCE:
+				setMagReference(packet.data);
+				sendAck();
+			break;
+
+			case GET_MAG_ALIGNMENT_MATRIX:
+				getMagAlignMatrix(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_ALIGNMENT_MATRIX, dataLength, dataBuffer);
+			break;			
+
+			case GET_MAG_ALIGNMENT_BIAS:
+				getMagAlignBias(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_ALIGNMENT_BIAS, dataLength, dataBuffer);
+			break;
+
+			case GET_MAG_REFERENCE:
+				getMagReference(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
+			break;
 
 			default:
 			break;

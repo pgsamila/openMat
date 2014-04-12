@@ -63,7 +63,10 @@ uint8_t setMagOutputRate(uint8_t* data);
 uint8_t setAccOutputRate(uint8_t* data);
 
 // Sets orientation offset
-uint8_t setOffset(uint8_t* data);
+uint8_t setOrientationOffset(uint8_t* data);
+
+// Resets the orientation offset
+uint8_t resetOrientationOffset(uint8_t* data);
 
 // Sets gyroscope bias
 uint8_t setGyrBias(uint8_t* data);
@@ -299,6 +302,18 @@ uint8_t getHeaveData(uint8_t* data, uint16_t *l, uint8_t prec);
 uint8_t getGyroXData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 uint8_t getGyroYData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
 uint8_t getGyroZData(uint8_t* data, uint16_t *l, uint8_t prec, int degRad);
+uint8_t setMagAlignMatrix(uint8_t* data);
+uint8_t setMagAlignBias(uint8_t* data);
+uint8_t setMagReference(uint8_t* data);
+uint8_t getMagAlignMatrix(uint8_t* data, uint16_t *l);
+uint8_t getMagAlignBias(uint8_t* data, uint16_t *l);
+uint8_t getMagReference(uint8_t* data, uint16_t *l);
+void updateMagAlignMatrix(void);
+void updateMagAlignBias(void);
+void updateMagReference(void);
+void setDefaultMagReference(void);
+void setDefaultAlignBias(void);
+void setDefaultAlignMatrix(void);
 
 uint8_t setLpBusDataMode(uint8_t* data);
 

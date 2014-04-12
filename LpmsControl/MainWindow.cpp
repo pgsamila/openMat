@@ -185,16 +185,6 @@ void MainWindow::createMenuAndToolbar(void)
 	measurementMenu->addAction(replayAction);	
 	
 	toolbar->addSeparator();
-	QVBoxLayout *v1 = new QVBoxLayout();
-	resetCombo = new QComboBox();
-	resetCombo->addItem("Reset heading");
-	resetCombo->addItem("Reset offset");
-	v1->addWidget(new QLabel("Reset method:"));
-	v1->addWidget(resetCombo);
-	QWidget *w1 = new QWidget();
-	w1->setLayout(v1);
-	w1->setFixedWidth(150);	
-	toolbar->addWidget(w1);
 	
 	QVBoxLayout *v2 = new QVBoxLayout();
 	targetCombo = new QComboBox();
@@ -207,13 +197,18 @@ void MainWindow::createMenuAndToolbar(void)
 	w2->setFixedWidth(150);	
 	toolbar->addWidget(w2);
 	
-	QAction* resetTbAction = new QAction(QIcon("./icons/fullscreen_exit_32x32.png"), "Reset sensors", this);
-	toolbar->addAction(resetTbAction);
+	QAction* setOffsetAction = new QAction(QIcon("./icons/fullscreen_exit_32x32.png"), "Set offset", this);
+	toolbar->addAction(setOffsetAction);
+	QAction* resetOffsetAction = new QAction(QIcon("./icons/denied_32x32.png"), "Reset offset", this);
+	toolbar->addAction(resetOffsetAction);
+	QAction* resetHeadingAction = new QAction(QIcon("./icons/compass_32x32.png"), "Reset heading", this);
+	toolbar->addAction(resetHeadingAction);	
 	
 	QMenu* calibrationMenu = menuBar()->addMenu("&Calibration");
 	
 	QAction* gyroAction = new QAction("Calibrate &gyroscope", this);
-	QAction* startMagAction = new QAction("Calibrate &magnetometer", this);
+	QAction* startMagAction = new QAction("Calibrate &mag. (ellipsoid fit)", this);
+	QAction* startPlanarMagAction = new QAction("Calibrate &mag. (min/max fit)", this);
 	QAction* stopMagAction = new QAction("Stop magnetometer calibration", this);	
 	QAction* resetSingleRefAction = new QAction("Reset &heading (selected)", this);
 	QAction* resetAllRefAction = new QAction("Reset heading (&all)", this);
@@ -223,20 +218,27 @@ void MainWindow::createMenuAndToolbar(void)
 	QAction* resetToFactoryAction = new QAction("Reset to factory settings", this);
 	QAction* mACalculateAction = new QAction("Calibrate acc. misalignment", this);
 	QAction* gyrMaCalculateAction = new QAction("Calibrate gyr. misalignment", this);
+	QAction* magMaCalculateAction = new QAction("Calibrate mag. misalignment (HH-coils)", this);
+	QAction* magAutoMaCalculateAction = new QAction("Calibrate mag. misalignment (auto)", this);	
 	QAction* loadFromFileAction = new QAction("Save parameters to file", this);		
 	QAction* saveToFileAction = new QAction("Load parameters from file", this);		
 	
 	calibrationMenu->addAction(gyroAction);
+	calibrationMenu->addAction(startPlanarMagAction);
 	calibrationMenu->addAction(startMagAction);
+	calibrationMenu->addSeparator();
+	calibrationMenu->addAction(mACalculateAction);
+	calibrationMenu->addAction(gyrMaCalculateAction);
+	calibrationMenu->addAction(magMaCalculateAction);
+	calibrationMenu->addAction(magAutoMaCalculateAction);
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(saveCalAction);
 	calibrationMenu->addAction(loadFromFileAction);
 	calibrationMenu->addAction(saveToFileAction);	
 	calibrationMenu->addSeparator();
-	calibrationMenu->addAction(resetSingleRefAction);
-	calibrationMenu->addAction(resetAllRefAction);
-	calibrationMenu->addAction(resetSingleOrientationAction);
-	calibrationMenu->addAction(resetAllOrientationAction);
+	calibrationMenu->addAction(setOffsetAction);
+	calibrationMenu->addAction(resetOffsetAction);
+	calibrationMenu->addAction(resetHeadingAction);
 	calibrationMenu->addSeparator();	
 	calibrationMenu->addAction(resetToFactoryAction);
 	
@@ -296,16 +298,13 @@ void MainWindow::createMenuAndToolbar(void)
 	expertMenu->addSeparator();
 	expertMenu->addAction(versionAction);	
 	
-	connect(startMagAction, SIGNAL(triggered()), this, SLOT(calibrateMag()));	
+	connect(startMagAction, SIGNAL(triggered()), this, SLOT(calibrateMag()));
+	connect(startPlanarMagAction, SIGNAL(triggered()), this, SLOT(calibratePlanarMag()));	
 	connect(startAction, SIGNAL(triggered()), this, SLOT(startMeasurement()));		
 	connect(gyroAction, SIGNAL(triggered()), this, SLOT(recalibrate()));
 	connect(saveAction, SIGNAL(triggered()), this, SLOT(recordData()));	
 	connect(browseAction, SIGNAL(triggered()), this, SLOT(browseRecordFile()));	
-	connect(saveCalAction, SIGNAL(triggered()), this, SLOT(saveCalibration()));		
-	connect(resetSingleRefAction, SIGNAL(triggered()), this, SLOT(zeroReferenceSelected()));
-	connect(resetSingleOrientationAction, SIGNAL(triggered()), this, SLOT(zeroAngleSelected()));
-	connect(resetAllRefAction, SIGNAL(triggered()), this, SLOT(zeroReferenceAll()));
-	connect(resetAllOrientationAction, SIGNAL(triggered()), this, SLOT(zeroAngleAll()));
+	connect(saveCalAction, SIGNAL(triggered()), this, SLOT(saveCalibration()));
 	connect(connectAction, SIGNAL(triggered()), this, SLOT(openSensor()));	
 	connect(disconnectAction, SIGNAL(triggered()), this, SLOT(closeSensor()));
 	connect(graphAction, SIGNAL(triggered()), this, SLOT(selectGraphWindow()));
@@ -323,15 +322,19 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(resetToFactoryAction, SIGNAL(triggered()), this, SLOT(resetToFactory()));
 	connect(mACalculateAction, SIGNAL(triggered()), this, SLOT(misalignmentCal()));
 	connect(gyrMaCalculateAction, SIGNAL(triggered()), this, SLOT(gyrMisalignmentCal()));
+	connect(magMaCalculateAction, SIGNAL(triggered()), this, SLOT(magMisalignmentCal()));
+	connect(magAutoMaCalculateAction, SIGNAL(triggered()), this, SLOT(magAutoMisalignmentCal()));	
 	connect(loadFromFileAction, SIGNAL(triggered()), this, SLOT(loadCalibrationData()));
 	connect(saveToFileAction, SIGNAL(triggered()), this, SLOT(saveCalibrationData()));
 	connect(addRemoveAction, SIGNAL(triggered()), this, SLOT(addRemoveDevices()));
 	connect(cubeMode1Action, SIGNAL(triggered()), this, SLOT(selectCubeMode1()));
 	connect(cubeMode2Action, SIGNAL(triggered()), this, SLOT(selectCubeMode2()));
 	connect(cubeMode4Action, SIGNAL(triggered()), this, SLOT(selectCubeMode4()));
-	connect(resetTbAction, SIGNAL(triggered()), this, SLOT(resetTbSelected()));
 	connect(replayAction, SIGNAL(triggered()), this, SLOT(startReplay()));
 	connect(browseReplayAction, SIGNAL(triggered()), this, SLOT(browsePlaybackFile()));	
+	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
+	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));	
+	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));	
 }
 
 void MainWindow::updateCanBaudrate(int i)
@@ -376,8 +379,6 @@ MainWindow::MainWindow(QWidget *parent)
 	isConnecting = false;
 	calibratingMag	= false;
 	
-	startServer();
-
 	mbcom.startServer();
 	
 	QTimer* timer = new QTimer(this);
@@ -408,14 +409,21 @@ void MainWindow::calibrateMag(void)
 	
 	if (isRunning == false) startMeasurement();
 	
-	currentLpms->getSensor()->startCalibrateMag();
+	currentLpms->getSensor()->startMagCalibration();
 	
 	startWaitBar(45);
 }
 
-void MainWindow::startServer(void)
+void MainWindow::calibratePlanarMag(void)
 {
-}	 
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (isRunning == false) startMeasurement();
+	
+	currentLpms->getSensor()->startPlanarMagCalibration();
+	
+	startWaitBar(45);
+} 
 
 void MainWindow::updateMagneticFieldMap(void)
 {
@@ -452,17 +460,24 @@ void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *pr
 
 	QTreeWidgetItem *temp;	
 	QTreeWidgetItem *wi = lpmsTree->currentItem();
-
 	if (wi->childCount() > 0) {
 		QTreeWidgetItem *si = wi->child(0);
 		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(si, 0);
 	} else {
 		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(wi, 0);
-	}		
+	}	
 	
+	QTreeWidgetItem *checkItem = lpmsTree->currentItem();
+	int itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
+	
+	while (itemIndex == -1) {
+		checkItem = checkItem->parent();
+		itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
+	}
+		
 	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {
 		(*it)->updateData();
-		if (lpmsTree->indexOfTopLevelItem(lpmsTree->currentItem()) == lpmsTree->indexOfTopLevelItem((*it)->treeItem)) {
+		if (itemIndex == lpmsTree->indexOfTopLevelItem((*it)->treeItem)) {
 			f = true;
 			fit = it;
 			fi = i;
@@ -594,11 +609,11 @@ void MainWindow::timerUpdate(void)
 						(*it)->getSensor()->getFieldMap((*it)->fieldMap);
 						(*it)->getSensor()->getHardIronOffset((*it)->hardIronOffset);
 						(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
-						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius,
-						imuData.b);
+						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius, imuData.b);
 					}
-								
-					(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
+				
+					char id[64];
+					(*it)->getSensor()->getDeviceId(id);
 					fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
 				break;
 				
@@ -750,59 +765,49 @@ void MainWindow::stopMeasurement(void)
 	isRunning = false;
 }
 
-void MainWindow::resetTbSelected(void)
+void MainWindow::setOffset(void)
 {
+	std::list<SensorGuiContainer *>::iterator it;
+
 	if (currentLpms == 0 || isConnecting == true) return;
 
-	if (resetCombo->currentIndex() == 0) {
-		if (targetCombo->currentIndex() == 0) {
-			zeroReferenceAll();
-		} else {
-			zeroReferenceSelected();
+	if (targetCombo->currentIndex() == 0) {		
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->setOrientationOffset();
 		}
 	} else {
-		if (targetCombo->currentIndex() == 0) {
-			zeroAngleAll();
-		} else {
-			zeroAngleSelected();
-		}	
+		currentLpms->getSensor()->setOrientationOffset();
 	}
 }
 
-void MainWindow::zeroReferenceSelected(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-	
-	currentLpms->getSensor()->startResetReference();
-}
-
-void MainWindow::zeroReferenceAll(void)
+void MainWindow::resetOffset(void)
 {
 	std::list<SensorGuiContainer *>::iterator it;
 
 	if (currentLpms == 0 || isConnecting == true) return;
 	
-	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-		(*it)->getSensor()->startResetReference();
-	}
-}
-
-void MainWindow::zeroAngleSelected(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-		
-	currentLpms->getSensor()->resetOrientation();
-}
-
-void MainWindow::zeroAngleAll(void)
-{
-	std::list<SensorGuiContainer *>::iterator it;
-
-	if (currentLpms == 0 || isConnecting == true) return;
-		
-	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-		(*it)->getSensor()->resetOrientation();
+	if (targetCombo->currentIndex() == 0) {		
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->resetOrientationOffset();
+		}
+	} else {
+		currentLpms->getSensor()->resetOrientationOffset();
 	}	
+}
+
+void MainWindow::resetHeading(void)
+{
+	std::list<SensorGuiContainer *>::iterator it;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (targetCombo->currentIndex() == 0) {	
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->startMagReferenceCal();
+		}
+	} else {
+		currentLpms->getSensor()->startMagReferenceCal();
+	}
 }
 
 void MainWindow::recalibrate(void)
@@ -887,6 +892,7 @@ void MainWindow::uploadFirmware(void)
 	
 	if (f == false) {
 		msgBox2.setText("Invalid firmware file. Please confirm that you selected the right file for upload.");
+		msgBox2.setStandardButtons(QMessageBox::Ok);
 		msgBox2.exec();
 		
 		return;
@@ -929,6 +935,7 @@ void MainWindow::uploadTimerUpdate(void)
 		delete uploadProgress;
 		
 		msgBox.setText("Upload has been finished.");
+		msgBox.setStandardButtons(QMessageBox::Ok);
 		msgBox.exec();
 	}	
 }
@@ -1039,8 +1046,6 @@ void MainWindow::selectGraphWindow(void)
 	graphWindow->show();
 	
 	mode = MODE_GRAPH_WIN;
-	
-	// statusBar()->showMessage("Raw data graph", 2000);
 }
 
 void MainWindow::selectGraph2Window(void)
@@ -1116,28 +1121,6 @@ void MainWindow::selectFieldMapWindow(void)
 bool MainWindow::exitWindow(void)
 {
 	QMessageBox msgBox;
-
-	/* int ret;
-	
-	msgBox.setText("Do you really want to quit?");
-	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-	msgBox.setDefaultButton(QMessageBox::No);
-	ret = msgBox.exec();
-
-	switch (ret) {
-		case QMessageBox::Yes:
-			closeSensor();
-			return true;
-			break;
-			
-		case QMessageBox::No:
-			break;
-			
-		default:
-			break;
-	}
-	
-	return false; */
 	
 	closeSensor();
 	
@@ -1421,14 +1404,109 @@ void MainWindow::loadCalibrationData(void)
 	}	
 }
 
-QWizardPage *MainWindow::gyrMaOrientationPage(const char* ts, const char* es)
+void MainWindow::magAutoMisalignmentCal(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (isRunning == false) startMeasurement();
+	
+	currentLpms->getSensor()->startAutoMagMisalignCal();
+	
+	startWaitBar(45);
+}
+
+void MainWindow::magMisalignmentCal(void)
+{
+	QMessageBox msgBox;
+	int ret;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+
+	msgBox.setText("Changing the magnetometer misalignment matrix can significantly "
+		"affect the performance of your sensor. Before setting a new "
+		"misalignment matrix, please make sure that you know what you "
+		"are doing. Anyway, parameters will not be saved to the internal "
+		"flash memory of the sensor until you choose to save calibration "
+		"parameters. Also you can backup your current parameters by"
+		"saving them to a file (see the Calibration menu).");		
+
+	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+	msgBox.setDefaultButton(QMessageBox::No);
+	ret = msgBox.exec();
+
+	switch (ret) {
+		case QMessageBox::Yes:
+			break;
+			
+		case QMessageBox::No:
+			return;
+			break;
+			
+		default:
+			break;
+	}
+	
+	maWizard = new QWizard(this);
+	QList<QWizard::WizardButton> layout;
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	maWizard->setButtonLayout(layout);
+	
+	maWizard->addPage(maOrientationPage("Z-AXIS UP - Coils OFF", "Z-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("Z-AXIS UP - Coils ON", "Z-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));	
+	
+	maWizard->addPage(maOrientationPage("Z-AXIS DOWN - Coils OFF", "Z-AXIS facing DOWNARDS. Switch Helmholtz coils OFF. "));	
+	maWizard->addPage(maOrientationPage("Z-AXIS DOWN - Coils ON", "Z-AXIS facing DOWNARDS. Switch Helmholtz coils ON. "));
+	
+	maWizard->addPage(maOrientationPage("X-AXIS UP - Coils OFF", "X-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("X-AXIS UP - Coils ON", "X-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));
+	
+	maWizard->addPage(maOrientationPage("X-AXIS DOWN - Coils OFF", "X-AXIS facing DOWNARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("X-AXIS DOWN - Coils ON", "X-AXIS facing DOWNARDS. Switch Helmholtz coils ON. "));	
+
+	maWizard->addPage(maOrientationPage("Y-AXIS UP - Coils OFF", "Y-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("Y-AXIS UP - Coils ON", "Y-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));
+	
+	maWizard->addPage(maOrientationPage("Y-AXIS DOWN - Coils OFF", "Y-AXIS facing DOWNWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("Y-AXIS DOWN - Coils ON", "Y-AXIS facing DOWNWARDS. Switch Helmholtz coils ON. "));	
+		
+	maWizard->addPage(gyrMaFinishedPage());
+	
+	maWizard->setWindowTitle("Magnetometer Misalignment Calibration");
+	maWizard->show();
+		
+	connect(maWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magMaNewPage(int)));
+	connect(maWizard, SIGNAL(finished(int)), this, SLOT(magMaFinished(int)));
+	
+	currentLpms->getSensor()->initMagMisalignCal();
+	
+	maCalibrationFinished = false;
+	maIsCalibrating = true;
+}
+
+void MainWindow::magMaNewPage(int i)
+{
+	currentLpms->getSensor()->startGetGyrMisalign(i-1);	
+	if (i == 12) maCalibrationFinished = true;
+	startWaitBar(10);
+}
+
+void MainWindow::magMaFinished(int i)
+{
+	if (maCalibrationFinished == true) {
+		currentLpms->getSensor()->calcGyrMisalignMatrix();
+	}
+	
+	maIsCalibrating = false;
+}
+
+QWizardPage *MainWindow::magMaOrientationPage(const char* ts, const char* es)
 {
 	QWizardPage *page = new QWizardPage;
 	
-	page->setTitle((std::string("Rotation axis: ") + std::string(ts)).c_str());
+	page->setTitle((std::string("Calibrating to orientation: ") + std::string(ts)).c_str());
 
-	QLabel *label = new QLabel((std::string("Please LEFT-HAND rotate the sensor at a constant angular rate of 45 rpm, with its ") + std::string(ts) + std::string(" pointing UP.")).c_str());
-	
+	QLabel *label = new QLabel((std::string("Please put the selected LPMS on a horizontal surface, with the ") + std::string(es) + std::string("After aligning the sensor in this orientation press the next button. Please do not move the sensor for around 3s.")).c_str());
 	label->setWordWrap(true);
 
 	QVBoxLayout *layout = new QVBoxLayout;
@@ -1438,7 +1516,7 @@ QWizardPage *MainWindow::gyrMaOrientationPage(const char* ts, const char* es)
 	return page;
 }
 
-QWizardPage *MainWindow::gyrMaFinishedPage(void)
+QWizardPage *MainWindow::magMaFinishedPage(void)
 {
 	QWizardPage *page = new QWizardPage;
 	
@@ -1537,6 +1615,39 @@ void MainWindow::gyrMaFinished(int i)
 	}
 	
 	maIsCalibrating = false;
+}
+
+QWizardPage *MainWindow::gyrMaOrientationPage(const char* ts, const char* es)
+{
+	QWizardPage *page = new QWizardPage;
+	
+	page->setTitle((std::string("Rotation axis: ") + std::string(ts)).c_str());
+
+	QLabel *label = new QLabel((std::string("Please LEFT-HAND rotate the sensor at a constant angular rate of 45 rpm, with its ") + std::string(ts) + std::string(" pointing UP.")).c_str());
+	
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+QWizardPage *MainWindow::gyrMaFinishedPage(void)
+{
+	QWizardPage *page = new QWizardPage;
+	
+	page->setTitle("Calibration finished");
+
+	QLabel *label = new QLabel("Misalignment calibration has been finished successfully.");
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
 }
 
 void MainWindow::selectCubeMode1(void)

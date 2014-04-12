@@ -39,6 +39,12 @@ const float pi = 3.141592f;
 #define STREAM_N_PREPARE 100
 #define FIRMWARE_BACKUP_FILE "LpmsFirmwareBackupFile.txt"
 
+
+
+/***********************************************************************
+** CONSTRUCTORS / DESTRUCTORS
+***********************************************************************/
+
 #ifdef WIN32
 	LpmsSensorI* APIENTRY LpmsSensorFactory(int deviceType, const char *deviceId) 
 	{
@@ -139,6 +145,7 @@ const float pi = 3.141592f;
 	callbackSet = false;
 	isMagCalibrationEnabled = false;
 	isGetGyrTempCal = false;
+	isPlanarMagCalibrationEnabled = false;
 	
 	bt->zeroImuData(&currentData);
 }
@@ -150,19 +157,11 @@ LpmsSensor::~LpmsSensor(void)
 	delete bt;
 }
 
-void LpmsSensor::getDeviceId(char *str)
-{
-	std::string deviceId;
 
-	configData.getParameter(PRM_DEVICE_ID, &deviceId);
-	
-	strcpy(str, deviceId.c_str());
-}
 
-CalibrationData *LpmsSensor::getConfigurationData(void)
-{
-	return &configData;
-}
+/***********************************************************************
+** POLL / UPDATE DATA FROM SENSORS
+***********************************************************************/
 
 void LpmsSensor::pollData(void)
 {
@@ -186,8 +185,9 @@ void LpmsSensor::update(void)
 	// Initiates the connection to the sensor using the hardware interface.
 	case STATE_CONNECT:
 		setConnectionStatus(SENSOR_CONNECTION_CONNECTING);
+		setSensorStatus(SENSOR_STATUS_PAUSED);
+		lpmsTimer.reset();		
 		bt->connect(deviceId);
-		lpmsTimer.reset();
 		LOGV("[LpmsSensor] Trying to connect..\n");
 		retrialsCommandMode = 0;
 		prepareStream = 0;
@@ -252,7 +252,7 @@ void LpmsSensor::update(void)
 					getConfigState = C_STATE_FILTER_MODE;
 				}
 			break;
-						
+			
 			// Retrieves the current filter mode.
 			case C_STATE_FILTER_MODE:
 				LOGV("[LpmsSensor] Get filter mode\n");			
@@ -322,8 +322,32 @@ void LpmsSensor::update(void)
 				LOGV("[LpmsSensor] Get field estimate\n");
 				bt->getFieldEstimate();
 				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GET_ACC_ALIGNMENT;			
+				getConfigState = C_STATE_GET_MAG_ALIGNMENT_MATRIX;
 			break;
+			
+			// Retrieves magnetometer alignment matrix.
+			case C_STATE_GET_MAG_ALIGNMENT_MATRIX:
+				LOGV("[LpmsSensor] Get magnetometer alignment matrix\n");
+				bt->getMagAlignmentMatrix();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_MAG_ALIGNMENT_BIAS;
+			break;			
+
+			// Retrieves magnetometer alignment matrix.
+			case C_STATE_GET_MAG_ALIGNMENT_BIAS:
+				LOGV("[LpmsSensor] Get magnetometer alignment bias\n");
+				bt->getMagAlignmentBias();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_MAG_REFERENCE;
+			break;			
+
+			// Retrieves magnetometer alignment matrix.
+			case C_STATE_GET_MAG_REFERENCE:
+				LOGV("[LpmsSensor] Get magnetometer reference\n");
+				bt->getMagReference();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_GET_ACC_ALIGNMENT;
+			break;			
 			
 			// Retrieves accelerometer alignment matrix.
 			case C_STATE_GET_ACC_ALIGNMENT:
@@ -416,9 +440,6 @@ void LpmsSensor::update(void)
 			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
 			case C_STATE_SETTINGS_DONE:	
 				LOGV("[LpmsSensor] Done reading configuration\n");			
-
-				bCalSetSoftIronMatrix(configData.softIronMatrix);
-				bCalSetHardIronOffset(configData.hardIronOffset);
 			
 				lpmsTimer.reset();
 				statusTimer.reset();				
@@ -532,14 +553,20 @@ void LpmsSensor::update(void)
 		}
 		
 		convertArrayToLpVector3f(imuData.aRaw, &aRaw);
-		convertArrayToLpVector3f(imuData.bRaw, &b);
+		convertArrayToLpVector3f(imuData.bRaw, &bRaw);
 		convertArrayToLpVector3f(imuData.gRaw, &gRaw);
 
-		// Corrects magnetometer measurement.
+		// Corrects magnetometer measurement
 		if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
-			b = bCalCorrect(b);
+			vectSub3x1(&configData.hardIronOffset, &bRaw, &b);		
+			matVectMult3(&configData.softIronMatrix, &b, &b);
 		}
-		matVectMult3(&configData.misalignMatrix, &aRaw, &a);
+
+		// Corrects accelerometer measurement
+		if ((bt->getConfigReg() & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {		
+			matVectMult3(&configData.misalignMatrix, &aRaw, &a);
+			vectAdd3x1(&configData.accBias, &a, &a);
+		}
 
 		g = gRaw;
 	
@@ -552,6 +579,8 @@ void LpmsSensor::update(void)
 		checkPlanarMagCal(frameTime);
 		checkMisalignCal(frameTime);
 		checkGyrMisalignCal(frameTime);
+		checkMagMisalignCal(frameTime);
+		checkMagReferenceCal(frameTime);
 		
 		if ((bt->getConfigReg() & LPMS_GAIT_TRACKING_ENABLED) != 0) {
 			gm.update(&imuData);
@@ -768,9 +797,36 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setFieldEstimate(configData.fieldRadius);
 			LOGV("[LpmsSensor] Set field estimate\n");
-			state = STATE_SET_GYR_ALIGNMENT;
+			state = STATE_SET_MAG_ALIGNMENT_MATRIX;
 		}
 	break;
+	
+	// Sets magnetometer alignment matrix.
+	case STATE_SET_MAG_ALIGNMENT_MATRIX:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setMagAlignmentMatrix(configData.magMAlignmentMatrix);
+			LOGV("[LpmsSensor] Set magnetometer alignment matrix\n");
+			state = STATE_SET_MAG_ALIGNMENT_BIAS;
+		}
+	break;	
+	
+	// Sets magnetometer alignment bias.
+	case STATE_SET_MAG_ALIGNMENT_BIAS:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setMagAlignmentBias(configData.magMAlignmentBias);
+			LOGV("[LpmsSensor] Set magnetometer alignment bias\n");
+			state = STATE_SET_MAG_REFERENCE;
+		}
+	break;	
+
+	// Sets magnetometer reference.
+	case STATE_SET_MAG_REFERENCE:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setMagReference(configData.magReference);
+			LOGV("[LpmsSensor] Set magnetometer reference\n");
+			state = STATE_SET_GYR_ALIGNMENT;
+		}
+	break;		
 	
 	// Sets gyroscope alignment.
 	case STATE_SET_GYR_ALIGNMENT:
@@ -1086,23 +1142,21 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Resets orientation.
-	case STATE_RESET_ORIENTATION:
+	// Resets offset.
+	case STATE_RESET_ORIENTATION_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->resetOrientation();
+			bt->resetOrientationOffset();
 			state = STATE_SET_CONFIG;
 		}	
 	break;
 	
-	// Sets accelerometer and magnetometer reference to the currently measured values.
-	case STATE_SET_REFERENCE:
-		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
-			bt->resetReference();
-
-			state = STATE_CALIBRATING;
-			getConfigState = CAL_STATE_GET_STATUS;
+	// Sets offset.
+	case STATE_SET_ORIENTATION_OFFSET:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			bt->setOrientationOffset();
+			state = STATE_SET_CONFIG;
 		}	
-	break;
+	break;	
 	
 	// Restores factory defaults.
 	case STATE_RESET_TO_FACTORY_DEFAULTS:
@@ -1134,7 +1188,27 @@ void LpmsSensor::update(void)
 	default:
 	break;
 	}
-}	
+}
+
+
+
+/***********************************************************************
+** DIRECT GET / SET DEVICE PARAMETERS
+***********************************************************************/
+
+void LpmsSensor::getDeviceId(char *str)
+{
+	std::string deviceId;
+
+	configData.getParameter(PRM_DEVICE_ID, &deviceId);
+	
+	strcpy(str, deviceId.c_str());
+}
+
+CalibrationData *LpmsSensor::getConfigurationData(void)
+{
+	return &configData;
+}
 
 bool LpmsSensor::assertFwVersion(int d0, int d1, int d2)
 {
@@ -1281,32 +1355,22 @@ void LpmsSensor::startCalibrateGyro(void)
 	getConfigState = STATE_CALIBRATE_GYRO;
 }
 
-void LpmsSensor::checkGyroCalibration(ImuData d)
-{
-}
-
-void LpmsSensor::startResetReference(void)
+void LpmsSensor::setOrientationOffset(void)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;
+	if (state != STATE_MEASURE) return;	
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_SET_REFERENCE;
+	getConfigState = STATE_SET_ORIENTATION_OFFSET;
 }
 
-void LpmsSensor::checkResetReference(void)
-{
-}
-
-void LpmsSensor::resetOrientation(void)
+void LpmsSensor::resetOrientationOffset(void)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;
-	
-	quaternionInv(&currentQ, &qOffset);
+	if (state != STATE_MEASURE) return;	
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_RESET_ORIENTATION;
+	getConfigState = STATE_RESET_ORIENTATION_OFFSET;
 }
 	
 void LpmsSensor::setOpenMatId(int id)
@@ -1319,27 +1383,15 @@ int LpmsSensor::getOpenMatId(void)
 	return configData.openMatId;
 }
 
-void LpmsSensor::checkMagCalibration(ImuData d)
-{	
-}
-
-void LpmsSensor::startCalibrateMag(void)
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	
-	startMagCalibration();
-}
-
-void LpmsSensor::stopCalibrateMag(void)
-{
-}
-
 bool LpmsSensor::updateParameters(void)
 {
 	bool r = true;
 
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
-	if (state != STATE_MEASURE) return false;	
+	
+	if (state != STATE_MEASURE) {
+		return false;
+	}
 
 	state = PREPARE_PARAMETER_ADJUSTMENT;
 	getConfigState = STATE_SET_CONFIG;
@@ -1582,13 +1634,13 @@ void LpmsSensor::startPlanarMagCalibration(void)
 {
 	int p;
 
-  	if (isMagCalibrationEnabled == true) return;
+  	if (isPlanarMagCalibrationEnabled == true) return;
   	
-	isMagCalibrationEnabled = true;	
+	isPlanarMagCalibrationEnabled = true;	
 	magCalibrationDuration = 0.0f;
-	
-	configData.getParameter(PRM_SELECT_DATA, &p);
-	
+
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+		
 	p |= SELECT_LPMS_MAG_OUTPUT_ENABLED;
 	p |= SELECT_LPMS_EULER_OUTPUT_ENABLED;
 
@@ -1604,14 +1656,22 @@ void LpmsSensor::startPlanarMagCalibration(void)
 
 void LpmsSensor::checkPlanarMagCal(float T)
 {
-	if (isMagCalibrationEnabled == true) {
+	if (isPlanarMagCalibrationEnabled == true) {
+		magCalibrationDuration += T;
+	
 		for (int i=0; i<3; i++) {
-			if (currentData.bRaw[i] > bMax.data[i]) bMax.data[i] = currentData.bRaw[i];
-			if (currentData.bRaw[i] < bMin.data[i]) bMin.data[i] = currentData.bRaw[i];
+			if (currentData.bRaw[i] > bMax.data[i]) {
+				bMax.data[i] = currentData.bRaw[i];
+				printf("[LpmsSensor] New maximum detected: Axis=%d, field=%f\n", i, currentData.bRaw[i]);
+			}
+			if (currentData.bRaw[i] < bMin.data[i]) {
+				bMin.data[i] = currentData.bRaw[i];
+				printf("[LpmsSensor] New minimum detected: Axis=%d, field=%f\n", i, currentData.bRaw[i]);
+			}
 		}	
 		
 		if (magCalibrationDuration >= LPMS_MAG_CALIBRATION_DURATION_20S) {
-			stopMagCalibration();
+			stopPlanarMagCalibration();
 		}
 	} 
 }
@@ -1623,34 +1683,33 @@ void LpmsSensor::stopPlanarMagCalibration(void)
 	LpVector3f bBias;
 	LpVector3f bRadius;
 
-  	if (isMagCalibrationEnabled == false) return;
+  	if (isPlanarMagCalibrationEnabled == false) return;
 
 	for (i=0; i<3; i++) {
-		bBias.data[i] = (bMax.data[i] - bMin.data[i]) / 2.0f;
+		bBias.data[i] = (bMax.data[i] + bMin.data[i]) / 2.0f;
+		printf("[LpmsSensor] Calculated bias: Axis=%d, field=%f\n", i, bBias.data[i]);
+
 	}
 	
 	for (i=0; i<3; i++) {
 		bRadius.data[i] = bMax.data[i] - bBias.data[i];
-		sqSum += bRadius.data[i] * bRadius.data[i];
+		sqSum += bRadius.data[i]; // * bRadius.data[i];
 	}
 	
-	configData.fieldRadius = sqrt(sqSum);
+	configData.fieldRadius = sqSum / 3; // sqrt(sqSum);
 	
 	matZero3x3(&configData.softIronMatrix);
 	for (int i=0; i<3; i++) {
 		configData.softIronMatrix.data[i][i] = configData.fieldRadius / bRadius.data[i];
+		printf("[LpmsSensor] Calculated radius: Axis=%d, field=%f\n", i, configData.softIronMatrix.data[i][i]);
 		configData.hardIronOffset.data[i] = bBias.data[i];
 	}
-	
-	configData.softIronMatrix = bCalGetSoftIronMatrix();
-	configData.hardIronOffset = bCalGetHardIronOffset();
-	
-	/* mCalGetSoftIronMatrix(&configData.softIronMatrix);
-	mCalGetHardIronOffset(&configData.hardIronOffset); */
-	
+		
 	newFieldMap = true;
-	isMagCalibrationEnabled = false;
+	isPlanarMagCalibrationEnabled = false;
 	magCalibrationDuration = 0.0f;
+
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);	
 
 	updateParameters();
 }
@@ -1706,10 +1765,6 @@ void LpmsSensor::checkMagCal(float T)
 void LpmsSensor::stopMagCalibration(void)
 {
   	if (isMagCalibrationEnabled == false) return;
-
-	/* mCalGetSoftIronMatrix(&configData.softIronMatrix);
-	mCalGetHardIronOffset(&configData.hardIronOffset);
-	configData.fieldRadius = mCalGetFieldRadius(); */
 	
 	if (bCalFitEllipsoid() == 1) {
 		configData.softIronMatrix = bCalGetSoftIronMatrix();
@@ -1721,8 +1776,6 @@ void LpmsSensor::stopMagCalibration(void)
 		for (int j=0; j<ABSMAXROLL; j++) {
 			for (int k=0; k<ABSMAXYAW; k++) {
 				for (int l=0; l<3; l++) {
-					/* configData.fieldMap[i][j][k].data[l] = mCalGetFieldMapElement(i, j, k, l); */
-					
 					configData.fieldMap[i][j][k].data[l] = bCalGetFieldMapElement(i, j, k, l);
 				}
 			}
@@ -1759,13 +1812,9 @@ void LpmsSensor::initMisalignCal(void)
 	
 	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
 	
-	printf("prevSelection: %x\n", prevDataSelection);
-	
 	p = SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
 	p |= SELECT_LPMS_ACC_OUTPUT_ENABLED;
 
-	printf("selected: 0x%x\n", p);
-	
 	configData.setParameter(PRM_SELECT_DATA, p);
 	updateParameters();
 }
@@ -1805,7 +1854,7 @@ void LpmsSensor::checkMisalignCal(float T)
 		if (misalignTime > 2000.0f) {
 			isGetMisalign = false;
 
-			printf("Average acc. vector %d: ", misalignSetIndex);
+			printf("[LpmsSensor] Average acc. vector %d: ", misalignSetIndex);
 			
 			for (int i=0; i<3; i++) {
 				if (misalignSamples == 0) break;
@@ -1838,13 +1887,11 @@ void LpmsSensor::calcMisalignMatrix(void)
 	
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
 	updateParameters();
-	
-	printf("updated: %x\n", prevDataSelection);
 }	
 
 void LpmsSensor::saveCalibrationData(const char* fn)
 {
-	printf("Saving calibration data to %s\n", fn);
+	printf("[LpmsSensor] Saving calibration data to %s\n", fn);
 	configData.save(fn);
 }
 
@@ -1999,4 +2046,259 @@ void LpmsSensor::resetTimestamp(void)
 	getConfigState = STATE_RESET_TIMESTAMP;
 	
 	frameNo = 0;
-}	
+}
+
+void LpmsSensor::startAutoMagMisalignCal(void)
+{
+	int p;
+
+  	if (isAutoMagMisalignCalEnabled == true) return;
+  	
+	isAutoMagMisalignCalEnabled = true;	
+	misalignTime = 0.0f;
+	
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+	
+	p = SELECT_LPMS_MAG_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
+	
+	configData.setParameter(PRM_SELECT_DATA, p);	
+	updateParameters();
+	
+	printf("[LpmsSensor] Starting magnetometer misalignment calibration.\n");
+	
+	bMACalInitEllipsoidFit();
+}
+
+#define LPMS_REF_CALIBRATION_DURATION_1S	(1000.0f)
+#define LPMS_REF_CALIBRATION_DURATION_20S	(20000.0f)
+
+void LpmsSensor::checkAutoMagMisalignCal(float T)
+{
+	LpVector3f tV, bR;
+	LpVector4f tV2;
+	
+	bR.data[0] = 0.0f;
+	bR.data[1] = -1.0f;
+	bR.data[2] = -1.0f;
+	
+	convertArrayToLpVector3f(currentData.b, &tV);
+	convertArrayToLpVector4f(currentData.q, &tV2);
+	
+	if (isAutoMagMisalignCalEnabled == true) {
+		misalignTime += T;
+		
+		bMAUpdateMap(tV2, tV, configData.magReference);
+		
+		if (misalignTime >= LPMS_REF_CALIBRATION_DURATION_20S) {
+			calcMagMisalignCal();
+		}
+		
+		printf("[LpmsSensor] b: %f, %f, %f\n", tV.data[0], tV.data[1], tV.data[2]);
+		printf("[LpmsSensor] q: %f, %f, %f, %f\n", tV2.data[0], tV2.data[1], tV2.data[2], tV2.data[3]);
+		printf("[LpmsSensor] T: %f\n", misalignTime);		
+	} 
+}
+
+void LpmsSensor::calcAutoMagMisalignCal(void)
+{
+	LpMatrix3x3f R;
+	LpVector3f t;
+
+ 	if (isAutoMagMisalignCalEnabled == false) return;
+
+	if (bMACalFitEllipsoid(&R, &t) == 1) {
+		configData.magMAlignmentMatrix = R;
+		configData.magMAlignmentBias = t;
+	}
+	
+	isAutoMagMisalignCalEnabled = false;
+	misalignTime = 0.0f;
+
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	
+	updateParameters();
+}
+
+void LpmsSensor::startMagReferenceCal(void)
+{
+	int p;
+
+  	if (isRefCalibrationEnabled == true) return;
+  	
+	isRefCalibrationEnabled = true;
+	
+	cumulatedRefCounter = 0;
+	refCalibrationDuration = 0.0f;
+	
+	for (int i = 0; i < 3; i++) cumulatedRefData[i] = 0;
+
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);
+		
+	p = SELECT_LPMS_MAG_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_ACC_OUTPUT_ENABLED;	
+	p |= SELECT_LPMS_QUAT_OUTPUT_ENABLED;
+
+	printf("[LpmsSensor] Starting magnetometer reference calibration.\n");	
+	
+	configData.setParameter(PRM_SELECT_DATA, p);	
+	updateParameters();
+}
+
+void LpmsSensor::checkMagReferenceCal(float T)
+{
+	float bInc;
+	LpVector3f tR, tV, tV2;
+
+	if (isRefCalibrationEnabled == true) {
+		refCalibrationDuration += T;
+
+		cumulatedRefCounter++;
+		
+		convertArrayToLpVector3f(currentData.b, &tV);
+		convertArrayToLpVector3f(currentData.a, &tV2);		
+		
+		printf("[LpmsSensor] b: %f, %f, %f\n", tV.data[0], tV.data[1], tV.data[2]);
+		printf("[LpmsSensor] a: %f, %f, %f\n", tV2.data[0], tV2.data[1], tV2.data[2]);
+		printf("[LpmsSensor] T: %f\n", refCalibrationDuration);
+		
+		getReferenceYZ(tV, tV2, &tR, &bInc);
+		
+		cumulatedRefData[0] = cumulatedRefData[0] + bInc;
+		cumulatedRefData[1] = cumulatedRefData[1] + tR.data[1];
+		cumulatedRefData[2] = cumulatedRefData[2] + tR.data[2];
+	
+		printf("[LpmsSensor] ref: %f, %f, %f\n", cumulatedRefData[0], cumulatedRefData[1], cumulatedRefData[2]);		
+		
+		printf("[LpmsSensor] Calibrating magnetometer reference..\n");		
+		
+		if (refCalibrationDuration >= LPMS_REF_CALIBRATION_DURATION_1S) {
+			calcMagReferenceCal();
+		}	
+	}
+}
+
+void LpmsSensor::calcMagReferenceCal(void)
+{
+	float n;
+
+  	if (isRefCalibrationEnabled == false) return;
+	
+	configData.magReference.data[0] = 0.0f;
+	configData.magReference.data[1] = cumulatedRefData[1] / (float) cumulatedRefCounter;
+	configData.magReference.data[2] = cumulatedRefData[2] / (float) cumulatedRefCounter;
+	
+	n = vect3x1Norm(configData.magReference);
+	scalarVectMult3x1(n, &configData.magReference, &configData.magReference);
+
+	printf("[LpmsSensor] Magnetometer reference: %f, %f, %f\n", 0.0f, configData.magReference.data[1], configData.magReference.data[2]);
+	printf("[LpmsSensor] Magnetometer reference length: %f\n", n);	
+	
+	isRefCalibrationEnabled = false;
+	
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	
+	updateParameters();	
+}
+
+void LpmsSensor::initMagMisalignCal(void)
+{
+	int p;
+
+  	if (isMagMisalignCalEnabled == true) return;
+  	
+	isMagMisalignCalEnabled = false;
+	misalignSetIndex = 0;
+	misalignSamples = 0;
+	misalignTime = 0.0f;
+	
+	for (int i=0; i<N_MAG_ALIGNMENT_SETS; i++) {
+		vectZero3x1(&misalignAData[i]);
+		vectZero3x1(&misalignBData[i]);
+		vectZero3x1(&misalignADataAcc);
+	}
+	
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
+		
+	p = SELECT_LPMS_QUAT_OUTPUT_ENABLED;	
+	p |= SELECT_LPMS_MAG_OUTPUT_ENABLED;
+	
+	configData.setParameter(PRM_SELECT_DATA, p);
+	updateParameters();
+}
+
+void LpmsSensor::startMagMisalignCal(int i) 
+{
+	if (i < N_MAG_ALIGNMENT_SETS) {
+		isMagMisalignCalEnabled = true;
+		misalignSetIndex = i;
+		misalignSamples = 0;
+		misalignTime = 0.0f;
+		
+		vectZero3x1(&misalignADataAcc);
+	}
+}
+
+void LpmsSensor::checkMagMisalignCal(float T)
+{
+	if (isMagMisalignCalEnabled == true) {		
+		for (int i=0; i<3; i++) {
+			misalignADataAcc.data[i] += bRaw.data[i];
+		}
+		
+		++misalignSamples;
+				
+		for (int i=0; i<3; i++) {
+			if (aRaw.data[i] > 50.0f) {
+				misalignBData[misalignSetIndex].data[i] = 100.0f;
+			} else if (aRaw.data[i] < -50.0f) {
+				misalignBData[misalignSetIndex].data[i] = -100.0f;
+			} else {
+				misalignBData[misalignSetIndex].data[i] = 0.0f;
+			}
+		}
+
+		misalignTime += T;
+		if (misalignTime > 2000.0f) {
+			isMagMisalignCalEnabled = false;
+
+			printf("Average mag. vector %d: ", misalignSetIndex);
+			
+			for (int i=0; i<3; i++) {
+				if (misalignSamples == 0) break;
+				
+				if ((misalignSetIndex % 2) == 0) {				
+					misalignAData[misalignSetIndex].data[i] = misalignADataAcc.data[i] / misalignSamples;
+				} else {
+					misalignAData[misalignSetIndex].data[i] = (misalignADataAcc.data[i] / misalignSamples) - misalignAData[misalignSetIndex-1].data[i];
+				}
+				
+				printf("%f ", misalignAData[misalignSetIndex].data[i]);
+			}
+			printf("\n");
+			
+			vectZero3x1(&misalignADataAcc);
+			
+			misalignSamples = 0;
+			misalignTime = 0.0f;
+		}
+	}
+}
+
+void LpmsSensor::calcMagMisalignCal(void)
+{
+	float *aTest[N_MAG_ALIGNMENT_SETS];
+	float *bTest[N_MAG_ALIGNMENT_SETS];
+	
+	for (int i=0; i<N_MAG_ALIGNMENT_SETS; i+=2) {
+		aTest[i/2] = misalignAData[i+1].data;
+		bTest[i/2] = misalignBData[i+1].data;
+	}
+
+	maCalCalcMagMisalignment(aTest, bTest, &configData.misalignMatrix, &configData.accBias, N_MAG_ALIGNMENT_SETS/2);
+	
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	updateParameters();
+	
+	printf("updated: %x\n", prevDataSelection);
+}

@@ -157,7 +157,7 @@
 #define	LPMS_ACC_COMP_ENABLED 					(uint32_t)(0x00000001 << 25)
 #define	LPMS_MAG_COMP_ENABLED 					(uint32_t)(0x00000001 << 24)
 #define	LPMS_GYR_THRES_ENABLED 					(uint32_t)(0x00000001 << 23)
-#define	NOT_USED_3								(uint32_t)(0x00000001 << 22)
+#define	LPMS_LPBUS_DATA_MODE_16BIT_ENABLED		(uint32_t)(0x00000001 << 22)
 #define	LPMS_LINACC_OUTPUT_ENABLED 				(uint32_t)(0x00000001 << 21)
 #define LPMS_DYNAMIC_COVAR_ENABLED 				(uint32_t)(0x00000001 << 20)
 #define LPMS_ALTITUDE_OUTPUT_ENABLED 			(uint32_t)(0x00000001 << 19)

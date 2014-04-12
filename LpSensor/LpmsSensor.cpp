@@ -146,6 +146,7 @@ const float pi = 3.141592f;
 	isMagCalibrationEnabled = false;
 	isGetGyrTempCal = false;
 	isPlanarMagCalibrationEnabled = false;
+	isRefCalibrationEnabled	= false;
 	
 	bt->zeroImuData(&currentData);
 }
@@ -693,7 +694,7 @@ void LpmsSensor::update(void)
 				bt->setFilterMode(LPMS_FILTER_GYR_ACC_EULER);
 			break;
 			}
-			LOGV("[LpmsSensor] Set filter mode\n");
+			LOGV("[LpmsSensor] Set filter mode\n", p);
 			state = STATE_SET_PARAMETER_SET;	
 		}
 	break;	
@@ -719,7 +720,7 @@ void LpmsSensor::update(void)
 				bt->setFilterPreset(LPMS_FILTER_PRM_SET_4);	
 			break;				
 			}
-			LOGV("[LpmsSensor] Set parameter set\n");
+			LOGV("[LpmsSensor] Set parameter set\n", p);
 			state = STATE_SET_LP_FILTER;
 		}
 	break;
@@ -886,30 +887,29 @@ void LpmsSensor::update(void)
 	// Sets linear acceleration compensation mode
 	case STATE_SET_LIN_ACC_COMP_MODE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			configData.getParameter(PRM_LPBUS_DATA_MODE, &p);
+			configData.getParameter(PRM_LIN_ACC_COMP_MODE, &p);
 			switch(p) {
 			case SELECT_LPMS_LIN_ACC_COMP_MODE_OFF:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_OFF);	
+				bt->setLinAccCompMode(LPMS_LIN_ACC_COMP_MODE_OFF);	
 			break;
 			
 			case SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_WEAK);	
+				bt->setLinAccCompMode(LPMS_LIN_ACC_COMP_MODE_WEAK);	
 			break;
 			
 			case SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_MEDIUM);	
+				bt->setLinAccCompMode(LPMS_LIN_ACC_COMP_MODE_MEDIUM);	
 			break;	
 
 			case SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_STRONG);	
+				bt->setLinAccCompMode(LPMS_LIN_ACC_COMP_MODE_STRONG);	
 			break;				
 			
 			case SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA:
-				bt->setFilterPreset(LPMS_LIN_ACC_COMP_MODE_ULTRA);	
+				bt->setLinAccCompMode(LPMS_LIN_ACC_COMP_MODE_ULTRA);	
 			break;			
 			}
 		
-			bt->setLinAccCompMode(configData.linAccCompMode);
 			LOGV("[LpmsSensor] Set linear acceleration compensation mode\n");
 			state = STATE_SET_CENTRI_COMP_MODE;
 		}
@@ -981,15 +981,13 @@ void LpmsSensor::update(void)
 			switch(p) {
 			case SELECT_LPMS_LPBUS_DATA_MODE_32:
 				bt->setLpBusDataMode(LPMS_LPBUS_DATA_MODE_32);
-				printf("Data mode 32\n");
 			break;
 			
 			case SELECT_LPMS_LPBUS_DATA_MODE_16:
 				bt->setLpBusDataMode(LPMS_LPBUS_DATA_MODE_16);
-				printf("Data mode 16\n");				
 			break;
 			}
-			LOGV("[LpmsSensor] Set CAN point mode\n");
+			LOGV("[LpmsSensor] Set LP-BUS data mode\n");
 			state = STATE_SELECT_DATA;
 		}
 	break;	

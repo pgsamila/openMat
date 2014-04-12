@@ -114,7 +114,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	
 	linAccCompModeCombo->addItem(QString("Off"));
 	linAccCompModeCombo->addItem(QString("Weak"));
+	linAccCompModeCombo->addItem(QString("Medium"));	
 	linAccCompModeCombo->addItem(QString("Strong"));
+	linAccCompModeCombo->addItem(QString("Ultra"));	
 	connect(linAccCompModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLinAccCompMode(int)));
 	
 	centriCompModeCombo->addItem(QString("Disable"));
@@ -182,7 +184,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canChannelModeCombo->addItem(QString("CANOpen"));
 		canChannelModeCombo->addItem(QString("Sequential"));
 		
-		connect(canChannelModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanChannelMode(int)));		
+		connect(canChannelModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanChannelMode(int)));
 		
 		gl4->addWidget(new QLabel("Value mode"), l, 0);
 		gl4->addWidget(canPointModeCombo = new QComboBox(), l, 1); ++l;

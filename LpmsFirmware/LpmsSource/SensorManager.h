@@ -76,11 +76,6 @@ typedef struct _LpmsCalibrationData {
 	uint32_t magRange;
 	uint32_t magOutputRate;
 	
-	LpMatrix3x3f gyrAlignment;
-	LpMatrix3x3f accAlignment;
-	LpMatrix3x3f magAlignment;
-
-	LpVector3f gyrAlignOffset;
 	LpVector3f gyrTempCalPrmA;
 	LpVector3f gyrTempCalPrmB;
 	LpVector3f gyrTempCalBaseV;

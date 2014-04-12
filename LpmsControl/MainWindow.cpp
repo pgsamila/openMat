@@ -220,17 +220,12 @@ void MainWindow::createMenuAndToolbar(void)
 	QAction* gyrMaCalculateAction = new QAction("Calibrate gyr. misalignment", this);
 	QAction* magMaCalculateAction = new QAction("Calibrate mag. misalignment (HH-coils)", this);
 	QAction* magAutoMaCalculateAction = new QAction("Calibrate mag. misalignment (auto)", this);	
-	QAction* loadFromFileAction = new QAction("Save parameters to file", this);		
-	QAction* saveToFileAction = new QAction("Load parameters from file", this);		
+	QAction* loadFromFileAction = new QAction("Save calibration file", this);		
+	QAction* saveToFileAction = new QAction("Load calibration file", this);		
 	
 	calibrationMenu->addAction(gyroAction);
-	calibrationMenu->addAction(startPlanarMagAction);
 	calibrationMenu->addAction(startMagAction);
-	calibrationMenu->addSeparator();
-	calibrationMenu->addAction(mACalculateAction);
-	calibrationMenu->addAction(gyrMaCalculateAction);
-	calibrationMenu->addAction(magMaCalculateAction);
-	calibrationMenu->addAction(magAutoMaCalculateAction);
+	calibrationMenu->addAction(startPlanarMagAction);	
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(saveCalAction);
 	calibrationMenu->addAction(loadFromFileAction);
@@ -294,7 +289,9 @@ void MainWindow::createMenuAndToolbar(void)
 	expertMenu->addAction(selfTestAction);
 	expertMenu->addSeparator();
 	expertMenu->addAction(mACalculateAction);
-	expertMenu->addAction(gyrMaCalculateAction);	
+	expertMenu->addAction(gyrMaCalculateAction);
+	expertMenu->addAction(magMaCalculateAction);
+	expertMenu->addAction(magAutoMaCalculateAction);	
 	expertMenu->addSeparator();
 	expertMenu->addAction(versionAction);	
 	

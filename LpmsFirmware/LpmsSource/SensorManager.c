@@ -723,7 +723,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
 
-        if (gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED != 0) {
+        if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
                 setUi32t(&(data[o]), (uint32_t)(measurementTime * 10000.0f));
                 o = o+4;
                 
@@ -773,22 +773,22 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                         for (int i=0; i<3; i++) {
                                 setFloat(&(data[i*2+ o]), linAcc.data[i], FLOAT_FIXED_POINT_1000);
                         }
-                        o = o+6
+                        o = o+6;
                 }
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
                         setFloat(&(data[0 + o]), pressure, FLOAT_FIXED_POINT_100);
-                        o = o+2
+                        o = o+2;
                 }
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
                         setFloat(&(data[0 + o]), altitude, FLOAT_FIXED_POINT_10);
-                        o = o+2
+                        o = o+2;
                 }	
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
                         setFloat(&(data[0 + o]), temperature, FLOAT_FIXED_POINT_100);
-                        o = o+2
+                        o = o+2;
                 }
         
 #ifdef USE_HEAVEMOTION

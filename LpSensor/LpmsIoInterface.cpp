@@ -250,8 +250,7 @@ bool LpmsIoInterface::fromBufferBigEndian(unsigned char *data, float *v)
 	return true;
 }
 
-bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, 
-	long *x, long *y, long *z)
+bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, long *x, long *y, long *z)
 {	
 	if (currentLength < 12) return false;
 	
@@ -272,8 +271,28 @@ bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data,
 	return true;
 }
 
-bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, 
-	float *x, float *y, float *z)
+bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, unsigned start, long *x, long *y, long *z)
+{	
+	if (currentLength < (start+12)) return false;
+	
+	long v[3];
+	
+	for (int i=0; i<3; i++) {
+		v[i] = 0;
+		for (int j=3; j>=0; --j) {
+			v[i] = v[i] * 256;
+			v[i] += (long) data[i*4+j+start];
+		}
+	}
+
+	*x = v[0];
+	*y = v[1];
+	*z = v[2];
+	
+	return true;
+}
+
+bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, float *x, float *y, float *z)
 {	
 	if (currentLength < 12) return false;
 	
@@ -294,8 +313,7 @@ bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data,
 	return true;
 }
 
-bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, unsigned start,
-	float *x, float *y, float *z)
+bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, unsigned start, float *x, float *y, float *z)
 {	
 	if (currentLength < (start+12)) return false;
 	
@@ -316,8 +334,7 @@ bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, unsigned start
 	return true;
 }
 
-bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, unsigned start,
-	float *q0, float *q1, float *q2, float *q3)
+bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, unsigned start, float *q0, float *q1, float *q2, float *q3)
 {	
 	if (currentLength < (start+16)) return false;
 	
@@ -371,6 +388,17 @@ bool LpmsIoInterface::fromBuffer(unsigned char *data, float *v)
 	return true;
 }
 
+bool LpmsIoInterface::fromBufferInt16(std::vector<unsigned char> data, unsigned start, short *v)
+{
+	*v = 0;
+	for (int i=1; i>=0; --i) {
+		*v = *v * 256;
+		*v += (short) data[i+start];
+	}
+
+	return true;
+}
+
 bool LpmsIoInterface::parseFieldMapData(void)
 {
 	unsigned p, r, y;
@@ -393,19 +421,100 @@ void LpmsIoInterface::resetTimestamp(void)
 
 bool LpmsIoInterface::parseSensorData(void)
 {
-	unsigned o=0;
+	unsigned o;
 	float r0, r1, r2;
 	const float r2d = 57.2958f;
-	int ri0, ri1, ri2;
-	int v;
+	short s;
+	long l;
+	int i;
 
 	zeroImuData(&imuData);
 	
-	if (configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED != 0) {
-		fromBuffer(oneTx, o, &v);
-		currentTimestamp = (float) v / 10000.0f;
-		o = o + 4;	
+	o = 0;
+	if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
+		fromBuffer(oneTx, &l);
+		currentTimestamp = (float) l / 10000.0f;
+		o = o + 4;
 		
+		if ((configReg & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
+			for (i=0; i<3; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.gRaw[i] = ((float)s) / 1000.0f * r2d;	
+				o = o + 2;
+			}		
+		}
+		
+		if ((configReg & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
+			for (i=0; i<3; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.aRaw[i] = ((float)s) / 1000.0f;	
+				o = o + 2;
+			}			
+		}	
+
+		if ((configReg & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
+			for (i=0; i<3; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.bRaw[i] = ((float)s) / 100.0f;	
+				o = o + 2;
+			}			
+		}
+		
+		if ((configReg & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) {
+			for (i=0; i<3; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.w[i] = ((float)s) / 1000.0f * r2d;	
+				o = o + 2;
+			}				
+		}
+		
+		if ((configReg & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
+			for (i=0; i<4; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.q[i] = ((float)s) / 1000.0f;	
+				o = o + 2;
+			}		
+		}	
+			
+		if ((configReg & LPMS_EULER_OUTPUT_ENABLED) != 0)  {
+			for (i=0; i<3; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.r[i] = ((float)s) / 1000.0f * r2d;	
+				o = o + 2;
+			}
+		}	
+
+		if ((configReg & LPMS_LINACC_OUTPUT_ENABLED) != 0)  {
+			for (i=0; i<3; ++i) {
+				fromBufferInt16(oneTx, o, &s);
+				imuData.linAcc[i] = ((float)s) / 1000.0f;	
+				o = o + 2;
+			}
+		}	
+	 
+		if ((configReg & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
+			fromBufferInt16(oneTx, o, &s);
+			imuData.pressure = ((float)s) / 100.0f;	
+			o = o + 2;
+		}
+		
+		if ((configReg & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
+			fromBufferInt16(oneTx, o, &s);
+			imuData.altitude = ((float)s) / 10.0f;	
+			o = o + 2;
+		}
+
+		if ((configReg & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
+			fromBufferInt16(oneTx, o, &s);
+			imuData.temperature = ((float)s) / 100.0f;	
+			o = o + 2;
+		}
+		
+		if ((configReg & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0)  {
+			fromBufferInt16(oneTx, o, &s);
+			imuData.hm.yHeave = ((float)s) / 1000.0f;	
+			o = o + 2;
+		}
 	} else {
 		fromBuffer(oneTx, o, &currentTimestamp);
 		o = o + 4;
@@ -589,10 +698,8 @@ bool LpmsIoInterface::parseFunction(void)
 		}
 		
 		if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-			printf("Received data mode 16\n");
 			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_16);
 		} else {
-			printf("Received data mode 32\n");		
 			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_32);
 		}		
 		
@@ -1990,6 +2097,11 @@ bool LpmsIoInterface::setMagReference(LpVector3f v)
 	return modbusSetVector3f(SET_MAG_REFRENCE, v);
 }
 
+bool LpmsIoInterface::getMagReference(void)
+{
+	return modbusGet(GET_MAG_REFERENCE);
+}
+
 bool LpmsIoInterface::getMagAlignmentMatrix(void)
 {
 	return modbusGet(GET_MAG_ALIGNMENT_MATRIX);
@@ -1998,11 +2110,6 @@ bool LpmsIoInterface::getMagAlignmentMatrix(void)
 bool LpmsIoInterface::getMagAlignmentBias(void)
 {
 	return modbusGet(GET_MAG_ALIGNMENT_BIAS);
-}
-
-bool LpmsIoInterface::getMagReference(void)
-{
-	return modbusGet(GET_MAG_REFERENCE);
 }
 
 bool LpmsIoInterface::setOrientationOffset(void)

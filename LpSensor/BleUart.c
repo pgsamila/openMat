@@ -129,11 +129,10 @@ void uart_close()
 int uart_tx(int len,unsigned char *data)
 {
 	DWORD r,written;
-	int i;
 
 	/* printf("[LPMS-BLE] Writing data: ");
 
-	for (i=0; i<len; ++i) {
+	for (int i=0; i<len; ++i) {
 		printf("%x ", data[i]);
 	}
 	printf("\n"); */

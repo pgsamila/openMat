@@ -201,16 +201,6 @@ bool LpmsIoInterface::fromBufferInt16(unsigned char *data, int *v)
 	return true;
 }
 
-bool LpmsIoInterface::fromBufferInt16(std::vector<unsigned char> data, int start, int *v)
-{	
-	boost::int16_t i;
-
-	i = (boost::int16_t) data[start+1] << 8 | data[start+0];
-	*v = i;
-
-	return true;
-}
-
 bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, long *v, int length)
 {
 	if ((int) currentLength < length*4) return false;
@@ -1022,7 +1012,7 @@ bool LpmsIoInterface::checkState(void)
 
 	if (waitForAck == true && ackReceived == false) {	
 		if (ackTimer.measure() > ACK_MAX_TIME) {
-			/* if (resendI < MAX_COMMAND_RESEND) {
+			if (resendI < MAX_COMMAND_RESEND) {
 				ackTimer.reset();
 				uploadTimer.reset();
 				++resendI;
@@ -1036,19 +1026,20 @@ bool LpmsIoInterface::checkState(void)
 				waitForAck = false;
 				ackReceived = false;
 				ackTimeout = 0;
+				isOpen == false;
 			
 				LOGV("[LpmsIoInterface] ACK timeout error. Resetting send queue.\n");
 			
 				if (ifs.is_open() == true) ifs.close();
 			
 				return false;
-			} */
+			}
 		}
 	} 
 	
 	if (waitForData == true && dataReceived == false) {
 		if (ackTimer.measure() > ACK_MAX_TIME) {
-			/* if (resendI < MAX_COMMAND_RESEND) {
+			if (resendI < MAX_COMMAND_RESEND) {
 				ackTimer.reset();
 				uploadTimer.reset();
 				++resendI;
@@ -1062,11 +1053,12 @@ bool LpmsIoInterface::checkState(void)
 				waitForAck = false;
 				ackReceived = false;
 				ackTimeout = 0;
+				isOpen = false;
 			
 				LOGV("[LpmsIoInterface] ACK timeout error. Resetting send queue.\n");
 			
 				return false;
-			} */
+			}
 		}
 	}
 

@@ -727,6 +727,25 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
 
+#ifdef LPMS_BLE
+	setI16t(&(data[o]), (int16_t) measurementTime);
+	o = o+2;
+	
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[0] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[1] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[2] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[3] * (float) 0x7fff));
+	o = o+2;
+
+	setI16t(&(data[o]), (int16_t) (heaveY * (float) 0x0fff));
+	o = o+2;
+#else
         if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
                 setUi32t(&(data[o]), (uint32_t)(measurementTime * 10000.0f));
                 o = o+4;
@@ -802,99 +821,6 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 }
 #endif
         } else {
-#ifdef LPMS_BLE
-	setI16t(&(data[o]), (int16_t) measurementTime);
-	o = o+2;
-	
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[0] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[1] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[2] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[3] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (heaveY * (float) 0x0fff));
-	o = o+2;
-#else	
-	setFloat(&(data[o]), measurementTime, FLOAT_FULL_PRECISION);	
-	o = o+4;
-	
-	if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
-		for (int i=0; i<3; i++) {
-			setFloat(&(data[i*4 + o]), gRaw.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+12;
-	}
-	
-	if ((gReg.data[LPMS_CONFIG] & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
-		for (int i=0; i<3; i++) {
-			setFloat(&(data[i*4 + o]), aRaw.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+12;
-	}	
-
-	if ((gReg.data[LPMS_CONFIG] & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
-		for (int i=0; i<3; i++) {
-			setFloat(&(data[i*4 + o]), bRaw.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+12;
-	}
-
-	if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) {
-		for (int i=0; i<3; i++) {
-			setFloat(&(data[i*4 + o]), w.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+12;
-	}
-	
-	if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
-		for (int i=0; i<4; i++) {
-			setFloat(&(data[i*4 + o]), qAfterOffset.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+16;
-	}	
-	  	
-	if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0)  {
-	 	for (int i=0; i<3; i++) {
-			setFloat(&(data[i*4 + o]), rAfterOffset.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+12;
-	}	
-
-	if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) {
-	 	for (int i=0; i<3; i++) {
-			setFloat(&(data[i*4 + o]), linAcc.data[i], FLOAT_FULL_PRECISION);
-		}
-		o = o+12;
-	}
-
-	if ((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
-		setFloat(&(data[0 + o]), pressure, FLOAT_FULL_PRECISION);
-		o = o+4;
-	}
-
-	if ((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
-		setFloat(&(data[0 + o]), altitude, FLOAT_FULL_PRECISION);
-		o = o+4;
-	}	
-
-	if ((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
-		setFloat(&(data[0 + o]), temperature, FLOAT_FULL_PRECISION);
-		o = o+4;
-	}
-
-#ifdef USE_HEAVEMOTION
-	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
-		setFloat(&(data[o]), heaveY, FLOAT_FULL_PRECISION);
-		o = o+4;
-	}
-#endif
-#endif
                 setFloat(&(data[o]), measurementTime, FLOAT_FULL_PRECISION);
                 o = o+4;
                 
@@ -969,6 +895,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 }
 #endif
         }
+#endif
 
 	*l = o;
 	

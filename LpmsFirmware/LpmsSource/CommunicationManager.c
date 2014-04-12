@@ -175,7 +175,7 @@ void waitForSendCompleted(void)
 
 void sendQueue(void)
 {
-	int i, j, nTx;
+	int i, nTx;
 	
 #ifdef USE_BLUETOOTH_INTERFACE
 	if (bluetoothIsReadyForSend() == 0 && firstTimeTx == 0) return;
@@ -194,7 +194,7 @@ void sendQueue(void)
 
 		for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
 
-		j = 0;
+		int j = 0;
 		for (i=nTx; i<txIndex; ++i) {
 			txBuffer[j] = txBuffer[i];
 			++j;

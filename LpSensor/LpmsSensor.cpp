@@ -176,6 +176,15 @@ void LpmsSensor::pollData(void)
 	}
 }
 
+void LpmsSensor::assertConnected(void)
+{
+	if (bt->deviceStarted() == false) {	
+		bt->close();
+		state = STATE_CONNECT;
+		LOGV("[LpmsSensor] Re-connecting..\n");	
+	}
+}
+
 void LpmsSensor::update(void)
 {
 	ImuData imuData;
@@ -206,7 +215,7 @@ void LpmsSensor::update(void)
 		} else {
 			if (bt->deviceStarted() == false) {		
 				setConnectionStatus(SENSOR_CONNECTION_FAILED);
-				state = STATE_NONE;		
+				state = STATE_CONNECT;		
 				LOGV("[LpmsSensor] Connection failed (timeout)..\n");			
 			} else {			
 				state = STATE_WAIT_AFTER_CONNECT;
@@ -470,7 +479,7 @@ void LpmsSensor::update(void)
 				}
 			break;
 			} 
-		} else if (lpmsTimer.measure() > 10000000) {
+		} /* else if (lpmsTimer.measure() > 5000000) {
 			lpmsTimer.reset();
 			
 			if (bt->deviceStarted() == true && retrialsCommandMode < 10) {
@@ -489,17 +498,21 @@ void LpmsSensor::update(void)
 				setConnectionStatus(SENSOR_CONNECTION_FAILED);
 				state = STATE_NONE;	
 			}
-		}
+		} */
+		
+		assertConnected();
 	break;	
 		
 	// Main measurement state
 	case STATE_MEASURE:	
-		if (bt->deviceStarted() == false) {	
+		/* if (bt->deviceStarted() == false) {	
 			bt->close();
 			state = STATE_CONNECT;
-			LOGV("[LpmsSensor] Timeout! Re-connecting..\n");	
+			LOGV("[LpmsSensor] Re-connecting..\n");	
 			break;
-		}		
+		} */
+
+		assertConnected();		
 		
 		// LOGV("[LpmsSensor] STATE MEASURE");	
 		// Start next measurement step only if program is not waiting for data or ACK.
@@ -559,12 +572,16 @@ void LpmsSensor::update(void)
 		if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
 			vectSub3x1(&configData.hardIronOffset, &bRaw, &b);		
 			matVectMult3(&configData.softIronMatrix, &b, &b);
+		} else {
+			vectZero3x1(&b);
 		}
 
 		// Corrects accelerometer measurement
 		if ((bt->getConfigReg() & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {		
 			matVectMult3(&configData.misalignMatrix, &aRaw, &a);
 			vectAdd3x1(&configData.accBias, &a, &a);
+		} else {
+			vectZero3x1(&a);
 		}
 
 		g = gRaw;
@@ -1448,6 +1465,12 @@ bool LpmsSensor::getConfigurationPrm(int parameterIndex, char* parameter)
 	return ret;
 }
 
+
+
+/***********************************************************************
+** FIRMWARE / IAP
+***********************************************************************/
+
 bool LpmsSensor::uploadFirmware(const char *fn)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
@@ -1632,6 +1655,12 @@ long LpmsSensor::getStreamFrequency(void)
 	return dataSavePeriod;
 }
 
+
+
+/***********************************************************************
+** CALIBRATION
+***********************************************************************/
+
 void LpmsSensor::startPlanarMagCalibration(void)
 {
 	int p;
@@ -1747,16 +1776,10 @@ void LpmsSensor::checkMagCal(float T)
 	convertArrayToLpVector3f(currentData.bRaw, &tV);
 	bCalOrientationFromAccMag(tV, a, &tV2, &bInc);
 	
-	/* mCalCompass(currentData.b[0], currentData.b[1], currentData.b[2], 
-	currentData.r[0], currentData.r[1], currentData.r[2], &bInc); */
-
 	if (isMagCalibrationEnabled == true) {
 		magCalibrationDuration += T;
 		
 		bCalUpdateBMap(tV2, tV);
-
-		/* mCalUpdate(currentData.bRaw[0], currentData.bRaw[1], currentData.bRaw[2], 
-		currentData.r[0], currentData.r[1], currentData.r[2]); */
 		
 		if (magCalibrationDuration >= LPMS_MAG_CALIBRATION_DURATION_20S) {
 			stopMagCalibration();
@@ -2013,31 +2036,6 @@ void LpmsSensor::calcGyrMisalignMatrix(void)
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);	
 	updateParameters();	
-}
-
-void LpmsSensor::startSaveData(std::ofstream *saveDataHandle)
-{
-	sensorMutex.lock();
-	bt->resetTimestamp();
-	bt->clearDataQueue();
-	isSaveData = true;
-	this->saveDataHandle = saveDataHandle;
-	frameNo = 0;
-	sensorMutex.unlock();
-}
-
-void LpmsSensor::checkSaveData(void)
-{
-	sensorMutex.lock();
-	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << currentData.timeStamp << ", " << currentData.frameCount << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
-	}
-	sensorMutex.unlock();
-}
-
-void LpmsSensor::stopSaveData(void)
-{
-	isSaveData = false;
 }
 
 void LpmsSensor::resetTimestamp(void)
@@ -2303,4 +2301,35 @@ void LpmsSensor::calcMagMisalignCal(void)
 	updateParameters();
 	
 	printf("updated: %x\n", prevDataSelection);
+}
+
+
+
+/***********************************************************************
+** DATA RECORDING
+***********************************************************************/
+
+void LpmsSensor::startSaveData(std::ofstream *saveDataHandle)
+{
+	sensorMutex.lock();
+	bt->resetTimestamp();
+	bt->clearDataQueue();
+	isSaveData = true;
+	this->saveDataHandle = saveDataHandle;
+	frameNo = 0;
+	sensorMutex.unlock();
+}
+
+void LpmsSensor::checkSaveData(void)
+{
+	sensorMutex.lock();
+	if (isSaveData == true && saveDataHandle->is_open() == true) {
+		*saveDataHandle << currentData.openMatId << ", " << currentData.timeStamp << ", " << currentData.frameCount << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+	}
+	sensorMutex.unlock();
+}
+
+void LpmsSensor::stopSaveData(void)
+{
+	isSaveData = false;
 }

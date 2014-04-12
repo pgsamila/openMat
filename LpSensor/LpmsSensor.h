@@ -298,6 +298,7 @@ private:
 	void startAutoMagMisalignCal(void);
 	void checkAutoMagMisalignCal(float T);
 	void calcAutoMagMisalignCal(void);
+	void assertConnected(void);
 
 	LpmsIoInterface *bt;	
 	std::string deviceId;

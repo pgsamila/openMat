@@ -179,6 +179,7 @@ void ble_evt_gap_scan_response(const struct ble_msg_gap_scan_response_evt_t *msg
 		i += len - 1;
 	}
 
+	printf("[BleEngine] ");
 	print_bdaddr(msg->sender);
 	printf(" RSSI:%u", msg->rssi);
 	printf(" Name:");
@@ -463,7 +464,6 @@ void BleEngine::listDevices(LpmsDeviceList *deviceList)
 {
     bglib_output = output;
 	MicroMeasure mm;
-	int pn;
 	std::ostringstream oss;
 	std::string cs;
 	int l=0;
@@ -559,7 +559,6 @@ void BleEngine::close(void)
 void BleEngine::run(void)
 {
 	int l=0;
-	unsigned char txData[256];
 	MicroMeasure sendTimer;
 	BleBlock bleBlock;
 

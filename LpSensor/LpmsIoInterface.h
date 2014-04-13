@@ -271,7 +271,6 @@ public:
 	bool setCanPointMode(int v);
 	bool setCanStartId(int v);
 	bool getLatestImuData(ImuData *id);
-	void resetTimestamp(void);
 	void clearRxBuffer(void);
 	void clearDataQueue(void);
 	void setTxRxImuId(int id);
@@ -284,6 +283,7 @@ public:
 	bool getMagReference(void);
 	bool setOrientationOffset(void);
 	bool resetOrientationOffset(void);
+	bool setTimestamp(float v);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);

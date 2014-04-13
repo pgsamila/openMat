@@ -140,8 +140,10 @@ void LpmsSensorManager::start(void)
 void LpmsSensorManager::run(void)
 {
 	MicroMeasure mm;
+	MicroMeasure syncPeriodTimer;	
 	list<LpmsSensor*>::iterator i;	
     bool bIsWindows7orLater = true;
+	float prevTimestamp = 0.0f;
 
 #ifdef _WIN32	
     OSVERSIONINFO osvi;
@@ -168,6 +170,9 @@ void LpmsSensorManager::run(void)
 #endif
 
 	mm.reset();
+	syncTimer.reset();
+	syncPeriodTimer.reset();	
+	
 	while (stopped == false) {	
 		switch (managerState) {
 		case SMANAGER_MEASURE:
@@ -181,6 +186,25 @@ void LpmsSensorManager::run(void)
 #endif
 			
 			lm.unlock();
+			
+			if (syncPeriodTimer.measure() > 500000) {
+				syncPeriodTimer.reset();
+
+				lm.lock();				
+				for (i = sensorList.begin(); i != sensorList.end(); i++) {
+					if (i != sensorList.begin()) {
+						(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - prevTimestamp);
+					} else {
+						(*i)->setCurrentSyncOffset(0.0f);
+					}
+					
+					(*i)->syncTimestamp(((float)syncTimer.measure()) / 1000000.0f);
+					prevTimestamp = (*i)->getCurrentData().timeStamp;
+					
+					// printf("[%d] %f\n", (*i)->getOpenMatId(), (*i)->getCurrentSyncOffset());
+				}
+				lm.unlock();
+			}
 
 			if (mm.measure() > SENSOR_UPDATE_PERIOD) {			
 				mm.reset();				
@@ -320,6 +344,14 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
+		
+		syncTimer.reset();
+		
+		lm.lock();				
+		for (i = sensorList.begin(); i != sensorList.end(); i++) {
+			(*i)->syncTimestamp(((float)syncTimer.measure()) / 1000000.0f);
+		}
+		lm.unlock();		
 		
 		lm.lock();
 		for (i = sensorList.begin(); i != sensorList.end(); ++i) {

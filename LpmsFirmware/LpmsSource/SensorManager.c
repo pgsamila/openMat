@@ -908,8 +908,3 @@ void initWatchdog(void)
 	WWDG_SetPrescaler(WWDG_Prescaler_8);
 	WWDG_SetWindowValue(0x7F);
 }
-
-void resetTimestamp(void)
-{
-	measurementTime = 0.0f;
-}

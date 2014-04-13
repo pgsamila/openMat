@@ -201,6 +201,13 @@ public:
 	virtual void resetOrientationOffset(void) = 0;
 	
 	virtual void startMagCalibration(void) = 0;	
+	
+	virtual void syncTimestamp(float t) = 0;
+	
+	virtual void setCurrentSyncOffset(float t) = 0;
+	
+	virtual float getCurrentSyncOffset(void) = 0;
+	
 }; 
 
 #ifdef _WIN32

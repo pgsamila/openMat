@@ -185,9 +185,6 @@ void applyLowPass(void);
 // Calculates altitude based on pressure sensor values
 void calcAltitude(void);
 
-// Resets current timestamp
-void resetTimestamp(void);
-
 // Retrievs current transmission mode
 uint8_t getCurrentMode(void);
 

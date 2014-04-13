@@ -1,7 +1,9 @@
-Name "OpenMAT 1.2.9-LPMOCAP"
-OutFile "OpenMAT-1.2.9-LPMOCAP-Setup.exe"
-InstallDir "C:\OpenMAT"
-InstallDirRegKey HKLM "Software\OpenMAT" "Install_Dir"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0"
+
+Name ${OPENMAT_VERSION_NAME}
+OutFile "${OPENMAT_VERSION_NAME}-Setup.exe"
+InstallDir "C:\OpenMAT\${OPENMAT_VERSION_NAME}"
+InstallDirRegKey HKLM "Software\OpenMAT\${OPENMAT_VERSION_NAME}" "Install_Dir"
 RequestExecutionLevel admin
 
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
@@ -75,10 +77,11 @@ Section "OpenMAT (required)"
 	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\icudt51.dll"
 	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\icuin51.dll"
 	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\bin\icuuc51.dll"
-	
-	File "c:\ftdi\i386\ftd2xx.dll"
-	File "c:\qwt-6.1.0\lib\qwt.dll"
-	File "c:\pcan-basic\Win32\PCANBasic.dll"	
+	File "C:\ftdi\i386\ftd2xx.dll"
+	File "C:\opencv\build\x86\vc10\bin\opencv_core248.dll"
+	File "C:\opencv\build\x86\vc10\bin\opencv_ffmpeg248.dll"	
+	File "C:\opencv\build\x86\vc10\bin\opencv_highgui248.dll"	
+	File "C:\opencv\build\x86\vc10\bin\opencv_imgproc248.dll"
 	
 	SetOutPath $INSTDIR\bin\platforms	
 	File "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl\plugins\platforms\qwindows.dll"
@@ -104,13 +107,15 @@ Section "OpenMAT (required)"
 	File "..\LpmsControl\icons\user_24x32.png"
 	File "..\LpmsControl\icons\loop_alt2_32x28.png"
 	File "..\LpmsControl\icons\pause_24x32.png"
+	File "..\LpmsControl\icons\compass_32x32.png"
+	File "..\LpmsControl\icons\denied_32x32.png"
 	
-	WriteRegStr HKLM SOFTWARE\OpenMAT "Install_Dir" "$INSTDIR"
+	WriteRegStr HKLM SOFTWARE\OpenMAT\${OPENMAT_VERSION_NAME} "Install_Dir" "$INSTDIR"
 	
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT" "DisplayName" "OpenMAT"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT" "UninstallString" '"$INSTDIR\uninstall.exe"'
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT" "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT" "NoRepair" 1
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT\${OPENMAT_VERSION_NAME}" "DisplayName" "${OPENMAT_VERSION_NAME}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT\${OPENMAT_VERSION_NAME}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT\${OPENMAT_VERSION_NAME}" "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT\${OPENMAT_VERSION_NAME}" "NoRepair" 1
 	WriteUninstaller "uninstall.exe"
 	
 	SetOutPath $INSTDIR		   
@@ -127,17 +132,17 @@ SectionEnd
 
 Section "Start Menu Shortcuts"
 	SetOutPath $INSTDIR\Bin
-	CreateDirectory "$SMPROGRAMS\OpenMAT"
-	CreateShortCut "$SMPROGRAMS\OpenMAT\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
-	CreateShortCut "$SMPROGRAMS\OpenMAT\LpmsControl.lnk" "$INSTDIR\bin\LpmsControl.exe" "" "$INSTDIR\bin\Icon.ico" 0
-	CreateShortCut "$SMPROGRAMS\OpenMAT\LpMocap.lnk" "$INSTDIR\bin\LpMocap.exe" "" "$INSTDIR\bin\Icon.ico" 0
+	CreateDirectory "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}"
+	CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
+	CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\LpmsControl.lnk" "$INSTDIR\bin\LpmsControl.exe" "" "$INSTDIR\bin\Icon.ico" 0
+	CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\LpMocap.lnk" "$INSTDIR\bin\LpMocap.exe" "" "$INSTDIR\bin\Icon.ico" 0
 SectionEnd
 
 Section "Uninstall"
 	Delete $DESKTOP\LpmsControl.lnk
 	
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT"
-	DeleteRegKey HKLM SOFTWARE\OpenMAT
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenMAT\${OPENMAT_VERSION_NAME}"
+	DeleteRegKey HKLM SOFTWARE\OpenMAT\${OPENMAT_VERSION_NAME}
 
 	Delete $INSTDIR\bin\icons\green\*.*
 	RMDir $INSTDIR\bin\icons\green		
@@ -162,7 +167,7 @@ Section "Uninstall"
 	Delete $INSTDIR\lib\*.*
 	RMDir $INSTDIR\lib
 
-	RMDir "$SMPROGRAMS\OpenMAT"
+	RMDir "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}"
 	RMDir "$INSTDIR"
 	
 	Delete $SMPROGRAMS\OpenMAT\*.*

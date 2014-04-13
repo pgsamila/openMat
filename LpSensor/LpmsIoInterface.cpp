@@ -414,10 +414,10 @@ bool LpmsIoInterface::parseFieldMapData(void)
 	return true;
 }
 
-void LpmsIoInterface::resetTimestamp(void)
+/* void LpmsIoInterface::resetTimestamp(void)
 {
 	timestampOffset = currentTimestamp;
-}
+} */
 
 bool LpmsIoInterface::parseSensorData(void)
 {
@@ -584,8 +584,8 @@ bool LpmsIoInterface::parseSensorData(void)
 		}
 	}
 	
-	if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
-	imuData.timeStamp = currentTimestamp - timestampOffset;	
+	// if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
+	imuData.timeStamp = currentTimestamp; // - timestampOffset;	
 	
 	if (imuDataQueue.size() < 64) {
 		imuDataQueue.push(imuData);
@@ -1026,7 +1026,7 @@ bool LpmsIoInterface::checkState(void)
 				waitForAck = false;
 				ackReceived = false;
 				ackTimeout = 0;
-				isOpen == false;
+				isOpen = false;
 			
 				LOGV("[LpmsIoInterface] ACK timeout error. Resetting send queue.\n");
 			
@@ -2034,9 +2034,22 @@ bool LpmsIoInterface::setCanHeartbeat(int v)
 	return modbusSetInt32(SET_CAN_HEARTBEAT, v);
 }
 
-bool LpmsIoInterface::resetSensorTimestamp(void)
+bool LpmsIoInterface::setTimestamp(float v)
 {
-	return modbusSetNone(RESET_TIMESTAMP);
+	boost::uint32_t i;
+	boost::uint32_t m = 0xff;
+	unsigned char buffer[4];		
+
+	i = conFtoI(v);	
+
+	for (int j=0; j<4; j++) {
+		buffer[j] = (unsigned char) (i & 0xff);
+		i = i / 256;
+	}
+
+	sendModbusData(imuId, RESET_TIMESTAMP, 4, buffer);
+
+	return true;
 }
 
 bool LpmsIoInterface::getLinAccCompMode(void)

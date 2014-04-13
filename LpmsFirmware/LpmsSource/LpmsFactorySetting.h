@@ -53,8 +53,8 @@
 // <--
 
 // Firmware version information
-#define FIRMWARE_VERSION_DIGIT0 8
-#define FIRMWARE_VERSION_DIGIT1 2
+#define FIRMWARE_VERSION_DIGIT0 0
+#define FIRMWARE_VERSION_DIGIT1 3
 #define FIRMWARE_VERSION_DIGIT2 1
 
 // Interface dependent factory settings

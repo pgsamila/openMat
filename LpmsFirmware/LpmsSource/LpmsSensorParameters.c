@@ -28,6 +28,7 @@ extern uint32_t lpmsStatus;
 extern float pressure;
 extern float temperature;
 extern float heaveY;
+extern float measurementTime;
 
 uint8_t writeRegisters(void)
 {
@@ -883,6 +884,11 @@ uint8_t getStatus(uint8_t* data)
 uint32_t getConfigReg(void) 
 {
   	return gReg.data[LPMS_CONFIG];
+}
+
+void setTimestamp(uint8_t* data)
+{
+	measurementTime = getFloat(data);
 }
 
 uint8_t setFilterPreset(uint8_t* data) 

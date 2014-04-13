@@ -151,6 +151,9 @@ const float pi = 3.141592f;
 	isGetGyrTempCal = false;
 	isPlanarMagCalibrationEnabled = false;
 	isRefCalibrationEnabled	= false;
+	timestampOffset = 0.0f;
+	frameCounterOffset = 0;
+	currentSyncOffset = 0.0f;
 	
 	bt->zeroImuData(&currentData);
 }
@@ -448,7 +451,7 @@ void LpmsSensor::update(void)
 			// Resets sensor timestamp
 			case C_RESET_SENSOR_TIMESTAMP:
 				LOGV("[LpmsSensor] Resetting timestamp\n");
-				bt->resetSensorTimestamp();
+				bt->setTimestamp(0.0f);
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_SETTINGS_DONE;		
 			break;				
@@ -1185,7 +1188,7 @@ void LpmsSensor::update(void)
 	// Resets sensor timestamp.
 	case STATE_RESET_TIMESTAMP:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->resetSensorTimestamp();
+			bt->setTimestamp(0.0f);
 			LOGV("[LpmsSensor] Reset sensor timestamp\n");
 			
 			state = STATE_GET_SETTINGS;
@@ -2048,6 +2051,23 @@ void LpmsSensor::resetTimestamp(void)
 	frameNo = 0;
 }
 
+void LpmsSensor::syncTimestamp(float t)
+{
+	if ((bt->getMode() == SELECT_LPMS_MODE_STREAM) && (bt->deviceStarted() == true) && (state == STATE_MEASURE)) {
+		bt->setTimestamp(t);
+	}
+}
+
+void LpmsSensor::setCurrentSyncOffset(float t)
+{
+	currentSyncOffset = t;
+}
+
+float LpmsSensor::getCurrentSyncOffset(void)
+{
+	return currentSyncOffset;
+}
+
 void LpmsSensor::startAutoMagMisalignCal(void)
 {
 	int p;
@@ -2312,19 +2332,27 @@ void LpmsSensor::calcMagMisalignCal(void)
 void LpmsSensor::startSaveData(std::ofstream *saveDataHandle)
 {
 	sensorMutex.lock();
-	bt->resetTimestamp();
 	bt->clearDataQueue();
 	isSaveData = true;
 	this->saveDataHandle = saveDataHandle;
 	frameNo = 0;
+	saveDataPreroll = 10;
 	sensorMutex.unlock();
 }
 
 void LpmsSensor::checkSaveData(void)
 {
+	if (saveDataPreroll > 1) {
+		--saveDataPreroll;
+		return;
+	} else if (saveDataPreroll == 1) {
+		timestampOffset = currentData.timeStamp;
+		frameCounterOffset = currentData.frameCount;
+	}
+
 	sensorMutex.lock();
 	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << currentData.timeStamp << ", " << currentData.frameCount << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+		*saveDataHandle << currentData.openMatId << ", " << (currentData.timeStamp-timestampOffset) << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
 	}
 	sensorMutex.unlock();
 }

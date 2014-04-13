@@ -125,6 +125,7 @@ private:
 	int threadDelay;
 	char writeBuffer[65536];
 	bool scan_serial_ports_;
+	MicroMeasure syncTimer;	
 	
 #ifdef _WIN32	
 	CanEngine ce;

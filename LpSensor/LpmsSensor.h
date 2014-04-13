@@ -256,7 +256,10 @@ public:
 	bool assertFwVersion(int d0, int d1, int d2);
 	void setOrientationOffset(void);
 	void resetOrientationOffset(void);
-	void startMagCalibration(void);	
+	void startMagCalibration(void);
+	void syncTimestamp(float t);
+	void setCurrentSyncOffset(float t);
+	float getCurrentSyncOffset(void);
 	
 private:
 	void checkResetReference(void);
@@ -345,7 +348,6 @@ private:
 	LpVector3f gyrMisalignBData[N_ALIGNMENT_SETS];
 	LpVector3f magMisalignAData[N_MAG_ALIGNMENT_SETS];
 	LpVector3f magmisalignBData[N_MAG_ALIGNMENT_SETS];
-	
 	bool isGetMisalign;
 	bool isGetGyrMisalign;
 	int misalignSetIndex;
@@ -379,6 +381,10 @@ private:
 	float refCalibrationDuration;
 	bool isRefCalibrationEnabled;
 	bool isPlanarMagCalibrationEnabled;
+	int saveDataPreroll;
+	float timestampOffset;
+	int frameCounterOffset;
+	float currentSyncOffset;
 }; 
 	
 #endif

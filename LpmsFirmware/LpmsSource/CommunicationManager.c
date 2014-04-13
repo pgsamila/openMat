@@ -799,8 +799,8 @@ void parsePacket(void)
 				sendData(getImuID(), GET_CAN_HEARTBEAT, dataLength, dataBuffer);
 			break;
 
-			case RESET_TIMESTAMP:
-				resetTimestamp();
+			case SET_TIMESTAMP:
+				setTimestamp(packet.data);
 				sendAck();
 			break;
 
@@ -903,6 +903,10 @@ void parsePacket(void)
 				getStatus(ui32);
 				sendData(getImuID(), GET_STATUS, 4, ui32);				
 			break;
+
+                        case SET_TIMESTAMP:
+                                setTimestamp(packet.data);
+                        break;
 				
 			default:
 			break;

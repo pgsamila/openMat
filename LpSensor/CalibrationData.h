@@ -82,7 +82,7 @@ public:
 	LpVector3f magMAlignmentBias;
 	int firmwareVersionDig1;
 	LpMatrix3x3f magMAlignmentMatrix;
-	int firmwareVersionDig2;	
+	int firmwareVersionDig2;
 	
 private:
 	std::mutex calibrationMutex;

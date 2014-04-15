@@ -15,7 +15,7 @@ using namespace std;
 using Eigen::Quaternion;
 
 HumanModel::HumanModel():
-	 enableHorizontalMovement(true)
+	 enableHorizontalMovement(false)
 {
 	lHead		= 18;
 	lNeck		= 12;
@@ -506,8 +506,11 @@ void HumanModel::updateBodyData(void)
 	for(int i = BP_LEFTUPLEG; i <= BP_LEFTUPLEG; i++)
 		rotateBodyPart((BodyPart)i, mRotationData[idThighLeft].rot);
 	// Calf & Foot
-	for(int i = BP_LEFTLEG; i <= BP_L_TOE_END; i++)
+	for(int i = BP_LEFTLEG; i <= BP_LEFTLEG; i++)
 		rotateBodyPart((BodyPart)i, mRotationData[idCalfLeft].rot);
+		
+	for(int i = BP_LEFTFOOT; i <= BP_L_TOE_END; i++)
+		rotateBodyPart((BodyPart)i, mRotationData[idFootLeft].rot);
 	 
 	// 
 	// Right Leg
@@ -516,8 +519,10 @@ void HumanModel::updateBodyData(void)
 	for(int i = BP_RIGHTUPLEG; i <= BP_RIGHTUPLEG; i++)
 		rotateBodyPart((BodyPart)i, mRotationData[idThighRight].rot);
 	// Calf & Foot 
-	for(int i = BP_RIGHTLEG; i <= BP_R_TOE_END; i++)
+	for(int i = BP_RIGHTLEG; i <= BP_RIGHTLEG; i++)
 		rotateBodyPart((BodyPart)i, mRotationData[idCalfRight].rot);
+	for(int i = BP_RIGHTFOOT; i <= BP_R_TOE_END; i++)
+		rotateBodyPart((BodyPart)i, mRotationData[idFootRight].rot);
 
 	// Translate lower body to ground
 	if (enableHorizontalMovement)
@@ -546,8 +551,40 @@ void HumanModel::updateBodyData(void)
 	} 
 	else 
 	{
-		double lOffset = min(mChannel[BP_LEFTFOOT].mT[1], mChannel[BP_RIGHTFOOT].mT[1]);
-	
+		//double lOffset = min(mChannel[BP_LEFTFOOT].mT[1], mChannel[BP_RIGHTFOOT].mT[1]);
+		double lOffset=0;
+		double lLeftOffset=mChannel[BP_LEFTFOOT].mT[1]; 
+        double lRightOffset=mChannel[BP_RIGHTFOOT].mT[1]; 
+        bool isLToeDown=false, isRToeDown=false;
+        if (mChannel[BP_LEFTTOEBASE].mT[1] <= lLeftOffset){
+            lLeftOffset = mChannel[BP_LEFTTOEBASE].mT[1];
+            isLToeDown = true;
+        }
+        if (mChannel[BP_RIGHTTOEBASE].mT[1] <= lRightOffset){
+            lRightOffset = mChannel[BP_RIGHTTOEBASE].mT[1];
+            isRToeDown = true;
+        }
+
+        if (lLeftOffset < lRightOffset) {
+            lOffset = lLeftOffset;
+            if (isLToeDown) {
+                double angle = atan2(mChannel[BP_L_TOE_END].mT[2]-mChannel[BP_LEFTTOEBASE].mT[2], mChannel[BP_L_TOE_END].mT[0]-mChannel[BP_LEFTTOEBASE].mT[0]);
+                mChannel[BP_L_TOE_END].mT[0] = mChannel[BP_LEFTTOEBASE].mT[0]+lToe*cos(angle);
+                mChannel[BP_L_TOE_END].mT[1]=0;
+                mChannel[BP_L_TOE_END].mT[2] = mChannel[BP_LEFTTOEBASE].mT[2]+lToe*sin(angle);
+
+            }
+        } else {
+            lOffset = lRightOffset;
+            if (isRToeDown){
+                double angle = atan2(mChannel[BP_R_TOE_END].mT[2]-mChannel[BP_RIGHTTOEBASE].mT[2], mChannel[BP_R_TOE_END].mT[0]-mChannel[BP_RIGHTTOEBASE].mT[0]);
+                mChannel[BP_R_TOE_END].mT[0] = mChannel[BP_RIGHTTOEBASE].mT[0]+lToe*cos(angle);
+                mChannel[BP_R_TOE_END].mT[1]=0;
+                mChannel[BP_R_TOE_END].mT[2] = mChannel[BP_RIGHTTOEBASE].mT[2]+lToe*sin(angle);
+            }
+
+        }
+		
 		for(int i = BP_HIP; i <= BP_R_TOE_END; i++){
 			mChannel[i].mT[1]-=lOffset;
 		}
@@ -809,11 +846,11 @@ bool HumanModel::ReadBinaryMotionDataFile(const char* fn)
 				single_motion_data.mChannel[i].mT[2] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
 			
-				single_motion_data.mChannel[i].mR[0] = boost::lexical_cast<double>(*ti);
+				// single_motion_data.mChannel[i].mR[0] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
-				single_motion_data.mChannel[i].mR[1] = boost::lexical_cast<double>(*ti);
+				// single_motion_data.mChannel[i].mR[1] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
-				single_motion_data.mChannel[i].mR[2] = boost::lexical_cast<double>(*ti);
+				// single_motion_data.mChannel[i].mR[2] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
 			}
 
@@ -846,7 +883,7 @@ void HumanModel::StopPlayBinaryMotionData(void)
 bool HumanModel::UpdateModelFromData(void) 
 {
 	MotionData single_motion_data;
-	double avg_alpha = 0.5;
+	double avg_alpha = 1.0;
 
 	if (is_playing_data == false) return false;
 

@@ -40,7 +40,7 @@ typedef unsigned long long nsTime;
 
 
 struct LPMSRotationData {	
-	static const int ChannelCount = 11; // total number of sensors available
+	static const int ChannelCount = 13; // total number of sensors available
 	int deviceOnline;	// number of device online
 	struct {
 		int id;

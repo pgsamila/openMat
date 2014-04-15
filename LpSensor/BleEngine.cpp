@@ -437,14 +437,14 @@ int BleEngine::read_message(int timeout_ms)
 	if (!r) {
 		return -1;
 	} else if (r < 0) {
-		printf("[BleEngine] Reading header failed. Error code:%d\n", r);
+		// printf("[BleEngine] Reading header failed. Error code:%d\n", r);
 		return 1;
 	}
 
 	if (hdr.lolen) {
 		r = uart_rx(hdr.lolen, data, UART_TIMEOUT);
 		if (r <= 0) {
-			printf("[BleEngine] Reading data failed. Error code:%d\n", r);
+			// printf("[BleEngine] Reading data failed. Error code:%d\n", r);
 			return 1;
 		}
 	}
@@ -452,7 +452,7 @@ int BleEngine::read_message(int timeout_ms)
 	const struct ble_msg *msg = ble_get_msg_hdr(hdr);
 
 	if (!msg) {
-		printf("[BleEngine] Unknown message received\n");
+		// printf("[BleEngine] Unknown message received\n");
 	}
 
 	msg->handler(data);

@@ -27,7 +27,7 @@
 #include "LpmsFactorySetting.h"
 #include "HeaveMotion.h"
 
-#define LPMS_MEASUREMENT_PERIOD 236
+#define LPMS_MEASUREMENT_PERIOD 250
 
 #define PRESSURE_T 100000
 

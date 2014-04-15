@@ -161,21 +161,31 @@ void HumanModelWindow::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-	glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
-    glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
-
     glTranslatef(glob_translate_x, glob_translate_y, glob_translate_z);
 
-    glTranslatef(0.0, -1.0, -10.0);
+	glTranslatef(0.0, 0.0, -10.0);
 
 	glRotatef(15, 1.0f, 0.0f, 0.0f);
+	
+	glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
+    glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
+    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);		
+	
+    glTranslatef(0.0, -1.0, 0.0);
+	
 	/* glRotatef(-30, 0.0f, 1.0f, 0.0f); */
 	
 	// drawBackground();	
 	drawFloor();
 	// drawAxes();	
 	drawHumanModel();
+}
+
+bool HumanModelWindow::checkIfUpperBody(int i)
+{
+	// if (i > hm->BP_R_TOE_END) return true;
+
+	return false;
 }
 
 void HumanModelWindow::drawHumanModel(void)
@@ -196,7 +206,7 @@ void HumanModelWindow::drawHumanModel(void)
 	
 	for (int i=0; i < hm->mChannelCount; ++i) {
 		for (int j=0; j < hm->mChannelCount; ++j) {
-			if (hm->GetChannelParent(j) == i && joint_done[j] == false) {
+			if (hm->GetChannelParent(j) == i && joint_done[j] == false && !checkIfUpperBody(j)) {
 				joint_done[j] = true;
 				
 				Eigen::Matrix3f rotation_matrix;

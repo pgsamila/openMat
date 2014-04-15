@@ -989,10 +989,10 @@ void LpmsSensor::update(void)
 	
 	// Sets CAN point mode
 	case STATE_SET_LPBUS_DATA_MODE:
-		if (assertFwVersion(1, 3, 0) == false) {
+		/* if (assertFwVersion(1, 3, 0) == false) {
 			state = STATE_SELECT_DATA;
 			break;
-		}
+		} */
 			
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_LPBUS_DATA_MODE, &p);

@@ -967,8 +967,16 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK);				
 		break;
 		
+		case LPMS_LIN_ACC_COMP_MODE_MEDIUM:
+			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM);				
+		break;	
+		
 		case LPMS_LIN_ACC_COMP_MODE_STRONG:
 			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG);				
+		break;	
+
+		case LPMS_LIN_ACC_COMP_MODE_ULTRA:
+			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA);				
 		break;	
 		}
 	break;

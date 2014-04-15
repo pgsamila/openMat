@@ -20,6 +20,7 @@
 
 class HumanModel 
 {
+public:
 	// body parts
 	enum BodyPart{BP_HIP, 
 		BP_LEFTUPLEG, BP_LEFTLEG, BP_LEFTFOOT, BP_LEFTTOEBASE, BP_L_TOE_END,
@@ -31,7 +32,7 @@ class HumanModel
 	// openMatId - body part map
 	// idxxx are set to openMatId - 1
 	// TODO: perhaps make this dynamically loaded from config file.
-	static const int numSensors			= 11;
+	static const int numSensors			= 13;
 	static const int idHead				= 0;
 	static const int idTorso			= 1;
 	static const int idUpperarmLeft		= 2;
@@ -43,7 +44,8 @@ class HumanModel
 	static const int idCalfLeft			= 8;
 	static const int idThighRight		= 9;
 	static const int idCalfRight		= 10;
-
+	static const int idFootLeft			= 11;
+	static const int idFootRight		= 12;
 
 public:
 	static const int mChannelCount		= 30;

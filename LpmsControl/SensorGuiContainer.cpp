@@ -107,6 +107,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	}
 	connect(samplingRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updatesamplingRate(int)));
 	
+	syncCombo->addItem(QString("On"));
+	syncCombo->addItem(QString("Off"));	
+	
 	parameterSetCombo->addItem(QString("Weak"));
 	parameterSetCombo->addItem(QString("Medium"));
 	parameterSetCombo->addItem(QString("Strong"));

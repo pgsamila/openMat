@@ -85,6 +85,7 @@ public:
 	void WriteVideoFrame(void);
 	void CloseVideoFile(void);
 	bool IsVideoRecordingStarted(void);
+	bool checkIfUpperBody(int i);
 	
 public slots:	
 	void updateQuaternion(ImuData imuData);

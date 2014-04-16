@@ -8,6 +8,7 @@
 
 uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
+uint8_t cyclesPerDataTransfer = 4;
 
 void initTimebase(void)
 {
@@ -15,24 +16,38 @@ void initTimebase(void)
 	config = getConfigReg();
 
 	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_5HZ);
+		cyclesPerDataTransfer = 64; // 5.75 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_5HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_10HZ);
+		cyclesPerDataTransfer = 32; // 12.5 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_10HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_30HZ);
+		cyclesPerDataTransfer = 16; // 25 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_30HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_50HZ);
+		cyclesPerDataTransfer = 8; // 50 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_50HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_100HZ);
+		cyclesPerDataTransfer = 4; // 100 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_100HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_200HZ);
+		cyclesPerDataTransfer = 2; // 200 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_200HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_500HZ);
+		cyclesPerDataTransfer = 1; // 400 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_500HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
-		setDataStreamTimer(LPMS_STREAM_T_1000HZ);
+		cyclesPerDataTransfer = 1; // 400 Hz
+		// setDataStreamTimer(LPMS_STREAM_T_1000HZ);
 	} else {
-		setDataStreamTimer(LPMS_STREAM_FREQ_100HZ);
+		cyclesPerDataTransfer = 4; // 100 Hz
+		// setDataStreamTimer(LPMS_STREAM_FREQ_100HZ);
 	}
+}
+
+uint16_t getTransferCycles(void)
+{
+	return cyclesPerDataTransfer;
 }
 
 void setDataStreamTimer(uint32_t T)

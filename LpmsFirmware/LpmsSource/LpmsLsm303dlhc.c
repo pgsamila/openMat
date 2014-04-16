@@ -329,12 +329,12 @@ uint8_t getAccRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 {
 	uint8_t data_buffer[6];
 	
-	readAccRegister(&data_buffer[0], (uint8_t)LSM303DLHC_OUT_X_L_A);      
+	/* readAccRegister(&data_buffer[0], (uint8_t)LSM303DLHC_OUT_X_L_A);      
 	readAccRegister(&data_buffer[1], (uint8_t)LSM303DLHC_OUT_X_H_A);
 	readAccRegister(&data_buffer[2], (uint8_t)LSM303DLHC_OUT_Y_L_A);
 	readAccRegister(&data_buffer[3], (uint8_t)LSM303DLHC_OUT_Y_H_A);
 	readAccRegister(&data_buffer[4], (uint8_t)LSM303DLHC_OUT_Z_L_A);
-	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A);
+	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A); */
 
 #ifdef USE_LPMSCU_NEW
 	*xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);

@@ -222,15 +222,15 @@ uint8_t getGyrRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 		
 	waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[0], (uint8_t)L3GD20_OUT_X_L);      
-	waitGyrI2CStandbyState();   
+	//waitGyrI2CStandbyState();   
 	readGyrRegister(&data_buffer[1], (uint8_t)L3GD20_OUT_X_H);
-	waitGyrI2CStandbyState();
+	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[2], (uint8_t)L3GD20_OUT_Y_L);
-	waitGyrI2CStandbyState();
+	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[3], (uint8_t)L3GD20_OUT_Y_H);
-	waitGyrI2CStandbyState();
+	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[4], (uint8_t)L3GD20_OUT_Z_L);
-	waitGyrI2CStandbyState();
+	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[5], (uint8_t)L3GD20_OUT_Z_H);
 
 #ifdef USE_LPMSCU_NEW

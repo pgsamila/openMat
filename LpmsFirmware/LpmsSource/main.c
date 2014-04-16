@@ -12,6 +12,8 @@
 
 int main(void)
 {
+	int sendCounter = 0;
+
 	msDelay(100);
 
 	setSystemStepTimer();
@@ -75,18 +77,25 @@ int main(void)
 			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
 		  
-			if (getTimeStep() > LPMS_MEASUREMENT_PERIOD) {
+			if (getTimeStep() > (LPMS_MEASUREMENT_PERIOD-50)) {
+				while (getTimeStep() < LPMS_MEASUREMENT_PERIOD) {
+					asm ("nop");
+				}
+
 				updateSensorData();
 				processSensorData();
-			}
 
-			if (isStreamModeTransferReady() == 1) {
-				clearStreamModeTransferReady();
-				updateDataTransmission();
-				
+				++sendCounter;
+				if (sendCounter >= getTransferCycles()) {
+					sendCounter = 0;
+
+					clearStreamModeTransferReady();
+					updateDataTransmission();
+					
 #ifdef LPMS_BLE
-				sendQueue();
+					sendQueue();
 #endif
+				}
 			}
 
 #ifndef LPMS_BLE			

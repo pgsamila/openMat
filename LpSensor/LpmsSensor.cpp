@@ -2342,17 +2342,22 @@ void LpmsSensor::startSaveData(std::ofstream *saveDataHandle)
 
 void LpmsSensor::checkSaveData(void)
 {
+	float currentTimestamp;
+
 	if (saveDataPreroll > 1) {
 		--saveDataPreroll;
 		return;
 	} else if (saveDataPreroll == 1) {
+		--saveDataPreroll;
 		timestampOffset = currentData.timeStamp;
-		frameCounterOffset = currentData.frameCount;
+		frameCounterOffset = currentData.frameCount;	
 	}
+	
+	currentTimestamp = (currentData.timeStamp-timestampOffset);
 
 	sensorMutex.lock();
 	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << (currentData.timeStamp-timestampOffset) << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(3) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << getCurrentSyncOffset() << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
 	}
 	sensorMutex.unlock();
 }

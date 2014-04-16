@@ -68,6 +68,7 @@
 	stopped = false;
 	isRecording = false;
 	threadDelay = 750;
+	isSensorSyncOn = false;
 
 	managerState = SMANAGER_MEASURE;
 
@@ -187,21 +188,14 @@ void LpmsSensorManager::run(void)
 			
 			lm.unlock();
 			
-			if (syncPeriodTimer.measure() > 500000) {
+			if (syncPeriodTimer.measure() > 1000000) {
 				syncPeriodTimer.reset();
 
 				lm.lock();				
 				for (i = sensorList.begin(); i != sensorList.end(); i++) {
-					if (i != sensorList.begin()) {
-						(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - prevTimestamp);
-					} else {
-						(*i)->setCurrentSyncOffset(0.0f);
-					}
-					
-					(*i)->syncTimestamp(((float)syncTimer.measure()) / 1000000.0f);
-					prevTimestamp = (*i)->getCurrentData().timeStamp;
-					
-					// printf("[%d] %f\n", (*i)->getOpenMatId(), (*i)->getCurrentSyncOffset());
+					(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - (*(sensorList.begin()))->getCurrentData().timeStamp);
+
+					if (isSensorSyncOn == true) (*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp);
 				}
 				lm.unlock();
 			}
@@ -211,9 +205,8 @@ void LpmsSensorManager::run(void)
 				
 				lm.lock();
 				for (i = sensorList.begin(); i != sensorList.end(); i++) {
-					(*i)->update();
+					(*i)->update();				
 				}
-
 				lm.unlock();
 			}
 			
@@ -253,6 +246,22 @@ void LpmsSensorManager::run(void)
 	ce.close();
 	be.close();
 #endif
+}
+
+void LpmsSensorManager::setSensorSync(bool s)
+{
+	if (s == true) {
+		printf("[LpmsSensorManager] Set sensor sync ON\n");
+	} else {
+		printf("[LpmsSensorManager] Set sensor sync OFF\n");
+	}
+	
+	isSensorSyncOn = s;
+}
+
+bool LpmsSensorManager::getSensorSync(void)
+{
+	return isSensorSyncOn;
 }
 
 LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
@@ -341,7 +350,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 	saveDataHandle.open(fn, ios_base::out);
 	saveDataHandle.rdbuf()->pubsetbuf(writeBuffer, 65536);
 	if (saveDataHandle.is_open() == true) {	
-		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
+		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, SyncOffset (s), AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
 		
@@ -349,7 +358,8 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 		
 		lm.lock();				
 		for (i = sensorList.begin(); i != sensorList.end(); i++) {
-			(*i)->syncTimestamp(((float)syncTimer.measure()) / 1000000.0f);
+			(*i)->syncTimestamp(0.0f);
+			(*i)->setCurrentSyncOffset(0);
 		}
 		lm.unlock();		
 		

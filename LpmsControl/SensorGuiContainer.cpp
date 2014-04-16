@@ -107,6 +107,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	}
 	connect(samplingRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updatesamplingRate(int)));
 	
+	QComboBox* syncCombo = new QComboBox();
 	syncCombo->addItem(QString("On"));
 	syncCombo->addItem(QString("Off"));	
 	

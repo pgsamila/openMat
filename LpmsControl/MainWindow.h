@@ -303,6 +303,8 @@ public slots:
 
 	void resetHeading(void);
 	
+	void updateSensorSyncSetting(int i);
+	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	
@@ -367,6 +369,7 @@ private:
 	QRadioButton* gTDisableBtn;
 	QComboBox* deviceTypeSelector;
 	QComboBox *addressSelector;
+	QComboBox *recordingRateCombo;
 	QAction* startAction;
 	QAction* saveAction;
 	QAction* selfTestAction;
@@ -404,7 +407,8 @@ private:
 	QAction *replayAction;
 	string globalPlaybackFile;
 	QLineEdit *playbackFileEdit;
-	bool playbackFileSet;	
+	bool playbackFileSet;
+	QComboBox *sensorSyncCombo;
 	
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		

@@ -35,6 +35,7 @@
 #include <iostream>
 #include <fstream>
 #include <mutex>
+#include <iomanip>
 
 #ifdef _WIN32
 	#include "windows.h"

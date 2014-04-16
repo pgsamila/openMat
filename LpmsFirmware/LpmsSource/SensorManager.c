@@ -292,6 +292,9 @@ void updateSensorData(void)
 {     
 	uint32_t cT;
 
+	cT = getTimeStep();
+	startTimeStepCounting();	
+
 	if (isSelfTestOn == 1) {
 		calibrationData.gyrOffset.data[0] = 0.0f;
 		calibrationData.gyrOffset.data[1] = 0.0f;
@@ -308,10 +311,6 @@ void updateSensorData(void)
 #endif
 
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
-
-		cT = getTimeStep();
-		startTimeStepCounting();		
-		
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
 
@@ -321,7 +320,7 @@ void updateSensorData(void)
 		
 		T = (float) cT * 0.00001f;
 		canHeartbeatTime += T;
-		measurementTime += T;
+		measurementTime += 0.0025f;
 		heaveTime = T;
 		pressureTime += cT;
 

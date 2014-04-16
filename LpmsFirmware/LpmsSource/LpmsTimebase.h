@@ -72,4 +72,6 @@ uint32_t getTimeout(void);
 
 void updateAliveLed(void);
 
+uint16_t getTransferCycles(void);
+
 #endif

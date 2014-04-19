@@ -251,16 +251,12 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 	bluetoothSetName();
 	msDelay(50);
 	
-//#ifdef ENABLE_LOWLATENCY
-	//bluetoothEnableLowLatency();
+#ifdef ENABLE_LOWLATENCY
 	bluetoothEnableLowLatencyOptimization();
-//#else
-	//bluetoothDisableSpecialCommands();
-//#endif
+#else
+	bluetoothDisableSpecialCommands();
+#endif
 	msDelay(50);
-	
-	/* bluetoothDisableLowPowerConnectMode();
-	msDelay(50); */
 
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(baudrate);

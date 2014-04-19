@@ -77,7 +77,7 @@ int main(void)
 			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
 		  
-			if (getTimeStep() > (LPMS_MEASUREMENT_PERIOD-50)) {
+			if (getTimeStep() > (LPMS_MEASUREMENT_PERIOD-10)) {
 				while (getTimeStep() < LPMS_MEASUREMENT_PERIOD) {
 					asm ("nop");
 				}

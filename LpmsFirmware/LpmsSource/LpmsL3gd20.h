@@ -167,6 +167,10 @@ uint8_t getGyrTempData(int8_t* temp);
 // Checks if gyroscope data is ready
 uint8_t isGyrDataReady(void);
 
+int gyrI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data);
+
+int gyrI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data);
+
 #ifdef __cplusplus
 }
 #endif 

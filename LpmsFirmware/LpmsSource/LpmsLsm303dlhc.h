@@ -21,6 +21,8 @@
 #define ACC_MAG_I2C_SCL_AF			GPIO_AF_I2C1
 #define ACC_MAG_I2C_SDA_AF			GPIO_AF_I2C1
 #define ACC_MAG_I2C_PORT			I2C1
+#define ACC_I2C_PORT			I2C1
+#define MAG_I2C_PORT			I2C1
 #define ACC_MAG_I2C_RCC_PERIPH		RCC_APB1Periph_I2C1
 #define ACC_MAG_I2C_RCC_PORT		RCC_AHB1Periph_GPIOB
 #define ACC_I2C_ADDRESS				0x32
@@ -270,6 +272,11 @@ uint8_t isAccDataReady(void);
 
 // Checks if magnetometer is ready
 uint8_t isMagDataReady(void);
+
+int accI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data);
+int accI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data);
+int magI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data);
+int magI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data);
 
 #ifdef __cplusplus
 }

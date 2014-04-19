@@ -75,7 +75,7 @@ LpVector3f accRawDataLp;
 LpVector3f magRawDataLp;
 LpVector3f tB;
 static float d2r = 0.01745f;
-float measurementTime = 0.0;
+float measurementTime = 0.0f;
 float sendTime = 0.0f;
 float heaveTime = 0.0f;
 LpVector3f heaveOutput;
@@ -334,7 +334,6 @@ void updateSensorData(void)
 				  
 				getTempAndPressure(&rawTemp, &rawPressure, BMP180_STD_MODE);
 				calcAltitude();
-				
 			}
 		}
 #endif

@@ -42,13 +42,13 @@
 // <-- Deprecated type switched until here
 
 // Enables watchdog timer
-// #define ENABLE_WATCHDOG
+#define ENABLE_WATCHDOG
 
 // To enable pressure sensing
-// #define ENABLE_PRESSURE
+#define ENABLE_PRESSURE
 
 // Enable Bluetooth low-latency
-// #define ENABLE_LOWLATENCY
+#define ENABLE_LOWLATENCY
 
 // <--
 

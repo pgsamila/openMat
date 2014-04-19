@@ -66,7 +66,7 @@ void waitMagI2CStandbyState(void)
 	I2C_ClearFlag(ACC_MAG_I2C_PORT, I2C_FLAG_AF);
 }
 
-void writeAccRegister(uint8_t address, uint8_t data)
+/* void writeAccRegister(uint8_t address, uint8_t data)
 {
 	I2C_GenerateSTART (ACC_MAG_I2C_PORT, ENABLE);
 	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
@@ -139,6 +139,233 @@ void readMagRegister(uint8_t* pBuffer, uint8_t address, uint8_t NumByteToRead)
 	}
 	
 	I2C_AcknowledgeConfig(ACC_MAG_I2C_PORT, ENABLE);
+} */
+
+#define MAG_I2C_TIMEOUT 1000
+#define ACC_I2C_TIMEOUT 1000
+
+void writeAccRegister(uint8_t address, uint8_t data)
+{
+	uint8_t dataBuffer[8];
+
+	dataBuffer[0] = data;
+	accI2cWrite(address, 1, dataBuffer);
+}
+
+int accI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data)
+{	
+  	uint8_t ok = 0;
+	uint32_t to = 0;
+	
+	while (ok == 0) {
+		I2C_GenerateSTART(ACC_I2C_PORT, ENABLE);
+		to = 0;
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < ACC_I2C_TIMEOUT) ++to;
+		if (to >= ACC_I2C_TIMEOUT) continue;
+	
+		I2C_Send7bitAddress(ACC_I2C_PORT, ACC_I2C_ADDRESS, I2C_Direction_Transmitter);
+		to = 0;
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < ACC_I2C_TIMEOUT) ++to;
+		if (to >= ACC_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	I2C_SendData(ACC_I2C_PORT, reg_addr);	
+	to = 0;
+	while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < ACC_I2C_TIMEOUT);
+	
+	while (length) {
+		I2C_SendData(ACC_I2C_PORT, *data);
+
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+		
+		++data;
+		--length;
+	}
+
+	I2C_GenerateSTOP(ACC_I2C_PORT, ENABLE);
+		
+	return 0;
+}
+
+void readAccRegister(uint8_t* pBuffer, uint8_t address)
+{
+	accI2cRead(address, 1, pBuffer);
+}
+
+int accI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data)
+{  
+  	uint8_t ok = 0;
+	uint32_t to = 0;
+	
+	while (ok == 0) {
+		I2C_GenerateSTART(ACC_I2C_PORT, ENABLE);
+		to = 0;
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < ACC_I2C_TIMEOUT) ++to;
+		if (to >= ACC_I2C_TIMEOUT) continue;
+	
+		I2C_Send7bitAddress(ACC_I2C_PORT, ACC_I2C_ADDRESS, I2C_Direction_Transmitter);
+		to = 0;
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < ACC_I2C_TIMEOUT) ++to;
+		if (to >= ACC_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	I2C_SendData(ACC_I2C_PORT, reg_addr);	
+	to = 0;
+	while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < ACC_I2C_TIMEOUT);
+	
+	I2C_GenerateSTOP(ACC_I2C_PORT, ENABLE);
+
+	ok = 0;
+	while (ok == 0) {		
+		I2C_GenerateSTART(ACC_I2C_PORT, ENABLE);	
+		to = 0;
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < ACC_I2C_TIMEOUT) ++to;
+		if (to >= ACC_I2C_TIMEOUT) continue;
+		
+		I2C_Send7bitAddress(ACC_I2C_PORT, ACC_I2C_ADDRESS, I2C_Direction_Receiver);
+		to = 0;
+		while (!I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) && to < ACC_I2C_TIMEOUT) ++to;
+		if (to >= ACC_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	to = 0;
+	while (length && to < ACC_I2C_TIMEOUT) {
+		++to;
+
+		if (length == 1) {
+			I2C_AcknowledgeConfig(ACC_I2C_PORT, DISABLE);
+			I2C_GenerateSTOP(ACC_I2C_PORT, ENABLE);
+		}
+
+		if (I2C_CheckEvent(ACC_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED)) {
+			*data = I2C_ReceiveData(ACC_I2C_PORT);
+			++data;
+			--length;
+		} else {
+		}
+	}
+	
+	I2C_AcknowledgeConfig(ACC_I2C_PORT, ENABLE);
+
+	return 0;
+}
+
+void writeMagRegister(uint8_t address, uint8_t data)
+{
+	uint8_t dataBuffer[8];
+
+	dataBuffer[0] = data;
+	magI2cWrite(address, 1, dataBuffer);
+}
+
+int magI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data)
+{	
+  	uint8_t ok = 0;
+	uint32_t to = 0;
+	
+	while (ok == 0) {
+		I2C_GenerateSTART(MAG_I2C_PORT, ENABLE);
+		to = 0;
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < MAG_I2C_TIMEOUT) ++to;
+		if (to >= MAG_I2C_TIMEOUT) continue;
+	
+		I2C_Send7bitAddress(MAG_I2C_PORT, MAG_I2C_ADDRESS, I2C_Direction_Transmitter);
+		to = 0;
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < MAG_I2C_TIMEOUT) ++to;
+		if (to >= MAG_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	I2C_SendData(MAG_I2C_PORT, reg_addr);	
+	to = 0;
+	while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < MAG_I2C_TIMEOUT);
+	
+	while (length) {
+		I2C_SendData(MAG_I2C_PORT, *data);
+
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+		
+		++data;
+		--length;
+	}
+
+	I2C_GenerateSTOP(MAG_I2C_PORT, ENABLE);
+		
+	return 0;
+}
+
+void readMagRegister(uint8_t* pBuffer, uint8_t address, uint8_t NumByteToRead)
+{
+	magI2cRead(address, NumByteToRead, pBuffer);
+}
+
+int magI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data)
+{  
+  	uint8_t ok = 0;
+	uint32_t to = 0;
+	
+	while (ok == 0) {
+		I2C_GenerateSTART(MAG_I2C_PORT, ENABLE);
+		to = 0;
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < MAG_I2C_TIMEOUT) ++to;
+		if (to >= MAG_I2C_TIMEOUT) continue;
+	
+		I2C_Send7bitAddress(MAG_I2C_PORT, MAG_I2C_ADDRESS, I2C_Direction_Transmitter);
+		to = 0;
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < MAG_I2C_TIMEOUT) ++to;
+		if (to >= MAG_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	I2C_SendData(MAG_I2C_PORT, reg_addr);	
+	to = 0;
+	while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < MAG_I2C_TIMEOUT);
+	
+	I2C_GenerateSTOP(MAG_I2C_PORT, ENABLE);
+
+	ok = 0;
+	while (ok == 0) {		
+		I2C_GenerateSTART(MAG_I2C_PORT, ENABLE);	
+		to = 0;
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < MAG_I2C_TIMEOUT) ++to;
+		if (to >= MAG_I2C_TIMEOUT) continue;
+		
+		I2C_Send7bitAddress(MAG_I2C_PORT, MAG_I2C_ADDRESS, I2C_Direction_Receiver);
+		to = 0;
+		while (!I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) && to < MAG_I2C_TIMEOUT) ++to;
+		if (to >= MAG_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	to = 0;
+	while (length && to < MAG_I2C_TIMEOUT) {
+		++to;
+
+		if (length == 1) {
+			I2C_AcknowledgeConfig(MAG_I2C_PORT, DISABLE);
+			I2C_GenerateSTOP(MAG_I2C_PORT, ENABLE);
+		}
+
+		if (I2C_CheckEvent(MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED)) {
+			*data = I2C_ReceiveData(MAG_I2C_PORT);
+			++data;
+			--length;
+		} else {
+		}
+	}
+	
+	I2C_AcknowledgeConfig(MAG_I2C_PORT, ENABLE);
+
+	return 0;
 }
 
 uint8_t setAccOutputDataRateAndPowerMode(uint32_t outputDataRate, uint8_t powerMode)
@@ -329,12 +556,14 @@ uint8_t getAccRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 {
 	uint8_t data_buffer[6];
 	
-	/* readAccRegister(&data_buffer[0], (uint8_t)LSM303DLHC_OUT_X_L_A);      
+	// accI2cRead(LSM303DLHC_OUT_X_L_A, 6, data_buffer);
+
+	readAccRegister(&data_buffer[0], (uint8_t)LSM303DLHC_OUT_X_L_A);      
 	readAccRegister(&data_buffer[1], (uint8_t)LSM303DLHC_OUT_X_H_A);
 	readAccRegister(&data_buffer[2], (uint8_t)LSM303DLHC_OUT_Y_L_A);
 	readAccRegister(&data_buffer[3], (uint8_t)LSM303DLHC_OUT_Y_H_A);
 	readAccRegister(&data_buffer[4], (uint8_t)LSM303DLHC_OUT_Z_L_A);
-	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A); */
+	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A);
 
 #ifdef USE_LPMSCU_NEW
 	*xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);

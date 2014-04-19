@@ -96,15 +96,22 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	for (int i=0; i < 129; i++) indexItem->addItem(QString("%1").arg(i));
 	connect(indexItem, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOpenMATIndex(int)));
 
-	samplingRateCombo->addItem(QString("5 Hz"));
-	samplingRateCombo->addItem(QString("10 Hz"));
-	samplingRateCombo->addItem(QString("30 Hz"));	
-	samplingRateCombo->addItem(QString("50 Hz"));
-	samplingRateCombo->addItem(QString("100 Hz"));
-	samplingRateCombo->addItem(QString("200 Hz"));	
-	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C || deviceType == DEVICE_LPMS_RS232) {
-		samplingRateCombo->addItem(QString("300 Hz"));	
+	samplingRateCombo->addItem(QString("5.75 Hz"));
+	samplingRateCombo->addItem(QString("12.5 Hz"));
+	samplingRateCombo->addItem(QString("25 Hz"));
+	
+	if (deviceType != DEVICE_LPMS_BLE) {	
+		samplingRateCombo->addItem(QString("50 Hz"));
+		samplingRateCombo->addItem(QString("100 Hz"));
+		
+		if (deviceType != DEVICE_LPMS_B) {
+			samplingRateCombo->addItem(QString("200 Hz"));	
+			samplingRateCombo->addItem(QString("400 Hz"));	
+		} else {
+			samplingRateCombo->addItem(QString("133 Hz"));
+		}
 	}
+	
 	connect(samplingRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updatesamplingRate(int)));
 	
 	QComboBox* syncCombo = new QComboBox();

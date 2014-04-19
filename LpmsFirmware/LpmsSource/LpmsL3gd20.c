@@ -56,7 +56,7 @@ void waitGyrI2CStandbyState(void)
 	I2C_ClearFlag(GYR_I2C_PORT, I2C_FLAG_AF);
 }
 
-void writeGyrRegister(uint8_t address, uint8_t data)
+/* void writeGyrRegister(uint8_t address, uint8_t data)
 {
 	I2C_GenerateSTART (GYR_I2C_PORT, ENABLE);
 	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
@@ -89,6 +89,120 @@ void readGyrRegister(uint8_t* pBuffer, uint8_t address)
 	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED));
 	*pBuffer = I2C_ReceiveData(GYR_I2C_PORT);
 	I2C_AcknowledgeConfig(GYR_I2C_PORT, ENABLE);
+} */
+
+void writeGyrRegister(uint8_t address, uint8_t data)
+{
+	uint8_t dataBuffer[8];
+
+	dataBuffer[0] = data;
+	gyrI2cWrite(address, 1, dataBuffer);
+}
+
+#define GYR_I2C_TIMEOUT 1000
+
+int gyrI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data)
+{	
+  	uint8_t ok = 0;
+	uint32_t to = 0;
+	
+	while (ok == 0) {
+		I2C_GenerateSTART(GYR_I2C_PORT, ENABLE);
+		to = 0;
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < GYR_I2C_TIMEOUT) ++to;
+		if (to >= GYR_I2C_TIMEOUT) continue;
+	
+		I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Transmitter);
+		to = 0;
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < GYR_I2C_TIMEOUT) ++to;
+		if (to >= GYR_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	I2C_SendData(GYR_I2C_PORT, reg_addr);	
+	to = 0;
+	while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < GYR_I2C_TIMEOUT);
+	
+	while (length) {
+		I2C_SendData(GYR_I2C_PORT, *data);
+
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+		
+		++data;
+		--length;
+	}
+
+	I2C_GenerateSTOP(GYR_I2C_PORT, ENABLE);
+		
+	return 0;
+}
+
+void readGyrRegister(uint8_t* pBuffer, uint8_t address)
+{
+	gyrI2cRead(address, 1, pBuffer);
+}
+
+int gyrI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data)
+{  
+  	uint8_t ok = 0;
+	uint32_t to = 0;
+	
+	while (ok == 0) {
+		I2C_GenerateSTART(GYR_I2C_PORT, ENABLE);
+		to = 0;
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < GYR_I2C_TIMEOUT) ++to;
+		if (to >= GYR_I2C_TIMEOUT) continue;
+	
+		I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Transmitter);
+		to = 0;
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < GYR_I2C_TIMEOUT) ++to;
+		if (to >= GYR_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	I2C_SendData(GYR_I2C_PORT, reg_addr);	
+	to = 0;
+	while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < GYR_I2C_TIMEOUT);
+	
+	I2C_GenerateSTOP(GYR_I2C_PORT, ENABLE);
+
+	ok = 0;
+	while (ok == 0) {		
+		I2C_GenerateSTART(GYR_I2C_PORT, ENABLE);	
+		to = 0;
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < GYR_I2C_TIMEOUT) ++to;
+		if (to >= GYR_I2C_TIMEOUT) continue;
+		
+		I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Receiver);
+		to = 0;
+		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED) && to < GYR_I2C_TIMEOUT) ++to;
+		if (to >= GYR_I2C_TIMEOUT) continue;
+		
+		ok = 1;	
+	}
+
+	to = 0;
+	while (length && to < GYR_I2C_TIMEOUT) {
+		++to;
+		
+		if (length == 1) {
+			I2C_AcknowledgeConfig(GYR_I2C_PORT, DISABLE);
+			I2C_GenerateSTOP(GYR_I2C_PORT, ENABLE);
+		}
+
+		if (I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED)) {
+			*data = I2C_ReceiveData(GYR_I2C_PORT);
+			++data;
+			--length;
+		} else {
+		}
+	}
+	
+	I2C_AcknowledgeConfig(GYR_I2C_PORT, ENABLE);
+
+	return 0;
 }
 
 uint8_t setGyrOutputDataRateAndPowerMode(uint32_t outputDataRate, uint8_t powerMode)
@@ -221,16 +335,14 @@ uint8_t getGyrRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 	uint8_t data_buffer[6];	
 		
 	waitGyrI2CStandbyState();
+
+	// accI2cRead(L3GD20_OUT_X_L, 6, data_buffer);
+
 	readGyrRegister(&data_buffer[0], (uint8_t)L3GD20_OUT_X_L);      
-	//waitGyrI2CStandbyState();   
 	readGyrRegister(&data_buffer[1], (uint8_t)L3GD20_OUT_X_H);
-	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[2], (uint8_t)L3GD20_OUT_Y_L);
-	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[3], (uint8_t)L3GD20_OUT_Y_H);
-	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[4], (uint8_t)L3GD20_OUT_Z_L);
-	//waitGyrI2CStandbyState();
 	readGyrRegister(&data_buffer[5], (uint8_t)L3GD20_OUT_Z_H);
 
 #ifdef USE_LPMSCU_NEW

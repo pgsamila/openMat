@@ -137,6 +137,10 @@ void LpmsSensorManager::start(void)
 	
 	t.detach();	
 }
+
+#define LPMS_B_LATENCY_ESTIMATE 0.030f
+#define LPMS_OTHER_LATENCY_ESTIMATE 0.005f
+#define SYNC_PERIOD 5000000
 	
 void LpmsSensorManager::run(void)
 {
@@ -145,6 +149,7 @@ void LpmsSensorManager::run(void)
 	list<LpmsSensor*>::iterator i;	
     bool bIsWindows7orLater = true;
 	float prevTimestamp = 0.0f;
+	int deviceType = 0;
 
 #ifdef _WIN32	
     OSVERSIONINFO osvi;
@@ -188,14 +193,22 @@ void LpmsSensorManager::run(void)
 			
 			lm.unlock();
 			
-			if (syncPeriodTimer.measure() > 1000000) {
+			if (syncPeriodTimer.measure() > SYNC_PERIOD) {
 				syncPeriodTimer.reset();
 
 				lm.lock();				
 				for (i = sensorList.begin(); i != sensorList.end(); i++) {
 					(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - (*(sensorList.begin()))->getCurrentData().timeStamp);
 
-					if (isSensorSyncOn == true) (*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp);
+					if (isSensorSyncOn == true) {
+						(*i)->getConfigurationPrm(PRM_DEVICE_TYPE, &deviceType);
+						if (deviceType == DEVICE_LPMS_B) {
+							(*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp + LPMS_B_LATENCY_ESTIMATE);
+						} else {
+							(*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp + LPMS_OTHER_LATENCY_ESTIMATE);
+						}
+						printf("[LpmsSensorManager] ID=%d, timestamp offset=%f\n", (*i)->getOpenMatId(), (*i)->getCurrentSyncOffset());
+					}
 				}
 				lm.unlock();
 			}
@@ -211,12 +224,6 @@ void LpmsSensorManager::run(void)
 			}
 			
 #ifdef _WIN32
-			/* if (bIsWindows7orLater == false && threadDelay < 500) {
-				boost::this_thread::sleep(boost::posix_time::microseconds(500));
-			} else if (threadDelay > 0) {
-				boost::this_thread::sleep(boost::posix_time::microseconds(threadDelay));
-			} */
-			
 			if (bIsWindows7orLater == false) {
 				std::this_thread::sleep_for(std::chrono::microseconds(500));
 			}			
@@ -248,15 +255,38 @@ void LpmsSensorManager::run(void)
 #endif
 }
 
+bool compareOpenMatId(LpmsSensor *first, LpmsSensor *second)
+{
+	if (first->getOpenMatId() < second->getOpenMatId()) return true;
+	
+	return false;
+}
+
 void LpmsSensorManager::setSensorSync(bool s)
 {
+	list<LpmsSensor*>::iterator i;
+
 	if (s == true) {
 		printf("[LpmsSensorManager] Set sensor sync ON\n");
 	} else {
 		printf("[LpmsSensorManager] Set sensor sync OFF\n");
 	}
 	
+	lm.lock();
+	sensorList.sort(compareOpenMatId);
+	lm.unlock();
+	
 	isSensorSyncOn = s;
+	
+	if (isSensorSyncOn == true) {
+		lm.lock();				
+		for (i = sensorList.begin(); i != sensorList.end(); i++) {
+			(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - (*(sensorList.begin()))->getCurrentData().timeStamp);
+
+			(*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp);
+		}
+		lm.unlock();
+	}	
 }
 
 bool LpmsSensorManager::getSensorSync(void)
@@ -311,6 +341,10 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 		sensorList.push_back(sensor);
 	break;
 	}
+	
+	sensorList.sort(compareOpenMatId);
+	sensor->setCurrentSyncOffset(0.0f);
+	
 	lm.unlock();
 	
 	return (LpmsSensorI*) sensor;
@@ -350,7 +384,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 	saveDataHandle.open(fn, ios_base::out);
 	saveDataHandle.rdbuf()->pubsetbuf(writeBuffer, 65536);
 	if (saveDataHandle.is_open() == true) {	
-		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, SyncOffset (s), AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
+		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
 		

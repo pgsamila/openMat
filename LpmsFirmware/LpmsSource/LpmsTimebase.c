@@ -17,31 +17,26 @@ void initTimebase(void)
 
 	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
 		cyclesPerDataTransfer = 64; // 5.75 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_5HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
 		cyclesPerDataTransfer = 32; // 12.5 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_10HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
 		cyclesPerDataTransfer = 16; // 25 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_30HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
 		cyclesPerDataTransfer = 8; // 50 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_50HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
 		cyclesPerDataTransfer = 4; // 100 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_100HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
+#ifdef USE_BLUETOOTH_INTERFACE
+		cyclesPerDataTransfer = 3; // 133 Hz
+#else
 		cyclesPerDataTransfer = 2; // 200 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_200HZ);
+#endif
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
 		cyclesPerDataTransfer = 1; // 400 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_500HZ);
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
 		cyclesPerDataTransfer = 1; // 400 Hz
-		// setDataStreamTimer(LPMS_STREAM_T_1000HZ);
 	} else {
 		cyclesPerDataTransfer = 4; // 100 Hz
-		// setDataStreamTimer(LPMS_STREAM_FREQ_100HZ);
 	}
 }
 

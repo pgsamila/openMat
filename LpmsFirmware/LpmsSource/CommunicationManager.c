@@ -87,36 +87,76 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	uint16_t txLrcCheck;
 
 #ifdef LPMS_BLE
-	txData[0] = 0x3a;
-	txData[1] = function & 0xff;
-	txData[2] = length & 0xff;
-	
-	if (length != 0) {
-		for (uint16_t i = 0; i < length; i++) {
-			txData[3 + i] = data[i];
+	if (connectedInterface == TTL_UART_CONNECTED) {
+		txData[0] = 0x3a;
+		txData[1] = function & 0xff;
+		txData[2] = length & 0xff;
+		
+		if (length != 0) {
+			for (uint16_t i = 0; i < length; i++) {
+				txData[3 + i] = data[i];
+			}
 		}
-	}
-	
-	txLrcCheck = function;
-	txLrcCheck += length;
-	
-	if (length != 0) {
-		for (uint16_t i = 0; i < length; i++) {
-			txLrcCheck += data[i];
+		
+		txLrcCheck = function;
+		txLrcCheck += length;
+		
+		if (length != 0) {
+			for (uint16_t i = 0; i < length; i++) {
+				txLrcCheck += data[i];
+			}
 		}
-	}
-	
-	txData[3 + length] = txLrcCheck & 0xff;
-	txData[4 + length] = (txLrcCheck >> 8) & 0xff;
-	
-	if (txIndex+5+length < MAX_BUFFER) {
-		for (i=0; i<(5+length); ++i) {
-			txBuffer[txIndex] = txData[i];
-			++txIndex;
+		
+		txData[3 + length] = txLrcCheck & 0xff;
+		txData[4 + length] = (txLrcCheck >> 8) & 0xff;
+		
+		if (txIndex+5+length < MAX_BUFFER) {
+			for (i=0; i<(5+length); ++i) {
+				txBuffer[txIndex] = txData[i];
+				++txIndex;
+			}
+		} else {
+			asm("NOP");
 		}
 	} else {
-		asm("NOP");
-	}	
+		txData[0] = 0x3a;
+		txData[1] = address & 0xff;
+		txData[2] = (address >> 8) & 0xff;
+		txData[3] = function & 0xff;
+		txData[4] = (function >> 8) & 0xff;
+		txData[5] = length & 0xff;
+		txData[6] = (length >> 8) & 0xff;
+		
+		if (length != 0) {
+			for (uint16_t i = 0; i < length; i++) {
+				txData[7 + i] = data[i];
+			}
+		}
+		
+		txLrcCheck = address;
+		txLrcCheck += function;
+		txLrcCheck += length;
+		
+		if (length != 0) {
+			for (uint16_t i = 0; i < length; i++) {
+				txLrcCheck += data[i];
+			}
+		}
+		
+		txData[7 + length] = txLrcCheck & 0xff;
+		txData[8 + length] = (txLrcCheck >> 8) & 0xff;
+		txData[9 + length] = 0x0d;
+		txData[10 + length] = 0x0a;
+
+		if (txIndex+11+length < MAX_BUFFER) {
+			for (i=0; i<(11+length); ++i) {
+				txBuffer[txIndex] = txData[i];
+				++txIndex;
+			}
+		} else {
+			asm("NOP");
+		}
+	}
 #else	
 	txData[0] = 0x3a;
 	txData[1] = address & 0xff;
@@ -147,11 +187,11 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 
-#ifdef LPMS_BLE
-	if (txIndex+11+length < MAX_BUFFER_BLE) {
-#else
+// #ifdef LPMS_BLE
+// 	if (txIndex+11+length < MAX_BUFFER_BLE) {
+// #else
 	if (txIndex+11+length < MAX_BUFFER) {
-#endif
+// #endif
 		for (i=0; i<(11+length); ++i) {
 			txBuffer[txIndex] = txData[i];
 			++txIndex;
@@ -189,29 +229,37 @@ void sendQueue(void)
 	if (txIndex == 0) return;                          
 
 #ifdef LPMS_BLE
-	if (txIndex > 20) {
-	  	nTx = 20;
-
-		for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
-
-		int j = 0;
-		for (i=nTx; i<txIndex; ++i) {
-			txBuffer[j] = txBuffer[i];
-			++j;
+	if (connectedInterface == TTL_UART_CONNECTED) {
+		if (txIndex > 20) {
+			nTx = 20;
+	
+			for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
+	
+			int j = 0;
+			for (i=nTx; i<txIndex; ++i) {
+				txBuffer[j] = txBuffer[i];
+				++j;
+			}
+	
+			txIndex -= 20;
+		} else {
+			nTx = txIndex;
+	
+			for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
+	
+			int nF = nTx % 20;
+			if (nF > 0) {
+				for (int i=nTx; i < (nTx + 20 - nF); ++i) txBuffer2[i] = 0x0;
+				nTx += 20 - nF;
+			}
+	
+			txIndex = 0;
 		}
-
-		txIndex -= 20;
 	} else {
-	  	nTx = txIndex;
-
-		for (i=0; i<nTx; ++i) txBuffer2[i] = txBuffer[i];
-
-		int nF = nTx % 20;
-		if (nF > 0) {
-			for (int i=nTx; i < (nTx + 20 - nF); ++i) txBuffer2[i] = 0x0;
-			nTx += 20 - nF;
-		}
-
+		nTx = txIndex;
+		
+		for (i=0; i<txIndex; ++i) txBuffer2[i] = txBuffer[i];
+	
 		txIndex = 0;
 	}
 #else
@@ -420,7 +468,11 @@ void parsePacket(void)
 					}
 
 				} else if ((packet.length != 4) && (isFirmwareUpdating == 1)) {
+#ifdef LPMS_BLE
+					if (copyRamToFlash_128bytes(&flash_destination, (uint32_t*)buffer)) {
+#else
 					if (copyRamToFlash_256bytes(&flash_destination, (uint32_t*)buffer)) {
+#endif
 						rxFirmwarePacketCounter++;
 						sendAck();
     
@@ -657,7 +709,11 @@ void parsePacket(void)
 					  	sendAck();
 					}
 				} else if ((packet.length != 4) && (isFirmwareUpdating == 1)) {
+#ifdef LPMS_BLE
+					if (copyRamToFlash_128bytes(&flash_destination, (uint32_t*)buffer)) {
+#else
 					if (copyRamToFlash_256bytes(&flash_destination, (uint32_t*)buffer)) {
+#endif
 						rxFirmwarePacketCounter++;
 						sendAck();
 						if (rxFirmwarePacketCounter >= rxFirmwarePacketSize) {
@@ -845,8 +901,12 @@ void parsePacket(void)
 			break;
 
 			case SET_LPBUS_DATA_MODE:
+#ifdef LPMS_BLE
+				sendAck();
+#else
 				setLpBusDataMode(packet.data);
 				sendAck();
+#endif
 			break;
 
 			case SET_MAG_ALIGNMENT_MATRIX:

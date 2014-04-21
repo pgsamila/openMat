@@ -875,7 +875,7 @@ void MainWindow::uploadFirmware(void)
 	
 	currentLpms->getSensor()->getConfigurationPrm(PRM_DEVICE_TYPE, &i);
 
-	if (i == DEVICE_LPMS_B) {
+	if (i == DEVICE_LPMS_B || i == DEVICE_LPMS_BLE) {
 		if (!qfilename.contains("LpmsB") || !qfilename.contains("bin")) {
 			printf("[MainWindow] LPMS-B invalid firmware filename.\n");
 			f = false;

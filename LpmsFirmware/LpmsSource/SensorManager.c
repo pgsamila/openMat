@@ -726,23 +726,40 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
   	uint16_t o = 0;
 
 #ifdef LPMS_BLE
-	setI16t(&(data[o]), (int16_t) measurementTime);
-	o = o+2;
+	if (connectedInterface == USB_CONNECTED) {
+                setUi32t(&(data[o]), (uint32_t)(measurementTime * 10000.0f));
+                o = o+4;
+
+                if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
+                        for (int i=0; i<4; i++) {
+                                setFloat(&(data[i*2 + o]), qAfterOffset.data[i], FLOAT_FIXED_POINT_1000);
+                        }
+                        o = o+8;
+                }
+
+                if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
+                        setFloat(&(data[o]), heaveY, FLOAT_FIXED_POINT_1000);
+                        o = o+2;
+                }
+	} else {
+		setI16t(&(data[o]), (int16_t) measurementTime);
+		o = o+2;
+		
+		setI16t(&(data[o]), (int16_t) (qAfterOffset.data[0] * (float) 0x7fff));
+		o = o+2;
 	
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[0] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[1] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[2] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (qAfterOffset.data[3] * (float) 0x7fff));
-	o = o+2;
-
-	setI16t(&(data[o]), (int16_t) (heaveY * (float) 0x0fff));
-	o = o+2;
+		setI16t(&(data[o]), (int16_t) (qAfterOffset.data[1] * (float) 0x7fff));
+		o = o+2;
+	
+		setI16t(&(data[o]), (int16_t) (qAfterOffset.data[2] * (float) 0x7fff));
+		o = o+2;
+	
+		setI16t(&(data[o]), (int16_t) (qAfterOffset.data[3] * (float) 0x7fff));
+		o = o+2;
+	
+		setI16t(&(data[o]), (int16_t) (heaveY * (float) 0x0fff));
+		o = o+2;
+	}
 #else
         if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
                 setUi32t(&(data[o]), (uint32_t)(measurementTime * 10000.0f));

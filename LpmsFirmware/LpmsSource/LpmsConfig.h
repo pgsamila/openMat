@@ -489,6 +489,8 @@ void copyFlashToRam_256bytes(__IO uint32_t* flashAddress, uint32_t* ramBuffer);
 // Copies RAM to flash
 uint8_t copyRamToFlash_256bytes(__IO uint32_t* flashAddress, uint32_t* ramBuffer);
 
+uint8_t copyRamToFlash_128bytes(__IO uint32_t* flashAddress, uint32_t* ramBuffer);
+
 // Writes complete register set
 uint8_t writeCompleteRegisterSet(void);
 

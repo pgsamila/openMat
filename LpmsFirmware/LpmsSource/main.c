@@ -10,6 +10,8 @@
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 
+extern uint8_t connectedInterface;
+
 int main(void)
 {
 	int sendCounter = 0;
@@ -41,10 +43,34 @@ int main(void)
 
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 		  
-			if (getTimeStep() > LPMS_MEASUREMENT_PERIOD) {
+			if (getTimeStep() > (LPMS_MEASUREMENT_PERIOD-10)) {
+				while (getTimeStep() < LPMS_MEASUREMENT_PERIOD) {
+					asm ("nop");
+				}
+
 				updateSensorData();
 				processSensorData();
+
+				++sendCounter;
+				if (sendCounter >= getTransferCycles()) {
+					sendCounter = 0;
+					clearStreamModeTransferReady();
+					
+#ifdef LPMS_BLE
+					if (connectedInterface != USB_CONNECTED) {
+						sendQueue();
+					}
+#endif
+				}
 			}
+
+#ifdef LPMS_BLE			
+			if (connectedInterface == USB_CONNECTED) {
+				sendQueue();
+			}
+#else
+			sendQueue();
+#endif
 
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
@@ -65,15 +91,6 @@ int main(void)
 			pollBluetoothData();
 #endif
 			parsePacket();
-
-#ifdef LPMS_BLE
-			if (isStreamModeTransferReady() == 1) {
-				clearStreamModeTransferReady();			  
-				sendQueue();
-			}
-#else		
-			sendQueue();
-#endif
 			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
 		  
@@ -93,12 +110,16 @@ int main(void)
 					updateDataTransmission();
 					
 #ifdef LPMS_BLE
-					sendQueue();
+					if (connectedInterface != USB_CONNECTED) {
+						sendQueue();
+					}
 #endif
 				}
 			}
 
-#ifndef LPMS_BLE			
+#ifdef LPMS_BLE			
+			if (connectedInterface == USB_CONNECTED) sendQueue();
+#else
 			sendQueue();
 #endif
 

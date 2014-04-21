@@ -6885,7 +6885,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCU-Mk2Ttl-Firmware.bin</state>
+          <state>LpmsBLEPrototypeFirmware.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -6939,7 +6939,7 @@
         </option>
         <option>
           <name>IlinkOutputFile</name>
-          <state>LpmsFirmware.out</state>
+          <state>LpmsBLEPrototypeFirmware.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>

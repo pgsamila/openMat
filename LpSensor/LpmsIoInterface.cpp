@@ -512,7 +512,7 @@ bool LpmsIoInterface::parseSensorData(void)
 		
 		if ((configReg & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0)  {
 			fromBufferInt16(oneTx, o, &s);
-			imuData.hm.yHeave = ((float)s) / 1000.0f;	
+			imuData.hm.yHeave = ((float)s) / 100.0f;	
 			o = o + 2;
 		}
 	} else {
@@ -1032,6 +1032,7 @@ bool LpmsIoInterface::checkState(void)
 			} else {			
 				currentState = IDLE_STATE;
 				waitForAck = false;
+				waitForData = false;				
 				ackReceived = false;
 				ackTimeout = 0;
 				isOpen = false;
@@ -1059,6 +1060,7 @@ bool LpmsIoInterface::checkState(void)
 			} else {			
 				currentState = IDLE_STATE;
 				waitForAck = false;
+				waitForData = false;
 				ackReceived = false;
 				ackTimeout = 0;
 				isOpen = false;
@@ -1253,8 +1255,8 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 	ifs.seekg(0, ios::beg);
 	LOGV("[LpmsIoInterface] IAP filesize: %d\n", l);
 	
-	firmwarePages = l / 256;
-	unsigned long r = (long) (l % 256);
+	firmwarePages = l / FIRMWARE_PACKET_LENGTH;
+	unsigned long r = (long) (l % FIRMWARE_PACKET_LENGTH);
 	
 	if (r > 0) ++firmwarePages;
 	
@@ -1297,7 +1299,7 @@ bool LpmsIoInterface::handleIAPFrame(void)
 		return false;
 	}
 
-	if (ifs.eof() == true) {
+	if (ifs.eof() == true || firmwarePages == pCount) {
 		currentState = IDLE_STATE;
 		waitForAck = false;
 		ackReceived = false;

@@ -50,7 +50,8 @@
 #define PACKET_SKIP_ZERO 10
 
 // Firmware packet length
-#define FIRMWARE_PACKET_LENGTH 256
+// #define FIRMWARE_PACKET_LENGTH 256
+#define FIRMWARE_PACKET_LENGTH 128
 
 // State machine definitions
 #define IDLE_STATE -1
@@ -136,10 +137,10 @@ public:
 	bool getUploadProgress(int *p);
 	
 	// Starts uploading firmware
-	bool startUploadFirmware(std::string fn);
+	virtual bool startUploadFirmware(std::string fn);
 	
 	// Starts uploading IAP
-	bool startUploadIap(std::string fn);
+	virtual bool startUploadIap(std::string fn);
 	
 	// Sets sensor to command mode
 	bool setCommandMode(void);
@@ -288,13 +289,13 @@ public:
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
 	virtual bool parseModbusByte(void);
+	virtual bool handleFirmwareFrame(void);
+	virtual bool handleIAPFrame(void);	
 
 	bool isAck(void);
 	bool isNack(void);
 	void receiveReset(void);
 	bool parseFunction(void);
-	bool handleFirmwareFrame(void);
-	bool handleIAPFrame(void);
 	boost::uint32_t conFtoI(float f);
 	float conItoF(boost::uint32_t v);
 	bool modbusSetNone(unsigned command);

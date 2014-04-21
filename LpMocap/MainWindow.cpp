@@ -550,11 +550,11 @@ ModelTreeLink::ModelTreeLink(int link_id, std::string link_name, int sensor_id, 
 	addChild(new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Sensor ID: %1").arg(sensor_id_))));
 	addChild(new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Parent link: %1").arg(parent_link_id_))));
 		
-	coronalAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Sagittal plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(0))));
+	/* coronalAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Sagittal plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(0))));
 	
 	transverseAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Transverse plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(1))));
 	
-	sagittalAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Coronal plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(2))));
+	sagittalAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Coronal plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(2)))); */
 	
 	addChild(coronalAngleItem);		
 	addChild(transverseAngleItem);
@@ -563,7 +563,7 @@ ModelTreeLink::ModelTreeLink(int link_id, std::string link_name, int sensor_id, 
 	
 void ModelTreeLink::update(void) 
 {
-	coronalAngleItem->setText(0, QString("Sagittal plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(0)));
+	/* coronalAngleItem->setText(0, QString("Sagittal plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(0)));
 	transverseAngleItem->setText(0, QString("Transverse plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(1)));
-	sagittalAngleItem->setText(0, QString("Coronal plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(2)));
+	sagittalAngleItem->setText(0, QString("Coronal plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(2))); */
 }

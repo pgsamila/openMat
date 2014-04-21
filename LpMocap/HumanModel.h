@@ -86,7 +86,7 @@ public:
 	void setOffsetAll(void);
 	void ReadC3dFile(const char* fn);
 
-	Eigen::Vector3f getProjectionAngle(int channel_id);
+	void getProjectionAngle(int channel_id, const Eigen::Quaternion<double> &rot);
 	 
 	const char*	GetChannelName	(int pChannel) { return mChannel[pChannel].mName;			}
 	int		GetChannelParent	(int pChannel) { return mChannel[pChannel].mParentChannel;	}

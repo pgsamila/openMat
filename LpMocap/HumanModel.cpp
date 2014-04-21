@@ -649,56 +649,44 @@ void HumanModel::rotateBodyPart(BodyPart bodyPart, const Quaternion<double> &rot
 	// 
 	// Rotation
 	// 
-	mChannel[bodyPart].mCurrentRot = rot ;
+	/* mChannel[bodyPart].mCurrentRot = rot ;
 	double lR[3];
 	quaternion2Euler( mChannel[bodyPart].mCurrentRot*mChannel[bodyPart].mDefaultRot, lR );
 	mChannel[bodyPart].mR[0] = r2d(lR[2]);
 	mChannel[bodyPart].mR[1] = r2d(lR[1]);
-	mChannel[bodyPart].mR[2] = r2d(lR[0]);
+	mChannel[bodyPart].mR[2] = r2d(lR[0]); */
+	
+	getProjectionAngle(bodyPart, mChannel[bodyPart].mCurrentRot*mChannel[bodyPart].mDefaultRot);
 }
 
-Eigen::Vector3f HumanModel::getProjectionAngle(int channel_id)
+void HumanModel::getProjectionAngle(int channel_id, const Quaternion<double> &rot)
 {
-	Eigen::Vector3f xv;
-	Eigen::Vector3f yv;
-	Eigen::Vector3f zv;	
-	Eigen::Vector3f pv;
-	Eigen::Vector3f v;
-	Eigen::Vector3f a;
-	Eigen::Matrix3f rotation_matrix;
-	Eigen::Vector3f vector_1;
-	Eigen::Vector3f vector_2;
-	Eigen::Vector3f dir_vector;
+	Eigen::Vector3d xv;
+	Eigen::Vector3d yv;
+	Eigen::Vector3d zv;	
+	Eigen::Vector3d pv;
+	Eigen::Vector3d v;
+	Eigen::Matrix3d rm;
 	
 	float r2d = 57.2958f;	
-	
-	int channel_parent = GetChannelParent(channel_id);
-	if (channel_parent == -1) return Eigen::Vector3f(0, 0, 0);
-	
-	vector_1 << (float) GetDataTX(channel_parent), (float) GetDataTY(channel_parent), (float) GetDataTZ(channel_parent);
-	vector_2 << (float) GetDataTX(channel_id), (float) GetDataTY(channel_id), (float) GetDataTZ(channel_id);
-
-	dir_vector = vector_2 - vector_1;
-				
-	rotation_matrix = Eigen::Quaternionf().setFromTwoVectors(Eigen::Vector3f(1.0f, 0, 0), dir_vector);	
-	
+		
 	xv << 1, 0, 0;
 	yv << 0, 1, 0;
 	zv << 0, 0, 1;
 	
-	v = rotation_matrix * yv;	
-	pv = v - (v.dot(xv) * xv);
-	a(0) = acos(pv.dot(zv)) * r2d;
-
-	v = rotation_matrix * zv;		
-	pv = v - (v.dot(yv) * yv);
-	a(1) = acos(pv.dot(xv)) * r2d;
-
-	v = rotation_matrix * yv;		
-	pv = v - (v.dot(zv) * zv);
-	a(2) = acos(pv.dot(xv)) * r2d;
+	rm = rot.toRotationMatrix();
 	
-	return a;
+	v = rm * yv;
+	pv = v - (v.dot(xv) * xv);
+	mChannel[channel_id].mR[0] = acos(pv.dot(zv)) * r2d;
+
+	v = rm * zv;
+	pv = v - (v.dot(yv) * yv);
+	mChannel[channel_id].mR[1] = acos(pv.dot(xv)) * r2d;
+
+	v = rm * yv;
+	pv = v - (v.dot(zv) * zv);
+	mChannel[channel_id].mR[2] = acos(pv.dot(xv)) * r2d;
 }
 
 bool HumanModel::StartSaveBinaryMotionData(const char* fn)
@@ -904,12 +892,12 @@ bool HumanModel::UpdateModelFromData(void)
 	if ((latest_timestamp - play_time_offset) > single_motion_data.timestamp) {
 		for (int i = 0; i < mChannelCount; i++) {
 			mChannel[i].mT[0] = mChannel[i].mT[0] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[0] * avg_alpha;
-			mChannel[i].mT[1] = mChannel[i].mT[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[1] * avg_alpha;		
-			mChannel[i].mT[2] = mChannel[i].mT[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[2] * avg_alpha;		
+			mChannel[i].mT[1] = mChannel[i].mT[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[1] * avg_alpha;
+			mChannel[i].mT[2] = mChannel[i].mT[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[2] * avg_alpha;	
 			
 			mChannel[i].mR[0] = mChannel[i].mR[0] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[0] * avg_alpha;
-			mChannel[i].mR[1] = mChannel[i].mR[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[1] * avg_alpha;		
-			mChannel[i].mR[2] = mChannel[i].mR[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[2] * avg_alpha;		
+			mChannel[i].mR[1] = mChannel[i].mR[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[1] * avg_alpha;
+			mChannel[i].mR[2] = mChannel[i].mR[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[2] * avg_alpha;
 		}
 		++playback_pointer;
 	}
@@ -957,7 +945,7 @@ bool HumanModel::ExportToCsvFile(const char* fn)
 	csv_file_handle << "RIGHTHAND TX, TY, TZ, RX, RY, RZ, ";
 	csv_file_handle << "RIGHTHANDTHUMB TX, TY, TZ, RX, RY, RZ, ";
 	csv_file_handle << "R_THUMB_END TX, TY, TZ, RX, RY, RZ, ";
-	csv_file_handle << "R_WRIST_END TX, TY, TZ, RX, RY, RZ, " << std::endl;
+	csv_file_handle << "R_WRIST_END TX, TY, TZ, RX, RY, RZ" << std::endl;
 	
 	for (unsigned int i=0; i<motion_data_list.size(); ++i) {
 		csv_file_handle << motion_data_list[i].timestamp;

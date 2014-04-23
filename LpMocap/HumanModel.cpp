@@ -829,19 +829,22 @@ bool HumanModel::ReadBinaryMotionDataFile(const char* fn)
 			if (ti != tokens.end()) ++ti;
 
 			for (int i = 0; i < mChannelCount; i++) {
-				single_motion_data.mChannel[i].mT[0] = boost::lexical_cast<double>(*ti); 
-				if (ti != tokens.end()) ++ti;
-				single_motion_data.mChannel[i].mT[1] = boost::lexical_cast<double>(*ti);
-				if (ti != tokens.end()) ++ti;
-				single_motion_data.mChannel[i].mT[2] = boost::lexical_cast<double>(*ti);
-				if (ti != tokens.end()) ++ti;
-			
-				single_motion_data.mChannel[i].planeRotation[0] = boost::lexical_cast<double>(*ti);
-				if (ti != tokens.end()) ++ti;
-				single_motion_data.mChannel[i].planeRotation[1] = boost::lexical_cast<double>(*ti);
-				if (ti != tokens.end()) ++ti;
-				single_motion_data.mChannel[i].planeRotation[2] = boost::lexical_cast<double>(*ti);
-				if (ti != tokens.end()) ++ti;
+				try {
+					single_motion_data.mChannel[i].mT[0] = boost::lexical_cast<double>(*ti); 
+					if (ti != tokens.end()) ++ti;
+					single_motion_data.mChannel[i].mT[1] = boost::lexical_cast<double>(*ti);
+					if (ti != tokens.end()) ++ti;
+					single_motion_data.mChannel[i].mT[2] = boost::lexical_cast<double>(*ti);
+					if (ti != tokens.end()) ++ti;
+					single_motion_data.mChannel[i].planeRotation[0] = boost::lexical_cast<double>(*ti);
+					if (ti != tokens.end()) ++ti;
+					single_motion_data.mChannel[i].planeRotation[1] = boost::lexical_cast<double>(*ti);
+					if (ti != tokens.end()) ++ti;
+					single_motion_data.mChannel[i].planeRotation[2] = boost::lexical_cast<double>(*ti);
+					if (ti != tokens.end()) ++ti;
+				} catch (boost::bad_lexical_cast) {
+					// ignore
+				}
 			}
 
 			motion_data_list.push_back(single_motion_data);

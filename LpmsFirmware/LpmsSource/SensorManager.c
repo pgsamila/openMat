@@ -389,7 +389,7 @@ void processSensorData(void)
   
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
-		quaternionMult(&q, &qOffset, &qAfterOffset);
+		quaternionMult(&qOffset, &q, &qAfterOffset);
 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
                 if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);

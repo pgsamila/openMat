@@ -41,9 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	exitButton(new QPushButton("Exit")),
 	connectButton(new QPushButton("Connect OpenMAT network")),
 	mp(new MotionPlayer()),
-	hmWin(new HumanModelWindow(&hm)),
-	graphWin(new GraphWindow()),
-	humanModelTree(new QTreeWidget())
+	graphWin(new GraphWindow())
 {	
 	int i = 0;
 
@@ -118,6 +116,17 @@ MainWindow::MainWindow(QWidget *parent) :
 	QWidget *w = new QWidget();
 	w->setLayout(v);
 	w->setFixedWidth(200);
+	
+	QVBoxLayout *recordVideoLayout = new QVBoxLayout();
+	recordVideoCombo = new QComboBox();
+	recordVideoCombo->addItem("On");
+	recordVideoCombo->addItem("Off");
+	recordVideoLayout->addWidget(new QLabel("Record video:"));
+	recordVideoLayout->addWidget(recordVideoCombo);
+	QWidget *recordVideoWidget = new QWidget();
+	recordVideoWidget->setLayout(recordVideoLayout);
+	recordVideoWidget->setFixedWidth(100);
+	connect(recordVideoCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));
 
 	QVBoxLayout *rec_time_layout = new QVBoxLayout();
 	rec_time_layout->addWidget(new QLabel("Recording time:"), i, 0);
@@ -130,6 +139,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	toolbar->addAction(start_rec_action);
 	toolbar->addWidget(w);
 	toolbar->addAction(browse_rec_file_action);
+	toolbar->addWidget(recordVideoWidget);	
 	toolbar->addWidget(rec_time_widget);
 	// toolbar->addAction(export_csv_action);
 	
@@ -177,11 +187,76 @@ MainWindow::MainWindow(QWidget *parent) :
 	
 	measurementMenu->addSeparator();
 	measurementMenu->addAction(reset_offset_action);
+	
+	QVBoxLayout *upperBodyLayout = new QVBoxLayout();
+	upperBodyCombo = new QComboBox();
+	upperBodyCombo->addItem("Show");
+	upperBodyCombo->addItem("Hide");
+	upperBodyLayout->addWidget(new QLabel("Upper body:"));
+	upperBodyLayout->addWidget(upperBodyCombo);
+	QWidget *upperBodyWidget = new QWidget();
+	upperBodyWidget->setLayout(upperBodyLayout);
+	upperBodyWidget->setFixedWidth(100);
+	connect(upperBodyCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));	
+	
+	QVBoxLayout *translationLayout = new QVBoxLayout();
+	translationCombo = new QComboBox();
+	translationCombo->addItem("On");
+	translationCombo->addItem("Off");
+	translationLayout->addWidget(new QLabel("Track translation:"));
+	translationLayout->addWidget(translationCombo);
+	QWidget *translationWidget = new QWidget();
+	translationWidget->setLayout(translationLayout);
+	translationWidget->setFixedWidth(100);
+	connect(translationCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));	
+	
+	QVBoxLayout *viewPointLayout = new QVBoxLayout();
+	viewPointCombo = new QComboBox();
+	viewPointCombo->addItem("Free");
+	viewPointCombo->addItem("Locked to side");
+	viewPointCombo->addItem("Locked to front");
+	viewPointCombo->addItem("Locked to top");	
+	viewPointLayout->addWidget(new QLabel("3D viewpoint:"));
+	viewPointLayout->addWidget(viewPointCombo);
+	QWidget *viewPointWidget = new QWidget();
+	viewPointWidget->setLayout(viewPointLayout);
+	viewPointWidget->setFixedWidth(100);
+	connect(viewPointCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));		
 
-	QVBoxLayout *v0 = new QVBoxLayout();
-	v0->addWidget(humanModelTree);
+	toolbar->addWidget(translationWidget);
+	toolbar->addWidget(upperBodyWidget);
+	toolbar->addWidget(viewPointWidget);
+	toolbar->addSeparator();	
+
+	graphWin = new GraphWindow();
+	videoWin = new VideoWindow();
+
+	hm = new HumanModel(videoWin);
+
+	createModelTree();
+	
+	hmWin = new HumanModelWindow(hm);	
 		
-	setCentralWidget(hmWin);
+	QSplitter *graphSplit = new QSplitter(Qt::Horizontal);
+	QSplitter *mainSplit = new QSplitter(Qt::Vertical);
+	QSplitter *modelWinHSplit = new QSplitter(Qt::Horizontal);
+		
+	modelWinHSplit->addWidget(videoWin);
+	modelWinHSplit->addWidget(hmWin);
+	modelWinHSplit->setStretchFactor(0, 3);
+	modelWinHSplit->setStretchFactor(1, 4);
+	
+	graphSplit->addWidget(&linkList /* humanModelTree */);
+	graphSplit->addWidget(graphWin);
+	graphSplit->setStretchFactor(0, 2);
+	graphSplit->setStretchFactor(1, 7);	
+	
+	mainSplit->addWidget(modelWinHSplit);
+	mainSplit->addWidget(graphSplit);
+	mainSplit->setStretchFactor(0, 3);
+	mainSplit->setStretchFactor(1, 3);		
+
+	setCentralWidget(mainSplit);
 	
 	connect(connect_action, SIGNAL(triggered()), this, SLOT(ConnectServer()));
 	connect(disconnect_action, SIGNAL(triggered()), this, SLOT(DisconnectServer()));
@@ -196,9 +271,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	connect(reset_offset_action, SIGNAL(triggered()), this, SLOT(ResetOffset()));
 	
-	hm.loadHumanModel("HumanModel.xml");
-
-	createModelTree();
+	connect(&linkList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(listItemChanged(QListWidgetItem*, QListWidgetItem*)));
+	
+	hm->loadHumanModel("HumanModel.xml");
 	
 	hmWin->updateGL();
 
@@ -217,6 +292,41 @@ MainWindow::MainWindow(QWidget *parent) :
 	global_timer.reset();
 
 	showMaximized();
+}
+
+void MainWindow::updateSettings(int)
+{
+	switch (upperBodyCombo->currentIndex()) {
+	case 0:
+		hmWin->isShowUpperBody = true;
+	break;
+	
+	case 1:
+		hmWin->isShowUpperBody = false;
+	break;
+	}
+	
+	switch (recordVideoCombo->currentIndex()) {
+	case 0:
+		isRecordVideo = true;
+	break;
+	
+	case 1:
+		isRecordVideo = false;
+	break;
+	}
+	
+	switch (translationCombo->currentIndex()) {
+	case 0:
+		hm->enableHorizontalMovement = true;
+	break;
+	
+	case 1:
+		hm->enableHorizontalMovement = false;
+	break;
+	}
+	
+	hmWin->viewPointIndex = viewPointCombo->currentIndex();
 }
 
 void MainWindow::ConnectServer(void)
@@ -266,15 +376,23 @@ void MainWindow::BrowseRecordFile(void)
 
 void MainWindow::StartRecording(void)
 {
-	if (hm.IsRecordOn() == false) {
+	if (hm->IsRecordOn() == false) {
 		if (record_file_set == true) {
 			printf("[LpMocap] Starting recording to %s\n", record_filename.c_str());
-			hm.StartSaveBinaryMotionData(record_filename.c_str());
+			hm->StartSaveBinaryMotionData(record_filename.c_str());
+			
+			int dot_index = record_filename.find_last_of(".");
+			string name_wo_extension = record_filename.substr(0, dot_index);
+
+			if (isRecordVideo) videoWin->openVideoFileForWriting((name_wo_extension + ".avi").c_str());
+			
 			start_rec_action->setText("Stop recording");
 			start_rec_action->setIcon(QIcon("./icons/x_alt_32x32.png"));
 		}
 	} else {
-		hm.StopSaveBinaryMotionData();
+		hm->StopSaveBinaryMotionData();
+		videoWin->stopRecording();
+		
 		start_rec_action->setIcon(QIcon("./icons/layers_32x28.png"));
 		start_rec_action->setText("Record data");
 	}
@@ -295,15 +413,23 @@ void MainWindow::ExportToCsv(void)
 
 void MainWindow::StartPlayback(void)
 {
-	if (hm.IsPlaybackOn() == false) {
+	if (hm->IsPlaybackOn() == false) {
 		if (playback_file_set == true) {
 			printf("[LpMocap] Starting playback of %s\n", playback_filename.c_str());
-			hm.StartPlayBinaryMotionData(playback_filename.c_str(), true);
+			
+			hm->StartPlayBinaryMotionData(playback_filename.c_str(), true);
+
+			int dot_index = playback_filename.find_last_of(".");
+			string name_wo_extension = playback_filename.substr(0, dot_index);			
+			videoWin->openVideoFileForReading((name_wo_extension + ".avi").c_str());
+			
 			start_playback_action->setText("Stop playback");
 			start_playback_action->setIcon(QIcon("./icons/x_alt_32x32.png"));
 		}
 	} else {
-		hm.StopPlayBinaryMotionData();
+		hm->StopPlayBinaryMotionData();
+		videoWin->stopPlayback();
+		
 		start_playback_action->setIcon(QIcon("./icons/play_24x32.png"));
 		start_playback_action->setText("Playback data");
 	}
@@ -311,7 +437,7 @@ void MainWindow::StartPlayback(void)
 
 void MainWindow::ExportAviOfPlayback(void)
 {
-	if (hm.IsPlaybackOn() == true) StartPlayback();
+	if (hm->IsPlaybackOn() == true) StartPlayback();
 	
 	if (playback_file_set == true) {
 		printf("[LpMocap] Starting playback of %s\n", playback_filename.c_str());
@@ -320,7 +446,7 @@ void MainWindow::ExportAviOfPlayback(void)
 		string name_wo_extension = playback_filename.substr(0, dot_index);
 		
 		if (hmWin->OpenVideoFile((name_wo_extension + ".avi").c_str()) == true) {
-			hm.StartPlayBinaryMotionData(playback_filename.c_str(), false);
+			hm->StartPlayBinaryMotionData(playback_filename.c_str(), false);
 		}
 	} else {
 		printf("[LpMocap] Playback file not set\n");
@@ -342,9 +468,9 @@ void MainWindow::BrowsePlaybackFile(void)
 		playback_file_edit->setText(qfilename.toStdString().c_str());
 		playback_file_set = true;
 		if (file_extension == "c3d") {
-			hm.ReadC3dFile(qfilename.toStdString().c_str());		
+			hm->ReadC3dFile(qfilename.toStdString().c_str());		
 		} else {
-			hm.ReadBinaryMotionDataFile(qfilename.toStdString().c_str());
+			hm->ReadBinaryMotionDataFile(qfilename.toStdString().c_str());
 		}
 	}
 }
@@ -354,30 +480,11 @@ void MainWindow::ResetOffset(void)
 	initializeSensors();
 }
 
-void MainWindow::createModelTree(void)
-{
-	humanModelTree->setColumnCount(1);
-	humanModelTree->setHeaderLabel(QString("Human model"));	
-	QTreeWidgetItem *modelRoot = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Model root")));	
-	humanModelTree->insertTopLevelItem(0, modelRoot);
-
-	for (int i=0; i < hm.mChannelCount; ++i) {
-		ModelTreeLink *newLink = new ModelTreeLink(i, std::string(hm.GetChannelName(i)), i, hm.GetChannelParent(i), &hm);
-		newLink->setText(0, hm.GetChannelName(i));
-
-		modelRoot->addChild(newLink);
-		treeLinkList.push_back(newLink);		
-	}
-
-	modelRoot->setExpanded(true);
-	humanModelTree->setCurrentItem((QTreeWidgetItem *)treeLinkList[0]);
-}
-
 QString MainWindow::getPlaybackTimestamp(void)
 {
 	QString ts;
 	
-	double t = hm.GetPlaybackTime();
+	double t = hm->GetPlaybackTime();
 	long h = (long) t / 1000.0 / 60.0 / 60.0;
 	long m = (long)		(t 	- ((double) h * 60.0 * 60.0 * 1000.0)) / 1000.0 / 60.0;
 	long s = 			(t 	- ((double) h * 60.0 * 60.0 * 1000.0) 
@@ -394,7 +501,7 @@ QString MainWindow::getRecordingTimestamp(void)
 {
 	QString ts;
 	
-	double t = hm.GetRecordTime();
+	double t = hm->GetRecordTime();
 	long h = (long) t / 1000.0 / 60.0 / 60.0;
 	long m = (long)		(t 	- ((double) h * 60.0 * 60.0 * 1000.0)) / 1000.0 / 60.0;
 	long s = 			(t 	- ((double) h * 60.0 * 60.0 * 1000.0) 
@@ -417,24 +524,29 @@ void MainWindow::UpdateWindow(void)
 		current_timestamp += (float) global_timer.measure() / 1000.0f;
 		global_timer.reset();
 
-		hm.UpdateTimestamp(current_timestamp);
+		hm->UpdateTimestamp(current_timestamp);
 
 		updateImuData();
 
-		hm.UpdateSaveBinaryMotionData();
-		hm.UpdateModelFromData();		
+		hm->UpdateSaveBinaryMotionData();
+		hm->UpdateModelFromData();		
 		
 		play_time_label->setText(getPlaybackTimestamp());
 		record_time_label->setText(getRecordingTimestamp());
 		
 		hmWin->updateGL();	
 		
-		if (hmWin->IsVideoRecordingStarted() == true && hm.IsPlaybackOn() == true) {
+		if (hmWin->IsVideoRecordingStarted() == true && hm->IsPlaybackOn() == true) {
 			hmWin->WriteVideoFrame();
-		} if (hmWin->IsVideoRecordingStarted() == true && hm.IsPlaybackOn() == false) {
+		} if (hmWin->IsVideoRecordingStarted() == true && hm->IsPlaybackOn() == false) {
 			hmWin->CloseVideoFile();
 			printf("[LpMocap] Rendering finished\n");
 		}
+
+		
+		graphWin->plotData(hm->GetDataPRX(selectedLink->link_id_), hm->GetDataPRY(selectedLink->link_id_), hm->GetDataPRZ(selectedLink->link_id_));
+		
+		videoWin->updateVideo();
 	}
 }
 	
@@ -444,41 +556,37 @@ MainWindow::~MainWindow()
 
 void MainWindow::initializeSensors(void)
 {
-	hm.resetOffsetAll();
+	hm->resetOffsetAll();
 
 	if (mSocket) {
 		for (int i=0; i != mLpmsRotData.ChannelCount; ++i){
 			int sensorId = mLpmsRotData.mChannel[i].id;
 			
-			if (sensorId > 0 && sensorId <= hm.mChannelCount){
-				hm.setOffset(sensorId-1, mLpmsRotData.mChannel[i].q);			 
+			if (sensorId > 0 && sensorId <= hm->mChannelCount){
+				hm->setOffset(sensorId-1, mLpmsRotData.mChannel[i].q);			 
 			} 
 		}
 	}
 	
-	hm.resetSkeleton();
-}
-
-void MainWindow::treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
-{
+	hm->resetSkeleton();
 }
 
 void MainWindow::updateImuData(void)
 {
-	if (mSocket && hm.IsPlaybackOn() == false) {					
+	if (mSocket && hm->IsPlaybackOn() == false) {					
 		int tmpByteCount = 0;
 
 		mTCP.Write(mSocket, (char*)&LPMB_GET_DATA, sizeof(LPMB_GET_DATA));
 		
 		if (mTCP.ReadBlocking(mSocket, (char*)&mLpmsRotData, sizeof(mLpmsRotData), &tmpByteCount)) {
 			for (int i=0; i != mLpmsRotData.ChannelCount; ++i) {
-				hm.decodeSensorRotation(mLpmsRotData.mChannel[i].id, mLpmsRotData.mChannel[i].q);
+				hm->decodeSensorRotation(mLpmsRotData.mChannel[i].id, mLpmsRotData.mChannel[i].q);
 			}
 		} else {
 			return;
 		}
 		
-		hm.updateBodyData();
+		hm->updateBodyData();
 
 		set_offset_all = false;
 	}
@@ -507,63 +615,30 @@ void MainWindow::exitWindow(void)
 	}
 }
 
-ModelTreeJoint::ModelTreeJoint(Joint* j, int iJoint) :
-	itemJoint(j),
-	QTreeWidgetItem((QTreeWidget*) 0, 
-		QStringList(QString("Joint %1").arg(iJoint))) 
-{	
-	addChild(new QTreeWidgetItem((QTreeWidget*) 0, 
-		QStringList(QString("Name: ")+QString(j->name.c_str()))));	
-	
-	addChild(new QTreeWidgetItem((QTreeWidget*) 0, 
-		QStringList(QString("Length: %1").arg(j->length))));				
-	
-	addChild(new QTreeWidgetItem((QTreeWidget*) 0, 
-		QStringList(QString("Connector: ")+QString(j->connector->name.c_str()))));								
-	
-	positionItem = new QTreeWidgetItem((QTreeWidget*) 0, 
-		QStringList(QString("Position X: %1, Y: %2, Z: %3")
-			.arg(j->globalSysV(0), 0, 'g', 2)
-			.arg(j->globalSysV(1), 0, 'g', 2)
-			.arg(j->globalSysV(2), 0, 'g', 2)));		
-	
-	addChild(positionItem);
-}
-	
-void ModelTreeJoint::update(void) 
+void MainWindow::createModelTree(void)
 {
-	positionItem->setText(0, QString("Position X: %1, Y: %2, Z: %3")
-		.arg(itemJoint->globalSysV(0), 0, 'g', 2)
-		.arg(itemJoint->globalSysV(1), 0, 'g', 2)
-		.arg(itemJoint->globalSysV(2), 0, 'g', 2));
+	for (int i=0; i < hm->mChannelCount; ++i) {
+		ModelListLink *newLink = new ModelListLink(i, std::string(hm->GetChannelName(i)), i, hm->GetChannelParent(i), hm);
+		newLink->setText(hm->GetChannelName(i));
+		newLink->setCheckState(Qt::Checked);
+
+		linkList.insertItem(0, newLink);
+	}	
+	
+	selectedLink = (ModelListLink *) linkList.item(0);
+	linkList.setCurrentItem(selectedLink);
 }
 
-ModelTreeLink::ModelTreeLink(int link_id, std::string link_name, int sensor_id, int parent_link_id, HumanModel *human_model) : 
-	QTreeWidgetItem((QTreeWidget*) 0), 
+void MainWindow::listItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+	selectedLink = (ModelListLink *) linkList.currentItem();
+}
+
+ModelListLink::ModelListLink(int link_id, std::string link_name, int sensor_id, int parent_link_id, HumanModel *human_model) : 
 	link_id_(link_id),
 	link_name_(link_name),
 	sensor_id_(sensor_id),
 	parent_link_id_(parent_link_id),
 	human_model_(human_model)
 {
-	addChild(new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Link ID: %1").arg(link_id_))));
-	addChild(new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Sensor ID: %1").arg(sensor_id_))));
-	addChild(new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Parent link: %1").arg(parent_link_id_))));
-		
-	coronalAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Sagittal plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(0))));
-	
-	transverseAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Transverse plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(1))));
-	
-	sagittalAngleItem = new QTreeWidgetItem((QTreeWidget*) 0, QStringList(QString("Coronal plane angle: %1").arg(human_model->getProjectionAngle(link_id_)(2))));
-	
-	addChild(coronalAngleItem);		
-	addChild(transverseAngleItem);
-	addChild(sagittalAngleItem);
-}
-	
-void ModelTreeLink::update(void) 
-{
-	coronalAngleItem->setText(0, QString("Sagittal plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(0)));
-	transverseAngleItem->setText(0, QString("Transverse plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(1)));
-	sagittalAngleItem->setText(0, QString("Coronal plane angle: %1").arg(human_model_->getProjectionAngle(link_id_)(2)));
 }

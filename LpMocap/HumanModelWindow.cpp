@@ -183,7 +183,7 @@ void HumanModelWindow::paintGL()
 
 bool HumanModelWindow::checkIfUpperBody(int i)
 {
-	// if (i > hm->BP_R_TOE_END) return true;
+	if (i > hm->BP_R_TOE_END) return true;
 
 	return false;
 }
@@ -206,7 +206,7 @@ void HumanModelWindow::drawHumanModel(void)
 	
 	for (int i=0; i < hm->mChannelCount; ++i) {
 		for (int j=0; j < hm->mChannelCount; ++j) {
-			if (hm->GetChannelParent(j) == i && joint_done[j] == false && !checkIfUpperBody(j)) {
+			if (hm->GetChannelParent(j) == i && joint_done[j] == false && (!checkIfUpperBody(j) || isShowUpperBody)) {
 				joint_done[j] = true;
 				
 				Eigen::Matrix3f rotation_matrix;

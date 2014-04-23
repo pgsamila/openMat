@@ -34,43 +34,26 @@
 GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
 {
 	sagittal_legend = new QwtLegend();
-	transverse_legend = new QwtLegend();
-	coronal_legend = new QwtLegend();
-
-	sagittal_graph = new Plot("", "Samples", "Sagittal angle (degree)", 
-		"X", "", "", "",
-		0, 150, 1, 0.0f, 180.0f, sagittal_legend);
-
-	transverse_graph = new Plot("", "Samples", "Transverse angle (degree)", 
-		"Y", "", "", "",
-		0, 150, 1, 0.0f, 180.0f, transverse_legend);
-
-	coronal_graph = new Plot("", "Samples", "Coronal angle (degree)", 
-		"Z", "", "", "",
-		0, 150, 1, 0.0f, 180.0f, coronal_legend);
+	sagittal_graph = new Plot("title", "Samples", "Angle (degree)", "S", "T", "C", "", 0, 150, 3, 0.0f, 180.0f, sagittal_legend, this);
 
 	QVBoxLayout *graphLayout = new QVBoxLayout();
 
 	graphLayout->addWidget(sagittal_graph);
-	graphLayout->addWidget(transverse_graph);	
-	graphLayout->addWidget(coronal_graph);
 
 	this->setLayout(graphLayout);
 	
     setAutoFillBackground(true);
-    setPalette(QPalette(QColor(255, 255, 255)));	
+    setPalette(QPalette(QColor(255, 255, 255)));
 }
 
-void GraphWindow::plotData(Eigen::Vector3f planeAngle)
+void GraphWindow::plotData(double x, double y, double z)
 {	
-	sagittal_graph->addData(0, planeAngle(0));
-	transverse_graph->addData(1, planeAngle(1));
-	coronal_graph->addData(2, planeAngle(2));
+	sagittal_graph->addData(0, x);
+	sagittal_graph->addData(1, y);
+	sagittal_graph->addData(2, z);
 }
 
 void GraphWindow::clearGraphs(void)
 {
-	sagittal_graph->clearData();
-	transverse_graph->clearData();
-	coronal_graph->clearData();
+	// sagittal_graph->clearData();
 }

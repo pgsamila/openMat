@@ -14,8 +14,7 @@
 using namespace std;
 using Eigen::Quaternion;
 
-HumanModel::HumanModel():
-	 enableHorizontalMovement(false)
+HumanModel::HumanModel(VideoWindow* videoWin)
 {
 	lHead		= 18;
 	lNeck		= 12;
@@ -46,6 +45,9 @@ HumanModel::HumanModel():
 	is_playing_data = false;
 	is_saving_data = false;
 	loop_is_on_ = false;
+	enableHorizontalMovement = true;
+	
+	this->videoWin = videoWin;
 }
 
 void HumanModel::resetSkeleton()
@@ -649,12 +651,12 @@ void HumanModel::rotateBodyPart(BodyPart bodyPart, const Quaternion<double> &rot
 	// 
 	// Rotation
 	// 
-	/* mChannel[bodyPart].mCurrentRot = rot ;
+	mChannel[bodyPart].mCurrentRot = rot ;
 	double lR[3];
 	quaternion2Euler( mChannel[bodyPart].mCurrentRot*mChannel[bodyPart].mDefaultRot, lR );
 	mChannel[bodyPart].mR[0] = r2d(lR[2]);
 	mChannel[bodyPart].mR[1] = r2d(lR[1]);
-	mChannel[bodyPart].mR[2] = r2d(lR[0]); */
+	mChannel[bodyPart].mR[2] = r2d(lR[0]);
 	
 	getProjectionAngle(bodyPart, mChannel[bodyPart].mCurrentRot*mChannel[bodyPart].mDefaultRot);
 }
@@ -678,15 +680,15 @@ void HumanModel::getProjectionAngle(int channel_id, const Quaternion<double> &ro
 	
 	v = rm * yv;
 	pv = v - (v.dot(xv) * xv);
-	mChannel[channel_id].mR[0] = acos(pv.dot(zv)) * r2d;
+	mChannel[channel_id].planeRotation[0] = acos(pv.dot(zv)) * r2d;
 
 	v = rm * zv;
 	pv = v - (v.dot(yv) * yv);
-	mChannel[channel_id].mR[1] = acos(pv.dot(xv)) * r2d;
+	mChannel[channel_id].planeRotation[1] = acos(pv.dot(xv)) * r2d;
 
 	v = rm * yv;
 	pv = v - (v.dot(zv) * zv);
-	mChannel[channel_id].mR[2] = acos(pv.dot(xv)) * r2d;
+	mChannel[channel_id].planeRotation[2] = acos(pv.dot(xv)) * r2d;
 }
 
 bool HumanModel::StartSaveBinaryMotionData(const char* fn)
@@ -746,7 +748,7 @@ void HumanModel::UpdateSaveBinaryMotionData(void)
 		save_data_handle << (latest_timestamp - record_time_offset);
 		for (int i = 0; i < mChannelCount; i++) {
 			save_data_handle << "," << GetDataTX(i) << "," << GetDataTY(i) << "," << GetDataTZ(i) 
-				<< "," << GetDataRX(i) << "," << GetDataRY(i) << "," << GetDataRZ(i);
+				<< "," << GetDataPRX(i) << "," << GetDataPRY(i) << "," << GetDataPRZ(i);
 		}
 
 		save_data_handle << std::endl;
@@ -834,11 +836,11 @@ bool HumanModel::ReadBinaryMotionDataFile(const char* fn)
 				single_motion_data.mChannel[i].mT[2] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
 			
-				// single_motion_data.mChannel[i].mR[0] = boost::lexical_cast<double>(*ti);
+				single_motion_data.mChannel[i].planeRotation[0] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
-				// single_motion_data.mChannel[i].mR[1] = boost::lexical_cast<double>(*ti);
+				single_motion_data.mChannel[i].planeRotation[1] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
-				// single_motion_data.mChannel[i].mR[2] = boost::lexical_cast<double>(*ti);
+				single_motion_data.mChannel[i].planeRotation[2] = boost::lexical_cast<double>(*ti);
 				if (ti != tokens.end()) ++ti;
 			}
 
@@ -871,7 +873,7 @@ void HumanModel::StopPlayBinaryMotionData(void)
 bool HumanModel::UpdateModelFromData(void) 
 {
 	MotionData single_motion_data;
-	double avg_alpha = 1.0;
+	double avg_alpha = 0.5;
 
 	if (is_playing_data == false) return false;
 
@@ -887,6 +889,7 @@ bool HumanModel::UpdateModelFromData(void)
 		single_motion_data = motion_data_list[playback_pointer];
 		first_play_step = true;
 		if (loop_is_on_ == false) is_playing_data = false;
+		videoWin->resetPlayback();
 	}
 		
 	if ((latest_timestamp - play_time_offset) > single_motion_data.timestamp) {
@@ -895,10 +898,13 @@ bool HumanModel::UpdateModelFromData(void)
 			mChannel[i].mT[1] = mChannel[i].mT[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[1] * avg_alpha;
 			mChannel[i].mT[2] = mChannel[i].mT[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mT[2] * avg_alpha;	
 			
-			mChannel[i].mR[0] = mChannel[i].mR[0] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[0] * avg_alpha;
-			mChannel[i].mR[1] = mChannel[i].mR[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[1] * avg_alpha;
-			mChannel[i].mR[2] = mChannel[i].mR[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].mR[2] * avg_alpha;
+			mChannel[i].planeRotation[0] = mChannel[i].planeRotation[0] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].planeRotation[0] * avg_alpha;
+			mChannel[i].planeRotation[1] = mChannel[i].planeRotation[1] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].planeRotation[1] * avg_alpha;
+			mChannel[i].planeRotation[2] = mChannel[i].planeRotation[2] * (1.0 - avg_alpha) + single_motion_data.mChannel[i].planeRotation[2] * avg_alpha;
 		}
+		
+		videoWin->updatePlayback();
+		
 		++playback_pointer;
 	}
 

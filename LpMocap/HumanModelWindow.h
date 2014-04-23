@@ -109,7 +109,9 @@ public:
 	float glob_translate_z;
 	cv::VideoWriter *video_writer;
 	QImage current_frame_buffer_;
-	bool video_recording_started_;	
+	bool video_recording_started_;
+	int viewPointIndex;
+	bool isShowUpperBody;
 };
 
 #endif

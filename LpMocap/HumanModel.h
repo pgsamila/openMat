@@ -17,6 +17,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "C3dParser.h"
+#include "VideoWindow.h"
 
 class HumanModel 
 {
@@ -46,12 +47,14 @@ public:
 	static const int idCalfRight		= 10;
 	static const int idFootLeft			= 11;
 	static const int idFootRight		= 12;
-
+	
+	bool enableHorizontalMovement;
+	
 public:
 	static const int mChannelCount		= 30;
 
 public:
-	HumanModel();
+	HumanModel(VideoWindow* videoWin);
 	void resetSkeleton();
 	void reloadSkeleton() { setupSkeleton(); }
 	bool loadHumanModel(const std::string& xmlFile);
@@ -96,6 +99,9 @@ public:
 	double	GetDataRX			(int pChannel) { return mChannel[pChannel].mR[0];			}
 	double	GetDataRY			(int pChannel) { return mChannel[pChannel].mR[1];			}
 	double	GetDataRZ			(int pChannel) { return mChannel[pChannel].mR[2];			}
+	double	GetDataPRX			(int pChannel) { return mChannel[pChannel].planeRotation[0];			}
+	double	GetDataPRY			(int pChannel) { return mChannel[pChannel].planeRotation[1];			}
+	double	GetDataPRZ			(int pChannel) { return mChannel[pChannel].planeRotation[2];			}	
 
 private:
 	bool is_saving_data;
@@ -124,8 +130,6 @@ private:
 	double lFoot;
 	double lToe;
 	
-	bool enableHorizontalMovement;
-	
 	struct SkeletonNodeInfo
 	{
 		const char*	mName;
@@ -135,6 +139,7 @@ private:
 		Eigen::Vector3d mT;		// PosX,Y,Z
 		Eigen::Vector3d mOldT;	// PosX,Y,Z for horizontal movement use
 		Eigen::Vector3d mR;		// RotX,Y,Z
+		Eigen::Vector3d planeRotation;
 		Eigen::Quaternion<double> mDefaultRot;
 		Eigen::Quaternion<double> mCurrentRot;
 	};
@@ -159,6 +164,8 @@ private:
 	double r2d(double r) { return r*57.29577951; }
 
 	void setupSkeleton(); 
+	
+	VideoWindow* videoWin;
 };
 
 #endif

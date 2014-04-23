@@ -36,6 +36,8 @@
 #include <QMainWindow>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QListWidgetItem>
+#include <QListWidget>
 #include <QLabel>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -61,28 +63,14 @@ using namespace std;
 #include "LinkJoint.h"
 #include "LPMSRotationData.h"
 #include "MotionBuilderSocketInterface.h"
+#include "VideoWindow.h"
 
 #include <winsock.h>
 
 #include <boost/shared_ptr.hpp>
 using namespace boost;
 
-// Representation of human model joint in QT tree
-class ModelTreeJoint : public QTreeWidgetItem 
-{
-public:
-	QTreeWidgetItem* positionItem;
-	Joint *itemJoint;
-
-	// Constructor
-	ModelTreeJoint(Joint* j, int iJoint);
-	
-	// Updates displayed joint information
-	void update(void);
-};
-
-// Representation of human model link in QT tree
-class ModelTreeLink : public QTreeWidgetItem 
+class ModelListLink : public QListWidgetItem 
 {
 public:
 	std::string link_name_;
@@ -95,28 +83,19 @@ public:
 	QTreeWidgetItem* transverseAngleItem;
 	QTreeWidgetItem* sagittalAngleItem;
 
-	// Constructor
-	ModelTreeLink(int link_id, std::string link_name, int sensor_id, int parent_link_id, HumanModel *human_model);
+	ModelListLink(int link_id, std::string link_name, int sensor_id, int parent_link_id, HumanModel *human_model);
 	
-	// Updates displayed link information
 	void update(void);
 };
 
-// Main window
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
 public:
-	// Constructor
 	MainWindow(QWidget *parent = 0);
-	
-	// Retrieves current playback timestamp
 	QString getPlaybackTimestamp(void);
-	
-	// Retrieves current recording timestamp
 	QString getRecordingTimestamp(void);
-	
-	// Destructor
 	~MainWindow();
 	
 	void closeConnection(void);
@@ -127,7 +106,7 @@ public slots:
 	void updateImuData(void);	
 	void UpdateWindow(void);
 	void exitWindow(void);
-	void treeItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+	void listItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 	void UpdateHumanModel(void);
 	void createModelTree(void);
 	void ConnectServer(void);
@@ -139,11 +118,12 @@ public slots:
 	void BrowsePlaybackFile(void);
 	void ResetOffset(void);
 	void ExportAviOfPlayback(void);
+	void updateSettings(int i);
 
 public:
 	QToolBar *toolbar;
 	QMenu* viewMenu;
-	HumanModel hm;
+	HumanModel *hm;
 	MotionPlayer *mp;
 	HumanModelWindow *hmWin;
 	GraphWindow *graphWin;
@@ -154,15 +134,12 @@ public:
 	QPushButton *pauseButton;
 	QPushButton *resetButton;
 	QPushButton *exitButton;	
-	QTreeWidget *humanModelTree;
-	vector<ModelTreeJoint*> treeJointList;
-	vector<ModelTreeLink*> treeLinkList;		
+	ModelListLink* selectedLink;
 	QLabel *record_time_label;
 	QLabel *play_time_label;
 	QLabel *record_file_label;
 	QLabel *play_file_label;
 	QLineEdit *record_file_edit;
-	Link* selectedLink;
 	QLineEdit *ip_address_edit;
 	QLineEdit *server_port_edit;
 	QLabel *connection_status_label;
@@ -195,6 +172,13 @@ public:
 	string playback_filename;
 	MicroMeasure global_timer;
 	bool real_time_thread_stopped;
+	VideoWindow *videoWin;	
+	QComboBox *upperBodyCombo;
+	QComboBox *recordVideoCombo;
+	QComboBox *translationCombo;
+	QComboBox *viewPointCombo;
+	bool isRecordVideo;
+	QListWidget linkList;
 };
 
 #endif

@@ -31,8 +31,8 @@ cmake_policy(SET CMP0015 NEW)
 cmake_policy(SET CMP0020 NEW)
 endif(COMMAND cmake_policy)
 
-set(CMAKE_BUILD_TYPE "Release")
-# set(CMAKE_BUILD_TYPE "Debug")
+# set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 
 set(USE_JUST_THREAD CACHE BOOL "")
 
@@ -106,6 +106,7 @@ set(sources
 	pugixml.cpp
 	MotionBuilderCommunication.cpp
 	C3dParser.cpp
+	VideoWindow.cpp
 #	HumanBodySimulation.rc
 )
   
@@ -120,6 +121,7 @@ set(headers
 	MotionBuilderCommunication.h
 	MotionBuilderSocketInterface.h	
 	LinkJoint.h
+	VideoWindow.h	
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

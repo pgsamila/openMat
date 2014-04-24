@@ -889,6 +889,8 @@ void LpmsSensor::update(void)
 			configData.getParameter(PRM_CAN_MAPPING, pa);
 			bt->setCanMapping(pa);
 			LOGV("[LpmsSensor] Set CAN bus mapping\n");
+			for (int i=0; i<16; ++i) printf("%d ", pa[i]);
+			printf("\n");
 			state = STATE_SET_CAN_HEARTBEAT;
 		}
 	break;

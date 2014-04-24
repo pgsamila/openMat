@@ -67,7 +67,7 @@ public:
 	int selectedData;
 	std::string firmwareVersion;
 	int lowPassFilter;
-	int canMapping[16];
+	int canMapping[32];
 	int canHeartbeat;
 	int heavemotionEnabled;
 	int gaitTrackingEnabled;

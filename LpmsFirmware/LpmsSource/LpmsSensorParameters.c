@@ -191,7 +191,7 @@ void updateCanMapping(void)
 {                                
 	int i;
 
-	for (i=0; i<8; ++i) {
+	for (i=0; i<16; ++i) {
 		calibrationData.canMapping[i] = gReg.data[LPMS_CAN_MAPPING+i];
 	}
 }

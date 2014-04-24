@@ -288,6 +288,9 @@ bool CalibrationData::setParameter(int parameterIndex, int *parameter)
 		for (int i=0; i<16; ++i) {
 			canMapping[i] = parameter[i];
 		}
+		printf("CD Set CAN mapping: ");
+		for (int i=0; i<16; ++i) printf("%d ", canMapping[i]);
+		printf("\n");
 	break;
 	}
 	
@@ -406,6 +409,10 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 		for (int i=0; i<16; ++i) {
 			parameter[i] = canMapping[i];
 		}
+		
+			printf("CD Get CAN mapping: ");
+		for (int i=0; i<16; ++i) printf("%d ", canMapping[i]);
+		printf("\n");
 	break;
 	
 	case PRM_LIN_ACC_COMP_MODE:

@@ -134,7 +134,7 @@ void print_raw_packet(struct ble_header *hdr, unsigned char *data)
 void output(uint8 len1, uint8* data1, uint16 len2, uint8* data2)
 {
 	if (uart_tx(len1, data1) || uart_tx(len2, data2)) {
-		printf("[BleEngine] Writing to serial port failed\n");
+		// printf("[BleEngine] Writing to serial port failed\n");
 	}
 }
 

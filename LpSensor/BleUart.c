@@ -111,7 +111,7 @@ int uart_open(const char *port)
 	serial_handle = CreateFileA(str, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (serial_handle == INVALID_HANDLE_VALUE) {
-		printf("[BleUart] BLE dongle failed to open\n");
+		// printf("[BleUart] BLE dongle failed to open\n");
 		
 		return -1;
 	}
@@ -141,7 +141,7 @@ int uart_tx(int len,unsigned char *data)
 		r = WriteFile (serial_handle, data, len, &written, NULL);
 
 		if (!r) {
-			printf("[BleUart] Write failed\n");
+			// printf("[BleUart] Write failed\n");
 			return -1;
 		}
 

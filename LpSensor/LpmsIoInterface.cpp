@@ -11,6 +11,7 @@ INIT_LOGGING
 LpmsIoInterface::LpmsIoInterface(CalibrationData *configData) :
 	configData(configData)
 {
+	firmwarePageSize = FIRMWARE_PACKET_LENGTH;
 }
 
 bool LpmsIoInterface::connect(std::string deviceId) 
@@ -414,11 +415,6 @@ bool LpmsIoInterface::parseFieldMapData(void)
 	return true;
 }
 
-/* void LpmsIoInterface::resetTimestamp(void)
-{
-	timestampOffset = currentTimestamp;
-} */
-
 bool LpmsIoInterface::parseSensorData(void)
 {
 	unsigned o;
@@ -584,8 +580,7 @@ bool LpmsIoInterface::parseSensorData(void)
 		}
 	}
 	
-	// if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
-	imuData.timeStamp = currentTimestamp; // - timestampOffset;	
+	imuData.timeStamp = currentTimestamp;
 	
 	if (imuDataQueue.size() < 64) {
 		imuDataQueue.push(imuData);
@@ -1112,6 +1107,12 @@ bool LpmsIoInterface::startUploadFirmware(std::string fn)
 	long long l;
 	unsigned long r;
 	
+	if (configData->deviceType == DEVICE_LPMS_BLE) {
+		firmwarePageSize = FIRMWARE_PACKET_LENGTH_LPMS_BLE;
+	} else {
+		firmwarePageSize = FIRMWARE_PACKET_LENGTH;
+	}
+	
 	if (ifs.is_open() == true) ifs.close();
 
 	ifs.clear();	
@@ -1132,8 +1133,8 @@ bool LpmsIoInterface::startUploadFirmware(std::string fn)
 	ifs.seekg(0, ios::beg);
 	LOGV("[LpmsIoInterface] Firmware filesize: %d\n", l);
 	
-	firmwarePages = l / FIRMWARE_PACKET_LENGTH;
-	r = l % FIRMWARE_PACKET_LENGTH;
+	firmwarePages = l / firmwarePageSize;
+	r = l % firmwarePageSize;
 	
 	if (r > 0) ++firmwarePages;
 	
@@ -1216,10 +1217,10 @@ bool LpmsIoInterface::handleFirmwareFrame(void)
 	LOGV("[LpmsIoInterface] Firmware sending packet %d\n", pCount);
 	++pCount;
 
-	for (unsigned i=0; i < FIRMWARE_PACKET_LENGTH; i++) cBuffer[i] = (char) 0xff;
-	ifs.read((char *)cBuffer, FIRMWARE_PACKET_LENGTH);
-	cLength = FIRMWARE_PACKET_LENGTH;
-	sendModbusData(imuId, UPDATE_FIRMWARE, FIRMWARE_PACKET_LENGTH, (unsigned char *)cBuffer);
+	for (unsigned i=0; i < firmwarePageSize; i++) cBuffer[i] = (char) 0xff;
+	ifs.read((char *)cBuffer, firmwarePageSize);
+	cLength = firmwarePageSize;
+	sendModbusData(imuId, UPDATE_FIRMWARE, firmwarePageSize, (unsigned char *)cBuffer);
 
 	ackTimeout = 0;
 	ackTimer.reset();
@@ -1237,6 +1238,12 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 {
 	bool f = false;
 
+	if (configData->deviceType == DEVICE_LPMS_BLE) {
+		firmwarePageSize = FIRMWARE_PACKET_LENGTH_LPMS_BLE;
+	} else {
+		firmwarePageSize = FIRMWARE_PACKET_LENGTH;
+	}	
+	
 	if (ifs.is_open() == true) ifs.close();
 	
 	ifs.clear();	
@@ -1255,8 +1262,8 @@ bool LpmsIoInterface::startUploadIap(std::string fn)
 	ifs.seekg(0, ios::beg);
 	LOGV("[LpmsIoInterface] IAP filesize: %d\n", l);
 	
-	firmwarePages = l / FIRMWARE_PACKET_LENGTH;
-	unsigned long r = (long) (l % FIRMWARE_PACKET_LENGTH);
+	firmwarePages = l / firmwarePageSize;
+	unsigned long r = (long) (l % firmwarePageSize);
 	
 	if (r > 0) ++firmwarePages;
 	
@@ -1314,10 +1321,10 @@ bool LpmsIoInterface::handleIAPFrame(void)
 	LOGV("[LpmsIoInterface] Sending IAP packet %d\n", pCount);
 	++pCount;		
 	
-	for (unsigned i=0; i < FIRMWARE_PACKET_LENGTH; i++) cBuffer[i] = (char) 0xff;
-	ifs.read((char *)cBuffer, FIRMWARE_PACKET_LENGTH);
-	cLength = FIRMWARE_PACKET_LENGTH;
-	sendModbusData(imuId, UPDATE_IAP, FIRMWARE_PACKET_LENGTH, (unsigned char *)cBuffer);
+	for (unsigned i=0; i < firmwarePageSize; i++) cBuffer[i] = (char) 0xff;
+	ifs.read((char *)cBuffer, firmwarePageSize);
+	cLength = firmwarePageSize;
+	sendModbusData(imuId, UPDATE_IAP, firmwarePageSize, (unsigned char *)cBuffer);
 	
 	ackTimeout = 0;
 	dataTimeout = 0;

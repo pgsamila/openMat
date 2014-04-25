@@ -50,14 +50,14 @@
 #define PACKET_SKIP_ZERO 10
 
 // Firmware packet length
-// #define FIRMWARE_PACKET_LENGTH 256
-#define FIRMWARE_PACKET_LENGTH 128
+#define FIRMWARE_PACKET_LENGTH 256
+#define FIRMWARE_PACKET_LENGTH_LPMS_BLE 128
 
 // State machine definitions
 #define IDLE_STATE -1
 #define ACK_MAX_TIME 3000000
 #define MAX_UPLOAD_TIME 20000000
-#define MAX_COMMAND_RESEND 10
+#define MAX_COMMAND_RESEND 3
 
 // Float to unsigned integer conversion structure
 typedef union _float2uint {
@@ -368,6 +368,7 @@ protected:
 	int resendI;
 	int cLength;
 	bool isOpen;
+	int firmwarePageSize;
 };	
 
 #endif

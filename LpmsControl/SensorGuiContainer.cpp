@@ -1712,10 +1712,6 @@ void SensorGuiContainer::updateCanMapping(int i)
 	a[15] = canTpdo8BCombo->currentIndex();
 
 	sensor->setConfigurationPrm(PRM_CAN_MAPPING, a);
-	
-	printf("CAN mapping: ");
-	for (int i=0; i<16; ++i) printf("%d ", a[i]);
-	printf("\n");
 }
 
 void SensorGuiContainer::updateCanHeartbeat(int i)

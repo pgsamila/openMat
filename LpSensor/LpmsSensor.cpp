@@ -482,39 +482,13 @@ void LpmsSensor::update(void)
 				}
 			break;
 			} 
-		} /* else if (lpmsTimer.measure() > 5000000) {
-			lpmsTimer.reset();
-			
-			if (bt->deviceStarted() == true && retrialsCommandMode < 10) {
-				bt->setCommandMode();	
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GOTO_COMMAND_MODE;				
-				LOGV("[LpmsSensor] Timeout! Re-trying command mode..\n");
-				++retrialsCommandMode;
-			} else if (retrialsConnect < 1) {
-				lpmsTimer.reset();
-				bt->close();
-				state = STATE_CONNECT;
-				LOGV("[LpmsSensor] Timeout! Re-connecting..\n");
-				++retrialsConnect;
-			} else {
-				setConnectionStatus(SENSOR_CONNECTION_FAILED);
-				state = STATE_NONE;	
-			}
-		} */
+		}
 		
 		assertConnected();
 	break;	
 		
 	// Main measurement state
-	case STATE_MEASURE:	
-		/* if (bt->deviceStarted() == false) {	
-			bt->close();
-			state = STATE_CONNECT;
-			LOGV("[LpmsSensor] Re-connecting..\n");	
-			break;
-		} */
-
+	case STATE_MEASURE:
 		assertConnected();		
 		
 		// LOGV("[LpmsSensor] STATE MEASURE");	
@@ -888,9 +862,6 @@ void LpmsSensor::update(void)
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_CAN_MAPPING, pa);
 			bt->setCanMapping(pa);
-			LOGV("[LpmsSensor] Set CAN bus mapping\n");
-			for (int i=0; i<16; ++i) printf("%d ", pa[i]);
-			printf("\n");
 			state = STATE_SET_CAN_HEARTBEAT;
 		}
 	break;

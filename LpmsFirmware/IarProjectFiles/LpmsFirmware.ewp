@@ -2377,7 +2377,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCU-Mk2Rs232-Firmware.bin</state>
+          <state>LpmsCU-Mk2Rs232-Firmware-115200.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -3279,7 +3279,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCU-Mk2Ttl-Firmware.bin</state>
+          <state>LpmsCU-Mk2Ttl-Firmware-115200.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

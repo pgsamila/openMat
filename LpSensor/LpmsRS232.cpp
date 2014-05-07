@@ -63,7 +63,7 @@ bool LpmsRS232::connect(string deviceId)
 		return false;
     }
 
-	rs232Config.BaudRate = 921600;
+	rs232Config.BaudRate = 115200;
 	rs232Config.StopBits = ONESTOPBIT;  
 	rs232Config.Parity = NOPARITY;     
 	rs232Config.ByteSize = 8;  

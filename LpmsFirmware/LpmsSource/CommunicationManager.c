@@ -42,7 +42,7 @@ void initCommunicationManager(void)
 
 #ifdef USE_CANBUS_INTERFACE	
 #ifdef USE_RS232_INTERFACE	
-	rs232PortInit(USART_BAUDRATE_921600);
+	rs232PortInit(RS232_BAUDRATE_115200); // USART_BAUDRATE_921600);
 	connectedInterface = RS232_CONNECTED;
 
 	serialPortInit(USART_BAUDRATE_921600);
@@ -50,7 +50,7 @@ void initCommunicationManager(void)
 #ifdef LPMS_BLE	
 	ttlUsartPortInit(USART_BAUDRATE_9600);
 #else
-	ttlUsartPortInit(USART_BAUDRATE_921600);
+	ttlUsartPortInit(USART_BAUDRATE_115200); // USART_BAUDRATE_921600);
 #endif
 	
 	connectedInterface = TTL_UART_CONNECTED;

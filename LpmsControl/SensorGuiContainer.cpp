@@ -53,7 +53,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 
 	l = 0;
 	gl->addWidget(new QLabel("IMU ID:"), l, 0); ++l;	
-	gl->addWidget(new QLabel("Sampling rate:"), l, 0); ++l;
+	gl->addWidget(new QLabel("Transmission rate:"), l, 0); ++l;
 	
 	l = 0;
 	gl1->addWidget(new QLabel("GYR range:"), l, 0); ++l;

@@ -1167,7 +1167,17 @@ void LpmsSensor::update(void)
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
 		}
-	break;	
+	break;
+	
+	case STATE_ARM_TIMESTAMP_RESET:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
+			bt->armTimestampReset(LPMS_ARM_TIMESTAMP_RESET);
+			LOGV("[LpmsSensor] Arm timestamp reset\n");
+			
+			state = STATE_GET_SETTINGS;
+			getConfigState = C_STATE_GET_CONFIG;
+		}
+	break;
 	
 	// Error state.
 	case STATE_NONE:
@@ -1631,6 +1641,13 @@ long LpmsSensor::getStreamFrequency(void)
 	return dataSavePeriod;
 }
 
+void LpmsSensor::armTimestampReset(void)
+{	
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
+
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_ARM_TIMESTAMP_RESET;
+}
 
 
 /***********************************************************************

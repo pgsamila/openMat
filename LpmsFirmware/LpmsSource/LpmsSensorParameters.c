@@ -8,6 +8,7 @@
 
 LpmsReg gReg;
 uint8_t isSelfTestOn = 0;
+uint8_t isTimestampResetArmed = 0;
 
 extern LpFilterParameters lpFilterParam;
 extern LpmsCalibrationData calibrationData;
@@ -29,6 +30,7 @@ extern float pressure;
 extern float temperature;
 extern float heaveY;
 extern float measurementTime;
+extern uint16_t ledFlashTime;
 
 uint8_t writeRegisters(void)
 {
@@ -1355,3 +1357,32 @@ uint8_t setLpBusDataMode(uint8_t* data)
 
 	return 1;
 }
+
+void armHardwareTimestampReset(uint8_t* data)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+	uint32_t v = getUi32t(data);
+
+	switch(v) {
+	case LPMS_ARM_TIMESTAMP_RESET:
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+		GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+		GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+		isTimestampResetArmed = 1;
+		ledFlashTime = 2000;
+	break;
+
+	case LPMS_DISARM_TIMESTAMP_RESET:
+		GPIO_PinAFConfig(GPIOA, GPIO_Pin_13, GPIO_AF_SWJ);
+
+		isTimestampResetArmed = 0;
+		ledFlashTime = 5000;
+	break;
+	}
+}
+	

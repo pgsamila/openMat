@@ -208,6 +208,7 @@ public:
 	
 	virtual float getCurrentSyncOffset(void) = 0;
 	
+	virtual void armTimestampReset(void) = 0;
 }; 
 
 #ifdef _WIN32

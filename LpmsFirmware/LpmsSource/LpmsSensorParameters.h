@@ -316,5 +316,6 @@ void setDefaultAlignBias(void);
 void setDefaultAlignMatrix(void);
 void setTimestamp(uint8_t* data);
 uint8_t setLpBusDataMode(uint8_t* data);
+void armHardwareTimestampReset(uint8_t* data);
 
 #endif

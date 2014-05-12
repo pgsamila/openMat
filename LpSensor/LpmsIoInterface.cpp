@@ -1217,7 +1217,7 @@ bool LpmsIoInterface::handleFirmwareFrame(void)
 	LOGV("[LpmsIoInterface] Firmware sending packet %d\n", pCount);
 	++pCount;
 
-	for (unsigned i=0; i < firmwarePageSize; i++) cBuffer[i] = (char) 0xff;
+	for (int i=0; i < firmwarePageSize; i++) cBuffer[i] = (char) 0xff;
 	ifs.read((char *)cBuffer, firmwarePageSize);
 	cLength = firmwarePageSize;
 	sendModbusData(imuId, UPDATE_FIRMWARE, firmwarePageSize, (unsigned char *)cBuffer);
@@ -1321,7 +1321,7 @@ bool LpmsIoInterface::handleIAPFrame(void)
 	LOGV("[LpmsIoInterface] Sending IAP packet %d\n", pCount);
 	++pCount;		
 	
-	for (unsigned i=0; i < firmwarePageSize; i++) cBuffer[i] = (char) 0xff;
+	for (int i=0; i < firmwarePageSize; i++) cBuffer[i] = (char) 0xff;
 	ifs.read((char *)cBuffer, firmwarePageSize);
 	cLength = firmwarePageSize;
 	sendModbusData(imuId, UPDATE_IAP, firmwarePageSize, (unsigned char *)cBuffer);
@@ -2152,4 +2152,10 @@ bool LpmsIoInterface::setOrientationOffset(void)
 bool LpmsIoInterface::resetOrientationOffset(void)
 {
 	return modbusSetNone(RESET_ORIENTATION_OFFSET);
+}
+
+bool LpmsIoInterface::armTimestampReset(int v)
+{
+	printf("Arm timestamp reset\n");
+	return modbusSetInt32(SET_ARM_HARDWARE_TIMESTAMP_RESET, v);
 }

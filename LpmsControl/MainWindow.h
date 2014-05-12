@@ -305,6 +305,8 @@ public slots:
 	
 	void updateSensorSyncSetting(int i);
 	
+	void armTimestampReset(void);
+	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	

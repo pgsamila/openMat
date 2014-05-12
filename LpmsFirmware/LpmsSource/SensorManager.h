@@ -202,4 +202,6 @@ void setDataSendingFlag(void);
 
 int isDataSendingSet(void);
 
+void checkTimestampReset(void);
+
 #endif

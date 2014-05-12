@@ -86,6 +86,8 @@ extern uint8_t isSelfTestOn;
 extern LpmsReg gReg;
 extern uint8_t isFirmwareUpdating;
 extern uint8_t connectedInterface;
+extern uint8_t isTimestampResetArmed;
+extern uint16_t ledFlashTime;
 
 void initSensorManager(void)
 {
@@ -340,6 +342,18 @@ void updateSensorData(void)
 	}
 
 	checkGyrCal();
+
+	checkTimestampReset();
+}
+
+void checkTimestampReset(void)
+{
+	if (isTimestampResetArmed == 1) {
+		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_13) == RESET) {
+			measurementTime = 0;
+			ledFlashTime = 5000;
+		}
+	}
 }
 
 void processSensorData(void)

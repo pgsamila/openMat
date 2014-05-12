@@ -151,6 +151,7 @@
 #define STATE_SET_MAG_ALIGNMENT_BIAS 69
 #define STATE_SET_MAG_REFERENCE 70
 #define STATE_RESET_ORIENTATION_OFFSET 71
+#define STATE_ARM_TIMESTAMP_RESET 72
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -261,6 +262,7 @@ public:
 	void syncTimestamp(float t);
 	void setCurrentSyncOffset(float t);
 	float getCurrentSyncOffset(void);
+	void armTimestampReset(void);
 	
 private:
 	void checkResetReference(void);

@@ -860,6 +860,11 @@ void parsePacket(void)
 				sendAck();
 			break;
 
+			case SET_ARM_HARDWARE_TIMESTAMP_RESET:
+				armHardwareTimestampReset(packet.data);
+				sendAck();
+			break;
+
 			case SET_LIN_ACC_COMP_MODE:
 				setLinAccCompMode(packet.data);
 				sendAck();

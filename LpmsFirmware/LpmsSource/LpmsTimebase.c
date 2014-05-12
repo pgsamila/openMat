@@ -9,6 +9,7 @@
 uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
+uint16_t ledFlashTime = 5000;
 
 void initTimebase(void)
 {
@@ -145,7 +146,7 @@ uint8_t isStreamModeTransferReady(void)
 
 void updateAliveLed(void)
 {
-	if (TIM_GetCounter(LED_FLASHING_TIMER) > 5000) {
+	if (TIM_GetCounter(LED_FLASHING_TIMER) > ledFlashTime) {
 		GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN)));
 		TIM_SetCounter(LED_FLASHING_TIMER, 0);
 	}

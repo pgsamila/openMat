@@ -285,6 +285,7 @@ public:
 	bool setOrientationOffset(void);
 	bool resetOrientationOffset(void);
 	bool setTimestamp(float v);
+	bool armTimestampReset(int v);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);

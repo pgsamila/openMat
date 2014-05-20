@@ -41,12 +41,16 @@ LpMatrix3x3f bCalGetSoftIronMatrix(void)
 {
 	LpMatrix3x3f m;
 	
+	matZero3x3(&m);
+	
 	return m;
 }
 
 LpVector3f bCalGetHardIronOffset(void)
 {
 	LpVector3f v;
+	
+	vectZero3x1(&v);
 	
 	return v;
 }
@@ -77,5 +81,11 @@ LpVector3f bCalCorrect(LpVector3f b)
 {
 	LpVector3f v;
 	
+	vectZero3x1(&v);
+	
 	return v;
+}
+
+void getReferenceYZ(LpVector3f b, LpVector3f a, LpVector3f *r, float *inc)
+{
 }

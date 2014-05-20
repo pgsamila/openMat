@@ -26,3 +26,7 @@ void maCalCalcMisalignment(float **misalignmentAData,
 	int nEquations) 
 {
 }
+
+void maCalCalcMagMisalignment(float **misalignmentAData, float **misalignmentBData, LpMatrix3x3f *R, LpVector3f *t, int nEquations)
+{
+}

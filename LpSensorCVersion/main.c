@@ -1,5 +1,5 @@
 /***********************************************************************
-** Copyright (C) 2012 LP-Research
+** Copyright (C) LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
 **
@@ -29,87 +29,44 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifndef IMU_DATA
-#define IMU_DATA
+#include <stdio.h>
 
-typedef struct _HeaveMotionModule {
-	float yHeave;
-} HeaveMotionModule;
+#include "LpmsSensorC.h"
 
-typedef struct _GaitTrackingModule {
-	float zGait;
-	float zAmplitude;
-	float yGait;
-	float yAmplitude;
-	float frequency;
-	float velocity;
-	float symmetry;
-	int zDirection;
-	int yDirection;
-} GaitTrackingModule;
+#define USE_LPMS_SENSOR
 
-// Structure for data exchange inside the OpenMAT network.
-typedef struct _ImuData {
-	// The OpenMAT ID of the sensor that created this data structure.
-	int openMatId;
+int main()
+{
+	int i;
+	CalibrationData cd;
 
-	// Calibrated accelerometer sensor data.
-	float a[3];
+#ifdef USE_LPMS_SENSOR
+	lpmsSensorInit(DEVICE_LPMS_RS232, "COM141");
 	
-	// Calibrated gyroscope sensor data.
-	float g[3];
+	while (1) {
+		lpmsSensorPollData();
+		lpmsSensorUpdate();
+	}
+#else
+	lpmsInitIoInterface(&cd);
+	lpmsConnect("COM141");
 	
-	// Calibrated magnetometer sensor data.
-	float b[3];
+	printf("[main] Set command mode.\n");
+	lpmsSetCommandMode();
+	while (lpmsIsWaitForData() == 1 || lpmsIsWaitForAck() == 1) lpmsSensorPollData();
 	
-	// Angular velocity data.
-	float w[3];
+	printf("[main] Get config.\n");
+	lpmsGetConfig();
+	while (lpmsIsWaitForData() == 1 || lpmsIsWaitForAck() == 1) lpmsSensorPollData();
 	
-	// Euler angle data.
-	float r[3];
+	printf("[main] Set stream mode.\n");
+	lpmsSetStreamMode();
+	while (lpmsIsWaitForData() == 1 || lpmsIsWaitForAck() == 1) lpmsSensorPollData();
 	
-	// Quaternion orientation data.
-	float q[4];
-
-	// Orientation data as rotation matrix without offset.
-	float rotationM[9];
-	
-	// Orientation data as rotation matrix after zeroing.
-	float rotOffsetM[9];
-	
-	// Raw accelerometer sensor data.
-	float aRaw[3];
-	
-	// Raw gyroscope sensor data.
-	float gRaw[3];
-	
-	// Raw magnetometer sensor data.
-	float bRaw[3];
-	
-	// Barometric pressure.
-	float pressure;
-	
-	// Index of the data frame.
-	int frameCount;
-		
-	// Linear acceleration x, y and z.
-	float linAcc[3];
-	
-	// Gyroscope temperature.
-	float gTemp;
-	
-	// Altitude.
-	float altitude;
-	
-	// Temperature.
-	float temperature;
-		
-	// Sampling time of the data.
-	float timeStamp;
-	
-	HeaveMotionModule hm;
-	GaitTrackingModule gm;
-	
-} ImuData;
-
+	while (1) {
+		lpmsSensorPollData();
+	}
 #endif
+	
+    return 0;
+} 

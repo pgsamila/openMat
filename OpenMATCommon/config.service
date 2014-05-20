@@ -1,3 +1,0 @@
-DemoIceStorm.Transient=1
-DemoIceStorm.TopicManager.Endpoints=tcp -p 9999
-DemoIceStorm.Publish.Endpoints=tcp -p 10000

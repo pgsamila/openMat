@@ -303,7 +303,7 @@ bool LpmsIoInterface::fromBuffer(std::vector<unsigned char> data, float *x, floa
 		v[i] = 0;
 		for (int j=3; j>=0; --j) {
 			v[i] = v[i] * 256;
-			v[i] += (long) data[i*4+j];
+			v[i] += (boost::uint32_t /* long */) data[i*4+j];
 		}
 	}
 

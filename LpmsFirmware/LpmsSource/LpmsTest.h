@@ -30,7 +30,7 @@ void setTestParameters(LpVector3f magOff,
 	LpVector3f gyrError);
 
 // Generates simulated gyroscope, accelerometer and magnetometer data.
-void horizontalRotationNext(LpVector3i *g, LpVector3i *a, LpVector3i *b, 
+void horizontalRotationNext(LpVector3f *g, LpVector3f *a, LpVector3f *b, 
 	LpVector3f gyrGain, LpVector3f accGain, LpVector3f magGain,
 	LpVector3f aRef, LpVector3f bRef, 
 	float t);

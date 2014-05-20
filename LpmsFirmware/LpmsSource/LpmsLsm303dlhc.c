@@ -66,81 +66,6 @@ void waitMagI2CStandbyState(void)
 	I2C_ClearFlag(ACC_MAG_I2C_PORT, I2C_FLAG_AF);
 }
 
-/* void writeAccRegister(uint8_t address, uint8_t data)
-{
-	I2C_GenerateSTART (ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(ACC_MAG_I2C_PORT, ACC_I2C_ADDRESS, I2C_Direction_Transmitter);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_SendData(ACC_MAG_I2C_PORT, address);
-	while(! I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_SendData(ACC_MAG_I2C_PORT, data);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_GenerateSTOP(ACC_MAG_I2C_PORT, ENABLE);
-}
-
-void writeMagRegister(uint8_t address, uint8_t data)
-{
-	I2C_GenerateSTART (ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) );
-	I2C_Send7bitAddress(ACC_MAG_I2C_PORT, MAG_I2C_ADDRESS, I2C_Direction_Transmitter);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_SendData(ACC_MAG_I2C_PORT, address);
-	while(! I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_SendData(ACC_MAG_I2C_PORT, data);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_GenerateSTOP(ACC_MAG_I2C_PORT, ENABLE);
-}
-
-void readAccRegister(uint8_t* pBuffer, uint8_t address)
-{
-	I2C_GenerateSTART(ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(ACC_MAG_I2C_PORT, ACC_I2C_ADDRESS, I2C_Direction_Transmitter);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_Cmd(ACC_MAG_I2C_PORT, ENABLE);
-	I2C_SendData(ACC_MAG_I2C_PORT, address);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_GenerateSTART(ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(ACC_MAG_I2C_PORT, ACC_I2C_ADDRESS, I2C_Direction_Receiver);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
-	I2C_AcknowledgeConfig(ACC_MAG_I2C_PORT, DISABLE);
-	I2C_GenerateSTOP(ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED));
-	*pBuffer = I2C_ReceiveData(ACC_MAG_I2C_PORT);
-	I2C_AcknowledgeConfig(ACC_MAG_I2C_PORT, ENABLE);
-}
-
-void readMagRegister(uint8_t* pBuffer, uint8_t address, uint8_t NumByteToRead)
-{
-	I2C_GenerateSTART(ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(ACC_MAG_I2C_PORT, MAG_I2C_ADDRESS, I2C_Direction_Transmitter);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_Cmd(ACC_MAG_I2C_PORT, ENABLE);
-	I2C_SendData(ACC_MAG_I2C_PORT, address);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_GenerateSTART(ACC_MAG_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(ACC_MAG_I2C_PORT, MAG_I2C_ADDRESS, I2C_Direction_Receiver);
-	while(!I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
-	while (NumByteToRead) {
-		if (NumByteToRead == 1) {
-			I2C_AcknowledgeConfig(ACC_MAG_I2C_PORT, DISABLE);
-			I2C_GenerateSTOP(ACC_MAG_I2C_PORT, ENABLE);
-		}
-
-		if (I2C_CheckEvent(ACC_MAG_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED)) {
-			*pBuffer = I2C_ReceiveData(ACC_MAG_I2C_PORT);
-			pBuffer++;
-			NumByteToRead--;			
-		}
-	}
-	
-	I2C_AcknowledgeConfig(ACC_MAG_I2C_PORT, ENABLE);
-} */
-
 #define MAG_I2C_TIMEOUT 1000
 #define ACC_I2C_TIMEOUT 1000
 
@@ -552,12 +477,11 @@ uint8_t initMag(uint32_t outputDataRate, uint8_t powerMode, uint32_t fullScale)
 	return 1;
 }
 
-uint8_t getAccRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
+uint8_t getAccRawData(float* xAxis, float* yAxis, float* zAxis)
 {
-	uint8_t data_buffer[6];
+	uint8_t data_buffer[6];	
+	int16_t temp;
 	
-	// accI2cRead(LSM303DLHC_OUT_X_L_A, 6, data_buffer);
-
 	readAccRegister(&data_buffer[0], (uint8_t)LSM303DLHC_OUT_X_L_A);      
 	readAccRegister(&data_buffer[1], (uint8_t)LSM303DLHC_OUT_X_H_A);
 	readAccRegister(&data_buffer[2], (uint8_t)LSM303DLHC_OUT_Y_L_A);
@@ -566,13 +490,37 @@ uint8_t getAccRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A);
 
 #ifdef USE_LPMSCU_NEW
-	*xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
+	/* *xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
 	*yAxis = -(int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
-	*zAxis = (int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
+	*zAxis = (int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]); */
+
+	temp = data_buffer[1];
+	temp = (temp << 8) | data_buffer[0];
+	*xAxis = (float) temp;
+
+	temp = data_buffer[3];
+	temp = (temp << 8) | data_buffer[2];
+	*yAxis = -(float) temp;
+
+	temp = data_buffer[5];
+	temp = (temp << 8) | data_buffer[4];
+	*zAxis = (float)  temp;
 #else
-        *xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
+        /* *xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
 	*yAxis = (int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
-	*zAxis = -(int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
+	*zAxis = -(int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]); */
+
+	temp = data_buffer[1];
+	temp = (temp << 8) | data_buffer[0];
+	*xAxis = (float) temp;
+
+	temp = data_buffer[3];
+	temp = (temp << 8) | data_buffer[2];
+	*yAxis = (float) temp;
+
+	temp = data_buffer[5];
+	temp = (temp << 8) | data_buffer[4];
+	*zAxis = -(float)  temp;
 #endif
 	
 	return 1;	
@@ -590,20 +538,45 @@ uint8_t isAccDataReady(void)
 	return 1;
 }	
 
-uint8_t getMagRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
+uint8_t getMagRawData(float* xAxis, float* yAxis, float* zAxis)
 {
 	uint8_t data_buffer[6];
+	int16_t temp;
 		
 	readMagRegister(data_buffer, (uint8_t)LSM303DLHC_OUT_X_H_M, 6);    
         
 #ifdef USE_LPMSCU_NEW
-	*xAxis = -(int16_t)((((int16_t)data_buffer[0]) << 8) + data_buffer[1]);
+	/* *xAxis = -(int16_t)((((int16_t)data_buffer[0]) << 8) + data_buffer[1]);
 	*zAxis = -(int16_t)((((int16_t)data_buffer[2]) << 8) + data_buffer[3]);
-	*yAxis = (int16_t)((((int16_t)data_buffer[4]) << 8) + data_buffer[5]);
+	*yAxis = (int16_t)((((int16_t)data_buffer[4]) << 8) + data_buffer[5]); */
+
+	temp = data_buffer[0];
+	temp = (temp << 8) | data_buffer[1];
+	*xAxis = -(float) temp;
+
+	temp = data_buffer[2];
+	temp = (temp << 8) | data_buffer[3];
+	*zAxis = -(float) temp;
+
+	temp = data_buffer[4];
+	temp = (temp << 8) | data_buffer[5];
+	*yAxis = (float) temp;
 #else
-        *xAxis = -(int16_t)((((int16_t)data_buffer[0]) << 8) + data_buffer[1]);
+        /* *xAxis = -(int16_t)((((int16_t)data_buffer[0]) << 8) + data_buffer[1]);
 	*zAxis = (int16_t)((((int16_t)data_buffer[2]) << 8) + data_buffer[3]);
-	*yAxis = -(int16_t)((((int16_t)data_buffer[4]) << 8) + data_buffer[5]);
+	*yAxis = -(int16_t)((((int16_t)data_buffer[4]) << 8) + data_buffer[5]); */
+
+	temp = data_buffer[0];
+	temp = (temp << 8) | data_buffer[1];
+	*xAxis = -(float) temp;
+
+	temp = data_buffer[2];
+	temp = (temp << 8) | data_buffer[3];
+	*zAxis = (float) temp;
+
+	temp = data_buffer[4];
+	temp = (temp << 8) | data_buffer[5];
+	*yAxis = -(float) temp;
 #endif
 	return 1;
 }

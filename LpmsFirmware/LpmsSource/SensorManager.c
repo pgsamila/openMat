@@ -6,9 +6,9 @@
 
 #include "SensorManager.h"
 
-LpVector3i gyrRawData;
-LpVector3i accRawData;
-LpVector3i magRawData;
+LpVector3f gyrRawData;
+LpVector3f accRawData;
+LpVector3f magRawData;
 int16_t rawTemp;
 float temperature;
 float temperatureBias;
@@ -300,10 +300,10 @@ void updateSensorData(void)
 		calibrationData.gyrOffset.data[1] = 0.0f;
 		calibrationData.gyrOffset.data[2] = 0.0f;
 		
-		horizontalRotationNext(&gyrRawData, &accRawData, &magRawData, 
+		/* horizontalRotationNext(&gyrRawData, &accRawData, &magRawData, 
 			calibrationData.gyrGain, calibrationData.accGain, calibrationData.magGain, 
 			lpFilterParam.accRef, lpFilterParam.magRef,
-			T);
+			T); */
 	} else {
 
 #ifdef ENABLE_WATCHDOG
@@ -346,23 +346,21 @@ void processSensorData(void)
 {     
 	float bInc;
 
-	aRaw.data[0] = (float) accRawData.data[0] * calibrationData.accGain.data[0];
-	aRaw.data[1] = (float) accRawData.data[1] * calibrationData.accGain.data[1];
-	aRaw.data[2] = (float) accRawData.data[2] * calibrationData.accGain.data[2];
+	aRaw.data[0] = accRawData.data[0] * calibrationData.accGain.data[0];
+	aRaw.data[1] = accRawData.data[1] * calibrationData.accGain.data[1];
+	aRaw.data[2] = accRawData.data[2] * calibrationData.accGain.data[2];
 
 	aRawNoLp = aRaw;
 
-	gRaw.data[0] = ((float) gyrRawData.data[0] * calibrationData.gyrGain.data[0] * d2r) - calibrationData.gyrOffset.data[0];
-	gRaw.data[1] = ((float) gyrRawData.data[1] * calibrationData.gyrGain.data[1] * d2r) - calibrationData.gyrOffset.data[1];
-	gRaw.data[2] = ((float) gyrRawData.data[2] * calibrationData.gyrGain.data[2] * d2r) - calibrationData.gyrOffset.data[2];
+	gRaw.data[0] = (gyrRawData.data[0] * calibrationData.gyrGain.data[0] * d2r) - calibrationData.gyrOffset.data[0];
+	gRaw.data[1] = (gyrRawData.data[1] * calibrationData.gyrGain.data[1] * d2r) - calibrationData.gyrOffset.data[1];
+	gRaw.data[2] = (gyrRawData.data[2] * calibrationData.gyrGain.data[2] * d2r) - calibrationData.gyrOffset.data[2];
 
-	tB.data[0] = (float) magRawData.data[0] * calibrationData.magGain.data[0];
-	tB.data[1] = (float) magRawData.data[1] * calibrationData.magGain.data[1];
-	tB.data[2] = (float) magRawData.data[2] * calibrationData.magGain.data[2];
-
-	if (lpFilterParam.useGyrAutoCal == 1) {	  
-		gyrOnlineCal(T);
-	}
+	tB.data[0] = magRawData.data[0] * calibrationData.magGain.data[0];
+	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
+	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
+ 
+	gyrOnlineCal(T);
 
 	applyLowPass();
 
@@ -477,14 +475,6 @@ void accAverage(void)
 		aAvg[i] = 0.9 * aAvg[i] + 0.1 * a.data[i];
 		a.data[i] = aAvg[i];
 	}
-}
-
-void getCurrentData(LpVector3i *cG, LpVector3i *cA, LpVector3i *cB, LpVector4f *cQ)
-{      
-	*cG = gyrRawData;
-	*cA = accRawData;
-	*cB = magRawData;
-	*cQ = q;
 }
 
 void getFilterParam(LpFilterParameters *lpFP)

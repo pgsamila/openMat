@@ -259,10 +259,10 @@ uint8_t initAcc(uint32_t outputDataRate, uint8_t powerMode, uint32_t fullScale);
 uint8_t initMag(uint32_t outputDataRate, uint8_t powerMode, uint32_t fullScale);
 
 // Retrieves accelerometer raw data
-uint8_t getAccRawData(int16_t* xAxis, int16_t* yAxix, int16_t* zAxis);
+uint8_t getAccRawData(float* xAxis, float* yAxix, float* zAxis);
 
 // Retrieves magnetometer raw data
-uint8_t getMagRawData(int16_t* xAxis, int16_t* yAxix, int16_t* zAxis);
+uint8_t getMagRawData(float* xAxis, float* yAxix, float* zAxis);
 
 // Retrieves temeperature data
 uint8_t getAccMagTempData(int16_t* temp);

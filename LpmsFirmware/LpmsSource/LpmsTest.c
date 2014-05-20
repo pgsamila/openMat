@@ -29,7 +29,7 @@ void setTestParameters(LpVector3f magOff,
 	testPrm.gyrError = gyrError;	
 }
 
-void horizontalRotationNext(LpVector3i *g, LpVector3i *a, LpVector3i *b, 
+void horizontalRotationNext(LpVector3f *g, LpVector3f *a, LpVector3f *b, 
 	LpVector3f gyrGain, LpVector3f accGain, LpVector3f magGain,
 	LpVector3f aRef, LpVector3f bRef,
 	float t)
@@ -99,21 +99,21 @@ void horizontalRotationNext(LpVector3i *g, LpVector3i *a, LpVector3i *b,
 	case 0:
 		matVectMult3(&rZ, &aRef, &aF);
 		matVectMult3(&rZ, &bRef, &bF);
-		if (t > 0.0f) g->data[2] = (int16_t) (-(r-rPrev) / t / gyrGain.data[2]);
+		if (t > 0.0f) g->data[2] = -(r-rPrev) / t / gyrGain.data[2];
 		rPrev = r;
 	break;
 
 	case 1:
 		matVectMult3(&rX, &aRef, &aF);
 		matVectMult3(&rX, &bRef, &bF);
-		if (t > 0.0f) g->data[0] = (int16_t) (-(r-rPrev) / t / gyrGain.data[0]);
+		if (t > 0.0f) g->data[0] = -(r-rPrev) / t / gyrGain.data[0];
 		rPrev = r;
 	break;
 
 	case 2:
 		matVectMult3(&rY, &aRef, &aF);
 		matVectMult3(&rY, &bRef, &bF);
-		if (t > 0.0f) g->data[1] = (int16_t) (-(r-rPrev) / t / gyrGain.data[1]);
+		if (t > 0.0f) g->data[1] = -(r-rPrev) / t / gyrGain.data[1];
 		rPrev = r;
 	break;
 	}

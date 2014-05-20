@@ -35,10 +35,10 @@
 #define GYRO_ONLINE_CAL_ITER 			128
 
 // Amplitude threshold for gyrsocope auto-calibration
-#define GYR_CAL_THRES 				45
+#define GYR_CAL_THRES 				2.5f
 
 // Duration of gyroscope auto-calibration sequence
-#define GYR_CAL_TIMEOUT 			7500
+#define GYR_CAL_TIMEOUT 			5000
 
 // Possible durations of manual gyroscope bias clibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)

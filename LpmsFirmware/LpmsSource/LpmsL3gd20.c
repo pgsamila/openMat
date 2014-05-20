@@ -330,15 +330,14 @@ uint8_t isGyrZDataReady(void)
 	return 1;
 }
 
-uint8_t getGyrRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
+uint8_t getGyrRawData(float* xAxis, float* yAxis, float* zAxis)
 {
-	uint8_t data_buffer[6];	
+	uint8_t data_buffer[6];
+	int16_t temp;	
 		
 	waitGyrI2CStandbyState();
 
-	// accI2cRead(L3GD20_OUT_X_L, 6, data_buffer);
-
-	readGyrRegister(&data_buffer[0], (uint8_t)L3GD20_OUT_X_L);      
+	readGyrRegister(&data_buffer[0], (uint8_t)L3GD20_OUT_X_L);     
 	readGyrRegister(&data_buffer[1], (uint8_t)L3GD20_OUT_X_H);
 	readGyrRegister(&data_buffer[2], (uint8_t)L3GD20_OUT_Y_L);
 	readGyrRegister(&data_buffer[3], (uint8_t)L3GD20_OUT_Y_H);
@@ -346,13 +345,29 @@ uint8_t getGyrRawData(int16_t* xAxis, int16_t* yAxis, int16_t* zAxis)
 	readGyrRegister(&data_buffer[5], (uint8_t)L3GD20_OUT_Z_H);
 
 #ifdef USE_LPMSCU_NEW
-	*xAxis = -(int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
-	*yAxis = (int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
-	*zAxis = -(int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
+	temp = data_buffer[1];
+	temp = (temp << 8) | data_buffer[0];
+	*xAxis = -(float) temp;
+
+	temp = data_buffer[3];
+	temp = (temp << 8) | data_buffer[2];
+	*yAxis = (float) temp;
+
+	temp = data_buffer[5];
+	temp = (temp << 8) | data_buffer[4];
+	*zAxis = -(float)  temp;
 #else
-	*xAxis = -(int16_t)((((int16_t)data_buffer[3]) << 8) + data_buffer[2]);
-	*yAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
-	*zAxis = (int16_t)((((int16_t)data_buffer[5]) << 8) + data_buffer[4]);
+	temp = data_buffer[3];
+	temp = (temp << 8) | data_buffer[2];
+	*xAxis = -(float) temp;
+
+	temp = data_buffer[1];
+	temp = (temp << 8) | data_buffer[0];
+	*yAxis = (float) temp;
+
+	temp = data_buffer[5];
+	temp = (temp << 8) | data_buffer[4];
+	*zAxis =(float) temp;
 #endif
 	
 	return 1;	

@@ -156,7 +156,7 @@ uint8_t setGyrFullScale(uint32_t fullScale);
 uint8_t initGyr(uint32_t outputDataRate, uint8_t powerMode, uint32_t fullScale);
 
 // Retrieves gyrsocope data rate
-uint8_t getGyrRawData(int16_t* xAxis, int16_t* yAxix, int16_t* zAxis);
+uint8_t getGyrRawData(float* xAxis, float* yAxix, float* zAxis);
 
 // Retrieves gyroscope raw data buffer
 uint8_t getGyrRawDataBuffer(uint8_t *data_buffer);

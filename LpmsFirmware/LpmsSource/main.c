@@ -19,7 +19,7 @@ int main(void)
 	msDelay(100);
 
 	setSystemStepTimer();
-	msDelay(100);
+	msDelay(100);	
 	
 	setTimeoutTimer();
 	msDelay(100);

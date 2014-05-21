@@ -1,0 +1,1 @@
+cl main.c CalibrationDataC.c ..\LpSensor\LpMatrix.c LpmsIoInterfaceC.c MicroMeasureC.c LpmsSensorC.c ..\LpSensor\LpMagnetometerCalibrationOS.c ..\LpSensor\CalcMisalignmentOS.c ..\LpSensor\LpMagnetometerMAlignmentOS.c

@@ -41,7 +41,7 @@ int main()
 	CalibrationData cd;
 
 #ifdef USE_LPMS_SENSOR
-	lpmsSensorInit(DEVICE_LPMS_RS232, "COM141");
+	lpmsSensorInit(DEVICE_LPMS_RS232, "COM159");
 	
 	while (1) {
 		lpmsSensorPollData();
@@ -49,7 +49,7 @@ int main()
 	}
 #else
 	lpmsInitIoInterface(&cd);
-	lpmsConnect("COM141");
+	lpmsConnect("COM159");
 	
 	printf("[main] Set command mode.\n");
 	lpmsSetCommandMode();

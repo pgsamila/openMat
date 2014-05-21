@@ -250,8 +250,8 @@ void lpmsSensorUpdate(void)
 	
 	// Waits for a certains period after the connect 
 	case STATE_WAIT_AFTER_CONNECT:
-		// if (lpmsTimer.measure() > WAIT_AFTER_CONNECT) {
-			// lpmsTimer.reset();	
+		/* if (lpmsTimer.measure() > WAIT_AFTER_CONNECT) {
+			lpmsTimer.reset(); */
 			LOGV("[LpmsSensor] Waiting after connect..\n");
 			
 			/* if (deviceType == DEVICE_LPMS_BLE) {
@@ -260,8 +260,8 @@ void lpmsSensorUpdate(void)
 			} else { */
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GOTO_COMMAND_MODE;
-			//}
-		// }
+			/* }
+		} */
 	break;
 
 	// Retrieves the current parameter settings of the sensor
@@ -478,7 +478,7 @@ void lpmsSensorUpdate(void)
 				getConfigState = C_STATE_SETTINGS_DONE;		
 			break;				
 		
-			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
+			// Resets the timer and retrieves the field map (soft/hard iron calibration parameters)
 			case C_STATE_SETTINGS_DONE:	
 				LOGV("[LpmsSensor] Done reading configuration\n");			
 			
@@ -506,7 +506,7 @@ void lpmsSensorUpdate(void)
 			} 
 		}
 		
-		lpmsSensorAssertConnected();
+		// lpmsSensorAssertConnected();
 	break;	
 		
 	// Main measurement state
@@ -1209,7 +1209,6 @@ void lpmsSensorUpdate(void)
 /***********************************************************************
 ** DIRECT GET / SET DEVICE PARAMETERS
 ***********************************************************************/
-
 void lpmsSensorGetDeviceId(char *str)
 {
 	char deviceId[64];
@@ -1470,7 +1469,6 @@ int lpmsSensorGetConfigurationPrmString(int parameterIndex, char* parameter)
 /***********************************************************************
 ** FIRMWARE / IAP
 ***********************************************************************/
-
 int lpmsSensorUploadFirmware(const char *fn)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return 0;
@@ -1669,7 +1667,6 @@ long lpmsSensorGetStreamFrequency(void)
 /***********************************************************************
 ** CALIBRATION
 ***********************************************************************/
-
 void lpmsSensorStartPlanarMagCalibration(void)
 {
 	int p = 0, i;
@@ -2350,7 +2347,6 @@ void lpmsSensorCalcMagMisalignCal(void)
 /***********************************************************************
 ** DATA RECORDING
 ***********************************************************************/
-
 void lpmsSensorStartSaveData(void /* stdofstream *saveDataHandle */)
 {
 	/* sensorMutex.lock();

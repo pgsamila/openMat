@@ -78,7 +78,7 @@ float latestLatency;
 float timestampOffset;
 float currentTimestamp;
 
-unsigned char oneTx[128];
+unsigned char oneTx[256];
 char portname[64];
 char idNumber[64];
 unsigned char cBuffer[512];
@@ -121,14 +121,14 @@ int lpmsConnect(char* deviceId)
 #ifdef _WIN32
     COMMTIMEOUTS comTimeOut;
 
-	rs232Handle = CreateFile("\\\\.\\COM141", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	rs232Handle = CreateFile("\\\\.\\COM159", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (GetCommState(rs232Handle, &rs232Config) == 0) {
 		LOGV("[LpmsIoInterfaceC] Couldn't connect to COM port.\n");
 		return 0;
     }
 
-	rs232Config.BaudRate = 115200;
+	rs232Config.BaudRate = 921600;
 	rs232Config.StopBits = ONESTOPBIT;
 	rs232Config.Parity = NOPARITY;     
 	rs232Config.ByteSize = 8;  
@@ -156,7 +156,7 @@ int lpmsConnect(char* deviceId)
 	UARTinitConfig(&adBfUartConf);
 	
 	adBfUartConf.ucUART = LPMS_UART_NR; 
-	adBfUartConf.unBaudrate = 921600;
+	adBfUartConf.unBaudrate = 115200;
 	adBfUartConf.ucDataBits = 8;
 	adBfUartConf.tStopBits = UART_ONE_STOPBIT;
 	adBfUartConf.tParity = UART_PARITY_NONE;
@@ -175,7 +175,14 @@ int lpmsConnect(char* deviceId)
 	
 	adBfUartHandle = UARTopen(&adBfUartConf, &errorCode);
 	
-	if (errorCode != ERR_NONE) return 0;
+	if (errorCode != ERR_NONE) {
+		LOGV("[LpmsIoInterfaceC] Couldn't connect to COM port.\n");
+		return 0;
+	}
+	
+	unsigned char aucBuf[20];
+	aucBuf[0] = 8;
+	UARTcontrol(adBfUartHandle, UART_SET_MIN_PACKET_SIZE_TO_SEND, aucBuf);
 #endif
 
 	strcpy(idNumber, deviceId);
@@ -216,7 +223,7 @@ int lpmsWrite(unsigned char *txBuffer, unsigned bufferLength)
 
 #ifdef __VISUALDSPVERSION__
 	T_ERROR_CODE errorCode;
-	UARTwrite(adBfUartHandle, (char*) txBuffer, (int) bufferLength, &errorCode);
+	l = UARTwrite(adBfUartHandle, txBuffer, bufferLength, &errorCode);
 #endif
 	
 	return 1;
@@ -232,7 +239,7 @@ int lpmsRead(unsigned char *rxBuffer, unsigned long *bytesReceived) {
 
 #ifdef __VISUALDSPVERSION__
 	T_ERROR_CODE errorCode;
-	*bytesReceived = UARTread(adBfUartHandle, (char*) rxBuffer, 64, &errorCode);
+	*bytesReceived = UARTread(adBfUartHandle, rxBuffer, 64, &errorCode);
 #endif
 
 	return 1;
@@ -256,11 +263,11 @@ void lpmsClose(void) {
 
 int lpmsSendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data)
 {
-	unsigned char txData[1024];
+	unsigned char txData[256];
 	unsigned int txLrcCheck;
 	int i;
 	
-	if (length > 1014) return 0;
+	if (length > 255) return 0;
 
 	txData[0] = 0x3a;
 	txData[1] = address & 0xff;
@@ -332,8 +339,13 @@ int lpmsParseModbusByte(unsigned char b)
 			
 	case PACKET_LENGTH1:
 		currentLength = currentLength + ((unsigned) b * 256);
-		rxState = PACKET_RAW_DATA;
-		rawDataIndex = 0; 
+		if (currentLength > 128) {
+			rxState = PACKET_END;
+			currentLength = 0;
+		} else {
+			rxState = PACKET_RAW_DATA;
+			rawDataIndex = 0; 
+		}
 	break;
 			
 	case PACKET_RAW_DATA:
@@ -371,7 +383,7 @@ int lpmsParseModbusByte(unsigned char b)
 int lpmsPollData(void) 
 {
 	unsigned long bytesReceived;
-	unsigned char rxBuffer[4096];
+	unsigned char rxBuffer[256];
 	int packetOk = 0;
 	int i;
 	

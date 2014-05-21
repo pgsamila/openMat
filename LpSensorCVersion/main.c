@@ -31,21 +31,37 @@
 
 #include <stdio.h>
 
+#include "windows.h"
+
 #include "LpmsSensorC.h"
 
 #define USE_LPMS_SENSOR
 
 int main()
 {
-	int i;
+	int i, p;
 	CalibrationData cd;
+	ImuData d;
 
 #ifdef USE_LPMS_SENSOR
 	lpmsSensorInit(DEVICE_LPMS_RS232, "COM159");
 	
+	while (lpmsSensorGetSensorStatus() != SENSOR_STATUS_RUNNING) {
+		lpmsSensorPollData();
+		lpmsSensorUpdate();
+	}
+	
+	lpmsSensorGetConfigurationPrmInt(PRM_SELECT_DATA, &p);	
+	p |= SELECT_LPMS_EULER_OUTPUT_ENABLED;
+	lpmsSensorSetConfigurationPrmInt(PRM_SELECT_DATA, p);
+	
 	while (1) {
 		lpmsSensorPollData();
 		lpmsSensorUpdate();
+		
+		if (lpmsSensorGetCurrentData(&d) != 0) {		
+			lpmsPrintImuData(d);
+		}
 	}
 #else
 	lpmsInitIoInterface(&cd);

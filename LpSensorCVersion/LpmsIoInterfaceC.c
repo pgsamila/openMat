@@ -128,7 +128,7 @@ int lpmsConnect(char* deviceId)
 		return 0;
     }
 
-	rs232Config.BaudRate = 921600;
+	rs232Config.BaudRate = 115200;
 	rs232Config.StopBits = ONESTOPBIT;
 	rs232Config.Parity = NOPARITY;     
 	rs232Config.ByteSize = 8;  
@@ -678,8 +678,6 @@ int parseSensorData(void)
 	}
 	
 	imuData.timeStamp = currentTimestamp;
-	
-	lpmsPrintImuData(imuData);
 	
 	/* if (imuDataQueue.size() < 64) {
 		imuDataQueue.push(imuData);

@@ -166,6 +166,7 @@
           <name>CCDefines</name>
           <state>USE_STDPERIPH_DRIVER</state>
           <state>STM32F2XX</state>
+          <state>USE_BLUETOOTH_INTERFACE</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -691,7 +692,7 @@
         </option>
         <option>
           <name>IlinkIcfFile</name>
-          <state>C:\Users\user\Dropbox\Klaus\LpmsSoftware\openmat\LpmsFirmware\IarProjectFiles\LpmsFirmware.icf</state>
+          <state>$PROJ_DIR$\LpmsFirmware.icf</state>
         </option>
         <option>
           <name>IlinkIcfFileSlave</name>

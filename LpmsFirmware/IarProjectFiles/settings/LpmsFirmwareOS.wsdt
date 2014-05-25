@@ -24,7 +24,7 @@
     <Windows>
       
       
-    <Wnd0>
+    <Wnd2>
         <Tabs>
           <Tab>
             <Identity>TabID-16234-17851</Identity>
@@ -32,11 +32,11 @@
             <Factory>Workspace</Factory>
             <Session>
               
-            <NodeDict><ExpandedNode>LpmsFirmwareOS</ExpandedNode><ExpandedNode>LpmsFirmwareOS/STM32F2xx_Common</ExpandedNode><ExpandedNode>LpmsFirmwareOS/STM32F2xx_StdPeriph_Driver</ExpandedNode></NodeDict></Session>
+            <NodeDict><ExpandedNode>LpmsFirmwareOS</ExpandedNode><ExpandedNode>LpmsFirmwareOS/LpmsSource</ExpandedNode></NodeDict></Session>
           </Tab>
         </Tabs>
         
-      <SelectedTab>0</SelectedTab></Wnd0><Wnd1>
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd3>
         <Tabs>
           <Tab>
             <Identity>TabID-16653-18867</Identity>
@@ -46,20 +46,20 @@
           </Tab>
         <Tab><Identity>TabID-31249-20026</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab></Tabs>
         
-      <SelectedTab>0</SelectedTab></Wnd1></Windows>
+      <SelectedTab>0</SelectedTab></Wnd3></Windows>
     <Editor>
       
       
       
       
-    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpMagnetometerCalibration.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>365</SelStart><SelEnd>365</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\CommunicationManager.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>289</SelStart><SelEnd>289</SelEnd></Tab><ActiveTab>1</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\HeaveMotionOS.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_iwdg.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>373</SelStart><SelEnd>373</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpMagnetometerCalibration.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>365</SelStart><SelEnd>365</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\CommunicationManager.c</Filename><XPos>0</XPos><YPos>274</YPos><SelStart>4789</SelStart><SelEnd>4789</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\HeaveMotionOS.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>113</SelStart><SelEnd>113</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_iwdg.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>373</SelStart><SelEnd>373</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\SensorManager.c</Filename><XPos>0</XPos><YPos>312</YPos><SelStart>13638</SelStart><SelEnd>13685</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpFilterCVersionOS.c</Filename><XPos>0</XPos><YPos>32</YPos><SelStart>1090</SelStart><SelEnd>1090</SelEnd></Tab><ActiveTab>5</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\LpmsConfig.c</Filename><XPos>0</XPos><YPos>86</YPos><SelStart>2411</SelStart><SelEnd>2411</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
     <Positions>
       
       
       
       
       
-    <Top><Row0><Sizes><Toolbar-02bdfc78><key>iaridepm.enu1</key></Toolbar-02bdfc78></Sizes></Row0></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>476</Bottom><Right>336</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>146413</sizeHorzCX><sizeHorzCY>275862</sizeHorzCY><sizeVertCX>247438</sizeVertCX><sizeVertCY>659310</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>204</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>206</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>284138</sizeHorzCY><sizeVertCX>146413</sizeVertCX><sizeVertCY>275862</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+    <Top><Row0><Sizes><Toolbar-00d2de98><key>iaridepm.enu1</key></Toolbar-00d2de98></Sizes></Row0></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>297</Bottom><Right>336</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>146413</sizeHorzCX><sizeHorzCY>275862</sizeHorzCY><sizeVertCX>247438</sizeVertCX><sizeVertCY>412414</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>383</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>385</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>531034</sizeHorzCY><sizeVertCX>146413</sizeVertCX><sizeVertCY>275862</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
   </Desktop>
 </Workspace>
 

@@ -167,6 +167,7 @@
           <state>USE_STDPERIPH_DRIVER</state>
           <state>STM32F2XX</state>
           <state>USE_BLUETOOTH_INTERFACE</state>
+          <state>USE_HEAVEMOTION</state>
         </option>
         <option>
           <name>CCPreprocFile</name>

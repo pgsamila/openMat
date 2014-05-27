@@ -832,7 +832,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 #ifdef USE_HEAVEMOTION
                 if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
                         setFloat(&(data[o]), heaveY, FLOAT_FIXED_POINT_1000);
-                        o = o+2
+                        o = o+2;
                 }
 #endif
         } else {

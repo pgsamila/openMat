@@ -303,7 +303,7 @@ public slots:
 
 	void resetHeading(void);
 	
-	void updateSensorSyncSetting(int i);
+	void updateRs232Baudrate(int i);
 	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
@@ -398,6 +398,7 @@ private:
 	bool recordFileSet;
 	MicroMeasure mm;
 	QComboBox *canBaudrateList;
+	QComboBox *rs232BaudrateList;
 	QToolBar *toolbar;
 	QMenu* viewMenu;
 	bool heaveMotionEnabled;
@@ -408,7 +409,6 @@ private:
 	string globalPlaybackFile;
 	QLineEdit *playbackFileEdit;
 	bool playbackFileSet;
-	QComboBox *sensorSyncCombo;
 	
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		

@@ -124,6 +124,21 @@ void MainWindow::createMenuAndToolbar(void)
 		connect(canBaudrateList, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanBaudrate(int)));
 	}
 	
+	QVBoxLayout *v6 = new QVBoxLayout();
+	rs232BaudrateList = new QComboBox();
+	rs232BaudrateList->addItem("19200 bps");
+	rs232BaudrateList->addItem("57600 bps");		
+	rs232BaudrateList->addItem("115200 bps");
+	rs232BaudrateList->addItem("921600 bps");
+	rs232BaudrateList->setCurrentIndex(3);
+	v6->addWidget(new QLabel("RS232 baudrate:"));
+	v6->addWidget(rs232BaudrateList);
+	QWidget *w6 = new QWidget();
+	w6->setLayout(v6);
+	w6->setFixedWidth(200);	
+	toolbar->addWidget(w6);
+	connect(rs232BaudrateList, SIGNAL(currentIndexChanged(int)), this, SLOT(updateRs232Baudrate(int)));
+	
 	connectMenu->addAction(connectAction);
 	connectMenu->addAction(disconnectAction);
 	connectMenu->addAction(addRemoveAction);
@@ -160,18 +175,6 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addAction(saveAction);
 	toolbar->addWidget(w);
 	toolbar->addAction(browseAction);
-	
-	QVBoxLayout *v5 = new QVBoxLayout();
-	sensorSyncCombo = new QComboBox();
-	sensorSyncCombo->addItem("Off");
-	sensorSyncCombo->addItem("On");
-	v5->addWidget(new QLabel("Timestamp sync:"));
-	v5->addWidget(sensorSyncCombo);
-	QWidget *w5 = new QWidget();
-	w5->setLayout(v5);
-	w5->setFixedWidth(125);	
-	toolbar->addWidget(w5);
-	connect(sensorSyncCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSensorSyncSetting(int)));
 	
 	replayAction = new QAction(QIcon("./icons/loop_alt2_32x28.png"), "&Playback data", this);
 	QAction* browseReplayAction = new QAction(QIcon("./icons/folder_stroke_32x32.png"), "&Browse replay file", this);
@@ -349,6 +352,11 @@ void MainWindow::createMenuAndToolbar(void)
 void MainWindow::updateCanBaudrate(int i)
 {
 	sm->setCanBaudrate(i);
+}
+
+void MainWindow::updateRs232Baudrate(int i)
+{
+	// sm->setRs232Baudrate(i);
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -1719,18 +1727,5 @@ void MainWindow::browsePlaybackFile(void)
 		globalPlaybackFile = playbackFilename;
 		playbackFileEdit->setText(playbackFilename.c_str());
 		playbackFileSet = true;
-	}
-}
-
-void MainWindow::updateSensorSyncSetting(int i)
-{
-	switch (sensorSyncCombo->currentIndex()) {
-	case 0:
-		sm->setSensorSync(false);
-	break;
-	
-	case 1:
-		sm->setSensorSync(true);
-	break;
 	}
 }

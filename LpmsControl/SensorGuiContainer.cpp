@@ -55,6 +55,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	gl->addWidget(new QLabel("IMU ID:"), l, 0); ++l;	
 	gl->addWidget(new QLabel("Transmission rate:"), l, 0); ++l;
 	
+	if (deviceType != DEVICE_LPMS_B && deviceType != DEVICE_LPMS_BLE) {	
+		gl->addWidget(new QLabel("Baud rate:"), l, 0); ++l;
+	}
+	
 	l = 0;
 	gl1->addWidget(new QLabel("GYR range:"), l, 0); ++l;
 	gl1->addWidget(new QLabel("ACC range:"), l, 0); ++l;
@@ -78,6 +82,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	l = 0;
 	gl->addWidget(indexItem = new QComboBox(), l, 1); ++l;
 	gl->addWidget(samplingRateCombo = new QComboBox(), l, 1); ++l;	
+	gl->addWidget(baudRateCombo = new QComboBox(), l, 1); ++l;	
 	
 	l = 0;	
 	gl1->addWidget(gyrRangeCombo = new QComboBox(), l, 1); ++l;
@@ -99,6 +104,14 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	samplingRateCombo->addItem(QString("5.75 Hz"));
 	samplingRateCombo->addItem(QString("12.5 Hz"));
 	samplingRateCombo->addItem(QString("25 Hz"));
+	
+	if (deviceType != DEVICE_LPMS_B && deviceType != DEVICE_LPMS_BLE) {	
+		baudRateCombo->addItem(QString("19200 bps"));
+		baudRateCombo->addItem(QString("57600 bps"));	
+		baudRateCombo->addItem(QString("115200 bps"));
+		baudRateCombo->addItem(QString("921600 bps"));
+		connect(baudRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateBaudRateIndex(int)));
+	}
 	
 	if (deviceType != DEVICE_LPMS_BLE) {	
 		samplingRateCombo->addItem(QString("50 Hz"));
@@ -141,7 +154,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	filterModeCombo->addItem(QString("Acc + Mag (Euler only)"));
 	filterModeCombo->addItem(QString("Gyr + Acc (Euler only)"));
 	connect(filterModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateFilterMode(int)));	
-		
+	
 	thresholdEnableCombo->addItem(QString("Disable"));	
 	thresholdEnableCombo->addItem(QString("Enable"));	
 	connect(thresholdEnableCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateGyrThresholdEnable(int)));	
@@ -782,7 +795,26 @@ void SensorGuiContainer::updateData(void) {
 	addressItem->setText(QString(cStr));	
 
 	sensor->getConfigurationPrm(PRM_OPENMAT_ID, &i);		
-	indexItem->setCurrentIndex(i);	
+	indexItem->setCurrentIndex(i);
+	
+	sensor->getConfigurationPrm(PRM_UART_BAUDRATE, &i);	
+	switch (i) {
+	case SELECT_LPMS_UART_BAUDRATE_19200:
+		baudRateCombo->setCurrentIndex(0);	
+	break;
+	
+	case SELECT_LPMS_UART_BAUDRATE_57600:
+		baudRateCombo->setCurrentIndex(1);
+	break;
+	
+	case SELECT_LPMS_UART_BAUDRATE_115200:
+		baudRateCombo->setCurrentIndex(2);
+	break;
+	
+	case SELECT_LPMS_UART_BAUDRATE_921600:
+		baudRateCombo->setCurrentIndex(3);
+	break;
+	}
 
 	sensor->getConfigurationPrm(PRM_FIRMWARE_VERSION, cStr);		
 	firmwareItem->setText(QString(cStr));
@@ -952,7 +984,7 @@ void SensorGuiContainer::updateData(void) {
 		
 	case SELECT_MAG_RANGE_810UT:
 		magRangeCombo->setCurrentIndex(5);
-	break;		
+	break;
 	}
 	
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
@@ -1269,6 +1301,11 @@ void SensorGuiContainer::updateOpenMATIndex(int i)
 	sensor->setConfigurationPrm(PRM_OPENMAT_ID, indexItem->currentIndex());
 }
 
+void SensorGuiContainer::updateBaudRateIndex(int i)
+{
+	sensor->setConfigurationPrm(PRM_UART_BAUDRATE, indexItem->currentIndex());
+}
+
 void SensorGuiContainer::updateGyrThresholdEnable(int i)
 {
 	switch (thresholdEnableCombo->currentIndex()) {
@@ -1409,28 +1446,7 @@ void SensorGuiContainer::updateMagRange(int i)
 }
 
 void SensorGuiContainer::updateCanProtocol(int i)
-{	
-	/* switch (canProtocolCombo->currentIndex()) {
-	case 0:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_LPBUS);
-	break;
-		
-	case 1:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_OPEN);
-	break;
-	
-	case 2:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM1);
-	break;
-	
-	case 3:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM2);
-	break;
-	
-	case 4:
-		sensor->setConfigurationPrm(PRM_CAN_STREAM_FORMAT, SELECT_STREAM_CAN_CUSTOM3);
-	break;
-	} */
+{
 }
 
 void SensorGuiContainer::updateCanBaudrate(int i)

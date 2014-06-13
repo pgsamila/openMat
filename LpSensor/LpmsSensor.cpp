@@ -153,7 +153,6 @@ const float pi = 3.141592f;
 	isRefCalibrationEnabled	= false;
 	timestampOffset = 0.0f;
 	frameCounterOffset = 0;
-	currentSyncOffset = 0.0f;
 	
 	bt->zeroImuData(&currentData);
 }
@@ -449,12 +448,19 @@ void LpmsSensor::update(void)
 			break;
 
 			// Resets sensor timestamp
-			case C_RESET_SENSOR_TIMESTAMP:
+			/* case C_RESET_SENSOR_TIMESTAMP:
 				LOGV("[LpmsSensor] Resetting timestamp\n");
 				bt->setTimestamp(0.0f);
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_SETTINGS_DONE;		
-			break;				
+			break; */
+			
+			case C_STATE_GET_UART_BAUDRATE:
+				LOGV("[LpmsSensor] Get UART baud rate\n");
+				bt->getUartBaudRate();
+				state = STATE_GET_SETTINGS;
+				getConfigState = C_STATE_SETTINGS_DONE;		
+			break;
 		
 			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
 			case C_STATE_SETTINGS_DONE:	
@@ -989,6 +995,34 @@ void LpmsSensor::update(void)
 			configData.getParameter(PRM_SELECT_DATA, &p);
 			bt->selectData(p);
 			printf("[LpmsSensor] Select data 0x%x\n", p);
+			state = STATE_SELECT_UART_BAUDRATE;
+		}
+	break;
+	
+	case STATE_SELECT_UART_BAUDRATE:
+		LOGV("[LpmsSensor] Select UART baud rate\n");
+
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			configData.getParameter(PRM_UART_BAUDRATE, &p);
+			
+			switch (p) {
+			case SELECT_LPMS_UART_BAUDRATE_19200:
+				bt->setUartBaudRate(LPMS_UART_BAUDRATE_19200);
+			break;
+
+			case SELECT_LPMS_UART_BAUDRATE_57600:
+				bt->setUartBaudRate(LPMS_UART_BAUDRATE_57600);
+			break;
+
+			case SELECT_LPMS_UART_BAUDRATE_115200:
+				bt->setUartBaudRate(LPMS_UART_BAUDRATE_115200);
+			break;
+
+			case SELECT_LPMS_UART_BAUDRATE_921600:
+				bt->setUartBaudRate(LPMS_UART_BAUDRATE_921600);
+			break;
+			}
+		
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
 		}
@@ -2024,21 +2058,11 @@ void LpmsSensor::resetTimestamp(void)
 	frameNo = 0;
 }
 
-void LpmsSensor::syncTimestamp(float t)
+void LpmsSensor::setTimestamp(float t)
 {
-	if ((bt->getMode() == SELECT_LPMS_MODE_STREAM) && (bt->deviceStarted() == true) && (state == STATE_MEASURE)) {
+	// if ((bt->getMode() == SELECT_LPMS_MODE_STREAM) && (bt->deviceStarted() == true) && (state == STATE_MEASURE)) {
 		bt->setTimestamp(t);
-	}
-}
-
-void LpmsSensor::setCurrentSyncOffset(float t)
-{
-	currentSyncOffset = t;
-}
-
-float LpmsSensor::getCurrentSyncOffset(void)
-{
-	return currentSyncOffset;
+	// }
 }
 
 void LpmsSensor::startAutoMagMisalignCal(void)

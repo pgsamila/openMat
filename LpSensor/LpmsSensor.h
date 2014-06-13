@@ -151,6 +151,7 @@
 #define STATE_SET_MAG_ALIGNMENT_BIAS 69
 #define STATE_SET_MAG_REFERENCE 70
 #define STATE_RESET_ORIENTATION_OFFSET 71
+#define STATE_SELECT_UART_BAUDRATE 72
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -184,6 +185,7 @@
 #define C_STATE_GET_MAG_ALIGNMENT_MATRIX 30
 #define C_STATE_GET_MAG_ALIGNMENT_BIAS 31
 #define C_STATE_GET_MAG_REFERENCE 32
+#define C_STATE_GET_UART_BAUDRATE 33
 
 #define CAL_STATE_GET_STATUS 1
 #define CAL_STATE_WAIT_FINISH 2
@@ -258,9 +260,7 @@ public:
 	void setOrientationOffset(void);
 	void resetOrientationOffset(void);
 	void startMagCalibration(void);
-	void syncTimestamp(float t);
-	void setCurrentSyncOffset(float t);
-	float getCurrentSyncOffset(void);
+	void setTimestamp(float t);
 	
 private:
 	void checkResetReference(void);
@@ -385,7 +385,6 @@ private:
 	int saveDataPreroll;
 	float timestampOffset;
 	int frameCounterOffset;
-	float currentSyncOffset;
 }; 
 	
 #endif

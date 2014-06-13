@@ -246,7 +246,11 @@ bool CalibrationData::setParameter(int parameterIndex, int parameter)
 	
 	case PRM_LPBUS_DATA_MODE:
 		lpBusDataMode = parameter;
-	break;	
+	break;
+	
+	case PRM_UART_BAUDRATE:
+		uartBaudrate = parameter;
+	break;
 	}
 
 	calibrationMutex.unlock();
@@ -430,6 +434,10 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 	
 	case PRM_LPBUS_DATA_MODE:
 		*parameter = lpBusDataMode;
+	break;
+	
+	case PRM_UART_BAUDRATE:
+		*parameter = uartBaudrate;
 	break;
 	}
 

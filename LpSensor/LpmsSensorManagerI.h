@@ -88,10 +88,6 @@ public:
 	
 	/* Sets current CAN baudrate. */
 	virtual void setCanBaudrate(int i) = 0;
-	
-	virtual void setSensorSync(bool s) = 0;
-	
-	virtual bool getSensorSync(void) = 0;
 };
 
 #ifdef _WIN32

@@ -1,4 +1,4 @@
-	/***********************************************************************
+/***********************************************************************
 ** Copyright (C) LP-Research
 ** All rights reserved.
 ** Contact: LP-Research (klaus@lp-research.com)
@@ -68,7 +68,6 @@
 	stopped = false;
 	isRecording = false;
 	threadDelay = 750;
-	isSensorSyncOn = false;
 
 	managerState = SMANAGER_MEASURE;
 
@@ -140,12 +139,11 @@ void LpmsSensorManager::start(void)
 
 #define LPMS_B_LATENCY_ESTIMATE 0.030f
 #define LPMS_OTHER_LATENCY_ESTIMATE 0.005f
-#define SYNC_PERIOD 5000000
 	
 void LpmsSensorManager::run(void)
 {
 	MicroMeasure mm;
-	MicroMeasure syncPeriodTimer;	
+
 	list<LpmsSensor*>::iterator i;	
     bool bIsWindows7orLater = true;
 	float prevTimestamp = 0.0f;
@@ -176,8 +174,6 @@ void LpmsSensorManager::run(void)
 #endif
 
 	mm.reset();
-	syncTimer.reset();
-	syncPeriodTimer.reset();	
 	
 	while (stopped == false) {	
 		switch (managerState) {
@@ -192,26 +188,6 @@ void LpmsSensorManager::run(void)
 #endif
 			
 			lm.unlock();
-			
-			if (syncPeriodTimer.measure() > SYNC_PERIOD) {
-				syncPeriodTimer.reset();
-
-				lm.lock();				
-				for (i = sensorList.begin(); i != sensorList.end(); i++) {
-					(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - (*(sensorList.begin()))->getCurrentData().timeStamp);
-
-					if (isSensorSyncOn == true) {
-						(*i)->getConfigurationPrm(PRM_DEVICE_TYPE, &deviceType);
-						if (deviceType == DEVICE_LPMS_B) {
-							(*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp + LPMS_B_LATENCY_ESTIMATE);
-						} else {
-							(*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp + LPMS_OTHER_LATENCY_ESTIMATE);
-						}
-						printf("[LpmsSensorManager] ID=%d, timestamp offset=%f\n", (*i)->getOpenMatId(), (*i)->getCurrentSyncOffset());
-					}
-				}
-				lm.unlock();
-			}
 
 			if (mm.measure() > SENSOR_UPDATE_PERIOD) {			
 				mm.reset();				
@@ -260,38 +236,6 @@ bool compareOpenMatId(LpmsSensor *first, LpmsSensor *second)
 	if (first->getOpenMatId() < second->getOpenMatId()) return true;
 	
 	return false;
-}
-
-void LpmsSensorManager::setSensorSync(bool s)
-{
-	list<LpmsSensor*>::iterator i;
-
-	if (s == true) {
-		printf("[LpmsSensorManager] Set sensor sync ON\n");
-	} else {
-		printf("[LpmsSensorManager] Set sensor sync OFF\n");
-	}
-	
-	lm.lock();
-	sensorList.sort(compareOpenMatId);
-	lm.unlock();
-	
-	isSensorSyncOn = s;
-	
-	if (isSensorSyncOn == true) {
-		lm.lock();				
-		for (i = sensorList.begin(); i != sensorList.end(); i++) {
-			(*i)->setCurrentSyncOffset((*i)->getCurrentData().timeStamp - (*(sensorList.begin()))->getCurrentData().timeStamp);
-
-			(*i)->syncTimestamp((*(sensorList.begin()))->getCurrentData().timeStamp);
-		}
-		lm.unlock();
-	}	
-}
-
-bool LpmsSensorManager::getSensorSync(void)
-{
-	return isSensorSyncOn;
 }
 
 LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
@@ -343,7 +287,6 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	}
 	
 	sensorList.sort(compareOpenMatId);
-	sensor->setCurrentSyncOffset(0.0f);
 	
 	lm.unlock();
 	
@@ -387,16 +330,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
-		
-		syncTimer.reset();
-		
-		lm.lock();				
-		for (i = sensorList.begin(); i != sensorList.end(); i++) {
-			(*i)->syncTimestamp(0.0f);
-			(*i)->setCurrentSyncOffset(0);
-		}
-		lm.unlock();		
-		
+					
 		lm.lock();
 		for (i = sensorList.begin(); i != sensorList.end(); ++i) {
 			(*i)->startSaveData(&saveDataHandle);

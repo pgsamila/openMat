@@ -47,7 +47,8 @@ HumanModelWindow::HumanModelWindow(HumanModel *hm,
 	xSRot(0),
 	ySRot(0),
 	zSRot(0),
-	hm(hm)
+	hm(hm),
+	isShowUpperBody(true)
 {	
 	glob_translate_x = 0.0f;
 	glob_translate_y = 0.0f;
@@ -512,8 +513,8 @@ void HumanModelWindow::mouseMoveEvent(QMouseEvent *event)
 	if (event->buttons() & Qt::LeftButton) {
 		rotateBy(8*dy, 8*dx, 0);
 	} else if (event->buttons() & Qt::RightButton) {
-		glob_translate_x -= (float)dx / 32.0f;
-		glob_translate_y += (float)dy / 32.0f;
+		glob_translate_x += (float)dx / 64.0f;
+		glob_translate_y -= (float)dy / 64.0f;
 	}
 	lastPos = event->pos();
 }

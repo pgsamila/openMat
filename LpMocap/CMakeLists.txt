@@ -107,7 +107,7 @@ set(sources
 	MotionBuilderCommunication.cpp
 	C3dParser.cpp
 	VideoWindow.cpp
-#	HumanBodySimulation.rc
+	HumanBodySimulation.rc
 )
   
 set(headers

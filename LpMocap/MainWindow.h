@@ -119,6 +119,8 @@ public slots:
 	void ResetOffset(void);
 	void ExportAviOfPlayback(void);
 	void updateSettings(int i);
+	void updateViewCamera(void);
+	void updateViewGraph(void);
 
 public:
 	QToolBar *toolbar;
@@ -148,15 +150,11 @@ public:
 	QLineEdit *playback_file_edit;
 	QAction* start_rec_action;
 	QAction* start_playback_action;
+	QAction* viewCameraAction;
+	QAction* viewGraphAction;
 	float current_timestamp;
 	bool set_offset_all;
 	bool offscreen_recording_started_;
-
-	struct {
-		char info[50];
-		int numSensors;
-	} serverInfo;
-	
 	bool isGetServerInfo;
 	int	mChannelCount;
 	int	mPassCount;
@@ -179,6 +177,12 @@ public:
 	QComboBox *viewPointCombo;
 	bool isRecordVideo;
 	QListWidget linkList;
+	bool isUpdateGraph;
+	
+	struct {
+		char info[50];
+		int numSensors;
+	} serverInfo;
 };
 
 #endif

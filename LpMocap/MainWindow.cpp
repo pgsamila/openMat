@@ -210,7 +210,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	translationWidget->setFixedWidth(100);
 	connect(translationCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));	
 	
-	QVBoxLayout *viewPointLayout = new QVBoxLayout();
+	/* QVBoxLayout *viewPointLayout = new QVBoxLayout();
 	viewPointCombo = new QComboBox();
 	viewPointCombo->addItem("Free");
 	viewPointCombo->addItem("Locked to side");
@@ -221,12 +221,25 @@ MainWindow::MainWindow(QWidget *parent) :
 	QWidget *viewPointWidget = new QWidget();
 	viewPointWidget->setLayout(viewPointLayout);
 	viewPointWidget->setFixedWidth(100);
-	connect(viewPointCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));		
+	connect(viewPointCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSettings(int)));	*/
 
 	toolbar->addWidget(translationWidget);
 	toolbar->addWidget(upperBodyWidget);
-	toolbar->addWidget(viewPointWidget);
-	toolbar->addSeparator();	
+	// toolbar->addWidget(viewPointWidget);
+	toolbar->addSeparator();
+
+	QMenu* viewMenu = menuBar()->addMenu("&View");
+	viewCameraAction = new QAction("&Camera window (experimental)", this);
+	viewCameraAction->setCheckable(true);
+	viewCameraAction->setChecked(false);
+	connect(viewCameraAction, SIGNAL(changed()), this, SLOT(updateViewCamera()));
+	viewMenu->addAction(viewCameraAction);
+	
+	viewGraphAction = new QAction("&Graph window (experimental)", this);
+	viewGraphAction->setCheckable(true);
+	viewGraphAction->setChecked(false);
+	connect(viewGraphAction, SIGNAL(changed()), this, SLOT(updateViewGraph()));
+	viewMenu->addAction(viewGraphAction);
 
 	graphWin = new GraphWindow();
 	videoWin = new VideoWindow();
@@ -258,6 +271,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	setCentralWidget(mainSplit);
 	
+	linkList.hide();
+	graphWin->hide();
+	videoWin->hide();
+	
 	connect(connect_action, SIGNAL(triggered()), this, SLOT(ConnectServer()));
 	connect(disconnect_action, SIGNAL(triggered()), this, SLOT(DisconnectServer()));
 
@@ -282,6 +299,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	current_timestamp = 0;
 	set_offset_all = false;
+	isUpdateGraph = false;
 
 	QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(UpdateWindow()));
@@ -326,7 +344,7 @@ void MainWindow::updateSettings(int)
 	break;
 	}
 	
-	hmWin->viewPointIndex = viewPointCombo->currentIndex();
+	// hmWin->viewPointIndex = viewPointCombo->currentIndex();
 }
 
 void MainWindow::ConnectServer(void)
@@ -543,8 +561,9 @@ void MainWindow::UpdateWindow(void)
 			printf("[LpMocap] Rendering finished\n");
 		}
 
-		
-		graphWin->plotData(hm->GetDataPRX(selectedLink->link_id_), hm->GetDataPRY(selectedLink->link_id_), hm->GetDataPRZ(selectedLink->link_id_));
+		if (isUpdateGraph == true) {
+			graphWin->plotData(hm->GetDataPRX(selectedLink->link_id_), hm->GetDataPRY(selectedLink->link_id_), hm->GetDataPRZ(selectedLink->link_id_));
+		}
 		
 		videoWin->updateVideo();
 	}
@@ -632,6 +651,28 @@ void MainWindow::createModelTree(void)
 void MainWindow::listItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
 	selectedLink = (ModelListLink *) linkList.currentItem();
+}
+
+void MainWindow::updateViewCamera(void)
+{
+	if (viewCameraAction->isChecked() == true) {
+		videoWin->show();
+	} else {
+		videoWin->hide();
+	}
+}
+
+void MainWindow::updateViewGraph(void)
+{
+	if (viewGraphAction->isChecked() == true) {
+		linkList.show();
+		graphWin->show();
+		isUpdateGraph = true;
+	} else {
+		linkList.hide();
+		graphWin->hide();
+		isUpdateGraph = false;
+	}
 }
 
 ModelListLink::ModelListLink(int link_id, std::string link_name, int sensor_id, int parent_link_id, HumanModel *human_model) : 

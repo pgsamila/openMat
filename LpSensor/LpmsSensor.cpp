@@ -444,7 +444,7 @@ void LpmsSensor::update(void)
 				LOGV("[LpmsSensor] Get CAN configuration\n");
 				bt->getCanConfiguration();
 				state = STATE_GET_SETTINGS;
-				getConfigState = C_RESET_SENSOR_TIMESTAMP;		
+				getConfigState = C_STATE_GET_UART_BAUDRATE;		
 			break;
 
 			// Resets sensor timestamp
@@ -1000,8 +1000,6 @@ void LpmsSensor::update(void)
 	break;
 	
 	case STATE_SELECT_UART_BAUDRATE:
-		LOGV("[LpmsSensor] Select UART baud rate\n");
-
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_UART_BAUDRATE, &p);
 			
@@ -1022,6 +1020,8 @@ void LpmsSensor::update(void)
 				bt->setUartBaudRate(LPMS_UART_BAUDRATE_921600);
 			break;
 			}
+			
+			LOGV("[LpmsSensor] Select UART baud rate to mode %d\n", p);
 		
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;

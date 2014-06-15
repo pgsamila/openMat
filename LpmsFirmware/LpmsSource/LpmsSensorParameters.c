@@ -56,35 +56,38 @@ void updateConfigRegToSensorManager(void)
 	}
 }
 
-uint8_t setBaudrate(uint8_t* data)
+uint8_t setUartBaudrate(uint8_t* data)
 {
-	/* uint32_t baudrate = 0;
+	uint32_t baudrate = getUi32t(data);
 	
-	for (uint8_t i = 0; i < 4; i++) {
-		baudrate = baudrate | (((uint32_t) data[i]) << (i * 8));
+	switch (baudrate) {
+	case LPMS_UART_BAUDRATE_19200:
+		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_19200;
+	break;
+
+	case LPMS_UART_BAUDRATE_57600:
+		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_57600;
+	break;
+
+	case LPMS_UART_BAUDRATE_115200:
+		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_115200;
+	break;
+
+	case LPMS_UART_BAUDRATE_921600:
+		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_921600;
+	break;
 	}
-	
-	if (baudrate == LPMS_BT_BAUDRATE_9600 || baudrate == LPMS_CANBUS_BAUDRATE_10K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_9600_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_19200 || baudrate == LPMS_CANBUS_BAUDRATE_10K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_19200_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_38400 || baudrate == LPMS_CANBUS_BAUDRATE_50K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_38400_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_57600 || baudrate == LPMS_CANBUS_BAUDRATE_125K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_57600_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_115200 || baudrate == LPMS_CANBUS_BAUDRATE_250K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_115200_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_230400 || baudrate == LPMS_CANBUS_BAUDRATE_500K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_230400_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_460800 || baudrate == LPMS_CANBUS_BAUDRATE_800K) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) | LPMS_BT_BAUDRATE_460800_ENABLED;
-	} else if (baudrate == LPMS_BT_BAUDRATE_921600 || baudrate == LPMS_CANBUS_BAUDRATE_1M) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_BAUDRATE_MASK)) |  LPMS_BT_BAUDRATE_921600_ENABLED;
-	} else {
-		return 0;
-	} */
-		
+
 	return 1;
+}
+
+uint8_t getUartBaudrate(uint8_t* data, uint16_t *l)
+{
+	setUi32t(&(data[0]), gReg.data[LPMS_UART_BAUDRATE]);
+
+	*l = 4;
+
+	return 0;
 }
 
 uint8_t setCanBaudrate(uint8_t* data)

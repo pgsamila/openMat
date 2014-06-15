@@ -42,7 +42,7 @@ void initCommunicationManager(void)
 
 #ifdef USE_CANBUS_INTERFACE	
 #ifdef USE_RS232_INTERFACE	
-	rs232PortInit(RS232_BAUDRATE_115200); // USART_BAUDRATE_921600);
+	rs232PortInit(gReg.data[LPMS_UART_BAUDRATE]);
 	connectedInterface = RS232_CONNECTED;
 
 	serialPortInit(USART_BAUDRATE_921600);
@@ -50,7 +50,7 @@ void initCommunicationManager(void)
 #ifdef LPMS_BLE	
 	ttlUsartPortInit(USART_BAUDRATE_9600);
 #else
-	ttlUsartPortInit(USART_BAUDRATE_115200); // USART_BAUDRATE_921600);
+	ttlUsartPortInit(gReg.data[LPMS_UART_BAUDRATE]);
 #endif
 	
 	connectedInterface = TTL_UART_CONNECTED;
@@ -938,6 +938,16 @@ void parsePacket(void)
 				getMagReference(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
 			break;
+
+                        case SET_UART_BAUDRATE:
+				setUartBaudrate(packet.data);
+				sendAck();
+                        break;
+
+                        case GET_UART_BAUDRATE:
+				getUartBaudrate(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
+                        break;
 
 			default:
 			break;

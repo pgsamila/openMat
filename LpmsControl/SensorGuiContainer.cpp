@@ -1303,7 +1303,23 @@ void SensorGuiContainer::updateOpenMATIndex(int i)
 
 void SensorGuiContainer::updateBaudRateIndex(int i)
 {
-	sensor->setConfigurationPrm(PRM_UART_BAUDRATE, indexItem->currentIndex());
+	switch (baudRateCombo->currentIndex()) {
+	case 0:
+		sensor->setConfigurationPrm(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_19200);
+	break;
+	
+	case 1:
+		sensor->setConfigurationPrm(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_57600);
+	break;
+
+	case 2:
+		sensor->setConfigurationPrm(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_115200);
+	break;
+
+	case 3:
+		sensor->setConfigurationPrm(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_921600);
+	break;
+	}
 }
 
 void SensorGuiContainer::updateGyrThresholdEnable(int i)

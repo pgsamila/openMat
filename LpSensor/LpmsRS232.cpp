@@ -24,6 +24,7 @@
 LpmsRS232::LpmsRS232(CalibrationData *configData) :
 	LpmsIoInterface(configData)
 {
+	currentUartBaudrate = SELECT_LPMS_UART_BAUDRATE_115200;
 }
 	
 long long LpmsRS232::getConnectWait(void) { 
@@ -63,7 +64,28 @@ bool LpmsRS232::connect(string deviceId)
 		return false;
     }
 
-	rs232Config.BaudRate = 115200;
+	switch (currentUartBaudrate) {
+	case SELECT_LPMS_UART_BAUDRATE_19200:
+		rs232Config.BaudRate = 19200;
+	break;	
+	
+	case SELECT_LPMS_UART_BAUDRATE_57600:
+		rs232Config.BaudRate = 57600;
+	break;
+	
+	case SELECT_LPMS_UART_BAUDRATE_115200:
+		rs232Config.BaudRate = 115200;
+	break;
+
+	case SELECT_LPMS_UART_BAUDRATE_921600:
+		rs232Config.BaudRate = 921600;
+	break;
+	
+	default:
+		rs232Config.BaudRate = 115200;
+	break;
+	}
+	
 	rs232Config.StopBits = ONESTOPBIT;  
 	rs232Config.Parity = NOPARITY;     
 	rs232Config.ByteSize = 8;  
@@ -243,8 +265,6 @@ bool LpmsRS232::parseModbusByte(void)
 			
 			if (lrcReceived == lrcCheck) {
 				parseFunction();
-				/* cout << "[LPMS-U] Finished processing packet: " << c2 << endl;
-				c2++; */
 			} else {
 				cout << "[LPMS-U] Checksum fail in data packet" << endl;
 			}
@@ -276,7 +296,6 @@ bool LpmsRS232::pollData(void)
 	}	
 
 	for (unsigned int i=0; i < bytesReceived; i++) {
-		// printf("%x ", rxBuffer[i]);
 		dataQueue.push((unsigned char) rxBuffer[i]);
 	}	
 	
@@ -286,4 +305,9 @@ bool LpmsRS232::pollData(void)
 bool LpmsRS232::deviceStarted(void)
 {
 	return isOpen;
+}
+
+void LpmsRS232::setRs232Baudrate(int i)
+{
+	currentUartBaudrate = i;
 }

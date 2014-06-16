@@ -112,6 +112,7 @@ public:
 	void setThreadTiming(int delay);
 	bool isCanPresent(void);
 	void setCanBaudrate(int i);
+	void setRs232Baudrate(int i);
 
 private:	
 	list<LpmsSensor*> sensorList;	
@@ -128,7 +129,8 @@ private:
 	MicroMeasure savePeriodTimer;
 	int frameCounter;
 	long savePeriod;
-	float currentTimestamp;	
+	float currentTimestamp;
+	int currentUartBaudrate;
 	
 #ifdef _WIN32	
 	CanEngine ce;

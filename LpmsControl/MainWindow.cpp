@@ -119,7 +119,7 @@ void MainWindow::createMenuAndToolbar(void)
 		v4->addWidget(canBaudrateList);
 		QWidget *w4 = new QWidget();
 		w4->setLayout(v4);
-		w4->setFixedWidth(200);	
+		w4->setFixedWidth(150);	
 		toolbar->addWidget(w4);
 		connect(canBaudrateList, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanBaudrate(int)));
 	}
@@ -135,7 +135,7 @@ void MainWindow::createMenuAndToolbar(void)
 	v6->addWidget(rs232BaudrateList);
 	QWidget *w6 = new QWidget();
 	w6->setLayout(v6);
-	w6->setFixedWidth(200);	
+	w6->setFixedWidth(100);	
 	toolbar->addWidget(w6);
 	connect(rs232BaudrateList, SIGNAL(currentIndexChanged(int)), this, SLOT(updateRs232Baudrate(int)));
 	
@@ -356,7 +356,7 @@ void MainWindow::updateCanBaudrate(int i)
 
 void MainWindow::updateRs232Baudrate(int i)
 {
-	// sm->setRs232Baudrate(i);
+	sm->setRs232Baudrate(i);
 }
 
 MainWindow::MainWindow(QWidget *parent)

@@ -39,6 +39,8 @@ public:
 
 	/* Parses one byte of a LPBUS message. */
 	bool parseModbusByte(void);
+	
+	void setRs232Baudrate(int i);
 
 private:
 	bool read(unsigned char *rxBuffer, unsigned long *bytesReceived); 
@@ -54,6 +56,7 @@ private:
 	string portname;
 	bool isOpen;
 	string idNumber;
+	int currentUartBaudrate;
 };
 
 #endif

@@ -282,6 +282,7 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	
 	case DEVICE_LPMS_RS232:	
 		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
+		((LpmsRS232 *)sensor->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
 		sensorList.push_back(sensor);
 	break;
 	}
@@ -385,4 +386,9 @@ void LpmsSensorManager::setCanBaudrate(int i)
 #ifdef _WIN32	
 	ce.setBaudrate(i);
 #endif
+}
+
+void LpmsSensorManager::setRs232Baudrate(int i)
+{
+	currentUartBaudrate = i;
 }

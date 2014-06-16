@@ -88,6 +88,8 @@ public:
 	
 	/* Sets current CAN baudrate. */
 	virtual void setCanBaudrate(int i) = 0;
+	
+	virtual void setRs232Baudrate(int i) = 0;
 };
 
 #ifdef _WIN32

@@ -988,6 +988,19 @@ bool LpmsIoInterface::parseFunction(void)
 		break;	
 		}
 	break;
+	
+	case GET_UART_BAUDRATE:
+		fromBuffer(oneTx, &l);	
+		switch(l) {
+		case LPMS_UART_BAUDRATE_19200:
+			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_19200);				
+		break;
+
+		case LPMS_UART_BAUDRATE_57600:
+			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_57600);				
+		break;
+		}
+	break;
 
 	default:
 		return false;

@@ -130,12 +130,12 @@ void MainWindow::createMenuAndToolbar(void)
 	rs232BaudrateList->addItem("57600 bps");		
 	rs232BaudrateList->addItem("115200 bps");
 	rs232BaudrateList->addItem("921600 bps");
-	rs232BaudrateList->setCurrentIndex(3);
+	rs232BaudrateList->setCurrentIndex(2);
 	v6->addWidget(new QLabel("RS232 baudrate:"));
 	v6->addWidget(rs232BaudrateList);
 	QWidget *w6 = new QWidget();
 	w6->setLayout(v6);
-	w6->setFixedWidth(100);	
+	w6->setFixedWidth(150);	
 	toolbar->addWidget(w6);
 	connect(rs232BaudrateList, SIGNAL(currentIndexChanged(int)), this, SLOT(updateRs232Baudrate(int)));
 	

@@ -215,6 +215,7 @@ void LpmsSensorManager::run(void)
 #endif
 
 			if (scan_serial_ports_ == true) {
+				printf("[LpmsSensorManager] List RS232 devices\n");
 				LpmsRS232::listDevices(&deviceList);
 			}
 			LpmsU::listDevices(&deviceList);

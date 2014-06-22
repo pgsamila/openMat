@@ -118,6 +118,7 @@ public:
 	QComboBox* canPointModeCombo;
 	QComboBox* lpBusDataModeCombo;
 	QComboBox* baudRateCombo;
+	QComboBox* uartFormatCombo;
 	QSpinBox* canStartIdSpin;
 	int openMatId;
 	LpmsSensorI* sensor;
@@ -168,6 +169,7 @@ public slots:
 	void updateCanChannelMode(int i);
 	void updateLpBusDataMode(int i);
 	void updateBaudRateIndex(int i);
+	void updateUartFormatIndex(int i);
 };
 
 #endif

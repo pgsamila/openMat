@@ -991,14 +991,29 @@ bool LpmsIoInterface::parseFunction(void)
 	
 	case GET_UART_BAUDRATE:
 		fromBuffer(oneTx, &l);	
-		switch(l) {
+		switch(l & LPMS_UART_BAUDRATE_MASK) {
 		case LPMS_UART_BAUDRATE_19200:
-			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_19200);				
+			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_19200);
 		break;
 
 		case LPMS_UART_BAUDRATE_57600:
 			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_57600);				
 		break;
+
+		default:		
+		case LPMS_UART_BAUDRATE_115200:
+			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_115200);				
+		break;
+
+		case LPMS_UART_BAUDRATE_921600:
+			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_921600);				
+		break;		
+		}
+		
+		if ((l & LPMS_UART_FORMAT_LPBUS) == LPMS_UART_FORMAT_LPBUS) {
+			configData->setParameter(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_LPBUS);
+		} else  {
+			configData->setParameter(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_CSV);
 		}
 	break;
 
@@ -1028,7 +1043,7 @@ bool LpmsIoInterface::checkState(void)
 
 	if (waitForAck == true && ackReceived == false) {	
 		if (ackTimer.measure() > ACK_MAX_TIME) {
-			if (resendI < MAX_COMMAND_RESEND) {
+			/* if (resendI < MAX_COMMAND_RESEND) {
 				ackTimer.reset();
 				uploadTimer.reset();
 				++resendI;
@@ -1037,7 +1052,7 @@ bool LpmsIoInterface::checkState(void)
 				LOGV("[LpmsIoInterface] ACK timeout error. Resending command: %d\n", resendI);
 				
 				return true;
-			} else {			
+			} else { */
 				currentState = IDLE_STATE;
 				waitForAck = false;
 				waitForData = false;				
@@ -1050,13 +1065,13 @@ bool LpmsIoInterface::checkState(void)
 				if (ifs.is_open() == true) ifs.close();
 			
 				return false;
-			}
+			// }
 		}
 	} 
 	
 	if (waitForData == true && dataReceived == false) {
 		if (ackTimer.measure() > ACK_MAX_TIME) {
-			if (resendI < MAX_COMMAND_RESEND) {
+			/* if (resendI < MAX_COMMAND_RESEND) {
 				ackTimer.reset();
 				uploadTimer.reset();
 				++resendI;
@@ -1065,7 +1080,7 @@ bool LpmsIoInterface::checkState(void)
 				LOGV("[LpmsIoInterface] ACK timeout error. Resending command: %d\n", resendI);
 				
 				return true;
-			} else {			
+			} else { */		
 				currentState = IDLE_STATE;
 				waitForAck = false;
 				waitForData = false;
@@ -1076,7 +1091,7 @@ bool LpmsIoInterface::checkState(void)
 				LOGV("[LpmsIoInterface] ACK timeout error. Resetting send queue.\n");
 			
 				return false;
-			}
+			// }
 		}
 	}
 
@@ -2175,4 +2190,9 @@ bool LpmsIoInterface::getUartBaudRate(void)
 bool LpmsIoInterface::setUartBaudRate(int v)
 {
 	return modbusSetInt32(SET_UART_BAUDRATE, v);
+}
+
+bool LpmsIoInterface::setUartFormat(int v)
+{
+	return modbusSetInt32(SET_UART_FORMAT, v);
 }

@@ -318,5 +318,7 @@ void setTimestamp(uint8_t* data);
 uint8_t setLpBusDataMode(uint8_t* data);
 uint8_t setUartBaudrate(uint8_t* data);
 uint8_t getUartBaudrate(uint8_t* data, uint16_t *l);
+uint8_t setUartFormat(uint8_t* data);
+void updateUartFormat(void);
 
 #endif

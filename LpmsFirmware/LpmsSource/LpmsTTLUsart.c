@@ -9,14 +9,15 @@
 
 #include "LpmsTTLUsart.h"
 
-uint8_t 			ttlUsartPortRxBuffer[USART_MAX_RX_BUFFER_LENGTH];
-static DMA_InitTypeDef 		ttlUsartPortDMAInitStructure;
-static LpmsPacket 		ttlUsartPortNewPacket;
-static uint8_t 			ttlUsartPortRxState = PACKET_START;
-static uint16_t 		ttlUsartPortRawDataCounter = 0;
-static uint16_t 		ttlUsartPortRxDmaBufferPtr = 0;
+uint8_t ttlUsartPortRxBuffer[USART_MAX_RX_BUFFER_LENGTH];
+static DMA_InitTypeDef ttlUsartPortDMAInitStructure;
+static LpmsPacket ttlUsartPortNewPacket;
+static uint8_t ttlUsartPortRxState = PACKET_START;
+static uint16_t ttlUsartPortRawDataCounter = 0;
+static uint16_t ttlUsartPortRxDmaBufferPtr = 0;
 
 extern uint8_t connectedInterface;
+extern uint8_t transferFormat;
 
 void ttlUsartPortSetGPIOConfig(void)
 {
@@ -73,7 +74,7 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	GPIO_InitStructure.GPIO_Pin = TTL_USART_RX_PIN;
 	GPIO_Init(TTL_USART_IO_PORT, &GPIO_InitStructure);
 	
-        switch (baudrate) {
+        switch (baudrate & LPMS_UART_BAUDRATE_MASK) {
         case LPMS_UART_BAUDRATE_19200:
             USART_InitStructure.USART_BaudRate = 19200;
         break;
@@ -227,6 +228,7 @@ uint8_t ttlUsartPortPollDataBle(void)
 			if (ttlUsartPortNewPacket.lrcCheck == computeCheckSum(ttlUsartPortNewPacket)) {
 				addPacketToBuffer(ttlUsartPortNewPacket);
 				connectedInterface = TTL_UART_CONNECTED;
+				transferFormat = TRANSFER_FORMAT_LPBUS;
 			}			
 			break;
 				

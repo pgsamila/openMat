@@ -29,6 +29,7 @@ extern float pressure;
 extern float temperature;
 extern float heaveY;
 extern float measurementTime;
+extern uint8_t transferFormat;
 
 uint8_t writeRegisters(void)
 {
@@ -56,25 +57,53 @@ void updateConfigRegToSensorManager(void)
 	}
 }
 
+uint8_t setUartFormat(uint8_t* data)
+{
+	uint32_t format = getUi32t(data);
+
+	switch (format) {
+	case LPMS_UART_FORMAT_LPBUS:
+		gReg.data[LPMS_UART_BAUDRATE] = (gReg.data[LPMS_UART_BAUDRATE] & (~LPMS_UART_FORMAT_MASK)) | LPMS_UART_FORMAT_LPBUS;
+	break;
+
+	default:
+	case LPMS_UART_FORMAT_CSV:
+		gReg.data[LPMS_UART_BAUDRATE] = (gReg.data[LPMS_UART_BAUDRATE] & (~LPMS_UART_FORMAT_MASK)) | LPMS_UART_FORMAT_CSV;
+	break;
+	}
+
+	return 1;
+}
+
+void updateUartFormat(void)
+{
+	if ((gReg.data[LPMS_UART_BAUDRATE] & LPMS_UART_FORMAT_LPBUS) == LPMS_UART_FORMAT_LPBUS) {
+		transferFormat = TRANSFER_FORMAT_LPBUS;
+	} else  {
+		transferFormat = TRANSFER_FORMAT_ASCII;
+	}
+}
+
 uint8_t setUartBaudrate(uint8_t* data)
 {
 	uint32_t baudrate = getUi32t(data);
 	
 	switch (baudrate) {
 	case LPMS_UART_BAUDRATE_19200:
-		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_19200;
+		gReg.data[LPMS_UART_BAUDRATE] = (gReg.data[LPMS_UART_BAUDRATE] & (~LPMS_UART_BAUDRATE_MASK)) | LPMS_UART_BAUDRATE_19200;
 	break;
 
 	case LPMS_UART_BAUDRATE_57600:
-		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_57600;
+		gReg.data[LPMS_UART_BAUDRATE] = (gReg.data[LPMS_UART_BAUDRATE] & (~LPMS_UART_BAUDRATE_MASK)) | LPMS_UART_BAUDRATE_57600;
 	break;
 
+	default:
 	case LPMS_UART_BAUDRATE_115200:
-		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_115200;
+		gReg.data[LPMS_UART_BAUDRATE] = (gReg.data[LPMS_UART_BAUDRATE] & (~LPMS_UART_BAUDRATE_MASK)) | LPMS_UART_BAUDRATE_115200;
 	break;
 
 	case LPMS_UART_BAUDRATE_921600:
-		gReg.data[LPMS_UART_BAUDRATE] = LPMS_UART_BAUDRATE_921600;
+		gReg.data[LPMS_UART_BAUDRATE] = (gReg.data[LPMS_UART_BAUDRATE] & (~LPMS_UART_BAUDRATE_MASK)) | LPMS_UART_BAUDRATE_921600;
 	break;
 	}
 

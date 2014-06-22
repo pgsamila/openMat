@@ -84,6 +84,7 @@ public:
 	LpMatrix3x3f magMAlignmentMatrix;
 	int firmwareVersionDig2;
 	int uartBaudrate;
+	int uartFormat;
 	
 private:
 	std::mutex calibrationMutex;

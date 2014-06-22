@@ -68,6 +68,7 @@
 	stopped = false;
 	isRecording = false;
 	threadDelay = 750;
+	currentUartBaudrate = 2;
 
 	managerState = SMANAGER_MEASURE;
 
@@ -283,6 +284,7 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	
 	case DEVICE_LPMS_RS232:	
 		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
+		printf("baudrate: %d\n", currentUartBaudrate);
 		((LpmsRS232 *)sensor->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
 		sensorList.push_back(sensor);
 	break;
@@ -297,15 +299,16 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 
 void LpmsSensorManager::removeSensor(LpmsSensorI *sensor)
 {
-	lm.lock();
+	sensor->close();
+
+	lm.lock();	
 	sensorList.remove((LpmsSensor*) sensor);
-	
-#ifdef _WIN32	
+		
+#ifdef _WIN32
 	ce.removeSensor((LpmsCanIo*) ((LpmsSensor*) sensor)->getIoInterface());
 	be.removeSensor((LpmsBle*) ((LpmsSensor*) sensor)->getIoInterface());	
 #endif
 	
-	sensor->close();
 	delete sensor;
 	lm.unlock();
 }

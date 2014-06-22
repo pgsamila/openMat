@@ -44,6 +44,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	selectedDataGl = new QGridLayout();
 	QGridLayout* gl4 = new QGridLayout();
 	QGridLayout* gl5 = new QGridLayout();
+	QGridLayout* gl6 = new QGridLayout();	
 
 	l = 0;
 	gl5->addWidget(new QLabel("Connection:"), l, 0); ++l;
@@ -55,8 +56,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	gl->addWidget(new QLabel("IMU ID:"), l, 0); ++l;	
 	gl->addWidget(new QLabel("Transmission rate:"), l, 0); ++l;
 	
+	l = 0;
 	if (deviceType != DEVICE_LPMS_B && deviceType != DEVICE_LPMS_BLE) {	
-		gl->addWidget(new QLabel("Baud rate:"), l, 0); ++l;
+		gl6->addWidget(new QLabel("Baud rate:"), l, 0); ++l;
+		gl6->addWidget(new QLabel("Data format:"), l, 0); ++l;
 	}
 	
 	l = 0;
@@ -81,8 +84,11 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 
 	l = 0;
 	gl->addWidget(indexItem = new QComboBox(), l, 1); ++l;
-	gl->addWidget(samplingRateCombo = new QComboBox(), l, 1); ++l;	
-	gl->addWidget(baudRateCombo = new QComboBox(), l, 1); ++l;	
+	gl->addWidget(samplingRateCombo = new QComboBox(), l, 1); ++l;
+	
+	l = 0;
+	gl6->addWidget(baudRateCombo = new QComboBox(), l, 1); ++l;	
+	gl6->addWidget(uartFormatCombo = new QComboBox(), l, 1); ++l;	
 	
 	l = 0;	
 	gl1->addWidget(gyrRangeCombo = new QComboBox(), l, 1); ++l;
@@ -111,6 +117,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		baudRateCombo->addItem(QString("115200 bps"));
 		baudRateCombo->addItem(QString("921600 bps"));
 		connect(baudRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateBaudRateIndex(int)));
+		
+		uartFormatCombo->addItem(QString("LP-BUS (binary)"));
+		uartFormatCombo->addItem(QString("ASCII (CSV)"));
+		connect(uartFormatCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateUartFormatIndex(int)));
 	}
 	
 	if (deviceType != DEVICE_LPMS_BLE) {	
@@ -660,13 +670,21 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	w2->setLayout(gl2);
 	QTreeWidgetItem* filterTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("Filter")));
 	QTreeWidgetItem* filterTreeWidget = new QTreeWidgetItem(filterTreeItem);	
-	tree->setItemWidget(filterTreeWidget, 0, w2);	
+	tree->setItemWidget(filterTreeWidget, 0, w2);
+	
+	if (deviceType != DEVICE_LPMS_B && deviceType != DEVICE_LPMS_BLE) {
+		QWidget *w5 = new QWidget();
+		w5->setLayout(gl6);
+		QTreeWidgetItem* uartTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("UART (RS-232/TTL)")));
+		QTreeWidgetItem* uartTreeWidget = new QTreeWidgetItem(uartTreeItem);	
+		tree->setItemWidget(uartTreeWidget, 0, w5);	
+	}
 
-	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {	
-		QTreeWidgetItem* canTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("CAN bus")));
-		QTreeWidgetItem* canTreeWidget = new QTreeWidgetItem(canTreeItem);	
+	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
 		QWidget *w4 = new QWidget();
 		w4->setLayout(gl4);
+		QTreeWidgetItem* canTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("CAN bus")));
+		QTreeWidgetItem* canTreeWidget = new QTreeWidgetItem(canTreeItem);	
 		tree->setItemWidget(canTreeWidget, 0, w4);	
 	}
 	
@@ -797,23 +815,36 @@ void SensorGuiContainer::updateData(void) {
 	sensor->getConfigurationPrm(PRM_OPENMAT_ID, &i);		
 	indexItem->setCurrentIndex(i);
 	
-	sensor->getConfigurationPrm(PRM_UART_BAUDRATE, &i);	
-	switch (i) {
-	case SELECT_LPMS_UART_BAUDRATE_19200:
-		baudRateCombo->setCurrentIndex(0);	
-	break;
-	
-	case SELECT_LPMS_UART_BAUDRATE_57600:
-		baudRateCombo->setCurrentIndex(1);
-	break;
-	
-	case SELECT_LPMS_UART_BAUDRATE_115200:
-		baudRateCombo->setCurrentIndex(2);
-	break;
-	
-	case SELECT_LPMS_UART_BAUDRATE_921600:
-		baudRateCombo->setCurrentIndex(3);
-	break;
+	if (deviceType != DEVICE_LPMS_B && deviceType != DEVICE_LPMS_BLE) {
+		sensor->getConfigurationPrm(PRM_UART_BAUDRATE, &i);	
+		switch (i) {
+		case SELECT_LPMS_UART_BAUDRATE_19200:
+			baudRateCombo->setCurrentIndex(0);	
+		break;
+		
+		case SELECT_LPMS_UART_BAUDRATE_57600:
+			baudRateCombo->setCurrentIndex(1);
+		break;
+		
+		case SELECT_LPMS_UART_BAUDRATE_115200:
+			baudRateCombo->setCurrentIndex(2);
+		break;
+		
+		case SELECT_LPMS_UART_BAUDRATE_921600:
+			baudRateCombo->setCurrentIndex(3);
+		break;
+		}
+		
+		sensor->getConfigurationPrm(PRM_UART_FORMAT, &i);	
+		switch (i) {
+		case SELECT_LPMS_UART_FORMAT_LPBUS:
+			uartFormatCombo->setCurrentIndex(0);	
+		break;	
+		
+		case SELECT_LPMS_UART_FORMAT_CSV:
+			uartFormatCombo->setCurrentIndex(1);	
+		break;	
+		}
 	}
 
 	sensor->getConfigurationPrm(PRM_FIRMWARE_VERSION, cStr);		
@@ -1849,6 +1880,19 @@ void SensorGuiContainer::updateLpBusDataMode(int i)
 	
 	case 1:
 		sensor->setConfigurationPrm(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_16);
+	break;
+	}
+}
+
+void SensorGuiContainer::updateUartFormatIndex(int i)
+{
+	switch (uartFormatCombo->currentIndex()) {
+	case 0:
+		sensor->setConfigurationPrm(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_LPBUS);
+	break;
+	
+	case 1:
+		sensor->setConfigurationPrm(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_CSV);
 	break;
 	}
 }

@@ -90,5 +90,6 @@ mode=0
 [Breakpoints2]
 Count=0
 [Aliases]
-Count=0
+A0=_ "F:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsIAP\LpmsSource\main.c" ""
+Count=1
 SuppressDialog=0

@@ -1,4 +1,4 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-115200"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-VariableBaudrate"
 
 Name ${OPENMAT_VERSION_NAME}
 OutFile "${OPENMAT_VERSION_NAME}-Setup.exe"
@@ -55,7 +55,7 @@ Section "OpenMAT (required)"
 	SetOutPath $INSTDIR\include	
 	File "..\LpSensor\LpmsSensorI.h"
 	File "..\LpSensor\LpmsSensorManagerI.h"
-	File "..\OpenMATCommon\ImuData.h"
+	File "..\LpSensor\ImuData.h"
 	File "..\LpSensor\LpmsDefinitions.h"
 	File "..\LpSensor\DeviceListItem.h"
 	

@@ -22,6 +22,9 @@
 #define RS232_CONNECTED 3
 #define TTL_UART_CONNECTED 4
 
+#define TRANSFER_FORMAT_LPBUS 0
+#define TRANSFER_FORMAT_ASCII 1
+
 // LpBus byte information
 #define PACKET_START 0
 #define PACKET_ADDRESS_LB 1

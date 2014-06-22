@@ -71,5 +71,7 @@ void sendQueue(void);
 
 void waitForSendCompleted(void);
 
+uint8_t sendDataAscii(uint16_t length, uint8_t *data);
+
 #endif
 

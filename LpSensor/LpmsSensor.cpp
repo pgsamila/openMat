@@ -460,7 +460,7 @@ void LpmsSensor::update(void)
 				bt->getUartBaudRate();
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_SETTINGS_DONE;		
-			break;
+			break;		
 		
 			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
 			case C_STATE_SETTINGS_DONE:	
@@ -1023,6 +1023,24 @@ void LpmsSensor::update(void)
 			
 			LOGV("[LpmsSensor] Select UART baud rate to mode %d\n", p);
 		
+			state = STATE_SELECT_UART_FORMAT;
+		}
+	break;
+	
+	case STATE_SELECT_UART_FORMAT:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
+			configData.getParameter(PRM_UART_FORMAT, &p);
+			
+			switch (p) {
+			case SELECT_LPMS_UART_FORMAT_LPBUS:
+				bt->setUartFormat(LPMS_UART_FORMAT_LPBUS);
+			break;
+			
+			case SELECT_LPMS_UART_FORMAT_CSV:
+				bt->setUartFormat(LPMS_UART_FORMAT_CSV);
+			break;
+			}
+			
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
 		}

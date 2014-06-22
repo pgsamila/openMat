@@ -95,11 +95,11 @@ bool LpmsRS232::connect(string deviceId)
 	}
 
     COMMTIMEOUTS comTimeOut;                   
-    comTimeOut.ReadIntervalTimeout = 20;
-    comTimeOut.ReadTotalTimeoutMultiplier = 20;
-    comTimeOut.ReadTotalTimeoutConstant = 20;
-    comTimeOut.WriteTotalTimeoutMultiplier = 20;
-    comTimeOut.WriteTotalTimeoutConstant = 20;
+    comTimeOut.ReadIntervalTimeout = 5;
+    comTimeOut.ReadTotalTimeoutMultiplier = 5;
+    comTimeOut.ReadTotalTimeoutConstant = 5;
+    comTimeOut.WriteTotalTimeoutMultiplier = 5;
+    comTimeOut.WriteTotalTimeoutConstant = 5;
 	
     SetCommTimeouts(rs232Handle, &comTimeOut);
 

@@ -142,7 +142,7 @@ void MainWindow::createMenuAndToolbar(void)
 	connectMenu->addAction(connectAction);
 	connectMenu->addAction(disconnectAction);
 	connectMenu->addAction(addRemoveAction);
-	connectMenu->addSeparator();	
+	connectMenu->addSeparator();
 	connectMenu->addAction(exitAction);	
 
 	toolbar->addAction(connectAction);

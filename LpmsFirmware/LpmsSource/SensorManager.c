@@ -282,6 +282,7 @@ void initSensorManager(void)
 	updateMagAlignMatrix();
 	updateMagAlignBias();
 	updateMagReference();
+	updateUartFormat();
                     
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
@@ -709,6 +710,90 @@ void stopRefCalibration(void)
 	isRefCalibrationEnabled = 0;
 	
 	lpmsStatus &= ~LPMS_REF_CALIBRATION_RUNNING;	
+}
+
+uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
+{
+  	uint16_t o = 0;
+    uint8_t sl;
+
+	setUi32tAscii(&(data[o]), &sl, (uint32_t)(measurementTime * 10000.0f)); o = o+sl;
+	data[o] = ','; ++o;
+	
+	if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
+		for (int i=0; i<3; i++) {
+			setFloatAscii(&(data[o]), &sl, gRaw.data[i], FLOAT_FIXED_POINT_1000); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}
+	
+	if ((gReg.data[LPMS_CONFIG] & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
+		for (int i=0; i<3; i++) {
+			setFloatAscii(&(data[o]), &sl, aRaw.data[i], FLOAT_FIXED_POINT_1000); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}	
+
+	if ((gReg.data[LPMS_CONFIG] & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
+		for (int i=0; i<3; i++) {
+			setFloatAscii(&(data[o]), &sl, bRaw.data[i], FLOAT_FIXED_POINT_100); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}
+
+	if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) {
+		for (int i=0; i<3; i++) {
+			setFloatAscii(&(data[o]), &sl, w.data[i], FLOAT_FIXED_POINT_1000); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}
+	
+	if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
+		for (int i=0; i<4; i++) {
+			setFloatAscii(&(data[o]), &sl, qAfterOffset.data[i], FLOAT_FIXED_POINT_1000); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}	
+		
+	if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0)  {
+		for (int i=0; i<3; i++) {
+			setFloatAscii(&(data[o]), &sl, rAfterOffset.data[i], FLOAT_FIXED_POINT_1000); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}	
+
+	if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) {
+		for (int i=0; i<3; i++) {
+			setFloatAscii(&(data[o]), &sl, linAcc.data[i], FLOAT_FIXED_POINT_1000); o = o+sl;
+			data[o] = ','; ++o;
+		}
+	}
+
+	if ((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
+		setFloatAscii(&(data[o]), &sl, pressure, FLOAT_FIXED_POINT_100); o = o+sl;
+		data[o] = ','; ++o;
+	}
+
+	if ((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
+		setFloatAscii(&(data[o]), &sl, altitude, FLOAT_FIXED_POINT_10); o = o+sl;
+		data[o] = ','; ++o;
+	}	
+
+	if ((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
+		setFloatAscii(&(data[o]), &sl, temperature, FLOAT_FIXED_POINT_100); o = o+sl;
+		data[o] = ','; ++o;
+	}
+
+#ifdef USE_HEAVEMOTION
+	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
+		setFloatAscii(&(data[o]), &sl, heaveY, FLOAT_FIXED_POINT_1000); o = o+sl;
+		data[o] = ','; ++o;
+	}
+#endif
+
+	*l = o;
+
+    return 1;
 }
 
 uint8_t getSensorData(uint8_t* data, uint16_t *l)

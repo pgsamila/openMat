@@ -9,14 +9,15 @@
 
 #include "LpmsRs232Usart.h"
 
-uint8_t 			rs232PortRxBuffer[USART_MAX_RX_BUFFER_LENGTH];
-static DMA_InitTypeDef 		rs232PortDMAInitStructure;
-static LpmsPacket 		rs232PortNewPacket;
-static uint8_t 			rs232PortRxState = PACKET_START;
-static uint16_t 		rs232PortRawDataCounter = 0;
-static uint16_t 		rs232PortRxDmaBufferPtr = 0;
+uint8_t rs232PortRxBuffer[USART_MAX_RX_BUFFER_LENGTH];
+static DMA_InitTypeDef rs232PortDMAInitStructure;
+static LpmsPacket rs232PortNewPacket;
+static uint8_t rs232PortRxState = PACKET_START;
+static uint16_t rs232PortRawDataCounter = 0;
+static uint16_t rs232PortRxDmaBufferPtr = 0;
 
 extern uint8_t connectedInterface;
+extern uint8_t transferFormat;
 
 void rs232PortSetGPIOConfig(void)
 {
@@ -74,26 +75,26 @@ void rs232PortSetConfig(uint32_t baudrate)
 	GPIO_InitStructure.GPIO_Pin = RS232_RX_PIN;
 	GPIO_Init(RS232_IO_PORT, &GPIO_InitStructure);
 	
-        switch (baudrate) {
-        case LPMS_UART_BAUDRATE_19200:
-            USART_InitStructure.USART_BaudRate = 19200;
-        break;
+	switch (baudrate & LPMS_UART_BAUDRATE_MASK) {
+	case LPMS_UART_BAUDRATE_19200:
+		USART_InitStructure.USART_BaudRate = 19200;
+	break;
 
-        case LPMS_UART_BAUDRATE_57600:
-            USART_InitStructure.USART_BaudRate = 57600;
-        break;
+	case LPMS_UART_BAUDRATE_57600:
+		USART_InitStructure.USART_BaudRate = 57600;
+	break;
 
-        case LPMS_UART_BAUDRATE_115200:
-	    USART_InitStructure.USART_BaudRate = 115200;
-        break;
+	case LPMS_UART_BAUDRATE_115200:
+	USART_InitStructure.USART_BaudRate = 115200;
+	break;
 
-        case LPMS_UART_BAUDRATE_921600:
-	    USART_InitStructure.USART_BaudRate = 921600;
-        break;
-        
-        default:
-            USART_InitStructure.USART_BaudRate = 115200;
-        }
+	case LPMS_UART_BAUDRATE_921600:
+	USART_InitStructure.USART_BaudRate = 921600;
+	break;
+	
+	default:
+		USART_InitStructure.USART_BaudRate = 115200;
+	}
 
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
@@ -262,6 +263,7 @@ uint8_t rs232PortPollData(void)
 				if (rs232PortNewPacket.lrcCheck == computeCheckSum(rs232PortNewPacket)) {
 					addPacketToBuffer(rs232PortNewPacket);
 					connectedInterface = RS232_CONNECTED;
+					transferFormat = TRANSFER_FORMAT_LPBUS;
 				}
 			} else {
 				rs232PortRxState = PACKET_START;

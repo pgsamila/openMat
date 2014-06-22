@@ -251,6 +251,10 @@ bool CalibrationData::setParameter(int parameterIndex, int parameter)
 	case PRM_UART_BAUDRATE:
 		uartBaudrate = parameter;
 	break;
+	
+	case PRM_UART_FORMAT:
+		uartFormat = parameter;
+	break;
 	}
 
 	calibrationMutex.unlock();
@@ -438,6 +442,10 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 	
 	case PRM_UART_BAUDRATE:
 		*parameter = uartBaudrate;
+	break;
+	
+	case PRM_UART_FORMAT:
+		*parameter = uartFormat;
 	break;
 	}
 

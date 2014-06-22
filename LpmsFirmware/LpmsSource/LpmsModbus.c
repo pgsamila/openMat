@@ -8,6 +8,7 @@
 
 LpmsPacket rxPacketBuffer[MAX_RX_PACKET_BUFFER];
 uint8_t connectedInterface = CANOPEN_CONNECTED;
+uint8_t transferFormat = TRANSFER_FORMAT_LPBUS;
 uint8_t rxPacketBufferPtr = 0;
 uint8_t processedPacketPtr = 0;
 

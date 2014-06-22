@@ -30,6 +30,7 @@ volatile int ttlUsartFirstTimeTx = 1;
 extern uint8_t rxPacketBufferPtr;
 extern uint8_t processedPacketPtr;
 extern uint8_t connectedInterface;
+extern uint8_t transferFormat;
 extern LpmsPacket rxPacketBuffer[MAX_RX_PACKET_BUFFER];
 extern LpmsReg gReg;
 extern int modeHasChanged;
@@ -79,10 +80,31 @@ uint8_t checkCommunicationStatus(void)
 	return 1;
 }
 
+uint8_t sendDataAscii(uint16_t length, uint8_t *data)
+{
+	int i;
+	uint8_t txData[MAX_PACKET_DATA_LENGTH];
+
+	txData[0] = 0x02;
+	txData[length+1] = 0x03;
+
+	for (int i=0; i<length; ++i) txData[i+1] = data[i];
+	
+	if (txIndex+length+2 < MAX_BUFFER) {
+		for (i=0; i<(length+2); ++i) {
+			txBuffer[txIndex] = txData[i];
+			++txIndex;
+		}
+	} else {
+		asm("NOP");
+	}
+
+	return 1;
+}
+
 uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *data)
 {
 	int i;
-
 	uint8_t txData[MAX_PACKET_DATA_LENGTH];
 	uint16_t txLrcCheck;
 
@@ -187,11 +209,7 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
 
-// #ifdef LPMS_BLE
-// 	if (txIndex+11+length < MAX_BUFFER_BLE) {
-// #else
 	if (txIndex+11+length < MAX_BUFFER) {
-// #endif
 		for (i=0; i<(11+length); ++i) {
 			txBuffer[txIndex] = txData[i];
 			++txIndex;
@@ -301,21 +319,31 @@ void updateDataTransmission(void)
   	uint8_t dataBuffer[512];
 	uint16_t dataLength = 0;	
 
+#ifdef USE_BLUETOOTH_INTERFACE
 	getSensorData(dataBuffer, &dataLength);
-
-#ifdef USE_BLUETOOTH_INTERFACE	
 	sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 #else
 	if (connectedInterface == CANBUS_CONNECTED) {
+		getSensorData(dataBuffer, &dataLength);
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	} else if (connectedInterface == USB_CONNECTED) {
+		getSensorData(dataBuffer, &dataLength);
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
 	} else if (connectedInterface == CANOPEN_CONNECTED) {
+		getSensorData(dataBuffer, &dataLength);
 		sendCANOpenOrientationData();
-	} else if (connectedInterface == RS232_CONNECTED) {
+	} else if (connectedInterface == RS232_CONNECTED && transferFormat == TRANSFER_FORMAT_LPBUS) {
+		getSensorData(dataBuffer, &dataLength);
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
-	} else if (connectedInterface == TTL_UART_CONNECTED) {
+	} else if (connectedInterface == RS232_CONNECTED && transferFormat == TRANSFER_FORMAT_ASCII) {
+		getSensorDataAscii(dataBuffer, &dataLength);
+		sendDataAscii(dataLength, dataBuffer);
+	} else if (connectedInterface == TTL_UART_CONNECTED && transferFormat == TRANSFER_FORMAT_LPBUS) {
+		getSensorData(dataBuffer, &dataLength);
 		sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);
+	} else if (connectedInterface == TTL_UART_CONNECTED && transferFormat == TRANSFER_FORMAT_ASCII) {
+		getSensorDataAscii(dataBuffer, &dataLength);
+		sendDataAscii(dataLength, dataBuffer);
 	}
 #endif
 }
@@ -939,15 +967,20 @@ void parsePacket(void)
 				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
 			break;
 
-                        case SET_UART_BAUDRATE:
+			case SET_UART_BAUDRATE:
 				setUartBaudrate(packet.data);
 				sendAck();
-                        break;
-
-                        case GET_UART_BAUDRATE:
+			break;
+			
+			case GET_UART_BAUDRATE:
 				getUartBaudrate(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
-                        break;
+				sendData(getImuID(), GET_UART_BAUDRATE, dataLength, dataBuffer);
+			break;
+			
+			case SET_UART_FORMAT:
+				setUartFormat(packet.data);
+				sendAck();
+			break;
 
 			default:
 			break;

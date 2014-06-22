@@ -107,4 +107,8 @@ uint8_t getRegMatrix3x3f(uint8_t i, LpMatrix3x3f *m);
 
 void setI16t(uint8_t* data, int16_t v);
 
+void setFloatAscii(uint8_t* data, uint8_t *length, float v, uint8_t prec);
+
+void setUi32tAscii(uint8_t* data, uint8_t *length, uint32_t v);
+
 #endif

@@ -35,7 +35,7 @@
 #define GYRO_ONLINE_CAL_ITER 			128
 
 // Amplitude threshold for gyrsocope auto-calibration
-#define GYR_CAL_THRES 				2.5f
+#define GYR_CAL_THRES 				3.25f
 
 // Duration of gyroscope auto-calibration sequence
 #define GYR_CAL_TIMEOUT 			5000
@@ -201,5 +201,7 @@ void setSleepMode(void);
 void setDataSendingFlag(void);
 
 int isDataSendingSet(void);
+
+uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l);
 
 #endif

@@ -67,11 +67,13 @@ QGroupBox *MainWindow::createGraphs(void)
 	graphWindow = new GraphWindow();	
 	fieldMapWindow = new FieldMapContainer();
 	gaitTrackingWindow = new GaitTrackingWindow();
+	insoleWindow = new InsoleView();
 	
 	graphLayout->addWidget(graphWindow);
 	graphLayout->addWidget(cubeWindowContainer);
 	graphLayout->addWidget(fieldMapWindow);
 	graphLayout->addWidget(gaitTrackingWindow);
+	graphLayout->addWidget(insoleWindow);
 		
 	QGroupBox *gb = new QGroupBox("Data view");
 	gb->setLayout(graphLayout);	
@@ -79,6 +81,7 @@ QGroupBox *MainWindow::createGraphs(void)
 	cubeWindowContainer->hide();
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
+	insoleWindow->hide();
 	
 	return gb;
 }
@@ -255,6 +258,7 @@ void MainWindow::createMenuAndToolbar(void)
 	QAction* pressureGraphAction = new QAction(QIcon("./icons/eyedropper_32x32.png"), "Pressu&re window", this);
 	QAction* threedAction = new QAction(QIcon("./icons/share_32x32.png"), "3D &visualization", this);
 	QAction* fieldMapAction = new QAction(QIcon("./icons/sun_fill_32x32.png"), "&Magnetic field map", this);
+	QAction* insoleViewAction = new QAction(QIcon("./icons/map_pin_fill_20x32.png"), "&Insole window", this);
 	cubeMode1Action = new QAction("3D view mode 1", this);
 	cubeMode1Action->setCheckable(true);
 	cubeMode1Action->setChecked(true);
@@ -273,6 +277,8 @@ void MainWindow::createMenuAndToolbar(void)
 	viewMenu->addAction(cubeMode1Action);
 	viewMenu->addAction(cubeMode2Action);
 	viewMenu->addAction(cubeMode4Action);
+	viewMenu->addSeparator();
+	viewMenu->addAction(insoleViewAction);	
 		
 	toolbar->addSeparator();
 		
@@ -285,7 +291,8 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addAction(orientationGraphAction);
 	toolbar->addAction(pressureGraphAction);
 	toolbar->addAction(threedAction);
-	toolbar->addAction(fieldMapAction); 	
+	toolbar->addAction(fieldMapAction);
+	toolbar->addAction(insoleViewAction);
 
 	QMenu* expertMenu = menuBar()->addMenu("&Advanced");
 	QAction* firmwareAction = new QAction("Upload firmware", this);
@@ -343,7 +350,8 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(browseReplayAction, SIGNAL(triggered()), this, SLOT(browsePlaybackFile()));	
 	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
 	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));	
-	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));	
+	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));
+	connect(insoleViewAction, SIGNAL(triggered()), this, SLOT(selectInsoleWindow()));
 }
 
 void MainWindow::updateCanBaudrate(int i)
@@ -628,6 +636,13 @@ void MainWindow::timerUpdate(void)
 				
 				case MODE_GAIT_TRACKING_WIN:
 					gaitTrackingWindow->update(imuData);
+				break;
+				
+				case MODE_INSOLE_WIN:
+					insoleWindow->updateMarker(0, imuData.q[0]);
+					insoleWindow->updateMarker(1, imuData.q[1]);
+					insoleWindow->updateMarker(2, imuData.q[2]);
+					insoleWindow->updateMarker(3, imuData.q[3]);
 				break;
 				}
 			} 
@@ -1050,6 +1065,7 @@ void MainWindow::selectGraphWindow(void)
 	cubeWindowContainer->hide();
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
+	insoleWindow->hide();	
 	
 	graphWindow->setMode(GRAPH_MODE_RAW);
 	graphWindow->show();
@@ -1062,6 +1078,7 @@ void MainWindow::selectGraph2Window(void)
 	cubeWindowContainer->hide();	
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
+	insoleWindow->hide();
 	
 	graphWindow->setMode(GRAPH_MODE_ORIENTATION);
 	graphWindow->show();
@@ -1074,6 +1091,7 @@ void MainWindow::selectGraph3Window(void)
 	cubeWindowContainer->hide();	
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
+	insoleWindow->hide();	
 
 	graphWindow->setMode(GRAPH_MODE_PRESSURE);
 	graphWindow->show();	
@@ -1086,6 +1104,7 @@ void MainWindow::selectHeaveMotionWindow(void)
 	cubeWindowContainer->hide();	
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
+	insoleWindow->hide();	
 
 	graphWindow->setMode(GRAPH_MODE_HEAVEMOTION);
 	graphWindow->show();	
@@ -1097,7 +1116,8 @@ void MainWindow::selectGaitTrackingWindow(void)
 {
 	cubeWindowContainer->hide();	
 	fieldMapWindow->hide();
-	graphWindow->hide();	
+	graphWindow->hide();
+	insoleWindow->hide();	
 	
 	gaitTrackingWindow->show();
 		
@@ -1109,7 +1129,8 @@ void MainWindow::selectThreeDWindow(void)
 	graphWindow->hide();
 	fieldMapWindow->hide();
 	gaitTrackingWindow->hide();
-
+	insoleWindow->hide();
+	
 	cubeWindowContainer->update();
 	cubeWindowContainer->show();
 	
@@ -1121,10 +1142,23 @@ void MainWindow::selectFieldMapWindow(void)
 	graphWindow->hide();
 	cubeWindowContainer->hide();
 	gaitTrackingWindow->hide();
+	insoleWindow->hide();	
 	
 	fieldMapWindow->show();
 	
 	mode = MODE_FIELDMAP_WIN;
+}
+
+void MainWindow::selectInsoleWindow(void)
+{
+	graphWindow->hide();
+	cubeWindowContainer->hide();
+	gaitTrackingWindow->hide();
+	fieldMapWindow->hide();
+	
+	insoleWindow->show();
+	
+	mode = MODE_INSOLE_WIN;
 }
 
 bool MainWindow::exitWindow(void)

@@ -1,4 +1,4 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-115200"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-InsoleView"
 
 Name ${OPENMAT_VERSION_NAME}
 OutFile "${OPENMAT_VERSION_NAME}-Setup.exe"
@@ -111,6 +111,10 @@ Section "OpenMAT (required)"
 	File "..\LpmsControl\icons\pause_24x32.png"
 	File "..\LpmsControl\icons\compass_32x32.png"
 	File "..\LpmsControl\icons\denied_32x32.png"
+	File "..\LpmsControl\icons\map_pin_fill_20x32.png"
+	
+	SetOutPath $INSTDIR\bin\svg
+	File "..\LpmsControl\svg\foot_print_two_black_white_line_art.svg"	
 	
 	WriteRegStr HKLM SOFTWARE\OpenMAT\${OPENMAT_VERSION_NAME} "Install_Dir" "$INSTDIR"
 	

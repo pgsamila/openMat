@@ -77,6 +77,7 @@
 #include "GaitTrackingWindow.h"
 #include "MotionBuilderCommunication.h"
 #include "PlayControl.h"
+#include "InsoleView.h"
 
 #include <string>
 #include <iostream>
@@ -93,6 +94,7 @@ using namespace boost;
 #define MODE_THREED_WIN 1
 #define MODE_FIELDMAP_WIN 2
 #define MODE_GAIT_TRACKING_WIN 3
+#define MODE_INSOLE_WIN 4
 
 #define USE_HEAVEMOTION
 #define USE_MB_SERVER
@@ -305,6 +307,8 @@ public slots:
 	
 	void updateSensorSyncSetting(int i);
 	
+	void selectInsoleWindow(void);
+	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	
@@ -409,6 +413,7 @@ private:
 	QLineEdit *playbackFileEdit;
 	bool playbackFileSet;
 	QComboBox *sensorSyncCombo;
+	InsoleView* insoleWindow;	
 	
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		

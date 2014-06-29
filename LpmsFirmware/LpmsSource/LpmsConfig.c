@@ -334,6 +334,7 @@ uint8_t resetToFactory(void)
 	setDefaultAlignMatrix();
 	setDefaultAlignBias();
 	setDefaultMagReference();
+	setDefaultAlignmentOffset();
 
 	writeCompleteRegisterSet();
 	

@@ -30,6 +30,8 @@ extern float temperature;
 extern float heaveY;
 extern float measurementTime;
 extern uint8_t transferFormat;
+extern LpVector4f mQ_hx;
+extern LpVector4f mQ_offset;
 
 uint8_t writeRegisters(void)
 {
@@ -313,26 +315,35 @@ uint8_t setStreamFreq(uint8_t* data)
 
 uint8_t setOrientationOffset(uint8_t* data)
 {
-	qOffset.data[0] = 1.0f;
-	qOffset.data[1] = 0.0f;
-	qOffset.data[2] = 0.0f;
-	qOffset.data[3] = 0.0f;
+	uint32_t v = getUi32t(data);
 
-  	quaternionInv(&q, &qOffset);
+	if (v > 0 && v < LPMS_OFFSET_MODE_ALIGNMENT+1) setRegUInt32(LPMS_OFFSET_MODE, v);
 
-	setRegVector4f(LPMS_OFFSET_QUAT_0, qOffset);
+	calculateAlignmentOffset(q);
+
+	setRegVector4f(LPMS_OFFSET_QUAT_0, mQ_offset);
+	setRegVector4f(LPMS_HEADING_OFFSET_0, mQ_hx);
   
   	return 1;
 }
 
+void setDefaultAlignmentOffset(void)
+{
+	LpVector4f q_temp;
+	quaternionIdentity(&q_temp);
+
+	setRegUInt32(LPMS_OFFSET_MODE, LPMS_OFFSET_MODE_ALIGNMENT);
+
+	setRegVector4f(LPMS_OFFSET_QUAT_0, q_temp);
+	setRegVector4f(LPMS_HEADING_OFFSET_0, q_temp);
+}
+
 uint8_t resetOrientationOffset(uint8_t* data)
 {
-	qOffset.data[0] = 1.0f;
-	qOffset.data[1] = 0.0f;
-	qOffset.data[2] = 0.0f;
-	qOffset.data[3] = 0.0f;
+	quaternionIdentity(&mQ_hx);
+	quaternionIdentity(&mQ_offset);
 
-	setRegVector4f(LPMS_OFFSET_QUAT_0, qOffset);
+	setRegVector4f(LPMS_OFFSET_QUAT_0, mQ_offset);
   
   	return 1;
 }

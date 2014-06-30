@@ -303,8 +303,6 @@ public slots:
 
 	void resetHeading(void);
 	
-	void updateSensorSyncSetting(int i);
-	
 	void armTimestampReset(void);
 	
 private:

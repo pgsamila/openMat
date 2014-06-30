@@ -161,18 +161,6 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addWidget(w);
 	toolbar->addAction(browseAction);
 	
-	QVBoxLayout *v5 = new QVBoxLayout();
-	sensorSyncCombo = new QComboBox();
-	sensorSyncCombo->addItem("Off");
-	sensorSyncCombo->addItem("On");
-	v5->addWidget(new QLabel("Timestamp sync:"));
-	v5->addWidget(sensorSyncCombo);
-	QWidget *w5 = new QWidget();
-	w5->setLayout(v5);
-	w5->setFixedWidth(125);	
-	toolbar->addWidget(w5);
-	connect(sensorSyncCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSensorSyncSetting(int)));
-	
 	replayAction = new QAction(QIcon("./icons/loop_alt2_32x28.png"), "&Playback data", this);
 	QAction* browseReplayAction = new QAction(QIcon("./icons/folder_stroke_32x32.png"), "&Browse replay file", this);
 	
@@ -1739,18 +1727,5 @@ void MainWindow::browsePlaybackFile(void)
 		globalPlaybackFile = playbackFilename;
 		playbackFileEdit->setText(playbackFilename.c_str());
 		playbackFileSet = true;
-	}
-}
-
-void MainWindow::updateSensorSyncSetting(int i)
-{
-	switch (sensorSyncCombo->currentIndex()) {
-	case 0:
-		sm->setSensorSync(false);
-	break;
-	
-	case 1:
-		sm->setSensorSync(true);
-	break;
 	}
 }

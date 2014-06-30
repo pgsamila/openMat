@@ -112,8 +112,6 @@ public:
 	void setThreadTiming(int delay);
 	bool isCanPresent(void);
 	void setCanBaudrate(int i);
-	void setSensorSync(bool s);
-	bool getSensorSync(void);
 
 private:	
 	list<LpmsSensor*> sensorList;	
@@ -127,7 +125,6 @@ private:
 	int threadDelay;
 	char writeBuffer[65536];
 	bool scan_serial_ports_;
-	MicroMeasure syncTimer;
 	bool isSensorSyncOn;
 	MicroMeasure savePeriodTimer;
 	int frameCounter;

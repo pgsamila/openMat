@@ -21,7 +21,7 @@
 #define LPMS_DEVICE_RELEASE_DATE 	(('1' << 24) | ('2' << 16) | ('0' << 8) | '3') 
 
 // Size of register array
-#define	REG_ARRAY_SIZE 		(uint32_t)138
+#define	REG_ARRAY_SIZE 		(uint32_t)142
 
 // Number of commands
 #define	COMMAND_ARRAY_SIZE 	(uint32_t)96
@@ -150,7 +150,7 @@
 #define	LPMS_HEADING_OFFSET_1 	(REG_START_ADDRESS + 138)
 #define	LPMS_HEADING_OFFSET_2 	(REG_START_ADDRESS + 139)
 #define	LPMS_HEADING_OFFSET_3 	(REG_START_ADDRESS + 140)
-#define LPMS_OFFSET_MODE		(REG_START_ADDRESS + 141)
+#define LPMS_OFFSET_MODE	(REG_START_ADDRESS + 141)
 
 // Commands --> 
 

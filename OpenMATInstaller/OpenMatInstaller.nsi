@@ -1,4 +1,4 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-VariableBaudrate"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-HardwareTimestampReset"
 
 Name ${OPENMAT_VERSION_NAME}
 OutFile "${OPENMAT_VERSION_NAME}-Setup.exe"

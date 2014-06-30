@@ -218,6 +218,8 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addAction(resetOffsetAction);
 	QAction* resetHeadingAction = new QAction(QIcon("./icons/compass_32x32.png"), "Reset heading", this);
 	toolbar->addAction(resetHeadingAction);
+	QAction* armTimestampResetAction = new QAction(QIcon("./icons/clock_32x32.png"), "Arm timestamp reset", this);
+	toolbar->addAction(armTimestampResetAction);	
 	
 	QMenu* calibrationMenu = menuBar()->addMenu("&Calibration");
 	
@@ -249,6 +251,8 @@ void MainWindow::createMenuAndToolbar(void)
 	calibrationMenu->addAction(setOffsetAction);
 	calibrationMenu->addAction(resetOffsetAction);
 	calibrationMenu->addAction(resetHeadingAction);
+	calibrationMenu->addSeparator();
+	calibrationMenu->addAction(armTimestampResetAction);
 	calibrationMenu->addSeparator();	
 	calibrationMenu->addAction(resetToFactoryAction);
 	
@@ -346,7 +350,8 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(browseReplayAction, SIGNAL(triggered()), this, SLOT(browsePlaybackFile()));	
 	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
 	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));	
-	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));	
+	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));
+	connect(armTimestampResetAction, SIGNAL(triggered()), this, SLOT(armTimestampReset()));
 }
 
 void MainWindow::updateCanBaudrate(int i)
@@ -824,6 +829,21 @@ void MainWindow::resetHeading(void)
 		}
 	} else {
 		currentLpms->getSensor()->startMagReferenceCal();
+	}
+}
+
+void MainWindow::armTimestampReset(void)
+{
+	std::list<SensorGuiContainer *>::iterator it;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (targetCombo->currentIndex() == 0) {	
+		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
+			(*it)->getSensor()->armTimestampReset();
+		}
+	} else {
+		currentLpms->getSensor()->armTimestampReset();
 	}
 }
 

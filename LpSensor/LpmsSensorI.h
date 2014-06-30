@@ -203,6 +203,7 @@ public:
 	virtual void startMagCalibration(void) = 0;	
 	
 	virtual void setTimestamp(float t) = 0;
+	virtual void armTimestampReset(void) = 0;
 }; 
 
 #ifdef _WIN32

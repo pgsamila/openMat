@@ -153,6 +153,7 @@
 #define STATE_RESET_ORIENTATION_OFFSET 71
 #define STATE_SELECT_UART_BAUDRATE 72
 #define STATE_SELECT_UART_FORMAT 73
+#define STATE_ARM_TIMESTAMP_RESET 74
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GYR_RANGE 2
@@ -262,6 +263,7 @@ public:
 	void resetOrientationOffset(void);
 	void startMagCalibration(void);
 	void setTimestamp(float t);
+	void armTimestampReset(void);
 	
 private:
 	void checkResetReference(void);

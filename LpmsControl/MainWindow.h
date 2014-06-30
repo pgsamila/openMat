@@ -304,6 +304,7 @@ public slots:
 	void resetHeading(void);
 	
 	void updateRs232Baudrate(int i);
+	void armTimestampReset(void);
 	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;

@@ -204,4 +204,6 @@ int isDataSendingSet(void);
 
 uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l);
 
+void checkTimestampReset(void);
+
 #endif

@@ -2196,3 +2196,8 @@ bool LpmsIoInterface::setUartFormat(int v)
 {
 	return modbusSetInt32(SET_UART_FORMAT, v);
 }
+bool LpmsIoInterface::armTimestampReset(int v)
+{
+	printf("Arm timestamp reset\n");
+	return modbusSetInt32(SET_ARM_HARDWARE_TIMESTAMP_RESET, v);
+}

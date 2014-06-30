@@ -321,5 +321,6 @@ uint8_t getUartBaudrate(uint8_t* data, uint16_t *l);
 uint8_t setUartFormat(uint8_t* data);
 void updateUartFormat(void);
 void armHardwareTimestampReset(uint8_t* data);
+void setDefaultAlignmentOffset(void);
 
 #endif

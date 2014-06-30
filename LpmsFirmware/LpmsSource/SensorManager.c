@@ -81,6 +81,8 @@ float heaveTime = 0.0f;
 LpVector3f heaveOutput;
 float heaveY = 0.0f;
 LpVector3f aRawNoLp;
+LpVector4f mQ_hx;
+LpVector4f mQ_offset;
 
 extern uint8_t isSelfTestOn;
 extern LpmsReg gReg;
@@ -285,6 +287,9 @@ void initSensorManager(void)
 	updateMagAlignBias();
 	updateMagReference();
 	updateUartFormat();
+
+	quaternionIdentity(&mQ_hx);
+	quaternionIdentity(&mQ_offset);
                     
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
@@ -402,10 +407,11 @@ void processSensorData(void)
   
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
-		quaternionMult(&qOffset, &q, &qAfterOffset);
 
-                if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
-                if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
+		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE]);
+
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
 		
 #ifdef USE_HEAVEMOTION

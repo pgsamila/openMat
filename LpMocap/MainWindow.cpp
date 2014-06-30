@@ -252,14 +252,14 @@ MainWindow::MainWindow(QWidget *parent) :
 		
 	QSplitter *graphSplit = new QSplitter(Qt::Horizontal);
 	QSplitter *mainSplit = new QSplitter(Qt::Vertical);
-	QSplitter *modelWinHSplit = new QSplitter(Qt::Horizontal);
+	modelWinHSplit = new QSplitter(Qt::Horizontal);
 		
 	modelWinHSplit->addWidget(videoWin);
 	modelWinHSplit->addWidget(hmWin);
 	modelWinHSplit->setStretchFactor(0, 3);
 	modelWinHSplit->setStretchFactor(1, 4);
 	
-	graphSplit->addWidget(&linkList /* humanModelTree */);
+	graphSplit->addWidget(&linkList);
 	graphSplit->addWidget(graphWin);
 	graphSplit->setStretchFactor(0, 2);
 	graphSplit->setStretchFactor(1, 7);	
@@ -273,7 +273,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	
 	linkList.hide();
 	graphWin->hide();
-	videoWin->hide();
+	
+	videoWin->show();
 	
 	connect(connect_action, SIGNAL(triggered()), this, SLOT(ConnectServer()));
 	connect(disconnect_action, SIGNAL(triggered()), this, SLOT(DisconnectServer()));
@@ -310,6 +311,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	global_timer.reset();
 
 	showMaximized();
+	
+	videoWin->hide();
 }
 
 void MainWindow::updateSettings(int)

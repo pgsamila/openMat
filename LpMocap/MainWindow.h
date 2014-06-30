@@ -178,6 +178,7 @@ public:
 	bool isRecordVideo;
 	QListWidget linkList;
 	bool isUpdateGraph;
+	QSplitter *modelWinHSplit;
 	
 	struct {
 		char info[50];

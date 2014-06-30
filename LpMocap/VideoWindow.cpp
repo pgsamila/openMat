@@ -6,6 +6,8 @@ VideoWindow::VideoWindow(QWidget* parent) : QGLWidget(parent)
 
 	videoPlaybackStarted = false;
 	videoRecordingStarted = false;	
+	
+	updateVideo();
 }
 
 VideoWindow::~VideoWindow(void)

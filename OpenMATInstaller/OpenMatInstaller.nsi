@@ -1,5 +1,5 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-LpMocapDemo"
-!define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1-vs2010\5.2.1\msvc2010_opengl"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-LpMocapDemo-Rev2"
+!define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl"
 
 Name ${OPENMAT_VERSION_NAME}
 OutFile "${OPENMAT_VERSION_NAME}-Setup.exe"

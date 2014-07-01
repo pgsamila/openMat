@@ -219,7 +219,7 @@ void MainWindow::createMenuAndToolbar(void)
 	QAction* resetHeadingAction = new QAction(QIcon("./icons/compass_32x32.png"), "Reset heading", this);
 	toolbar->addAction(resetHeadingAction);
 	QAction* armTimestampResetAction = new QAction(QIcon("./icons/clock_32x32.png"), "Arm timestamp reset", this);
-	toolbar->addAction(armTimestampResetAction);	
+	// toolbar->addAction(armTimestampResetAction);	
 	
 	QMenu* calibrationMenu = menuBar()->addMenu("&Calibration");
 	

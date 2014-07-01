@@ -14,6 +14,7 @@ public:
 	void drawMarker(QPainter *p, int i, float a);
 	void updateMarker(int i, float v);
 	
+	int footLeftRight;
 	float mValue[N_MARKER];
 };
 

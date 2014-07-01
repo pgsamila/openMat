@@ -639,10 +639,10 @@ void MainWindow::timerUpdate(void)
 				break;
 				
 				case MODE_INSOLE_WIN:
-					insoleWindow->updateMarker(0, imuData.q[0]);
-					insoleWindow->updateMarker(1, imuData.q[1]);
-					insoleWindow->updateMarker(2, imuData.q[2]);
-					insoleWindow->updateMarker(3, imuData.q[3]);
+					insoleWindow->updateMarker(0, imuData.q[1]);
+					insoleWindow->updateMarker(1, imuData.q[2]);
+					insoleWindow->updateMarker(2, imuData.q[3]);
+					insoleWindow->updateMarker(3, imuData.q[0]);
 				break;
 				}
 			} 

@@ -91,14 +91,6 @@ private:
 	
 public:
 	CalibrationData(void);
-	bool setDefaultParameters(std::string name, std::string deviceId, int deviceType);
-	bool setParameter(int parameterIndex, std::string parameter);
-	bool setParameter(int parameterIndex, int parameter);
-	bool setParameter(int parameterIndex, int *parameter);	
-	bool setParameter(int parameterIndex, float parameter);
-	bool getParameter(int parameterIndex, std::string *parameter);
-	bool getParameter(int parameterIndex, int *parameter);
-	bool getParameter(int parameterIndex, float *parameter);	
 	
 	void writeXML(std::string tag, pugi::xml_node node, LpVector3f v);
 	void writeXML(std::string tag, pugi::xml_node node, LpVector4f v);

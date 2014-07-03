@@ -88,17 +88,15 @@ void ThreeDWindow::zeroImuData(ImuData* id)
 		for (int j=0; j<3; j++) {
 			if (i != j) {
 				id->rotationM[i*3+j] = 0.0f;
-				id->rotOffsetM[i*3+j] = 0.0f;
 			} else {
 				id->rotationM[i*3+j] = 1.0f;
-				id->rotOffsetM[i*3+j] = 1.0f;
 			}
 		}
 	}
 	
 	id->openMatId = 1;	
 	id->frameCount = 0;
-	id->timeStamp = 0.0f;
+	id->timestamp = 0.0f;
 }
 
 void ThreeDWindow::updateWindow(void)

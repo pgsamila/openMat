@@ -172,7 +172,7 @@ bool LpmsBle::parseSensorData(void)
 	currentTimestamp = (float) iTimestamp;
 	
 	if (timestampOffset > currentTimestamp) timestampOffset = currentTimestamp;
-	imuData.timeStamp = currentTimestamp - timestampOffset;
+	imuData.timestamp = currentTimestamp - timestampOffset;
 	
 	fromBufferInt16(oneTx, o, &iQuat);
 	o = o + 2;
@@ -192,7 +192,7 @@ bool LpmsBle::parseSensorData(void)
 	
 	fromBufferInt16(oneTx, o, &iHeave);
 	o = o + 2;
-	imuData.hm.yHeave = (float) iHeave / (float) 0x0fff;
+	imuData.displacement[2] = (float) iHeave / (float) 0x0fff;
 	
 	if (imuDataQueue.size() < 64) {
 		imuDataQueue.push(imuData);

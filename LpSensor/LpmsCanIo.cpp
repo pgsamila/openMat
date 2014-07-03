@@ -121,7 +121,7 @@ bool LpmsCanIo::parseCanMsg(TPCANMsg m)
 	int v = 0;
 	int l = m.LEN;
 	
-	configData->getParameter(PRM_OPENMAT_ID, &v);
+	configData->openMatId = v;
 	
 	if (m.ID != AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + imuId) {
 		return false;

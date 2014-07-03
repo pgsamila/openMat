@@ -180,14 +180,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			../../openmat-closedsource/LpMagnetometerCalibration.c
 			../../openmat-closedsource/LpMagnetometerMAlignment.c
 			../../openmat-closedsource/CalcMisalignment.c
-			../../openmat-closedsource/GaitTracking.cpp
-		)
-	endif()
-	
-	if (USE_ZEROC_ICE)
-		set(sources
-			${sources}
-			IceImuDriver.cpp
+			# ../../openmat-closedsource/GaitTracking.cpp
 		)
 	endif()
 endif()
@@ -214,22 +207,15 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 			${sources}
 			LpMagnetometerCalibrationOS.c
 			CalcMisalignmentOS.c
-			GaitTrackingOS.cpp
+			# GaitTrackingOS.cpp
 		)
 	else()
 		set(sources
-			${sources}	
-			../../openmat-closedsource/LpMagnetometerCalibration.c
-			../../openmat-closedsource/LpMagnetometerMAlignment.c		
-			../../openmat-closedsource/CalcMisalignment.c
-			../../openmat-closedsource/GaitTracking.cpp
-		)
-	endif()
-
-	if (USE_ZEROC_ICE)
-		set(sources
 			${sources}
-			IceImuDriver.cpp
+			../../openmat-closedsource/LpMagnetometerCalibration.c
+			../../openmat-closedsource/LpMagnetometerMAlignment.c	
+			../../openmat-closedsource/CalcMisalignment.c
+			# ../../openmat-closedsource/GaitTracking.cpp
 		)
 	endif()
 endif()

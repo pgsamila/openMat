@@ -57,39 +57,25 @@ void LpmsIoInterface::zeroImuData(ImuData* id)
 	for (int i=0; i<3; i++) id->gRaw[i] = 0.0f;
 	for (int i=0; i<3; i++) id->bRaw[i] = 0.0f;
 	for (int i=0; i<3; i++) id->linAcc[i] = 0.0f;
+	for (int i=0; i<3; i++) id->displacement[i] = 0.0f;
 	
 	id->pressure = 0.0f;
 	id->altitude = 0.0f;
 	id->temperature = 0.0f;
-	id->hm.yHeave = 0.0f;
 	
 	for (int i=0; i<3; i++) {
 		for (int j=0; j<3; j++) {
 			if (i != j) {
 				id->rotationM[i*3+j] = 0.0f;
-				id->rotOffsetM[i*3+j] = 0.0f;
 			} else {
 				id->rotationM[i*3+j] = 1.0f;
-				id->rotOffsetM[i*3+j] = 1.0f;
 			}
 		}
 	}
 	
 	id->openMatId = 1;
 	id->frameCount = 0;
-	id->timeStamp = 0.0f;
-	
-	id->hm.yHeave = 0.0f;
-	
-	id->gm.zGait = 0.0f;
-	id->gm.yGait = 0.0f;
-	id->gm.zAmplitude = 0.0f;
-	id->gm.yAmplitude = 0.0f;
-	id->gm.frequency = 0.0f;
-	id->gm.velocity = 0.0f;
-	id->gm.symmetry = 0.0f;
-	id->gm.zDirection = 0;
-	id->gm.yDirection = 0;
+	id->timestamp = 0.0f;
 }
 
 void LpmsIoInterface::setTxRxImuId(int id)
@@ -508,7 +494,7 @@ bool LpmsIoInterface::parseSensorData(void)
 		
 		if ((configReg & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0)  {
 			fromBufferInt16(oneTx, o, &s);
-			imuData.hm.yHeave = ((float)s) / 100.0f;	
+			imuData.displacement[2] = ((float)s) / 100.0f;	
 			o = o + 2;
 		}
 	} else {
@@ -575,12 +561,12 @@ bool LpmsIoInterface::parseSensorData(void)
 		}
 		
 		if ((configReg & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0)  {
-			fromBuffer(oneTx, o, &imuData.hm.yHeave);
+			fromBuffer(oneTx, o, &imuData.displacement[2]);
 			o = o + 4;
 		}
 	}
 	
-	imuData.timeStamp = currentTimestamp;
+	imuData.timestamp = currentTimestamp;
 	
 	if (imuDataQueue.size() < 64) {
 		imuDataQueue.push(imuData);
@@ -630,19 +616,19 @@ bool LpmsIoInterface::parseFunction(void)
 		fromBuffer(oneTx, &l);		
 		
 		if ((l & LPMS_CAN_FIXEDPOINT_MODE) != 0) {
-			configData->setParameter(PRM_CAN_POINT_MODE, SELECT_CAN_POINT_MODE_FIXED);	
+			configData->canPointMode = SELECT_CAN_POINT_MODE_FIXED;	
 		} else {
-			configData->setParameter(PRM_CAN_POINT_MODE, SELECT_CAN_POINT_MODE_FLOATING);
+			configData->canPointMode = SELECT_CAN_POINT_MODE_FLOATING;
 		}
 
 		if ((l & LPMS_CAN_SEQUENTIAL_MODE) != 0) {
-			configData->setParameter(PRM_CAN_CHANNEL_MODE, SELECT_CAN_CHANNEL_MODE_SEQUENTIAL);
+			configData->canChannelMode = SELECT_CAN_CHANNEL_MODE_SEQUENTIAL;
 		} else {
-			configData->setParameter(PRM_CAN_CHANNEL_MODE, SELECT_CAN_CHANNEL_MODE_CANOPEN);		
+			configData->canChannelMode = SELECT_CAN_CHANNEL_MODE_CANOPEN;
 		}
 		
 		selectedData = (l & 0xffff0000) >> 16;
-		configData->setParameter(PRM_CAN_START_ID, selectedData);
+		configData->canStartId = selectedData;
 	break;
 	
 	case GET_CONFIG:
@@ -651,51 +637,51 @@ bool LpmsIoInterface::parseFunction(void)
 		if (fromBuffer(oneTx, &l)) configReg = l;		
 		
 		if ((configReg & LPMS_GYR_THRES_ENABLED) != 0) {
-			configData->setParameter(PRM_GYR_THRESHOLD_ENABLED, SELECT_IMU_GYR_THRESH_ENABLED);
+			configData->gyrThresEnable = SELECT_IMU_GYR_THRESH_ENABLED;
 		} else {
-			configData->setParameter(PRM_GYR_THRESHOLD_ENABLED, SELECT_IMU_GYR_THRESH_DISABLED);
+			configData->gyrThresEnable = SELECT_IMU_GYR_THRESH_DISABLED;
 		}
 		
 		if ((configReg & LPMS_GYR_AUTOCAL_ENABLED) != 0) {
-			configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_ENABLED);
+			configData->magAutocalibration = SELECT_GYR_AUTOCALIBRATION_ENABLED;
 		} else {
-			configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_DISABLED);
+			configData->magAutocalibration = SELECT_GYR_AUTOCALIBRATION_DISABLED;
 		}
 		
 		if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_5HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_5HZ;	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_10HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_10HZ;
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_30HZ;
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_50HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_50HZ;
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_100HZ;
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_200HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_200HZ;
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_500HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_500HZ;
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_1000HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_1000HZ;
 		} else {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);	
+			configData->samplingRate = SELECT_STREAM_FREQ_100HZ;	
 		}	
 
 		if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_125K_ENABLED) {
-			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_125KBPS);
+			configData->canBaudrate = SELECT_CAN_BAUDRATE_125KBPS;
 		} else if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_250K_ENABLED) {
-			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_250KBPS);
+			configData->canBaudrate = SELECT_CAN_BAUDRATE_250KBPS;
 		} else if ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_500K_ENABLED) {
-			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_500KBPS);
+			configData->canBaudrate = SELECT_CAN_BAUDRATE_500KBPS;
 		} else /* ((configReg & LPMS_CAN_BAUDRATE_MASK) == LPMS_CANBUS_BAUDRATE_1M_ENABLED) */ {
-			configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
+			configData->canBaudrate = SELECT_CAN_BAUDRATE_1000KBPS;
 		}
 		
 		if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_16);
+			configData->lpBusDataMode = SELECT_LPMS_LPBUS_DATA_MODE_16;
 		} else {
-			configData->setParameter(PRM_LPBUS_DATA_MODE, SELECT_LPMS_LPBUS_DATA_MODE_32);
+			configData->lpBusDataMode = SELECT_LPMS_LPBUS_DATA_MODE_32;
 		}		
 		
 		if ((configReg & LPMS_ACC_RAW_OUTPUT_ENABLED) != 0) {
@@ -764,18 +750,12 @@ bool LpmsIoInterface::parseFunction(void)
 			selectedData &= ~SELECT_LPMS_HEAVEMOTION_OUTPUT_ENABLED;
 		}
 		
-		configData->setParameter(PRM_SELECT_DATA, selectedData);
+		configData->selectedData = selectedData;
 		
 		if ((configReg & LPMS_HEAVEMOTION_ENABLED) != 0) {
-			configData->setParameter(PRM_HEAVEMOTION_ENABLED, SELECT_HEAVEMOTION_ENABLED);
+			configData->heavemotionEnabled = SELECT_HEAVEMOTION_ENABLED;
 		} else {
-			configData->setParameter(PRM_HEAVEMOTION_ENABLED, SELECT_HEAVEMOTION_DISABLED);
-		}
-		
-		if ((configReg & LPMS_GAIT_TRACKING_ENABLED) != 0) {
-			configData->setParameter(PRM_GAIT_TRACKING_ENABLED, SELECT_GAIT_TRACKING_ENABLED);
-		} else {
-			configData->setParameter(PRM_GAIT_TRACKING_ENABLED, SELECT_GAIT_TRACKING_DISABLED);
+			configData->heavemotionEnabled = SELECT_HEAVEMOTION_DISABLED);
 		}
 	break;	
 	
@@ -788,7 +768,7 @@ bool LpmsIoInterface::parseFunction(void)
 
 	case GET_IMU_ID:
 		if (fromBuffer(oneTx, &l)) {
-			configData->setParameter(PRM_OPENMAT_ID, (int) l);
+			configData->openMatId = (int) l;
 			imuId = l;
 		}
 	break;

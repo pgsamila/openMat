@@ -32,84 +32,26 @@
 #ifndef IMU_DATA
 #define IMU_DATA
 
-typedef struct _HeaveMotionModule {
-	float yHeave;
-} HeaveMotionModule;
+#include "SensorData.h"
 
-typedef struct _GaitTrackingModule {
-	float zGait;
-	float zAmplitude;
-	float yGait;
-	float yAmplitude;
-	float frequency;
-	float velocity;
-	float symmetry;
-	int zDirection;
-	int yDirection;
-} GaitTrackingModule;
-
-// Structure for data exchange inside the OpenMAT network.
-typedef struct _ImuData {
-	// The OpenMAT ID of the sensor that created this data structure.
-	int openMatId;
-
-	// Calibrated accelerometer sensor data.
-	float a[3];
-	
-	// Calibrated gyroscope sensor data.
-	float g[3];
-	
-	// Calibrated magnetometer sensor data.
-	float b[3];
-	
-	// Angular velocity data.
-	float w[3];
-	
-	// Euler angle data.
-	float r[3];
-	
-	// Quaternion orientation data.
-	float q[4];
-
-	// Orientation data as rotation matrix without offset.
-	float rotationM[9];
-	
-	// Orientation data as rotation matrix after zeroing.
-	float rotOffsetM[9];
-	
-	// Raw accelerometer sensor data.
-	float aRaw[3];
-	
-	// Raw gyroscope sensor data.
-	float gRaw[3];
-	
-	// Raw magnetometer sensor data.
-	float bRaw[3];
-	
-	// Barometric pressure.
-	float pressure;
-	
-	// Index of the data frame.
-	int frameCount;
-		
-	// Linear acceleration x, y and z.
-	float linAcc[3];
-	
-	// Gyroscope temperature.
-	float gTemp;
-	
-	// Altitude.
-	float altitude;
-	
-	// Temperature.
-	float temperature;
-		
-	// Sampling time of the data.
-	float timeStamp;
-	
-	HeaveMotionModule hm;
-	GaitTrackingModule gm;
-	
-} ImuData;
+class ImuData : public SensorData {
+public:
+	float a[3]; // Accelerometer data
+	float g[3]; // Gyroscope data
+	float b[3]; // Magnetometer data
+	float aRaw[3]; // Raw accelerometer data
+	float gRaw[3]; // Raw gyroscope data
+	float bRaw[3]; // Raw magnetometer data	
+	float w[3]; // Angular velocity
+	float r[3]; // Euler angle
+	float q[4]; // Quaternion
+	float linAcc[3]; // Linear acceleration	
+	float rotationM[9]; // Rotation matrix
+	float pressure; // Barometric pressure
+	float altitude; // Altitude
+	float temperature; // Temperature
+	float magFieldNoise; // Magnetic field noise
+	float displacement[3]; // Displacement
+};
 
 #endif

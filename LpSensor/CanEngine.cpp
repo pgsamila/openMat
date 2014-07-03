@@ -44,7 +44,8 @@ void CanEngine::listDevices(LpmsDeviceList *v)
 
 		BOOST_FOREACH(LpmsCanIo *cio, sensorList) {
 			int p;
-			cio->getConfigData()->getParameter(PRM_OPENMAT_ID, &p);
+			p = cio->getConfigData()->openMatId; 
+			// ->getParameter(PRM_OPENMAT_ID, &p);
 			if (p == i) f = true;
 		}
 		
@@ -53,7 +54,7 @@ void CanEngine::listDevices(LpmsDeviceList *v)
 			break;
 		}
 
-		c.setParameter(PRM_DEVICE_ID, ss.str());
+		c.deviceId = ss.str();
 
 		LpmsCanIo sensor(&c);
 		sensor.connect(ss.str());

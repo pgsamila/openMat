@@ -263,7 +263,7 @@ void GraphWindow::plotDataSet(ImuData ld)
 	break;
 	
 	case GRAPH_MODE_HEAVEMOTION:
-		heaveMotionGraph->addData(0, ld.hm.yHeave);
+		heaveMotionGraph->addData(0, ld.displacement[2]);
 	break;
 	}
 }

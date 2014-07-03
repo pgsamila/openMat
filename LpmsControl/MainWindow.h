@@ -74,7 +74,6 @@
 #include "RescanDialog.h"
 #include "CubeWindowContainer.h"
 #include "MicroMeasure.h"
-#include "GaitTrackingWindow.h"
 #include "MotionBuilderCommunication.h"
 #include "PlayControl.h"
 
@@ -92,7 +91,6 @@ using namespace boost;
 #define MODE_GRAPH_WIN 0
 #define MODE_THREED_WIN 1
 #define MODE_FIELDMAP_WIN 2
-#define MODE_GAIT_TRACKING_WIN 3
 
 #define USE_HEAVEMOTION
 #define USE_MB_SERVER
@@ -270,9 +268,6 @@ public slots:
 	
 	/* Checks if optional features are available for the current sensor. */
 	void checkOptionalFeatures(LpmsSensorI* sensor);
-
-	/* Selects gait tracking window. */
-	void selectGaitTrackingWindow(void);
 	
 	/* Starts data playback. */
 	void startReplay(void);
@@ -403,8 +398,6 @@ private:
 	QToolBar *toolbar;
 	QMenu* viewMenu;
 	bool heaveMotionEnabled;
-	bool gaitTrackingEnabled;
-	GaitTrackingWindow *gaitTrackingWindow;
 	MotionPlayer *rePlayer;
 	QAction *replayAction;
 	string globalPlaybackFile;

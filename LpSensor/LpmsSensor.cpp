@@ -178,15 +178,6 @@ void LpmsSensor::pollData(void)
 	}
 }
 
-void LpmsSensor::assertConnected(void)
-{
-	if (bt->deviceStarted() == false) {	
-		bt->close();
-		state = STATE_CONNECT;
-		LOGV("[LpmsSensor] Re-connecting..\n");	
-	}
-}
-
 void LpmsSensor::update(void)
 {
 	ImuData imuData;
@@ -483,7 +474,7 @@ void LpmsSensor::update(void)
 				configData.print();
 				
 				if (isFirmwareUpdated == true) {
-					loadCalibrationData(FIRMWARE_BACKUP_FILE);
+					loadConfiguration(FIRMWARE_BACKUP_FILE);
 					isFirmwareUpdated = false;
 				}
 			break;
@@ -525,7 +516,6 @@ void LpmsSensor::update(void)
 		
 		frameTime = lpmsTimer.measure() / 1000.0f;	
 		lpmsTimer.reset();	
-		setFps(frameTime);		
 		
 		convertArrayToLpVector4f(imuData.q, &q);
 		quaternionToMatrix(&q, &m);
@@ -580,10 +570,6 @@ void LpmsSensor::update(void)
 		checkGyrMisalignCal(frameTime);
 		checkMagMisalignCal(frameTime);
 		checkMagReferenceCal(frameTime);
-		
-		if ((bt->getConfigReg() & LPMS_GAIT_TRACKING_ENABLED) != 0) {
-			gm.update(&imuData);
-		}
 		
 		// Sets current data.
 		setCurrentData(imuData);
@@ -1244,135 +1230,8 @@ void LpmsSensor::update(void)
 
 
 /***********************************************************************
-** DIRECT GET / SET DEVICE PARAMETERS
+** SENSOR CONTROL
 ***********************************************************************/
-
-void LpmsSensor::getDeviceId(char *str)
-{
-	std::string deviceId;
-
-	configData.getParameter(PRM_DEVICE_ID, &deviceId);
-	
-	strcpy(str, deviceId.c_str());
-}
-
-CalibrationData *LpmsSensor::getConfigurationData(void)
-{
-	return &configData;
-}
-
-bool LpmsSensor::assertFwVersion(int d0, int d1, int d2)
-{
-	if (configData.firmwareVersionDig0 > d0) return true;
-	if (configData.firmwareVersionDig0 == d0 && configData.firmwareVersionDig1 > d1) return true;
-	if (configData.firmwareVersionDig0 == d0 && configData.firmwareVersionDig1 == d1 && configData.firmwareVersionDig2 >= d2) return true;
-	
-	return false;
-}
-
-bool LpmsSensor::hasNewFieldMap(void)
-{
-	bool f = newFieldMap;
-	newFieldMap = false;
-	
-	return f;
-}
-
-void LpmsSensor::setFps(float f) 
-{	
-	currentFps = f;
-}
-
-float LpmsSensor::getFps(void) 
-{	
-	return currentFps;
-}
-
-void LpmsSensor::setSensorStatus(int s) 
-{	
-	sensorStatus = s;
-}
-
-int LpmsSensor::getSensorStatus(void) 
-{	
-	return sensorStatus;
-}
-
-void LpmsSensor::setConnectionStatus(int s)
-{
-	connectionStatus = s;
-}
-
-int LpmsSensor::getConnectionStatus(void)
-{
-	return connectionStatus;
-}
-
-void LpmsSensor::setCurrentData(ImuData d)
-{
-	sensorMutex.lock();
-	currentData = d;
-	if (callbackSet == true) {
-		lpmsCallback(d, deviceId.c_str());
-	}
-	sensorMutex.unlock();	
-}
-
-void LpmsSensor::setCallback(LpmsCallback cb)
-{
-	lpmsCallback = cb;
-	callbackSet = true;
-}
-
-ImuData LpmsSensor::getCurrentData(void)
-{
-	ImuData d;
-	
-	sensorMutex.lock();
-	d = currentData;
-	sensorMutex.unlock();
-
-	return d;
-}
-
-void LpmsSensor::getCalibratedSensorData(float g[3], float a[3], float b[3])
-{
-	sensorMutex.lock();
-	for (int i=0; i<3; i++) g[i] = currentData.g[i];
-	for (int i=0; i<3; i++) a[i] = currentData.a[i];
-	for (int i=0; i<3; i++) b[i] = currentData.b[i];
-	sensorMutex.unlock();
-}
-
-void LpmsSensor::getQuaternion(float q[4]) 
-{
-	sensorMutex.lock();
-	for (int i=0; i<4; i++) q[i] = currentData.q[i];
-	sensorMutex.unlock();	
-}
-
-void LpmsSensor::getEulerAngle(float r[3]) 
-{
-	sensorMutex.lock();
-	for (int i=0; i<3; i++) r[i] = currentData.r[i];
-	sensorMutex.unlock();	
-}
-
-void LpmsSensor::getRotationMatrix(float M[3][3]) 
-{
-	sensorMutex.lock();
-	for (int i=0; i<3; i++) {
-		for (int j=0; j<3; j++) {
-			M[i][j] = currentData.rotationM[i*3+j];
-		}
-	}
-	sensorMutex.unlock();	
-}
-
-bool LpmsSensor::isRunning(void)
-{
-	return !paused;
-}
 
 void LpmsSensor::pause(void)
 {
@@ -1390,6 +1249,20 @@ void LpmsSensor::run(void)
 	paused = false;
 }
 
+bool LpmsSensor::isRunning(void)
+{
+	return !paused;
+}
+
+void LpmsSensor::assertConnected(void)
+{
+	if (bt->deviceStarted() == false) {	
+		bt->close();
+		state = STATE_CONNECT;
+		LOGV("[LpmsSensor] Re-connecting..\n");	
+	}
+}
+
 void LpmsSensor::close(void)
 {
 	bt->close();
@@ -1397,33 +1270,95 @@ void LpmsSensor::close(void)
 	stopped = true;
 }
 
-void LpmsSensor::startCalibrateGyro(void)
+void LpmsSensor::measureAvgLatency(void) 
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;
-
+	
+	latencyCounter = 0;
+	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_CALIBRATE_GYRO;
+	getConfigState = STATE_GET_LATENCY;
 }
 
-void LpmsSensor::setOrientationOffset(void)
+void LpmsSensor::acquireFieldMap(void) 
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;	
-	
+
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_SET_ORIENTATION_OFFSET;
+	getConfigState = STATE_START_GET_FIELD_MAP;
 }
 
-void LpmsSensor::resetOrientationOffset(void)
+void LpmsSensor::resetToFactorySettings(void)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	if (state != STATE_MEASURE) return;	
-	
+
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_RESET_ORIENTATION_OFFSET;
+	getConfigState = STATE_RESET_TO_FACTORY_DEFAULTS;
 }
+
+void LpmsSensor::setConnectionStatus(int s)
+{
+	connectionStatus = s;
+}
+
+int LpmsSensor::getConnectionStatus(void)
+{
+	return connectionStatus;
+}
+
+void LpmsSensor::setCallback(LpmsCallback cb)
+{
+	lpmsCallback = cb;
+	callbackSet = true;
+}
+
+bool LpmsSensor::startSelfTest(void)
+{
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
+
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_SET_SELF_TEST;
 	
+	return true;
+}
+
+
+
+/***********************************************************************
+** SENSOR DATA, CONFIGURATION AND COMMANDS
+***********************************************************************/
+
+void LpmsSensor::setCurrentData(ImuData d)
+{
+	sensorMutex.lock();
+	currentData = d;
+	if (callbackSet == true) {
+		lpmsCallback(d, deviceId.c_str());
+	}
+	sensorMutex.unlock();	
+}
+
+ImuData LpmsSensor::getCurrentData(void)
+{
+	ImuData d;
+	
+	sensorMutex.lock();
+	d = currentData;
+	sensorMutex.unlock();
+
+	return d;
+}
+
+void LpmsSensor::setSensorStatus(int s) 
+{	
+	sensorStatus = s;
+}
+
+int LpmsSensor::getSensorStatus(void) 
+{	
+	return sensorStatus;
+}
+
 void LpmsSensor::setOpenMatId(int id)
 {
 	configData.openMatId = id;
@@ -1432,6 +1367,29 @@ void LpmsSensor::setOpenMatId(int id)
 int LpmsSensor::getOpenMatId(void)
 {
 	return configData.openMatId;
+}
+
+void LpmsSensor::getDeviceId(char *str)
+{
+	std::string deviceId;
+
+	configData.getParameter(PRM_DEVICE_ID, &deviceId);
+	
+	strcpy(str, deviceId.c_str());
+}
+
+bool LpmsSensor::assertFwVersion(int d0, int d1, int d2)
+{
+	if (configData.firmwareVersionDig0 > d0) return true;
+	if (configData.firmwareVersionDig0 == d0 && configData.firmwareVersionDig1 > d1) return true;
+	if (configData.firmwareVersionDig0 == d0 && configData.firmwareVersionDig1 == d1 && configData.firmwareVersionDig2 >= d2) return true;
+	
+	return false;
+}
+
+CalibrationData *LpmsSensor::getConfigurationData(void)
+{
+	return &configData;
 }
 
 bool LpmsSensor::updateParameters(void)
@@ -1443,66 +1401,427 @@ bool LpmsSensor::updateParameters(void)
 	if (state != STATE_MEASURE) {
 		return false;
 	}
-	
-	// if (deviceType == DEVICE_LPMS_BLE) return false;
-	
+		
 	state = PREPARE_PARAMETER_ADJUSTMENT;
 	getConfigState = STATE_SET_CONFIG;
 	
 	return r;
 }
 
-bool LpmsSensor::setConfigurationPrm(int parameterIndex, int parameter)
-{	
+bool LpmsSensor::setSensorCommand(int commandIndex, int parameter)
+{
 	bool f = true;
-
-	// if (deviceType == DEVICE_LPMS_BLE) return f;	
 	
-	configData.setParameter(parameterIndex, parameter);
+	switch (commandIndex) {
+	case LPMS_COMMAND_CALIBRATE_GYROSCOPE:
+		startCalibrateGyro();
+	break;
+	
+	case LPMS_COMMAND_MIN_MAX_MAG_CALIBRATION:
+		startPlanarMagCalibration();
+	break;
+	
+	case LPMS_COMMAND_ELLIPSOID_MAG_CALIBRATION:
+		startMagCalibration();
+	break;
+	
+	case LPMS_COMMAND_INIT_ACC_MISALIGNMENT_CALIBRATION:
+		initMisalignCal();
+	break;
+	
+	case LPMS_COMMAND_START_ACC_MISALIGNMENT_CALIBRATION:
+		startGetMisalign(parameter);
+	break;
+	
+	case LPMS_COMMAND_CALC_ACC_MISALIGNMENT:
+		calcMisalignMatrix();
+	break;	
+	
+	case LPMS_COMMAND_INIT_GYR_MISALIGNMENT_CALIBRATION:
+		initGyrMisalignCal();
+	break;
+	
+	case LPMS_COMMAND_START_GYR_MISALIGNMENT_CALIBRATION:
+		startGetGyrMisalign(parameter);
+	break;
+	
+	case LPMS_COMMAND_CALC_GYR_MISALIGNMENT:
+		calcGyrMisalignMatrix();
+	break;	
 
+	case LPMS_COMMAND_INIT_MAG_MISALIGNMENT_CALIBRATION:
+		initMagMisalignCal();
+	break;
+	
+	case LPMS_COMMAND_START_MAG_MISALIGNMENT_CALIBRATION:
+		startMagMisalignCal(parameter);
+	break;
+	
+	case LPMS_COMMAND_CALC_MAG_MISALIGNMENT:
+		calcMagMisalignCal();
+	break;	
+	
+	case LPMS_COMMAND_START_MAG_AUTO_MISALIGNMENT_CALIBRATION:
+		startMagMisalignCal(parameter);
+	break;
+	
+	case LPMS_COMMAND_GET_MAG_REFERENCE:
+		startMagReferenceCal();
+	break;
+	
+	case LPMS_COMMAND_SET_ORIENTATION_OFFSET:
+		setOrientationOffset();
+	break;
+	
+	case LPMS_COMMAND_RESET_ORIENTATION_OFFSET:
+		resetOrientationOffset();
+	break;
+	
+	case LPMS_COMMAND_GET_FIELD_MAP:
+		acquireFieldMap();
+	break;
+	
+	case LPMS_COMMAND_START_SELF_TEST:
+		startSelfTest();
+	break;
+	
+	case LPMS_COMMAND_RESET_TO_FACTORY_SETTINGS:
+		resetToFactorySettings();
+	break;	
+	}
+	
+	return true;
+}
+
+bool LpmsSensor::setConfigurationPrm(int parameterIndex, void* parameter)
+{
 	switch (parameterIndex) {
+	case PRM_NAME:
+		configData.name = *((std::string *)parameter);
+	break;
+	
+	case PRM_DEVICE_ID:
+		configData.deviceId = *((int *)parameter);
+	break;
+
+	case PRM_OPENMAT_ID:	
+		configData.openMatId = *((int *)parameter);
+	break;
+
+	case PRM_DEVICE_TYPE:
+		configData.deviceType = *((int *)parameter);
+	break;
+
+	case PRM_GYR_THRESHOLD_ENABLED:
+		configData.gyrThresEnable = *((int *)parameter);
+	break;	
+		
+	case PRM_PARAMETER_SET:
+		configData.parameterSet = *((int *)parameter);
+	break;
+
+	case PRM_FILTER_MODE:
+		configData.filterMode = *((int *)parameter);
+	break;
+	
+	case PRM_GYR_RANGE:
+		configData.gyrRange = *((int *)parameter);
+	break;
+	
+	case PRM_MAG_RANGE:
+		configData.magRange = *((int *)parameter);	
+	break;
+	
+	case PRM_ACC_RANGE:
+		configData.accRange = *((int *)parameter);		
+	break;
+	
+	case PRM_LOCAL_Q:	
+		configData.quaternionCalcLocal = *((int *)parameter);
+	break;
+	
+	case PRM_MAG_AUTOCALIBRATION:
+		configData.magAutocalibration = *((int *)parameter);
+	break;
+	
+	case PRM_CAN_STREAM_FORMAT:
+		configData.canStreamFormat = *((int *)parameter);
+	break;	
+	
+	case PRM_CAN_BAUDRATE:
+		configData.canBaudrate = *((int *)parameter);
+	break;
+	
+	case PRM_SAMPLING_RATE:
+		configData.samplingRate = *((int *)parameter);
+	break;	
+	
 	case PRM_SELF_TEST:
-		state = PREPARE_PARAMETER_ADJUSTMENT;	
-		getConfigState = STATE_SET_SELF_TEST;
+		configData.selfTestOn = *((int *)parameter);
+	break;	
+	
+	case PRM_GYR_AUTOCALIBRATION:		
+		configData.gyrAutocalibration = *((int *)parameter);
+	break;
+	
+	case PRM_SELECT_DATA:
+		configData.selectedData = *((int *)parameter);
+	break;
+	
+	case PRM_LOW_PASS:
+		configData.lowPassFilter = *((int *)parameter);
+	break;
+	
+	case PRM_CAN_HEARTBEAT:
+		configData.canHeartbeat = *((int *)parameter);
+	break;
+	
+	case PRM_HEAVEMOTION_ENABLED:
+		configData.heavemotionEnabled = *((int *)parameter);
+	break;
+	
+	case PRM_GAIT_TRACKING_ENABLED:
+		configData.gaitTrackingEnabled = *((int *)parameter);
 	break;
 
-	default:
-		f = updateParameters();
+	case PRM_LIN_ACC_COMP_MODE:
+		configData.linAccCompMode = *((int *)parameter);
 	break;
-	} 
+	
+	case PRM_CENTRI_COMP_MODE:
+		configData.centriCompMode = *((int *)parameter);
+	break;
+	
+	case PRM_CAN_CHANNEL_MODE:
+		configData.canChannelMode = *((int *)parameter);
+	break;
+	
+	case PRM_CAN_POINT_MODE:
+		configData.canPointMode = *((int *)parameter);
+	break;
+	
+	case PRM_CAN_START_ID:
+		configData.canStartId = *((int *)parameter);
+	break;
+	
+	case PRM_LPBUS_DATA_MODE:
+		configData.lpBusDataMode = *((int *)parameter);
+	break;
+	
+	case PRM_UART_BAUDRATE:
+		configData.uartBaudrate = *((int *)parameter);
+	break;
+	
+	case PRM_UART_FORMAT:
+		configData.uartFormat = *((int *)parameter);
+	break;
 
-	return f;
+	case PRM_ACC_COVARIANCE:
+		configData.accCovariance = *((float *)parameter);
+	break;
+
+	case PRM_MAG_COVARIANCE:
+		configData.magCovariance = *((float *)parameter);
+	break;
+
+	case PRM_ACC_GAIN:
+		configData.accCompGain = *((float *)parameter);
+	break;
+
+	case PRM_MAG_GAIN:
+		configData.magCompGain = *((float *)parameter);
+	break;
+	
+	case PRM_CAN_MAPPING:
+		for (int i=0; i<16; ++i) {
+			configData.canMapping[i] = ((int *)parameter)[i];
+		}
+	break;
+	}
+	
+	return true;
 }
 
-bool LpmsSensor::setConfigurationPrm(int parameterIndex, int *parameter)
-{	
-	bool f = true;
-	
-	// if (deviceType == DEVICE_LPMS_BLE) return f;
-	
-	configData.setParameter(parameterIndex, parameter);	
-	
-	f = updateParameters();
-	
-	return f;
-}
-
-bool LpmsSensor::getConfigurationPrm(int parameterIndex, int* parameter)
+bool LpmsSensor::getConfigurationPrm(int parameterIndex, void* parameter)
 {
-	return configData.getParameter(parameterIndex, parameter);
+	switch (parameterIndex) {
+	case PRM_ACC_COVARIANCE:
+		parameter = &configData.accCovariance;
+	break;
+
+	case PRM_MAG_COVARIANCE:
+		parameter = &configData.magCovariance;
+	break;
+
+	case PRM_ACC_GAIN:
+		parameter = &configData.accCompGain;
+	break;
+
+	case PRM_MAG_GAIN:
+		parameter = &configData.magCompGain;
+	break;	
+
+	case PRM_NAME:
+		parameter = &configData.name;
+	break;
+	
+	case PRM_DEVICE_ID:
+		parameter = &configData.deviceId;
+	break;
+	
+	case PRM_FIRMWARE_VERSION:
+		parameter = &configData.firmwareVersion;
+	break;
+
+	case PRM_OPENMAT_ID:	
+		parameter = &configData.openMatId;
+	break;
+
+	case PRM_DEVICE_TYPE:	
+		parameter = &configData.deviceType;
+	break;	
+
+	case PRM_GYR_THRESHOLD_ENABLED:
+		parameter = &configData.gyrThresEnable;
+	break;	
+		
+	case PRM_PARAMETER_SET:
+		parameter = &configData.parameterSet;
+	break;
+
+	case PRM_FILTER_MODE:
+		parameter = &configData.filterMode;
+	break;
+	
+	case PRM_GYR_RANGE:
+		parameter = &configData.gyrRange;
+	break;
+	
+	case PRM_MAG_RANGE:
+		parameter = &configData.magRange;
+	break;
+	
+	case PRM_ACC_RANGE:
+		parameter = &configData.accRange;
+	break;
+	
+	case PRM_LOCAL_Q:	
+		parameter = &configData.quaternionCalcLocal;
+	break;
+	
+	case PRM_MAG_AUTOCALIBRATION:
+		parameter = &configData.magAutocalibration;
+	break;
+
+	case PRM_CAN_STREAM_FORMAT:
+		parameter = &configData.canStreamFormat;
+	break;	
+	
+	case PRM_CAN_BAUDRATE:
+		parameter = &configData.canBaudrate;
+	break;	
+
+	case PRM_SAMPLING_RATE:
+		parameter = &configData.samplingRate;
+	break;
+
+	case PRM_SELF_TEST:
+		parameter = &configData.selfTestOn;
+	break;	
+	
+	case PRM_GYR_AUTOCALIBRATION:		
+		parameter = &configData.gyrAutocalibration;
+	break;
+	
+	case PRM_SELECT_DATA:
+		parameter = &configData.selectedData;
+	break;
+	
+	case PRM_LOW_PASS:
+		parameter = &configData.lowPassFilter;
+	break;
+	
+	case PRM_CAN_HEARTBEAT:
+		parameter = &configData.canHeartbeat;
+	break;
+	
+	case PRM_HEAVEMOTION_ENABLED:
+		parameter = &configData.heavemotionEnabled;
+	break;
+	
+	case PRM_GAIT_TRACKING_ENABLED:
+		parameter = &configData.gaitTrackingEnabled;
+	break;
+	
+	case PRM_CAN_MAPPING:
+		parameter = &configData.canMapping;
+	break;
+	
+	case PRM_LIN_ACC_COMP_MODE:
+		parameter = &configData.linAccCompMode;
+	break;
+	
+	case PRM_CENTRI_COMP_MODE:
+		parameter = &configData.centriCompMode;
+	break;
+	
+	case PRM_CAN_CHANNEL_MODE:
+		parameter = &configData.canChannelMode;
+	break;
+	
+	case PRM_CAN_POINT_MODE:
+		parameter = &configData.canPointMode;
+	break;
+	
+	case PRM_CAN_START_ID:
+		parameter = &configData.canStartId;
+	break;
+	
+	case PRM_LPBUS_DATA_MODE:
+		parameter = &configData.lpBusDataMode;
+	break;
+	
+	case PRM_UART_BAUDRATE:
+		parameter = &configData.uartBaudrate;
+	break;
+	
+	case PRM_UART_FORMAT:
+		parameter = &configData.uartFormat;
+	break;
+
+	case PRM_FIELD_MAP_DATA:
+		parameter = &configData.fieldMap;
+	break;
+	}
+	
+	return true;
 }
 
-bool LpmsSensor::getConfigurationPrm(int parameterIndex, char* parameter)
+void LpmsSensor::saveConfigurationToSensor(void)	
 {
-	std::string cppStr;
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
 	
-	const bool ret = configData.getParameter(parameterIndex, &cppStr);
-	
-	strcpy(parameter, cppStr.c_str());
-	
-	return ret;
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_WRITE_PARAMETERS;	
 }
 
+LpmsIoInterface *LpmsSensor::getIoInterface(void)
+{
+	return (LpmsIoInterface *)bt;
+}
+
+void LpmsSensor::saveConfiguration(const char* fn)
+{
+	printf("[LpmsSensor] Saving calibration data to %s\n", fn);
+	configData.save(fn);
+}
+
+void LpmsSensor::loadConfiguration(const char* fn)
+{
+	printf("[LpmsSensor] Loading calibration data from %s\n", fn);
+	configData.load(fn);
+	updateParameters();
+}
 
 
 /***********************************************************************
@@ -1513,7 +1832,7 @@ bool LpmsSensor::uploadFirmware(const char *fn)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
 	
-	saveCalibrationData(FIRMWARE_BACKUP_FILE);
+	saveConfiguration(FIRMWARE_BACKUP_FILE);
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
 	getConfigState = STATE_UPLOAD_FIRMWARE;
@@ -1557,154 +1876,37 @@ int LpmsSensor::getUploadProgress(int *p)
 	return 1;
 }
 
-void LpmsSensor::saveCalibrationData(void)	
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	
-	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_WRITE_PARAMETERS;	
-}
-
-LpmsIoInterface *LpmsSensor::getIoInterface(void)
-{
-	return (LpmsIoInterface *)bt;
-}
-
-void LpmsSensor::measureAvgLatency(void) 
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-	
-	latencyCounter = 0;
-	
-	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_GET_LATENCY;
-}
-
-void LpmsSensor::acquireFieldMap(void) 
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-
-	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_START_GET_FIELD_MAP;
-}
-
-bool LpmsSensor::getPressure(float *p)
-{
-	sensorMutex.lock();
-	*p = currentData.pressure;
-	sensorMutex.unlock();
-
-	return true;
-}
-
-void LpmsSensor::getHardIronOffset(float v[3]) 
-{
-	for (int i=0; i<3; i++) {
-		v[i] = configData.hardIronOffset.data[i];
-	}
-}
-	
-void LpmsSensor::getSoftIronMatrix(float M[3][3], float *fieldRadius) 
-{
-	for (int i=0; i<3; i++) {
-		for (int j=0; j<3; j++) {
-			M[i][j] = configData.softIronMatrix.data[i][j];
-		}
-	}
-	
-	*fieldRadius = configData.fieldRadius;
-}
-
-float LpmsSensor::getFieldNoise(void)
-{
-	return fabs(configData.fieldRadius - sqrtf(b.data[0]*b.data[0] + b.data[1]*b.data[1] + b.data[2]*b.data[2]));
-}
-
-void LpmsSensor::getFieldMap(float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3]) {
-	for (int i=0; i<ABSMAXPITCH; i++) {
-		for (int j=0; j<ABSMAXROLL; j++) {
-			for (int k=0; k<ABSMAXYAW; k++) {
-				for (int l=0; l<3; l++) {
-					fieldMap[i][j][k][l] = configData.fieldMap[i][j][k].data[l];
-				}
-			}
-		}
-	}
-}
-
-void LpmsSensor::zeroFieldMap(void)
-{
-	for (int i=0; i<ABSMAXPITCH; i++) {
-		for (int j=0; j<ABSMAXROLL; j++) {
-			for (int k=0; k<ABSMAXYAW; k++) {
-				for (int l=0; l<3; l++) {
-					configData.fieldMap[i][j][k].data[l] = 0.0f;
-				}
-			}
-		}
-	}
-}
-
-void LpmsSensor::resetToFactorySettings(void)
-{
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-
-	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_RESET_TO_FACTORY_DEFAULTS;
-}
-
-long LpmsSensor::getStreamFrequency(void)
-{
-	int i;
-	int dataSavePeriod;
-	
-	getConfigurationPrm(PRM_SAMPLING_RATE, &i);	
-	
-	switch (i) {
-	case SELECT_STREAM_FREQ_5HZ:
-		dataSavePeriod = 200;
-	break;	
-	
-	case SELECT_STREAM_FREQ_10HZ:
-		dataSavePeriod = 100;
-	break;	
-	
-	case SELECT_STREAM_FREQ_50HZ:		
-		dataSavePeriod = 20;				
-	break;
-		
-	case SELECT_STREAM_FREQ_100HZ:
-		dataSavePeriod = 10;
-	break;
-		
-	case SELECT_STREAM_FREQ_200HZ:
-		dataSavePeriod = 5;
-	break;
-	
-	case SELECT_STREAM_FREQ_500HZ:
-		dataSavePeriod = 2;
-	break;	
-	
-	default:
-		dataSavePeriod = 2;
-	break;
-	}
-	
-	return dataSavePeriod;
-}
-
-void LpmsSensor::armTimestampReset(void)
-{	
-	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
-
-	state = PREPARE_PARAMETER_ADJUSTMENT;	
-	getConfigState = STATE_ARM_TIMESTAMP_RESET;
-}
-
 
 /***********************************************************************
 ** CALIBRATION
 ***********************************************************************/
+
+void LpmsSensor::setOrientationOffset(void)
+{
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
+	if (state != STATE_MEASURE) return;	
+	
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_SET_ORIENTATION_OFFSET;
+}
+
+void LpmsSensor::resetOrientationOffset(void)
+{
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
+	if (state != STATE_MEASURE) return;	
+	
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_RESET_ORIENTATION_OFFSET;
+}
+
+void LpmsSensor::startCalibrateGyro(void)
+{
+	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
+	if (state != STATE_MEASURE) return;
+
+	state = PREPARE_PARAMETER_ADJUSTMENT;	
+	getConfigState = STATE_CALIBRATE_GYRO;
+}
 
 void LpmsSensor::startPlanarMagCalibration(void)
 {
@@ -1715,12 +1917,12 @@ void LpmsSensor::startPlanarMagCalibration(void)
 	isPlanarMagCalibrationEnabled = true;	
 	magCalibrationDuration = 0.0f;
 
-	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);		
-		
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);
+	
 	p |= SELECT_LPMS_MAG_OUTPUT_ENABLED;
 	p |= SELECT_LPMS_EULER_OUTPUT_ENABLED;
 
-	setConfigurationPrm(PRM_SELECT_DATA, p);
+	setConfigurationPrm(PRM_SELECT_DATA, &p);
 	
 	for (int i=0; i<3; i++) {
 		bMax.data[i] = -1.0e4f;
@@ -1861,8 +2063,6 @@ void LpmsSensor::stopMagCalibration(void)
 	updateParameters();
 }
 
-#define N_ALIGNMENT_SETS 6
-
 void LpmsSensor::initMisalignCal(void)
 {
 	int p;
@@ -1958,19 +2158,6 @@ void LpmsSensor::calcMisalignMatrix(void)
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
 	updateParameters();
 }	
-
-void LpmsSensor::saveCalibrationData(const char* fn)
-{
-	printf("[LpmsSensor] Saving calibration data to %s\n", fn);
-	configData.save(fn);
-}
-
-void LpmsSensor::loadCalibrationData(const char* fn)
-{
-	printf("[LpmsSensor] Loading calibration data from %s\n", fn);
-	configData.load(fn);
-	updateParameters();
-}
 
 void LpmsSensor::initGyrMisalignCal(void)
 {
@@ -2093,11 +2280,11 @@ void LpmsSensor::resetTimestamp(void)
 	frameNo = 0;
 }
 
-void LpmsSensor::setTimestamp(float t)
+void LpmsSensor::syncTimestamp(float t)
 {
-	// if ((bt->getMode() == SELECT_LPMS_MODE_STREAM) && (bt->deviceStarted() == true) && (state == STATE_MEASURE)) {
+	if ((bt->getMode() == SELECT_LPMS_MODE_STREAM) && (bt->deviceStarted() == true) && (state == STATE_MEASURE)) {
 		bt->setTimestamp(t);
-	// }
+	}
 }
 
 void LpmsSensor::startAutoMagMisalignCal(void)
@@ -2381,15 +2568,15 @@ void LpmsSensor::checkSaveData(void)
 		return;
 	} else if (saveDataPreroll == 1) {
 		--saveDataPreroll;
-		timestampOffset = currentData.timeStamp;
+		timestampOffset = currentData.timestamp;
 		frameCounterOffset = currentData.frameCount;	
 	}
 	
-	currentTimestamp = (currentData.timeStamp-timestampOffset);
+	currentTimestamp = (currentData.timestamp-timestampOffset);
 
 	sensorMutex.lock();
 	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(3) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(3) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.displacement[2] << std::endl;
 	}
 	sensorMutex.unlock();
 }

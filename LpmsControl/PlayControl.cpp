@@ -69,8 +69,8 @@ bool MotionPlayer::updateJointsFromData(double t)
 		return false;
 	}
 	
-	if (t > (d.timeStamp * 1000.0f)) {								
-		currentTime = d.timeStamp;
+	if (t > (d.timestamp * 1000.0f)) {								
+		currentTime = d.timestamp;
 		currentData = d;
 					
 		++playPointer;
@@ -107,7 +107,7 @@ bool MotionPlayer::readMotionDataFile(std::string fn) {
 			
 			ti = tokens.begin();
 			d.openMatId = boost::lexical_cast<double>(*ti); ++ti;
-			d.timeStamp = boost::lexical_cast<double>(*ti); ++ti;
+			d.timestamp = boost::lexical_cast<double>(*ti); ++ti;
 			d.frameCount = boost::lexical_cast<double>(*ti); ++ti;			
 			for (i=0; i<3; ++i) {
 				d.a[i] = boost::lexical_cast<double>(*ti); ++ti;
@@ -135,7 +135,7 @@ bool MotionPlayer::readMotionDataFile(std::string fn) {
 			// printf("[PlayControl] Read t=%f, q0=%f, q1=%f, q2=%f, q3=%f\n", d.timeStamp, d.q[0], d.q[1], d.q[2], d.q[3]);
 			
 			dataList.push_back(d);
-			maxTime = d.timeStamp;				
+			maxTime = d.timestamp;				
 		}
 		dataFile.close();
 	

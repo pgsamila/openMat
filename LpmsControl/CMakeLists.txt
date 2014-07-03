@@ -157,7 +157,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		FieldMapContainer.cpp
 		FieldModuleIndicator.cpp
 		RescanDialog.cpp
-		GaitTrackingWindow.cpp
 		MotionBuilderCommunication.cpp
 		PlayControl.cpp
 		
@@ -192,7 +191,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		FieldModuleIndicator.h
 		RescanDialog.h
 		CubeWindowContainer.h
-		GaitTrackingWindow.h
 		VerticalBarGraph.h
 		MotionBuilderCommunication.h
 		PlayControl.h

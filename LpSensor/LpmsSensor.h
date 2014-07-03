@@ -207,76 +207,80 @@
 class LpmsSensor : public LpmsSensorI
 {
 public:
-#ifndef ANDROID			
+/***********************************************************************
+** CONSTRUCTORS / DESTRUCTORS
+***********************************************************************/
 	LpmsSensor(int deviceType, const char *deviceId);
-#else
-	LpmsSensor(int deviceType, const char *deviceId, JavaVM *thisVm, jobject bluetoothAdapter);
-#endif	
-
 	~LpmsSensor(void);
-	void run(void);
-	void pause(void);
-	void close(void);
+	
+/***********************************************************************
+** POLL / UPDATE DATA FROM SENSOR
+***********************************************************************/	
+	void pollData(void);
 	void update(void);
+	
+/***********************************************************************
+** SENSOR CONTROL
+***********************************************************************/
+	void pause(void);
+	void run(void);
 	bool isRunning(void);
+	void assertConnected(void);
+	void close(void);
+	void measureAvgLatency(void);
+	void acquireFieldMap(void);
+	void resetToFactorySettings(void);
+	void setConnectionStatus(int s);
+	int getConnectionStatus(void);
+	void setCallback(LpmsCallback cb);
+	bool startSelfTest(void);
+
+/***********************************************************************
+** SENSOR DATA, CONFIGURATION AND COMMANDS
+***********************************************************************/
+	void setCurrentData(ImuData d);
 	ImuData getCurrentData(void);
-	void getDeviceId(char *str);
+	void setSensorStatus(int s);
+	int getSensorStatus(void);
 	void setOpenMatId(int id);
 	int getOpenMatId(void);
-	int getSensorStatus(void);
-	int getConnectionStatus(void);
-	float getFps(void);
-	void startCalibrateGyro(void);
-	void resetTimestamp(void);
-	CalibrationData* getConfigurationData(void);
-	bool setConfigurationPrm(int parameterIndex, int parameter);
-	bool setConfigurationPrm(int parameterIndex, int *parameter);	
-	bool getConfigurationPrm(int parameterIndex, int *parameter);	
-	bool getConfigurationPrm(int parameterIndex, char *parameter);		
-	void pollData(void);
+	void getDeviceId(char *str);
+	bool assertFwVersion(int d0, int d1, int d2);
+	CalibrationData *getConfigurationData(void);
+	bool updateParameters(void);
+	bool setSensorCommand(int commandIndex, int parameter);
+	
+	bool setConfigurationPrm(int parameterIndex, void* parameter);
+	bool getConfigurationPrm(int parameterIndex, void* parameter);
+	
+	/* bool setConfigurationPrm(int parameterIndex, int parameter);
+	bool setConfigurationPrm(int parameterIndex, int *parameter);
+	bool getConfigurationPrm(int parameterIndex, int* parameter);
+	bool getConfigurationPrm(int parameterIndex, char* parameter);
+	bool getConfigurationPrm(int parameterIndex0, int parameterIndex1, int parameterIndex2, int parameterIndex3, float* parameter);	*/
+	
+	LpmsIoInterface *getIoInterface(void);
+	void saveConfigurationToSensor(void);
+	void saveConfiguration(const char* fn);	
+	void loadConfiguration(const char* fn);	
+	
+/***********************************************************************
+** FIRMWARE / IAP
+***********************************************************************/
 	bool uploadFirmware(const char *fn);
 	bool uploadIap(const char *fn);
-	void saveCalibrationData(void);
-	LpmsIoInterface *getIoInterface(void);
-	void getCalibratedSensorData(float g[3], float a[3], float b[3]);
-	void getQuaternion(float q[4]);
-	void getEulerAngle(float r[3]);
-	void getRotationMatrix(float M[3][3]);
 	int getUploadProgress(int *p);
-	void measureAvgLatency(void); 
-	void acquireFieldMap(void);
-	bool getPressure(float *p);
-	void getFieldMap(float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3]);
-	void getHardIronOffset(float v[3]);
-	void getSoftIronMatrix(float M[3][3], float *fieldRadius);
-	bool hasNewFieldMap(void);
-	void resetToFactorySettings(void);
-	float getFieldNoise(void);
-	void saveCalibrationData(const char *fn);
-	void loadCalibrationData(const char *fn);
-	void startSaveData(std::ofstream *saveDataHandle);
-	void checkSaveData(void);
-	void stopSaveData(void);
-	void setCallback(LpmsCallback cb);
-	bool assertFwVersion(int d0, int d1, int d2);
+	
+/***********************************************************************
+** CALIBRATION
+***********************************************************************/
 	void setOrientationOffset(void);
 	void resetOrientationOffset(void);
+	void startCalibrateGyro(void);
+	void startPlanarMagCalibration();
+	void checkPlanarMagCal(float T);
+	void stopPlanarMagCalibration(void);
 	void startMagCalibration(void);
-	void setTimestamp(float t);
-	void armTimestampReset(void);
-	
-private:
-	void checkResetReference(void);
-	void checkMagCalibration(ImuData d);
-	void checkGyroCalibration(ImuData d);
-	void setSensorStatus(int s);
-	void setConnectionStatus(int s);
-	void setCurrentData(ImuData d);
-	void setFps(float f);
-	void backupGyroThresholdSetting(void);
-	void restoreGyroThresholdSetting(void);
-	long getStreamFrequency(void);
-	void zeroFieldMap(void);
 	void checkMagCal(float T);
 	void stopMagCalibration(void);
 	void initMisalignCal(void);
@@ -284,28 +288,28 @@ private:
 	void checkMisalignCal(float T);
 	void calcMisalignMatrix(void);
 	void initGyrMisalignCal(void);
-	void startGetGyrMisalign(int i);
+	void startGetGyrMisalign(int i); 
 	void checkGyrMisalignCal(float T);
 	void calcGyrMisalignMatrix(void);
-	void initGyrTempCal(void);
-	void startGetGyrTempCal(int i);
-	void checkGyrTempCal(float T);
-	void calcGyrTempCal(void);
-	bool updateParameters(void);
-	void startPlanarMagCalibration(void);
-	void checkPlanarMagCal(float T);
-	void stopPlanarMagCalibration(void);
+	void resetTimestamp(void);
+	void syncTimestamp(float t);
+	void startAutoMagMisalignCal(void);
+	void checkAutoMagMisalignCal(float T);
+	void calcAutoMagMisalignCal(void);
+	void startMagReferenceCal(void);
+	void checkMagReferenceCal(float T);
+	void calcMagReferenceCal(void);
 	void initMagMisalignCal(void);
 	void startMagMisalignCal(int i);
 	void checkMagMisalignCal(float T);
 	void calcMagMisalignCal(void);
-	void startMagReferenceCal(void);
-	void checkMagReferenceCal(float T);
-	void calcMagReferenceCal(void);
-	void startAutoMagMisalignCal(void);
-	void checkAutoMagMisalignCal(float T);
-	void calcAutoMagMisalignCal(void);
-	void assertConnected(void);
+
+/***********************************************************************
+** DATA RECORDING
+***********************************************************************/
+	void startSaveData(std::ofstream *saveDataHandle);
+	void checkSaveData(void);
+	void stopSaveData(void);
 
 	LpmsIoInterface *bt;	
 	std::string deviceId;
@@ -377,7 +381,6 @@ private:
 	std::ofstream *saveDataHandle;
 	LpmsCallback lpmsCallback;
 	bool callbackSet;
-	GaitTracking gm;
 	bool isMagMisalignCalEnabled;
 	bool isAutoMagMisalignCalEnabled;
 	float cumulatedRefData[3];

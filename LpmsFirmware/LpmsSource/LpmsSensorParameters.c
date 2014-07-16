@@ -317,9 +317,9 @@ uint8_t setStreamFreq(uint8_t* data)
 
 uint8_t setOrientationOffset(uint8_t* data)
 {
-	uint32_t v = LPMS_OFFSET_MODE_ALIGNMENT; // getUi32t(data);
+	uint32_t v = getUi32t(data); // LPMS_OFFSET_MODE_ALIGNMENT;
 
-	if (v > 0 && v < LPMS_OFFSET_MODE_ALIGNMENT+1) setRegUInt32(LPMS_OFFSET_MODE, v);
+	if (v < LPMS_OFFSET_MODE_ALIGNMENT+1) setRegUInt32(LPMS_OFFSET_MODE, v);
 
 	calculateAlignmentOffset(q);
 

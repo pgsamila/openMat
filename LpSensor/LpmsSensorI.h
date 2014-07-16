@@ -196,7 +196,7 @@ public:
 	
 	virtual void startMagReferenceCal(void) = 0;
 	
-	virtual void setOrientationOffset(void) = 0;
+	virtual void setOrientationOffset(int v) = 0;
 	
 	virtual void resetOrientationOffset(void) = 0;
 	

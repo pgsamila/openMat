@@ -2172,9 +2172,9 @@ bool LpmsIoInterface::getMagAlignmentBias(void)
 	return modbusGet(GET_MAG_ALIGNMENT_BIAS);
 }
 
-bool LpmsIoInterface::setOrientationOffset(void)
+bool LpmsIoInterface::setOrientationOffset(int v)
 {
-	return modbusSetNone(SET_ORIENTATION_OFFSET);
+	return modbusSetInt32(SET_ORIENTATION_OFFSET, v);
 }
 
 bool LpmsIoInterface::resetOrientationOffset(void)

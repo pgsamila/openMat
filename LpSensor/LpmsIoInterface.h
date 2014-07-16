@@ -282,7 +282,7 @@ public:
 	bool getMagAlignmentMatrix(void);
 	bool getMagAlignmentBias(void);
 	bool getMagReference(void);
-	bool setOrientationOffset(void);
+	bool setOrientationOffset(int v);
 	bool resetOrientationOffset(void);
 	bool setTimestamp(float v);
 	bool getUartBaudRate(void);

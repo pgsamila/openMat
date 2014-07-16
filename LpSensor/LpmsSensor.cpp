@@ -153,6 +153,7 @@ const float pi = 3.141592f;
 	isRefCalibrationEnabled	= false;
 	timestampOffset = 0.0f;
 	frameCounterOffset = 0;
+	currentOffsetResetMethod = 2;
 	
 	bt->zeroImuData(&currentData);
 }
@@ -1194,7 +1195,7 @@ void LpmsSensor::update(void)
 	// Sets offset.
 	case STATE_SET_ORIENTATION_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
-			bt->setOrientationOffset();
+			bt->setOrientationOffset(currentOffsetResetMethod);
 			state = STATE_SET_CONFIG;
 		}	
 	break;	
@@ -1406,10 +1407,12 @@ void LpmsSensor::startCalibrateGyro(void)
 	getConfigState = STATE_CALIBRATE_GYRO;
 }
 
-void LpmsSensor::setOrientationOffset(void)
+void LpmsSensor::setOrientationOffset(int v)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return;
 	if (state != STATE_MEASURE) return;	
+	
+	currentOffsetResetMethod = v;
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
 	getConfigState = STATE_SET_ORIENTATION_OFFSET;

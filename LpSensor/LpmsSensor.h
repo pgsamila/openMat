@@ -259,7 +259,7 @@ public:
 	void stopSaveData(void);
 	void setCallback(LpmsCallback cb);
 	bool assertFwVersion(int d0, int d1, int d2);
-	void setOrientationOffset(void);
+	void setOrientationOffset(int v);
 	void resetOrientationOffset(void);
 	void startMagCalibration(void);
 	void setTimestamp(float t);
@@ -388,6 +388,7 @@ private:
 	int saveDataPreroll;
 	float timestampOffset;
 	int frameCounterOffset;
+	int currentOffsetResetMethod;
 }; 
 	
 #endif

@@ -394,8 +394,8 @@ private:
 	QComboBox *comboDeviceList;
 	string globalRecordFile;
 	QLineEdit *recordFileEdit;
-	QComboBox *resetCombo;
 	QComboBox *targetCombo;
+	QComboBox *resetMethodCombo;
 	bool recordFileSet;
 	MicroMeasure mm;
 	QComboBox *canBaudrateList;

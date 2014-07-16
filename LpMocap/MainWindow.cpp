@@ -544,9 +544,9 @@ void MainWindow::UpdateWindow(void)
 		}
 
 		
-		graphWin->plotData(hm->GetDataPRX(selectedLink->link_id_), hm->GetDataPRY(selectedLink->link_id_), hm->GetDataPRZ(selectedLink->link_id_));
+		/* graphWin->plotData(hm->GetDataPRX(selectedLink->link_id_), hm->GetDataPRY(selectedLink->link_id_), hm->GetDataPRZ(selectedLink->link_id_));
 		
-		videoWin->updateVideo();
+		videoWin->updateVideo(); */
 	}
 }
 	

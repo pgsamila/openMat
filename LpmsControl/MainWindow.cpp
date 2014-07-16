@@ -212,6 +212,18 @@ void MainWindow::createMenuAndToolbar(void)
 	w2->setFixedWidth(150);	
 	toolbar->addWidget(w2);
 	
+	QVBoxLayout *v5 = new QVBoxLayout();
+	resetMethodCombo = new QComboBox();
+	resetMethodCombo->addItem("Object reset");
+	resetMethodCombo->addItem("Heading reset");
+	resetMethodCombo->addItem("Alignment reset");	
+	v5->addWidget(new QLabel("Reset method:"));
+	v5->addWidget(resetMethodCombo);
+	QWidget *w5 = new QWidget();
+	w5->setLayout(v5);
+	w5->setFixedWidth(150);	
+	toolbar->addWidget(w5);	
+	
 	QAction* setOffsetAction = new QAction(QIcon("./icons/fullscreen_exit_32x32.png"), "Set offset", this);
 	toolbar->addAction(setOffsetAction);
 	QAction* resetOffsetAction = new QAction(QIcon("./icons/denied_32x32.png"), "Reset offset", this);
@@ -790,15 +802,18 @@ void MainWindow::stopMeasurement(void)
 void MainWindow::setOffset(void)
 {
 	std::list<SensorGuiContainer *>::iterator it;
+	int rm = 0;
 
 	if (currentLpms == 0 || isConnecting == true) return;
 
+	rm = resetMethodCombo->currentIndex();
+	
 	if (targetCombo->currentIndex() == 0) {		
 		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-			(*it)->getSensor()->setOrientationOffset();
+			(*it)->getSensor()->setOrientationOffset(rm);
 		}
 	} else {
-		currentLpms->getSensor()->setOrientationOffset();
+		currentLpms->getSensor()->setOrientationOffset(rm);
 	}
 }
 

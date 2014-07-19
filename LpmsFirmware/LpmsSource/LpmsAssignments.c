@@ -224,7 +224,7 @@ void generateTables() {
 #include <stdlib.h>
 #include <string.h>
 
-char *itobase10(char *buf, int value) {
+char *itobase10(char *buf, int32_t value) {
     sprintf(buf, "%d", value);
     return buf;
 }
@@ -241,7 +241,7 @@ void setUi32tAscii(uint8_t* data, uint8_t *length, uint32_t v)
 void setFloatAscii(uint8_t* data, uint8_t *length, float v, uint8_t prec)
 {
 	uint32_t f = conFtoI(v);
-	uint16_t h;
+	int32_t h;
 	char d[64];
 	
 	switch (prec) {
@@ -249,19 +249,19 @@ void setFloatAscii(uint8_t* data, uint8_t *length, float v, uint8_t prec)
 	case FLOAT_HALF_PRECISION:
 	case FLOAT_FULL_PRECISION:
 	case FLOAT_FIXED_POINT_1:
-		h = (int16_t)v;
+		h = (int32_t)v;
 	break;
 
 	case FLOAT_FIXED_POINT_10:
-		h = (int16_t)(v * 10.0f);
+		h = (int32_t)(v * 10.0f);
 	break;
 
 	case FLOAT_FIXED_POINT_100:
-		h = (int16_t)(v * 100.0f);
+		h = (int32_t)(v * 100.0f);
 	break;
 
 	case FLOAT_FIXED_POINT_1000:
-		h = (int16_t)(v * 1000.0f);
+		h = (int32_t)(v * 1000.0f);
 	break;
 	}
 

@@ -284,7 +284,6 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	
 	case DEVICE_LPMS_RS232:	
 		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
-		printf("baudrate: %d\n", currentUartBaudrate);
 		((LpmsRS232 *)sensor->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
 		sensorList.push_back(sensor);
 	break;

@@ -574,7 +574,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsB-Mk1-Firmware-1.3.1ForAnima.bin</state>
+          <state>LpmsB-Mk1-Firmware.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -3279,7 +3279,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCU-Mk2Ttl-Firmware-115200.bin</state>
+          <state>LpmsCU-Mk2Ttl-Firmware.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

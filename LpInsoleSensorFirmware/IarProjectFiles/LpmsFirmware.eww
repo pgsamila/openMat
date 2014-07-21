@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\LpmsFirmware.ewp</path>
+  </project>
+  <batchBuild>
+    <batchDefinition>
+      <name>BuildAllLpmsTypes</name>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsB</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsCuNewCan</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsCuNewRs232</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsCuNewTtl</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsCuOld</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsBHeaveMotion</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsCuOldHeaveMotion</configuration>
+      </member>
+    </batchDefinition>
+  </batchBuild>
+</workspace>
+
+

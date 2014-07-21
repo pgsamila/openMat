@@ -76,6 +76,7 @@
 #include "MicroMeasure.h"
 #include "MotionBuilderCommunication.h"
 #include "PlayControl.h"
+#include "InsoleView.h"
 
 #include <string>
 #include <iostream>
@@ -91,6 +92,7 @@ using namespace boost;
 #define MODE_GRAPH_WIN 0
 #define MODE_THREED_WIN 1
 #define MODE_FIELDMAP_WIN 2
+#define MODE_INSOLE_WIN 4
 
 #define USE_HEAVEMOTION
 #define USE_MB_SERVER
@@ -301,6 +303,8 @@ public slots:
 	void updateRs232Baudrate(int i);
 	void armTimestampReset(void);
 	
+	void selectInsoleWindow(void);
+	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	
@@ -403,6 +407,7 @@ private:
 	string globalPlaybackFile;
 	QLineEdit *playbackFileEdit;
 	bool playbackFileSet;
+	InsoleView* insoleWindow;	
 	
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		

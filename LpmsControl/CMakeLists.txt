@@ -159,6 +159,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		RescanDialog.cpp
 		MotionBuilderCommunication.cpp
 		PlayControl.cpp
+		InsoleView.cpp
 		
 		../LpSensor/LpMatrix.c
 	
@@ -194,6 +195,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		VerticalBarGraph.h
 		MotionBuilderCommunication.h
 		PlayControl.h
+		InsoleView.h		
 	)
 
 	if (USE_ZEROC_ICE)
@@ -286,6 +288,8 @@ find_package(Qt5Core REQUIRED)
 include_directories(${Qt5Core_INCLUDE_DIRS})
 find_package(Qt5OpenGL REQUIRED)
 include_directories(${Qt5OpenGL_INCLUDE_DIRS})
+find_package(Qt5Svg REQUIRED)
+include_directories(${Qt5Svg_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
 	
@@ -310,6 +314,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(LpmsControl Qt5::Widgets)		
 		target_link_libraries(LpmsControl Qt5::Core)
 		target_link_libraries(LpmsControl Qt5::OpenGL)		
+		target_link_libraries(LpmsControl Qt5::Svg)	
 		target_link_libraries(LpmsControl qwt.lib)
 		target_link_libraries(LpmsControl Ws2_32.lib)
 
@@ -326,6 +331,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(LpmsControl LpSensorD.lib)
 		target_link_libraries(LpmsControl Qt5::Widgets)
 		target_link_libraries(LpmsControl Qt5::Core)
+		target_link_libraries(LpmsControl Qt5::Svg)		
 		target_link_libraries(LpmsControl Qt5::OpenGL)
 		target_link_libraries(LpmsControl qwtd.lib)
 		target_link_libraries(LpmsControl Ws2_32.lib)

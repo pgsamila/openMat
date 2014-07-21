@@ -87,14 +87,15 @@ public:
 	virtual bool updateParameters(void) = 0;
 	virtual bool setSensorCommand(int commandIndex, int parameter) = 0;
 	
-	/* virtual bool setConfigurationPrm(int parameterIndex, int parameter) = 0;
-	virtual bool setConfigurationPrm(int parameterIndex, int *parameter) = 0;
-	virtual bool getConfigurationPrm(int parameterIndex, int* parameter) = 0;
-	virtual bool getConfigurationPrm(int parameterIndex, char* parameter) = 0;
-	virtual bool getConfigurationPrm(int parameterIndex0, int parameterIndex1, int parameterIndex2, int parameterIndex3, float* parameter) = 0; */
+	virtual bool setConfigurationPrmInt(int parameterIndex, int parameter) = 0;
+	virtual bool setConfigurationPrmFloat(int parameterIndex, float parameter) = 0;
+	virtual bool setConfigurationPrmIntArray(int parameterIndex, int *parameter) = 0;
+	virtual bool setConfigurationPrmStdString(int parameterIndex, std::string parameter) = 0;
 	
-	virtual bool setConfigurationPrm(int parameterIndex, void* parameter) = 0;
-	virtual bool getConfigurationPrm(int parameterIndex, void* parameter) = 0;
+	virtual bool getConfigurationPrmInt(int parameterIndex, int *parameter) = 0;
+	virtual bool getConfigurationPrmFloat(int parameterIndex, float *parameter) = 0;
+	virtual bool getConfigurationPrmIntArray(int parameterIndex, int *parameter) = 0;
+	virtual bool getConfigurationPrmStdString(int parameterIndex, std::string *parameter) = 0;
 	
 	// virtual LpmsIoInterface *getIoInterface(void) = 0;
 	virtual void saveConfigurationToSensor(void) = 0;

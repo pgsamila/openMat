@@ -530,7 +530,7 @@ void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
 {
 	int i;
 	
-	sensor->getConfigurationPrm(PRM_HEAVEMOTION_ENABLED, &i);	
+	sensor->getConfigurationPrmInt(PRM_HEAVEMOTION_ENABLED, &i);	
 	if (i == SELECT_HEAVEMOTION_ENABLED && heaveMotionEnabled == false) {
 		heaveMotionEnabled = true;
 		
@@ -715,7 +715,7 @@ void MainWindow::toggleSelfTest(void)
 
 	if (currentLpms == 0 || isConnecting == true) return;
 	
-	currentLpms->getSensor()->getConfigurationPrm(PRM_SELF_TEST, &i);		
+	currentLpms->getSensor()->getConfigurationPrmInt(PRM_SELF_TEST, &i);		
 
 	// -->
 	/* if (i == SELECT_SELF_TEST_OFF) {
@@ -893,7 +893,7 @@ void MainWindow::uploadFirmware(void)
 	
 	if (fn == "") return;
 	
-	currentLpms->getSensor()->getConfigurationPrm(PRM_DEVICE_TYPE, &i);
+	currentLpms->getSensor()->getConfigurationPrmInt(PRM_DEVICE_TYPE, &i);
 
 	if (i == DEVICE_LPMS_B || i == DEVICE_LPMS_BLE) {
 		if (!qfilename.contains("LpmsB") || !qfilename.contains("bin")) {

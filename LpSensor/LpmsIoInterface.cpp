@@ -755,7 +755,7 @@ bool LpmsIoInterface::parseFunction(void)
 		if ((configReg & LPMS_HEAVEMOTION_ENABLED) != 0) {
 			configData->heavemotionEnabled = SELECT_HEAVEMOTION_ENABLED;
 		} else {
-			configData->heavemotionEnabled = SELECT_HEAVEMOTION_DISABLED);
+			configData->heavemotionEnabled = SELECT_HEAVEMOTION_DISABLED;
 		}
 	break;	
 	
@@ -778,38 +778,38 @@ bool LpmsIoInterface::parseFunction(void)
 	break;
 
 	case GET_GYR_RANGE:
-		if (fromBuffer(oneTx, &l)) configData->setParameter(PRM_GYR_RANGE, (int) l);					
+		if (fromBuffer(oneTx, &l)) configData->gyrRange = (int) l;
 	break;
 
 	case GET_ACC_RANGE:
-		if (fromBuffer(oneTx, &l)) configData->setParameter(PRM_ACC_RANGE, (int) l);	
+		if (fromBuffer(oneTx, &l)) configData->accRange = (int) l;	
 	break;
 
 	case GET_MAG_RANGE:
-		if (fromBuffer(oneTx, &l)) configData->setParameter(PRM_MAG_RANGE, (int) l);			
+		if (fromBuffer(oneTx, &l)) configData->magRange = (int) l;
 	break;
 	
 	case GET_FILTER_MODE:
 		fromBuffer(oneTx, &l);
 		switch(l) {
 		case LPMS_FILTER_GYR:
-			configData->setParameter(PRM_FILTER_MODE, SELECT_FM_GYRO_ONLY);
+			configData->filterMode = SELECT_FM_GYRO_ONLY;
 		break;
 		
 		case LPMS_FILTER_GYR_ACC:
-			configData->setParameter(PRM_FILTER_MODE, SELECT_FM_GYRO_ACC);
+			configData->filterMode = SELECT_FM_GYRO_ACC;
 		break;
 
 		case LPMS_FILTER_GYR_ACC_MAG:
-			configData->setParameter(PRM_FILTER_MODE, SELECT_FM_GYRO_ACC_MAG);
+			configData->filterMode = SELECT_FM_GYRO_ACC_MAG;
 		break;
 
 		case LPMS_FILTER_ACC_MAG:
-			configData->setParameter(PRM_FILTER_MODE, SELECT_FM_ACC_MAG);
+			configData->filterMode = SELECT_FM_ACC_MAG;
 		break;
 		
 		case LPMS_FILTER_GYR_ACC_EULER:
-			configData->setParameter(PRM_FILTER_MODE, SELECT_FM_GYR_ACC_EULER);
+			configData->filterMode = SELECT_FM_GYR_ACC_EULER;
 		break;
 		}
 	break;
@@ -818,19 +818,19 @@ bool LpmsIoInterface::parseFunction(void)
 		fromBuffer(oneTx, &l);
 		switch(l) {
 		case LPMS_FILTER_PRM_SET_1:
-			configData->setParameter(PRM_PARAMETER_SET, SELECT_IMU_SLOW);				
+			configData->parameterSet = SELECT_IMU_SLOW;
 		break;
 
 		case LPMS_FILTER_PRM_SET_2:
-			configData->setParameter(PRM_PARAMETER_SET, SELECT_IMU_MEDIUM);				
+			configData->parameterSet = SELECT_IMU_MEDIUM;
 		break;
 		
 		case LPMS_FILTER_PRM_SET_3:
-			configData->setParameter(PRM_PARAMETER_SET, SELECT_IMU_FAST);				
+			configData->parameterSet = SELECT_IMU_FAST;
 		break;	
 		
 		case LPMS_FILTER_PRM_SET_4:
-			configData->setParameter(PRM_PARAMETER_SET, SELECT_IMU_DYNAMIC);				
+			configData->parameterSet = SELECT_IMU_DYNAMIC;
 		break;	
 		}
 	break;
@@ -896,62 +896,62 @@ bool LpmsIoInterface::parseFunction(void)
 		fromBuffer(oneTx, &l);
 		switch(l) {
 		case LPMS_LP_OFF:
-			configData->setParameter(PRM_LOW_PASS, SELECT_LPMS_LP_OFF);				
+			configData->lowPassFilter = SELECT_LPMS_LP_OFF;
 		break;
 
 		case LPMS_LP_01:
-			configData->setParameter(PRM_LOW_PASS, SELECT_LPMS_LP_01);				
+			configData->lowPassFilter = SELECT_LPMS_LP_01;
 		break;
 		
 		case LPMS_LP_005:
-			configData->setParameter(PRM_LOW_PASS, SELECT_LPMS_LP_005);				
+			configData->lowPassFilter = SELECT_LPMS_LP_005;
 		break;	
 		
 		case LPMS_LP_001:
-			configData->setParameter(PRM_LOW_PASS, SELECT_LPMS_LP_001);				
+			configData->lowPassFilter = SELECT_LPMS_LP_001;
 		break;	
 		
 		case LPMS_LP_0005:
-			configData->setParameter(PRM_LOW_PASS, SELECT_LPMS_LP_0005);				
+			configData->lowPassFilter = SELECT_LPMS_LP_0005;
 		break;
 
 		case LPMS_LP_0001:
-			configData->setParameter(PRM_LOW_PASS, SELECT_LPMS_LP_0001);				
+			configData->lowPassFilter = SELECT_LPMS_LP_0001;
 		break;
 		}
 	break;
 	
 	case GET_CAN_MAPPING:
 		fromBuffer(oneTx, a, 16);	
-		configData->setParameter(PRM_CAN_MAPPING, (int *) a);		
+		for (int i=0; i<16; ++i) configData->canMapping[i] = (int) a[i];
 	break;
 	
 	case GET_CAN_HEARTBEAT:
 		fromBuffer(oneTx, &l);	
-		configData->setParameter(PRM_CAN_HEARTBEAT, (int) l);
+		configData->canHeartbeat = (int) l;
 	break;
 	
 	case GET_LIN_ACC_COMP_MODE:
 		fromBuffer(oneTx, &l);	
 		switch(l) {
 		case LPMS_LIN_ACC_COMP_MODE_OFF:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_OFF);				
+			configData->linAccCompMode = SELECT_LPMS_LIN_ACC_COMP_MODE_OFF;
 		break;
 
 		case LPMS_LIN_ACC_COMP_MODE_WEAK:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK);				
+			configData->linAccCompMode = SELECT_LPMS_LIN_ACC_COMP_MODE_WEAK;
 		break;
 		
 		case LPMS_LIN_ACC_COMP_MODE_MEDIUM:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM);				
+			configData->linAccCompMode = SELECT_LPMS_LIN_ACC_COMP_MODE_MEDIUM;
 		break;	
 		
 		case LPMS_LIN_ACC_COMP_MODE_STRONG:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG);				
+			configData->linAccCompMode = SELECT_LPMS_LIN_ACC_COMP_MODE_STRONG;
 		break;	
 
 		case LPMS_LIN_ACC_COMP_MODE_ULTRA:
-			configData->setParameter(PRM_LIN_ACC_COMP_MODE, SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA);				
+			configData->linAccCompMode = SELECT_LPMS_LIN_ACC_COMP_MODE_ULTRA;
 		break;	
 		}
 	break;
@@ -960,11 +960,11 @@ bool LpmsIoInterface::parseFunction(void)
 		fromBuffer(oneTx, &l);	
 		switch(l) {
 		case LPMS_CENTRI_COMP_MODE_OFF:
-			configData->setParameter(PRM_CENTRI_COMP_MODE, SELECT_LPMS_CENTRI_COMP_MODE_OFF);				
+			configData->centriCompMode = SELECT_LPMS_CENTRI_COMP_MODE_OFF;
 		break;
 
 		case LPMS_CENTRI_COMP_MODE_ON:
-			configData->setParameter(PRM_CENTRI_COMP_MODE, SELECT_LPMS_CENTRI_COMP_MODE_ON);				
+			configData->centriCompMode = SELECT_LPMS_CENTRI_COMP_MODE_ON;
 		break;	
 		}
 	break;
@@ -973,27 +973,27 @@ bool LpmsIoInterface::parseFunction(void)
 		fromBuffer(oneTx, &l);	
 		switch(l & LPMS_UART_BAUDRATE_MASK) {
 		case LPMS_UART_BAUDRATE_19200:
-			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_19200);
+			configData->uartBaudrate = SELECT_LPMS_UART_BAUDRATE_19200;
 		break;
 
 		case LPMS_UART_BAUDRATE_57600:
-			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_57600);				
+			configData->uartBaudrate = SELECT_LPMS_UART_BAUDRATE_57600;
 		break;
 
 		default:		
 		case LPMS_UART_BAUDRATE_115200:
-			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_115200);				
+			configData->uartBaudrate = SELECT_LPMS_UART_BAUDRATE_115200;
 		break;
 
 		case LPMS_UART_BAUDRATE_921600:
-			configData->setParameter(PRM_UART_BAUDRATE, SELECT_LPMS_UART_BAUDRATE_921600);				
+			configData->uartBaudrate = SELECT_LPMS_UART_BAUDRATE_921600;
 		break;		
 		}
 		
 		if ((l & LPMS_UART_FORMAT_LPBUS) == LPMS_UART_FORMAT_LPBUS) {
-			configData->setParameter(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_LPBUS);
+			configData->uartFormat = SELECT_LPMS_UART_FORMAT_LPBUS;
 		} else  {
-			configData->setParameter(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_CSV);
+			configData->uartFormat = SELECT_LPMS_UART_FORMAT_CSV;
 		}
 	break;
 

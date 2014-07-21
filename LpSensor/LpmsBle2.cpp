@@ -205,10 +205,10 @@ void LpmsBle::setConfiguration(void)
 {	
 	int selectedData = 0;
 
-	configData->setParameter(PRM_GYR_THRESHOLD_ENABLED, SELECT_IMU_GYR_THRESH_DISABLED);
-	configData->setParameter(PRM_GYR_AUTOCALIBRATION, SELECT_GYR_AUTOCALIBRATION_ENABLED);
-	configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);	
-	configData->setParameter(PRM_CAN_BAUDRATE, SELECT_CAN_BAUDRATE_1000KBPS);
+	configData->gyrThresEnable = SELECT_IMU_GYR_THRESH_DISABLED;
+	configData->gyrAutocalibration = SELECT_GYR_AUTOCALIBRATION_ENABLED;
+	configData->samplingRate = SELECT_STREAM_FREQ_30HZ;
+	configData->canBaudrate = SELECT_CAN_BAUDRATE_1000KBPS;
 	
 	selectedData &= ~SELECT_LPMS_ACC_OUTPUT_ENABLED;	
 	selectedData &= ~SELECT_LPMS_MAG_OUTPUT_ENABLED;	
@@ -222,8 +222,8 @@ void LpmsBle::setConfiguration(void)
 	selectedData &= ~SELECT_LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED;
 	selectedData |= SELECT_LPMS_HEAVEMOTION_OUTPUT_ENABLED;
 	
-	configData->setParameter(PRM_SELECT_DATA, selectedData);
-	configData->setParameter(PRM_HEAVEMOTION_ENABLED, SELECT_HEAVEMOTION_ENABLED);
+	configData->selectedData = selectedData;
+	configData->heavemotionEnabled = SELECT_HEAVEMOTION_ENABLED;
 }
 
 bool LpmsBle::getTxMessage(BleBlock *b)

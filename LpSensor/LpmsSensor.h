@@ -250,8 +250,15 @@ public:
 	bool updateParameters(void);
 	bool setSensorCommand(int commandIndex, int parameter);
 	
-	bool setConfigurationPrm(int parameterIndex, void* parameter);
-	bool getConfigurationPrm(int parameterIndex, void* parameter);
+	bool setConfigurationPrmInt(int parameterIndex, int parameter);
+	bool setConfigurationPrmFloat(int parameterIndex, float parameter);
+	bool setConfigurationPrmIntArray(int parameterIndex, int *parameter);
+	bool setConfigurationPrmStdString(int parameterIndex, std::string parameter);
+	
+	bool getConfigurationPrmInt(int parameterIndex, int *parameter);
+	bool getConfigurationPrmFloat(int parameterIndex, float *parameter);
+	bool getConfigurationPrmIntArray(int parameterIndex, int *parameter);
+	bool getConfigurationPrmStdString(int parameterIndex, std::string *parameter);
 	
 	/* bool setConfigurationPrm(int parameterIndex, int parameter);
 	bool setConfigurationPrm(int parameterIndex, int *parameter);

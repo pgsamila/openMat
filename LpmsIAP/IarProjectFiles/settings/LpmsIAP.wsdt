@@ -44,22 +44,36 @@
             <Factory>Build</Factory>
             <Session/>
           </Tab>
+<<<<<<< HEAD
         <Tab><Identity>TabID-23926-25692</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab></Tabs>
         
       <SelectedTab>1</SelectedTab></Wnd1></Windows>
+=======
+        <Tab><Identity>TabID-29077-32627</Identity><TabName>Debug Log</TabName><Factory>Debug-Log</Factory><Session/></Tab></Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd1></Windows>
+>>>>>>> Feature/ShoeSensorForLemonade
     <Editor>
       
       
       
       
+<<<<<<< HEAD
     <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\main.c</Filename><XPos>0</XPos><YPos>215</YPos><SelStart>6591</SelStart><SelEnd>6591</SelEnd></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_adc.c</Filename><XPos>0</XPos><YPos>150</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\misc.c</Filename><XPos>0</XPos><YPos>30</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\Common\startup_stm32f2xx.s</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+=======
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\LpmsSource\main.c</Filename><XPos>0</XPos><YPos>248</YPos><SelStart>364</SelStart><SelEnd>364</SelEnd></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_adc.c</Filename><XPos>0</XPos><YPos>150</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\misc.c</Filename><XPos>0</XPos><YPos>30</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\STM32F2xx_Libraries\Common\startup_stm32f2xx.s</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+>>>>>>> Feature/ShoeSensorForLemonade
     <Positions>
       
       
       
       
       
+<<<<<<< HEAD
     <Top><Row0><Sizes><Toolbar-0270cc40><key>iaridepm.enu1</key></Toolbar-0270cc40></Sizes></Row0></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>482</Bottom><Right>300</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>146413</sizeHorzCX><sizeHorzCY>275862</sizeHorzCY><sizeVertCX>221083</sizeVertCX><sizeVertCY>667586</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>198</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>200</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>275862</sizeHorzCY><sizeVertCX>146413</sizeVertCX><sizeVertCY>275862</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+=======
+    <Top><Row0><Sizes><Toolbar-0270de98><key>iaridepm.enu1</key></Toolbar-0270de98></Sizes></Row0></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>271</Bottom><Right>300</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>200</yscreen><sizeHorzCX>250000</sizeHorzCX><sizeHorzCY>389105</sizeHorzCY><sizeVertCX>377500</sizeVertCX><sizeVertCY>531128</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>198</Bottom><Right>802</Right><x>-2</x><y>-2</y><xscreen>804</xscreen><yscreen>200</yscreen><sizeHorzCX>1005000</sizeHorzCX><sizeHorzCY>389105</sizeHorzCY><sizeVertCX>250000</sizeVertCX><sizeVertCY>389105</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+>>>>>>> Feature/ShoeSensorForLemonade
   </Desktop>
 </Workspace>
 

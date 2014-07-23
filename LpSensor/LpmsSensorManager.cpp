@@ -247,17 +247,16 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	lm.lock();
 	switch (mode) {
 	case DEVICE_LPMS_B:	
-	
-#ifndef ANDROID
-		sensor = new LpmsSensor(DEVICE_LPMS_B, deviceId);
-#else
-		sensor = new LpmsSensor(DEVICE_LPMS_B, deviceId, thisVm, bluetoothAdapter);
-		
+		sensor = new LpmsSensor(DEVICE_LPMS_B, deviceId);		
 		LOGV("[LpmsSensorManager] Sensor added\n");
-#endif
-
 		sensorList.push_back(sensor);
 	break;
+	
+	case DEVICE_LPFP_B:		
+		sensor = new LpmsSensor(DEVICE_LPFP_B, deviceId);
+		LOGV("[LpmsSensorManager] Sensor added\n");
+		sensorList.push_back(sensor);
+	break;	
 		
 	case DEVICE_LPMS_BLE:	
 		sensor = new LpmsSensor(DEVICE_LPMS_BLE, deviceId);

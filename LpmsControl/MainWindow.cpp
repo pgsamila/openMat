@@ -257,12 +257,15 @@ void MainWindow::createMenuAndToolbar(void)
 	calibrationMenu->addAction(resetToFactoryAction);
 	
 	viewMenu = menuBar()->addMenu("&View");
-	QAction* graphAction = new QAction(QIcon("./icons/rss_alt_32x32.png"), "Graph &window", this);
-	QAction* orientationGraphAction = new QAction(QIcon("./icons/target_32x32.png"), "Orien&tation window", this);
-	QAction* pressureGraphAction = new QAction(QIcon("./icons/eyedropper_32x32.png"), "Pressu&re window", this);
-	QAction* threedAction = new QAction(QIcon("./icons/share_32x32.png"), "3D &visualization", this);
-	QAction* fieldMapAction = new QAction(QIcon("./icons/sun_fill_32x32.png"), "&Magnetic field map", this);
-	QAction* insoleViewAction = new QAction(QIcon("./icons/map_pin_fill_20x32.png"), "&Insole window", this);
+	graphAction = new QAction(QIcon("./icons/rss_alt_32x32.png"), "Graph &window", this);
+	orientationGraphAction = new QAction(QIcon("./icons/target_32x32.png"), "Orien&tation window", this);
+	pressureGraphAction = new QAction(QIcon("./icons/eyedropper_32x32.png"), "Pressu&re window", this);
+	threedAction = new QAction(QIcon("./icons/share_32x32.png"), "3D &visualization", this);
+	fieldMapAction = new QAction(QIcon("./icons/sun_fill_32x32.png"), "&Magnetic field map", this);
+	
+	insoleViewAction = new QAction(QIcon("./icons/map_pin_fill_20x32.png"), "&Insole window", this);
+	insoleViewAction->setVisible(false);
+	
 	cubeMode1Action = new QAction("3D view mode 1", this);
 	cubeMode1Action->setCheckable(true);
 	cubeMode1Action->setChecked(true);
@@ -474,6 +477,7 @@ void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *pr
 	bool f;
 	int i;
 	int fi;
+	int v;
 	
 	std::list<SensorGuiContainer *>::iterator it;
 	std::list<SensorGuiContainer *>::iterator fit;	
@@ -518,6 +522,34 @@ void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *pr
 		currentLpms->openMatId = (*fit)->getSensor()->getOpenMatId();		
 		graphWindow->setActiveLpms((*fit)->getSensor()->getOpenMatId());
 		updateMagneticFieldMap();
+		
+		currentLpms->getSensor()->getConfigurationPrmInt(PRM_DEVICE_TYPE, &v);
+		if (v == DEVICE_LPFP_B) {
+			selectInsoleWindow();
+			
+			graphAction->setVisible(false);
+			orientationGraphAction->setVisible(false);
+			pressureGraphAction->setVisible(false);
+			threedAction->setVisible(false);
+			fieldMapAction->setVisible(false);
+			insoleViewAction->setVisible(true);
+			cubeMode1Action->setVisible(false);
+			cubeMode2Action->setVisible(false);
+			cubeMode4Action->setVisible(false);
+		} else {
+			if (mode == MODE_INSOLE_WIN) selectGraphWindow();
+			
+			graphAction->setVisible(true);
+			orientationGraphAction->setVisible(true);
+			pressureGraphAction->setVisible(true);
+			threedAction->setVisible(true);
+			fieldMapAction->setVisible(true);
+			insoleViewAction->setVisible(false);
+			cubeMode1Action->setVisible(true);
+			cubeMode2Action->setVisible(true);
+			cubeMode4Action->setVisible(true);			
+		}
+		
 	} else {
 		if (lpmsTree->topLevelItemCount() > 0) {	
 			currentLpms = lpmsList.front();
@@ -585,7 +617,6 @@ void MainWindow::timerUpdate(void)
 		if ((*it)->getSensor()->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED && 
 			(*it)->getSensor()->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 			
-
 			(*it)->checkOptionalFeatures();
 			checkOptionalFeatures((*it)->getSensor());
 			
@@ -1127,23 +1158,10 @@ void MainWindow::selectHeaveMotionWindow(void)
 	mode = MODE_GRAPH_WIN;
 }
 
-void MainWindow::selectGaitTrackingWindow(void)
-{
-	cubeWindowContainer->hide();	
-	fieldMapWindow->hide();
-	graphWindow->hide();
-	insoleWindow->hide();	
-	
-	gaitTrackingWindow->show();
-		
-	mode = MODE_GAIT_TRACKING_WIN;
-}
-
 void MainWindow::selectThreeDWindow(void)
 {
 	graphWindow->hide();
 	fieldMapWindow->hide();
-	
 	insoleWindow->hide();
 	
 	cubeWindowContainer->update();
@@ -1167,7 +1185,6 @@ void MainWindow::selectInsoleWindow(void)
 {
 	graphWindow->hide();
 	cubeWindowContainer->hide();
-	gaitTrackingWindow->hide();
 	fieldMapWindow->hide();
 	
 	insoleWindow->show();

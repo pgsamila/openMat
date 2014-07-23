@@ -42,22 +42,38 @@ typedef unsigned long long nsTime;
 struct LPMSRotationData {	
 	static const int ChannelCount = 13; // total number of sensors available
 	int deviceOnline;	// number of device online
+
 	struct {
 		int id;
-		float q[4]; // w,x,y,z
-	}mChannel[ChannelCount];
+		float q[4];
+	} mChannel[ChannelCount];
 
-	LPMSRotationData(){
+	static const int lpfpChannelCount = 2; // total number of sensors available
+
+	struct {
+		int id;
+		float v[4];
+	} lpfpChannel[lpfpChannelCount];
+	
+	LPMSRotationData() {
 		reset();
 	}
 
-	void reset(){
-		float qIdentity[4] = {1.0,0.0,0.0,0.0};
+	void reset() {
+		float qIdentity[4] = { 1.0, 0.0, 0.0, 0.0 };
+		float vIdentity[4] = { 0.0, 0.0, 0.0, 0.0 };
+		
 		deviceOnline = 0;
-		for (int i=0; i<ChannelCount; ++i){
+
+		for (int i=0; i<ChannelCount; ++i) {
 			mChannel[i].id = -1;
-			memcpy(mChannel[i].q, qIdentity,sizeof(mChannel[i].q));
+			memcpy(mChannel[i].q, qIdentity, sizeof(mChannel[i].q));
 		}
+		
+		for (int i=0; i<lpfpChannelCount; ++i) {
+			lpfpChannel[i].id = -1;
+			memcpy(lpfpChannel[i].v, vIdentity, sizeof(lpfpChannel[i].v));
+		}		
 	}
 };
 

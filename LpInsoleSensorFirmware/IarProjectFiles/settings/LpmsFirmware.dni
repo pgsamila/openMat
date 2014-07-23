@@ -9,7 +9,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=-1979928843
+Checksum=-137123646
 [Exceptions]
 StopOnUncaught=_ 0
 StopOnThrow=_ 0
@@ -20,10 +20,10 @@ MixedMode=1
 [SWOTraceHWSettings]
 OverrideDefaultClocks=0
 CpuClock=72000000
-ClockAutoDetect=1
-ClockWanted=6000000
-JtagSpeed=6000000
-Prescaler=12
+ClockAutoDetect=0
+ClockWanted=2000000
+JtagSpeed=2000000
+Prescaler=36
 TimeStampPrescIndex=0
 TimeStampPrescData=0
 PcSampCYCTAP=1
@@ -72,6 +72,10 @@ GraphEnabled=0
 ShowTimeLog=1
 ShowTimeSum=1
 SumSortOrder=0
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Count=0
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -79,6 +83,12 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
+[Aliases]
+A0=_ "E:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c" "F:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c"
+A1=_ "E:\Dropbox\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c" "E:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c"
+A2=_ "E:\Dropbox\Klaus\develop\openmat\LpmsFirmware\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_i2c.c" "E:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_i2c.c"
+Count=3
+SuppressDialog=1
 [Trace2]
 Enabled=0
 [SWOTraceWindow]
@@ -101,17 +111,3 @@ Enabled=0
 Mode=3
 Graph=0
 Symbiont=0
-[Disassemble mode]
-mode=0
-[Breakpoints2]
-Bp0=_ 0 "EMUL_CODE" "{C:\Windows\system32}.144.1" 0 0 1 "" 0 "" 0
-Bp1=_ 0 "EMUL_CODE" "{C:\Windows\system32}.145.3" 0 0 1 "" 0 "" 0
-Bp2=_ 0 "EMUL_CODE" "{C:\Windows\system32}.145.3" 0 0 1 "" 0 "" 0
-Bp3=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\LpmsSource\LpmsTTLUsart.c}.209.5" 0 0 1 "" 0 "" 0
-Count=4
-[Aliases]
-A0=_ "E:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c" "F:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c"
-A1=_ "E:\Dropbox\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c" "E:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\LpmsSource\main.c"
-A2=_ "E:\Dropbox\Klaus\develop\openmat\LpmsFirmware\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_i2c.c" "E:\Dropbox (LP-Research Inc.)\Klaus\develop\openmat\LpmsFirmware\STM32F2xx_Libraries\STM32F2xx_StdPeriph_Driver\src\stm32f2xx_i2c.c"
-Count=3
-SuppressDialog=1

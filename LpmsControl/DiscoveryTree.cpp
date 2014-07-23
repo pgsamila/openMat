@@ -145,7 +145,7 @@ void DiscoveryTree::readFromFile(string fn)
 			} catch (ifstream::failure e) {
 				break;
 			}
-			if (deviceType == DEVICE_LPMS_B || deviceType == DEVICE_LPMS_BLE || deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C || deviceType == DEVICE_LPMS_RS232) {
+			if (deviceType == DEVICE_LPMS_B || deviceType == DEVICE_LPFP_B ||deviceType == DEVICE_LPMS_BLE || deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C || deviceType == DEVICE_LPMS_RS232) {
 				addDevice(deviceType, deviceId);
 			}
 		}
@@ -232,6 +232,8 @@ void DiscoveryTree::copyTo(QComboBox *cb)
 			cb->addItem(QString("LPMS-BLE (") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
 		} else if (((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceType() == DEVICE_LPMS_B) {
 			cb->addItem(QString("LPMS-B (") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
+		} else if (((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceType() == DEVICE_LPFP_B) {
+			cb->addItem(QString("LPFP-B (") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
 		} else {
 			cb->addItem(QString("LPMS-RS232 (") + QString(((DiscoveryItem*)itemWidget(topLevelItem(i)->child(0), 0))->getDeviceId().c_str()) + QString(")"));
 		}

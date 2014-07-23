@@ -469,6 +469,10 @@
 #define LPMS_LPBUS_DATA_MODE_32 0x0
 #define LPMS_LPBUS_DATA_MODE_16 0x1
 
+#define LPMS_OFFSET_MODE_OBJECT 0x0
+#define LPMS_OFFSET_MODE_HEADING 0x1
+#define LPMS_OFFSET_MODE_ALIGNMENT 0x2
+
 // Register data type
 typedef struct _LpmsReg {
 	uint32_t data[REG_ARRAY_SIZE];

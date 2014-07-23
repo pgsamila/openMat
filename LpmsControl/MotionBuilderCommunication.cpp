@@ -314,20 +314,39 @@ void MotionBuilderCommunication::updateImuData( LPMSRotationData &rd )
 	list<LpmsSensorI*>::iterator it;	
 	int i=0;
 	ImuData d;
+	int v;
+
 	rd.reset();
 	rd.deviceOnline=sensorList.size();
+
 	// update measurement 		 
 	for (it = sensorList.begin(); it != sensorList.end(); ++it) {
-		d = (*it)->getCurrentData();   
-		if (i < rd.ChannelCount){
-			rd.mChannel[i].id = d.openMatId;
-			rd.mChannel[i].q[0] = d.q[0];	// w
-			rd.mChannel[i].q[1] = d.q[1];	// x
-			rd.mChannel[i].q[2] = d.q[2];	// y
-			rd.mChannel[i].q[3] = d.q[3];	// z
-			i++;
+		(*it)->getConfigurationPrmInt(PRM_DEVICE_TYPE, &v);
+
+		if (v == DEVICE_LPFP_B) {
+			d = (*it)->getCurrentData();   
+
+			if (i < rd.ChannelCount){
+				rd.mChannel[i].id = d.openMatId;
+				rd.mChannel[i].q[0] = d.q[0];	// w
+				rd.mChannel[i].q[1] = d.q[1];	// x
+				rd.mChannel[i].q[2] = d.q[2];	// y
+				rd.mChannel[i].q[3] = d.q[3];	// z
+				
+				i++;
+			}		
 		} else {
-			break;
+			d = (*it)->getCurrentData();
+			
+			if (i < rd.lpfpChannelCount) {
+				rd.lpfpChannel[i].id = d.openMatId;
+				rd.lpfpChannel[i].v[0] = d.q[0];
+				rd.lpfpChannel[i].v[1] = d.q[1];
+				rd.lpfpChannel[i].v[2] = d.q[2];
+				rd.lpfpChannel[i].v[3] = d.q[3];
+				
+				i++;
+			}
 		}
 	} 
 }

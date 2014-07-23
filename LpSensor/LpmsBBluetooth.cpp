@@ -116,9 +116,31 @@ void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
 						if (fD == 0) {
 							deviceList->push_back(DeviceListItem(s.c_str(), DEVICE_LPMS_B));
 
-							std::cout << "[LpmsBBluetooth] Discovered device: " << s << endl;
+							std::cout << "[LpmsBBluetooth] Discovered LPMS device: " << s << endl;
 						}
 					}
+					
+					if (m_device_info.szName[0] == 'L' && 
+						m_device_info.szName[1] == 'P' && 
+						m_device_info.szName[2] == 'F' && 
+						m_device_info.szName[3] == 'P') {
+						string s(addressString);
+						
+						int fD = 0;
+						
+						for (int i=0; i<deviceList->nDevices; ++i) {
+							string s2(deviceList->device[i].deviceId);
+							if (s2 == s) {
+								fD = 1;
+							}
+						}
+						
+						if (fD == 0) {
+							deviceList->push_back(DeviceListItem(s.c_str(), DEVICE_LPFP_B));
+
+							std::cout << "[LpmsBBluetooth] Discovered LPFP device: " << s << endl;
+						}
+					}					
 
 					m_device_id++;
 					

@@ -62,15 +62,6 @@ const float pi = 3.141592f;
 
 	LpmsSensor::LpmsSensor(int deviceType, const char *deviceId) :
 #endif
-	
-#ifdef ANDROID
-	LpmsSensorI* LpmsSensorFactory(int deviceType, const char *deviceId) 
-	{
-		return (LpmsSensorI*) new LpmsSensor(deviceType, deviceId);
-	}
-
-	LpmsSensor::LpmsSensor(int deviceType, const char *deviceId, JavaVM *thisVm, jobject bluetoothAdapter) :
-#endif
 
 	deviceId(deviceId),
 	deviceType(deviceType) {	
@@ -80,16 +71,12 @@ const float pi = 3.141592f;
 	this->configData.openMatId = 1;
 
 	switch (deviceType) {
-	
-#ifdef ANDROID
-	case DEVICE_LPMS_B:	
-		bt = new AndroidBluetooth(&(this->configData), thisVm, bluetoothAdapter);
-		LOGV("[LpmsSensor] Sensor initialized\n");
-		break;
-#endif
-	
 #ifdef _WIN32
 	case DEVICE_LPMS_B:
+		bt = new LpmsBBluetooth(&(this->configData));
+	break;
+	
+	case DEVICE_LPFP_B:
 		bt = new LpmsBBluetooth(&(this->configData));
 	break;
 		

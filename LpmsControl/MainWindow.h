@@ -407,7 +407,13 @@ private:
 	string globalPlaybackFile;
 	QLineEdit *playbackFileEdit;
 	bool playbackFileSet;
-	InsoleView* insoleWindow;	
+	InsoleView* insoleWindow;
+	QAction* insoleViewAction;
+	QAction* graphAction;
+	QAction* orientationGraphAction;
+	QAction* pressureGraphAction;
+	QAction* threedAction;
+	QAction* fieldMapAction;
 	
 #ifdef USE_ZEROC_ICE
 	IceStormPublisher *isp;		

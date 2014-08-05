@@ -6,7 +6,7 @@
 
 #include "CommunicationManager.h"
 
-#define MAX_BUFFER 2048
+#define MAX_BUFFER 1024
 #define MAX_BUFFER_BLE 128
 
 typedef void (*pFunction)(void);
@@ -316,7 +316,7 @@ void sendQueue(void)
 
 void updateDataTransmission(void)
 {          
-  	uint8_t dataBuffer[512];
+  	uint8_t dataBuffer[256];
 	uint16_t dataLength = 0;	
 
 #ifdef USE_BLUETOOTH_INTERFACE
@@ -476,6 +476,7 @@ void parsePacket(void)
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 			switch (packet.function) {
 			case UPDATE_FIRMWARE:
+				TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
 			  	if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
 					isFirmwareUpdating = 1;
 					rxFirmwarePacketCounter = 0;
@@ -530,6 +531,7 @@ void parsePacket(void)
 				} else {
 					sendNack();
 				}
+				TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 			break;
 			
 			case GOTO_COMMAND_MODE:
@@ -720,6 +722,7 @@ void parsePacket(void)
 			break;
 				
 			case UPDATE_IAP:
+				TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
 				if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
 					isFirmwareUpdating = 1;
 					rxFirmwarePacketCounter = 0;
@@ -753,6 +756,7 @@ void parsePacket(void)
 						
 					}
 				}
+				TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 			break;
 				
 			case WRITE_REGISTERS:

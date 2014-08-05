@@ -41,6 +41,8 @@ Enabled=0
 Mode=3
 Graph=0
 Symbiont=0
+[RecentFlashDownload]
+Path=E:\Dropbox (LP-Research Inc.)\LpResearch\ProductDevelopment\Firmware\Binaries\LpmsFirmware1.3.0_PRODUCTION\LpmsCuNewRs232\Exe\LpmsFirmware.out
 [PowerLog]
 LogEnabled=0
 GraphEnabled=0

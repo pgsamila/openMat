@@ -134,7 +134,7 @@ Plot::Plot(string title, string xAxis, string yAxis,
 		Curve c;
 		
 		c.qwtCurve = new QwtPlotCurve(curveName[i].c_str());
-		c.qwtCurve->setTitle(QString(curveName[i].c_str())+QString(" = +00.00"));
+		c.qwtCurve->setTitle(QString(curveName[i].c_str())+QString("\t\t = +00.00"));
 		c.nData = 0;
 		c.xPos = 0;
 		c.first = true;
@@ -183,10 +183,10 @@ QSize Plot::minimumSizeHint() const
 void Plot::addData(int i, float y)
 {	
 	if (i < nCurves) {
-		if (curves[i].xPos > (float)(maxData-1)) {
+		if (curves[i].xPos > maxData-1) {
 			curves[i].xPos = 0;
 			curves[i].nData = maxData;
-			curves[i].first = false;		
+			curves[i].first = false;
 		}
 
 		if (curves[i].first == true) curves[i].nData = curves[i].xPos+1;
@@ -198,7 +198,7 @@ void Plot::addData(int i, float y)
 
 		if (markerX.size() > 0) markerX[0]->setXValue((float) curves[i].xPos);
 
-		curves[i].xPos = curves[i].xPos + 1.0;
+		++curves[i].xPos;
 		
 		if (textRedraw[i] > 1) {
 			textRedraw[i] = 0;

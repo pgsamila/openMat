@@ -106,7 +106,6 @@ set(sources
 	pugixml.cpp
 	MotionBuilderCommunication.cpp
 	C3dParser.cpp
-	VideoWindow.cpp
 #	HumanBodySimulation.rc
 )
   
@@ -121,7 +120,6 @@ set(headers
 	MotionBuilderCommunication.h
 	MotionBuilderSocketInterface.h	
 	LinkJoint.h
-	VideoWindow.h	
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

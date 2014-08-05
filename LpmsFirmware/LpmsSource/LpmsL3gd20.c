@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (C) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsL3gd20.h"
@@ -55,41 +54,6 @@ void waitGyrI2CStandbyState(void)
 	
 	I2C_ClearFlag(GYR_I2C_PORT, I2C_FLAG_AF);
 }
-
-/* void writeGyrRegister(uint8_t address, uint8_t data)
-{
-	I2C_GenerateSTART (GYR_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Transmitter);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_Cmd(GYR_I2C_PORT, ENABLE);
-	I2C_SendData(GYR_I2C_PORT, address);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_SendData(GYR_I2C_PORT, data);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_GenerateSTOP(GYR_I2C_PORT, ENABLE);
-}
-
-void readGyrRegister(uint8_t* pBuffer, uint8_t address)
-{
-	I2C_GenerateSTART(GYR_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Transmitter);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_Cmd(GYR_I2C_PORT, ENABLE);
-	I2C_SendData(GYR_I2C_PORT, address);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	I2C_GenerateSTART(GYR_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
-	I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Receiver);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
-	I2C_Cmd(GYR_I2C_PORT, ENABLE);
-	I2C_AcknowledgeConfig(GYR_I2C_PORT, DISABLE);
-	I2C_GenerateSTOP(GYR_I2C_PORT, ENABLE);
-	while(!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED));
-	*pBuffer = I2C_ReceiveData(GYR_I2C_PORT);
-	I2C_AcknowledgeConfig(GYR_I2C_PORT, ENABLE);
-} */
 
 void writeGyrRegister(uint8_t address, uint8_t data)
 {

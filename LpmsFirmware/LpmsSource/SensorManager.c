@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (C) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "SensorManager.h"
@@ -54,7 +53,7 @@ int32_t cumulatedRefCounter = 0;
 float refCalibrationDuration = 0;
 LpVector3f maxGyr;	
 LpVector3f minGyr;	
-float T = 0.01f;
+float T = 0.0025f;
 uint32_t lpmsStatus = 0;
 static __IO uint8_t isDataSending = 0;
 uint32_t pressureTime = 0;
@@ -75,9 +74,9 @@ LpVector3f accRawDataLp;
 LpVector3f magRawDataLp;
 LpVector3f tB;
 static float d2r = 0.01745f;
-float measurementTime = 0.0f;
+uint32_t measurementTime = 0;
 float sendTime = 0.0f;
-float heaveTime = 0.0f;
+float heaveTime = 0.0025f;
 LpVector3f heaveOutput;
 float heaveY = 0.0f;
 LpVector3f aRawNoLp;
@@ -272,8 +271,6 @@ void initSensorManager(void)
 	setHardIronOffset(calibrationData.magOffset);
 	setSoftIronMatrix(calibrationData.magSoftIronMatrix); 
 
-	setGPIOConfig();
-
 	vectZero3x1(&gyrRawDataLp);
 	vectZero3x1(&accRawDataLp);
 	vectZero3x1(&magRawDataLp);
@@ -298,11 +295,6 @@ void initSensorManager(void)
 
 void updateSensorData(void)
 {     
-	uint32_t cT;
-
-	cT = getTimeStep();
-	startTimeStepCounting();	
-
 	if (isSelfTestOn == 1) {
 		calibrationData.gyrOffset.data[0] = 0.0f;
 		calibrationData.gyrOffset.data[1] = 0.0f;
@@ -326,13 +318,15 @@ void updateSensorData(void)
 		WWDG_DeInit();
 #endif
 		
-		T = (float) cT * 0.00001f;
-		canHeartbeatTime += T;
-		measurementTime += 0.0025f;
-		heaveTime = T;
-		pressureTime += cT;
+#ifdef USE_CANBUS_INTERFACE
+		canHeartbeatTime += 0.0025f;
+#endif
+
+		++measurementTime;
 
 #ifdef ENABLE_PRESSURE
+		pressureTime += 0.0025f;
+
 		if (pressureTime > PRESSURE_T) {
 			pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
@@ -348,7 +342,6 @@ void updateSensorData(void)
 	}
 
 	checkGyrCal();
-
 	checkTimestampReset();
 }
 
@@ -381,7 +374,6 @@ void processSensorData(void)
 	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
  
 	gyrOnlineCal(T);
-
 	applyLowPass();
 
 	bRaw.data[0] = tB.data[0];
@@ -402,8 +394,8 @@ void processSensorData(void)
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
-		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
-		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
+			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
+			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
   
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
 		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
@@ -525,8 +517,6 @@ uint8_t getCurrentMode(void)
 
 void setCommandMode(void)
 {
-	// if (currentMode == LPMS_COMMAND_MODE) return;
-
 	currentMode = LPMS_COMMAND_MODE;
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
@@ -537,8 +527,6 @@ void setCommandMode(void)
 
 void setStreamMode(void)
 {
-	// if (currentMode == LPMS_STREAM_MODE) return;
-
 	currentMode = LPMS_STREAM_MODE;
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
@@ -736,8 +724,9 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
     uint8_t sl;
+	float mT = measurementTime * 0.0025f;
 
-	setUi32tAscii(&(data[o]), &sl, (uint32_t)(measurementTime * 10000.0f)); o = o+sl;
+	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;
 	data[o] = ','; ++o;
 	
 	if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
@@ -819,10 +808,11 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
+	float mT = measurementTime * 0.0025f;
 
 #ifdef LPMS_BLE
 	if (connectedInterface == USB_CONNECTED) {
-                setUi32t(&(data[o]), (uint32_t)(measurementTime * 10000.0f));
+                setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
                 o = o+4;
 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
@@ -837,7 +827,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                         o = o+2;
                 }
 	} else {
-		setI16t(&(data[o]), (int16_t) measurementTime);
+		setI16t(&(data[o]), (int16_t) mT);
 		o = o+2;
 		
 		setI16t(&(data[o]), (int16_t) (qAfterOffset.data[0] * (float) 0x7fff));
@@ -857,7 +847,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 	}
 #else
         if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-                setUi32t(&(data[o]), (uint32_t)(measurementTime * 10000.0f));
+                setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
                 o = o+4;
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
@@ -931,7 +921,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 }
 #endif
         } else {
-                setFloat(&(data[o]), measurementTime, FLOAT_FULL_PRECISION);
+                setFloat(&(data[o]), mT, FLOAT_FULL_PRECISION);
                 o = o+4;
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {

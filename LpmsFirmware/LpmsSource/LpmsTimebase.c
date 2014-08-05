@@ -10,6 +10,7 @@ uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
 uint16_t ledFlashTime = 5000;
+__IO uint16_t CCR1_Val = 2499;
 
 void initTimebase(void)
 {
@@ -67,18 +68,27 @@ void setDataStreamTimer(uint32_t T)
 
 void setSystemStepTimer(void)
 {
+	NVIC_InitTypeDef NVIC_InitStructure;
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
-	RCC_APB1PeriphClockCmd(SYSTEM_STEP_TIMER_CLK, ENABLE);
-	TIM_TimeBaseStructure.TIM_Period = 0xFFFF;
-	TIM_TimeBaseStructure.TIM_Prescaler = 600;
-	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInit(SYSTEM_STEP_TIMER, &TIM_TimeBaseStructure);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 
-	TIM_SetCounter(SYSTEM_STEP_TIMER, 0);
-	TIM_Cmd(SYSTEM_STEP_TIMER, ENABLE);
-	TIM_ClearITPendingBit(SYSTEM_STEP_TIMER,TIM_IT_Update);
+	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+
+	NVIC_Init(&NVIC_InitStructure);
+	
+	TIM_TimeBaseStructure.TIM_Period = 2499;
+	TIM_TimeBaseStructure.TIM_Prescaler = 59;
+	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	
+	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
+	
+	TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+	TIM_Cmd(TIM3, ENABLE);
 }
 
 void setTimeoutTimer(void)
@@ -146,8 +156,5 @@ uint8_t isStreamModeTransferReady(void)
 
 void updateAliveLed(void)
 {
-	if (TIM_GetCounter(LED_FLASHING_TIMER) > ledFlashTime) {
-		GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN)));
-		TIM_SetCounter(LED_FLASHING_TIMER, 0);
-	}
+	GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN)));
 }

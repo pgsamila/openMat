@@ -284,27 +284,21 @@ public slots:
 	void browsePlaybackFile(void);
 	
 	void magMisalignmentCal(void);
-	
 	void calibratePlanarMag(void);
-	
 	void magAutoMisalignmentCal(void);
-	
 	void magMaNewPage(int i);
-	
 	void magMaFinished(int i);
-	
 	QWizardPage *magMaFinishedPage(void);
-	
 	QWizardPage *magMaOrientationPage(const char* ts, const char* es);
-	
 	void setOffset(void);
-	
 	void resetOffset(void);
-
-	void resetHeading(void);
-	
+	void resetHeading(void);	
 	void updateRs232Baudrate(int i);
 	void armTimestampReset(void);
+	void magElipsoidCalNewPage(int i);
+	void magPlanarCalNewPage(int i);	
+	QWizardPage *magElipsoidCalPage(int pageNumber);
+	QWizardPage *magPlanarCalPage(int pageNumber);
 	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;

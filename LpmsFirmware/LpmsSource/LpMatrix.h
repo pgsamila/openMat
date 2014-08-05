@@ -54,7 +54,7 @@ typedef struct _LpVector4f {
 
 #ifdef __IAR_SYSTEMS_ICC__
 	typedef struct _LpVector3i {
-		int16_t data[3];
+		int32_t data[3];
 	} LpVector3i;
 
 	typedef struct _LpVector3i32 {
@@ -64,6 +64,10 @@ typedef struct _LpVector4f {
 	typedef struct _LpVector4i {
 		int16_t data[4];
 	} LpVector4i;
+
+	typedef struct _LpMatrix4x4i {
+		uint32_t data[4][4];
+	} LpMatrix4x4i;
 #endif
 
 // Matrix manipulation functions

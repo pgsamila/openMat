@@ -45,19 +45,27 @@
 #include <iostream>
 #include <string>
 #include <limits>
+using namespace std;
+
+#include <Eigen/Dense>
 
 #include "Plot.h"
 
+// Contains sagittal, transversal and coronal graphs
 class GraphWindow : public QWidget
 {
 Q_OBJECT
 	
 public:
+	// Contructor
 	GraphWindow(QWidget *parent = 0);
+	
+	// Clears graphs
 	void clearGraphs(void);
 	
 public slots:
-	void plotData(double x, double y, double z);
+	// Plots current data
+	void plotData(Eigen::Vector3f planeAngle);
 	
 public:
 	QwtLegend *sagittal_legend;

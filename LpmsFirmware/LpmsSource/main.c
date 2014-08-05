@@ -5,48 +5,37 @@
 ***********************************************************************/
 
 #include "stm32f2xx.h"
+
 #include "LpmsStartUp.h"
 #include "SensorManager.h"
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 
 extern uint8_t connectedInterface;
+extern __IO uint8_t systemStepTimeout;
 
 int main(void)
 {
 	int sendCounter = 0;
+	uint16_t ledC = 0;
 
-	msDelay(100);
-
-	setSystemStepTimer();
-	msDelay(100);	
-	
-	setTimeoutTimer();
-	msDelay(100);
-	
-	initSensorManager(); 
-	msDelay(100);
-	
-	initTimebase(); 
-	msDelay(100);
-	
-	initCommunicationManager(); 
-	msDelay(100);
+	setGPIOConfig();
+	setSystemStepTimer();	
+	initSensorManager();
+	initTimebase(); 	
+	initCommunicationManager();
 
 #ifdef ENABLE_WATCHDOG
 	initWatchdog();
-	msDelay(100);
 #endif
 
 	while (1) {
-		updateAliveLed();
-
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
-		  
-			if (getTimeStep() > (LPMS_MEASUREMENT_PERIOD-10)) {
-				while (getTimeStep() < LPMS_MEASUREMENT_PERIOD) {
-					asm ("nop");
-				}
+			if (systemStepTimeout == 1) {
+				systemStepTimeout = 0;
+
+				if (ledC % 400 == 0) updateAliveLed();
+				++ledC;
 
 				updateSensorData();
 				processSensorData();
@@ -62,42 +51,41 @@ int main(void)
 					}
 #endif
 				}
-			}
 
 #ifdef LPMS_BLE			
-			if (connectedInterface == USB_CONNECTED) {
-				sendQueue();
-			}
+				if (connectedInterface == USB_CONNECTED) {
+					sendQueue();
+				}
 #else
-			sendQueue();
+				sendQueue();
 #endif
-
+	
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
-			pollSerialPortData();
-			rs232PortPollData();
+				pollSerialPortData();
+				rs232PortPollData();
 #elif defined USE_TTL_UART_INTERFACE
-			pollSerialPortData();			
+				pollSerialPortData();			
 #ifdef LPMS_BLE
-			ttlUsartPortPollDataBle();
+				ttlUsartPortPollDataBle();
 #else
-			ttlUsartPortPollData();			
+				ttlUsartPortPollData();			
 #endif
 #else
-			pollSerialPortData();
-			pollCanBusData();
+				pollSerialPortData();
+				pollCanBusData();
 #endif
 #else
-			pollBluetoothData();
+				pollBluetoothData();
 #endif
-			parsePacket();
-			
-		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
-		  
-			if (getTimeStep() > (LPMS_MEASUREMENT_PERIOD-10)) {
-				while (getTimeStep() < LPMS_MEASUREMENT_PERIOD) {
-					asm ("nop");
-				}
+				parsePacket();
+			}			
+		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
+			if (systemStepTimeout == 1) {
+				systemStepTimeout = 0;
+
+				if (ledC % 400 == 0) updateAliveLed();
+				++ledC;
 
 				updateSensorData();
 				processSensorData();
@@ -115,36 +103,35 @@ int main(void)
 					}
 #endif
 				}
-			}
 
 #ifdef LPMS_BLE			
-			if (connectedInterface == USB_CONNECTED) sendQueue();
+				if (connectedInterface == USB_CONNECTED) sendQueue();
 #else
-			sendQueue();
+				sendQueue();
 #endif
-
+	
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
-			pollSerialPortData();
-			rs232PortPollData();
+				pollSerialPortData();
+				rs232PortPollData();
 #elif defined USE_TTL_UART_INTERFACE
-			pollSerialPortData();
-			
+				pollSerialPortData();
+				
 #ifdef LPMS_BLE
-			ttlUsartPortPollDataBle();
+				ttlUsartPortPollDataBle();
 #else
-			ttlUsartPortPollData();			
+				ttlUsartPortPollData();			
 #endif
-			
+				
 #else
-			pollSerialPortData();
-			pollCanBusData();
+				pollSerialPortData();
+				pollCanBusData();
 #endif
 #else
-			pollBluetoothData();
+				pollBluetoothData();
 #endif
-			parsePacket();
-			
+				parsePacket();
+			}
 		} else if (getCurrentMode() == LPMS_SLEEP_MODE) {
 		  
 #ifdef USE_CANBUS_INTERFACE

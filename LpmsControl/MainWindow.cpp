@@ -228,41 +228,37 @@ void MainWindow::createMenuAndToolbar(void)
 	toolbar->addAction(setOffsetAction);
 	QAction* resetOffsetAction = new QAction(QIcon("./icons/denied_32x32.png"), "Reset offset", this);
 	toolbar->addAction(resetOffsetAction);
-	QAction* resetHeadingAction = new QAction(QIcon("./icons/compass_32x32.png"), "Reset heading", this);
-	toolbar->addAction(resetHeadingAction);
-	QAction* armTimestampResetAction = new QAction(QIcon("./icons/clock_32x32.png"), "Arm timestamp reset", this);
-	// toolbar->addAction(armTimestampResetAction);	
 	
 	QMenu* calibrationMenu = menuBar()->addMenu("&Calibration");
 	
 	QAction* gyroAction = new QAction("Calibrate &gyroscope", this);
 	QAction* startMagAction = new QAction("Calibrate &mag. (ellipsoid fit)", this);
 	QAction* startPlanarMagAction = new QAction("Calibrate &mag. (min/max fit)", this);
-	QAction* stopMagAction = new QAction("Stop magnetometer calibration", this);	
+	QAction* stopMagAction = new QAction("Stop magnetometer calibration", this);
 	QAction* resetSingleRefAction = new QAction("Reset &heading (selected)", this);
 	QAction* resetAllRefAction = new QAction("Reset heading (&all)", this);
-	QAction* resetSingleOrientationAction = new QAction("Reset &offset (selected)", this);	
-	QAction* resetAllOrientationAction = new QAction("Reset o&ffset (all)", this);	
+	QAction* resetSingleOrientationAction = new QAction("Reset &offset (selected)", this);
+	QAction* resetAllOrientationAction = new QAction("Reset o&ffset (all)", this);
 	QAction* saveCalAction = new QAction("Save &parameters to sensor", this);
 	QAction* resetToFactoryAction = new QAction("Reset to factory settings", this);
 	QAction* mACalculateAction = new QAction("Calibrate acc. misalignment", this);
 	QAction* gyrMaCalculateAction = new QAction("Calibrate gyr. misalignment", this);
 	QAction* magMaCalculateAction = new QAction("Calibrate mag. misalignment (HH-coils)", this);
-	QAction* magAutoMaCalculateAction = new QAction("Calibrate mag. misalignment (auto)", this);	
-	QAction* loadFromFileAction = new QAction("Save calibration file", this);		
-	QAction* saveToFileAction = new QAction("Load calibration file", this);		
+	QAction* magAutoMaCalculateAction = new QAction("Calibrate mag. misalignment (auto)", this);
+	QAction* loadFromFileAction = new QAction("Save calibration file", this);
+	QAction* saveToFileAction = new QAction("Load calibration file", this);
+	QAction* armTimestampResetAction = new QAction("Arm hardware timestamp reset", this);
 	
 	calibrationMenu->addAction(gyroAction);
 	calibrationMenu->addAction(startMagAction);
-	calibrationMenu->addAction(startPlanarMagAction);	
+	calibrationMenu->addAction(startPlanarMagAction);
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(saveCalAction);
 	calibrationMenu->addAction(loadFromFileAction);
-	calibrationMenu->addAction(saveToFileAction);	
+	calibrationMenu->addAction(saveToFileAction);
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(setOffsetAction);
 	calibrationMenu->addAction(resetOffsetAction);
-	calibrationMenu->addAction(resetHeadingAction);
 	calibrationMenu->addSeparator();
 	calibrationMenu->addAction(armTimestampResetAction);
 	calibrationMenu->addSeparator();	
@@ -361,8 +357,7 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(replayAction, SIGNAL(triggered()), this, SLOT(startReplay()));
 	connect(browseReplayAction, SIGNAL(triggered()), this, SLOT(browsePlaybackFile()));	
 	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
-	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));	
-	connect(resetHeadingAction, SIGNAL(triggered()), this, SLOT(resetHeading()));
+	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));
 	connect(armTimestampResetAction, SIGNAL(triggered()), this, SLOT(armTimestampReset()));
 }
 
@@ -437,26 +432,146 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
+QWizardPage *MainWindow::magElipsoidCalPage(int pageNumber)
+{
+	QWizardPage *page = new QWizardPage;
+	QLabel *label;
+	
+	page->setTitle(std::string("Magnetic field map").c_str());
+		
+	switch (pageNumber) {
+	case 0:
+		page->setTitle(std::string("Magnetic field map").c_str());
+		label = new QLabel((std::string("Please continuously rotate the selected LPMS around roll, pitch and yaw axis for 30s. The calibration algorithm will create a map of your environment magnetic field and use it to calculate hard / soft iron calibration parameters.")).c_str());
+	break;
+	
+	case 1:
+		page->setTitle(std::string("Alignment").c_str());
+		label = new QLabel((std::string("Please hold the sensor in a motionless state for 5s. The alignment of the magnetometer inclination axis and the vertical axis (gravity vector) will be calculated.")).c_str());
+	break;
+	
+	default:
+		page->setTitle(std::string("Calibration finished").c_str());
+		label = new QLabel((std::string("Magnetometer calibration has been finished. Please check the field map window if the number of acquired field points during the calibration process were enough to generate a good ellipsoid fit. See the manual for more information.")).c_str());
+	break;	
+	}
+	
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+void MainWindow::magElipsoidCalNewPage(int i)
+{
+	switch (i) {
+	case 1:
+		currentLpms->getSensor()->startMagCalibration();
+		startWaitBar(45);
+	break;
+	
+	case 2:
+		currentLpms->getSensor()->startMagReferenceCal();	
+		startWaitBar(5);		
+	break;
+	}
+}
+
 void MainWindow::calibrateMag(void)
 {
+	QList<QWizard::WizardButton> layout;
+
 	if (currentLpms == 0 || isConnecting == true) return;
 	
+	QWizard* magElipsoidCalWizard = new QWizard(this);
+
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	magElipsoidCalWizard->setButtonLayout(layout);
+	
+	magElipsoidCalWizard->addPage(magElipsoidCalPage(0));
+	magElipsoidCalWizard->addPage(magElipsoidCalPage(1));
+	magElipsoidCalWizard->addPage(magElipsoidCalPage(2));	
+	
+	magElipsoidCalWizard->setWindowTitle("Magnetometer hard / soft iron calibration (ellipsoid)");
+	magElipsoidCalWizard->show();
+		
+	connect(magElipsoidCalWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magElipsoidCalNewPage(int)));
+	
 	if (isRunning == false) startMeasurement();
+}
+
+QWizardPage *MainWindow::magPlanarCalPage(int pageNumber)
+{
+	QWizardPage *page = new QWizardPage;
+	QLabel *label;
 	
-	currentLpms->getSensor()->startMagCalibration();
+	page->setTitle(std::string("Magnetic field map").c_str());
+		
+	switch (pageNumber) {
+	case 0:
+		page->setTitle(std::string("Magnetic field map").c_str());
+		label = new QLabel((std::string("Please continuously rotate the selected LPMS around roll, pitch and yaw axis for 30s. The calibration algorithm will create a map of your environment magnetic field and use it to calculate hard / soft iron calibration parameters.")).c_str());
+	break;
 	
-	startWaitBar(45);
+	case 1:
+		page->setTitle(std::string("Alignment").c_str());
+		label = new QLabel((std::string("Please hold the sensor in a motionless state for 5s. The alignment of the magnetometer inclination axis and the vertical axis (gravity vector) will be calculated.")).c_str());
+	break;
+	
+	default:
+		page->setTitle(std::string("Calibration finished").c_str());
+		label = new QLabel((std::string("Magnetometer calibration has been finished. Please check the field map window if the calibration process was able to generate a good fit. See the manual for more information.")).c_str());
+	break;	
+	}
+	
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+void MainWindow::magPlanarCalNewPage(int i)
+{
+	switch (i) {
+	case 1:
+		currentLpms->getSensor()->startPlanarMagCalibration();
+		startWaitBar(45);
+	break;
+	
+	case 2:
+		currentLpms->getSensor()->startMagReferenceCal();	
+		startWaitBar(5);		
+	break;
+	}
 }
 
 void MainWindow::calibratePlanarMag(void)
 {
+	QList<QWizard::WizardButton> layout;	
+	
 	if (currentLpms == 0 || isConnecting == true) return;
 	
+	QWizard* magPlanarCalWizard = new QWizard(this);
+		
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	magPlanarCalWizard->setButtonLayout(layout);
+	
+	magPlanarCalWizard->addPage(magPlanarCalPage(0));
+	magPlanarCalWizard->addPage(magPlanarCalPage(1));
+	magPlanarCalWizard->addPage(magPlanarCalPage(2));	
+	
+	magPlanarCalWizard->setWindowTitle("Magnetometer hard / soft iron calibration (planar)");
+	magPlanarCalWizard->show();
+		
+	connect(magPlanarCalWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magPlanarCalNewPage(int)));
+	
 	if (isRunning == false) startMeasurement();
-	
-	currentLpms->getSensor()->startPlanarMagCalibration();
-	
-	startWaitBar(45);
 } 
 
 void MainWindow::updateMagneticFieldMap(void)
@@ -936,7 +1051,7 @@ void MainWindow::uploadFirmware(void)
 		printf("[MainWindow] Couldn't open firmware file.\n");	
 		f = false;
 	}
-	if (file.size() < 50000 || file.size() > 100000) {
+	if (file.size() < 10000 || file.size() > 100000) {
 		printf("[MainWindow] Bad firmware filesize: %d.\n", (int) file.size());	
 		f = false;
 	}

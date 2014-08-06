@@ -1,4 +1,4 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.0-ForTony"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.2-LedMod"
 # !define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1-vs2010\5.2.1\msvc2010_opengl"
 !define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl"
 
@@ -113,6 +113,8 @@ Section "OpenMAT (required)"
 	File "..\LpmsControl\icons\pause_24x32.png"
 	File "..\LpmsControl\icons\compass_32x32.png"
 	File "..\LpmsControl\icons\denied_32x32.png"
+	File "..\LpmsControl\icons\arrow_down_32x32.png"
+	File "..\LpmsControl\icons\arrow_up_32x32.png"	
 	
 	WriteRegStr HKLM SOFTWARE\OpenMAT\${OPENMAT_VERSION_NAME} "Install_Dir" "$INSTDIR"
 	

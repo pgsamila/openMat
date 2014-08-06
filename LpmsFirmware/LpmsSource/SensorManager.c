@@ -285,6 +285,8 @@ void initSensorManager(void)
 	updateMagReference();
 	updateUartFormat();
 
+	setDefaultLedOnoff();
+
 	quaternionIdentity(&mQ_hx);
 	quaternionIdentity(&mQ_offset);
                     

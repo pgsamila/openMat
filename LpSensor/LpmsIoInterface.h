@@ -289,6 +289,7 @@ public:
 	bool setUartBaudRate(int v);
 	bool setUartFormat(int v);
 	bool armTimestampReset(int v);
+	bool setLedOnoff(int v);
 	
 protected:
 	virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);

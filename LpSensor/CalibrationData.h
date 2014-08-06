@@ -85,6 +85,7 @@ public:
 	int firmwareVersionDig2;
 	int uartBaudrate;
 	int uartFormat;
+	int ledOnoff;
 	
 private:
 	std::mutex calibrationMutex;

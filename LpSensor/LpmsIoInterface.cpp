@@ -777,6 +777,12 @@ bool LpmsIoInterface::parseFunction(void)
 		} else {
 			configData->setParameter(PRM_GAIT_TRACKING_ENABLED, SELECT_GAIT_TRACKING_DISABLED);
 		}
+		
+		if ((configReg & LPMS_LED_ENABLED) != 0) {
+			configData->setParameter(PRM_LED_ONOFF, SELECT_LPMS_LED_ON);
+		} else {
+			configData->setParameter(PRM_LED_ONOFF, SELECT_LPMS_LED_OFF);
+		}		
 	break;	
 	
 	case GET_SENSOR_DATA:
@@ -2198,6 +2204,12 @@ bool LpmsIoInterface::setUartFormat(int v)
 }
 bool LpmsIoInterface::armTimestampReset(int v)
 {
-	printf("Arm timestamp reset\n");
 	return modbusSetInt32(SET_ARM_HARDWARE_TIMESTAMP_RESET, v);
+}
+
+bool LpmsIoInterface::setLedOnoff(int v)
+{
+	LOGV("[LpmsIoInterface] LED onoff: %d\n", v);
+	
+	return modbusSetInt32(SET_LED_ONOFF, v);
 }

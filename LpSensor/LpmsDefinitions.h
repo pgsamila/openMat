@@ -69,6 +69,7 @@
 #define PRM_LPBUS_DATA_MODE			40
 #define PRM_UART_BAUDRATE			41
 #define PRM_UART_FORMAT				42
+#define PRM_LED_ONOFF				43
 
 /* Sensor fusion modes. */
 #define SELECT_FM_GYRO_ONLY 		0
@@ -227,5 +228,7 @@
 #define SELECT_LPMS_UART_FORMAT_LPBUS			0
 #define SELECT_LPMS_UART_FORMAT_CSV				1
 
+#define SELECT_LPMS_LED_OFF			0
+#define SELECT_LPMS_LED_ON			1
 
 #endif

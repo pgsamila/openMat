@@ -11,6 +11,7 @@ float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
 uint16_t ledFlashTime = 5000;
 __IO uint16_t CCR1_Val = 2499;
+uint8_t ledState = 0;
 
 void initTimebase(void)
 {
@@ -156,5 +157,11 @@ uint8_t isStreamModeTransferReady(void)
 
 void updateAliveLed(void)
 {
-	GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN)));
+	/* GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)(1-GPIO_ReadOutputDataBit(LED_GPIO_PORT, LED_GPIO_PIN))); */
+
+	if (ledState == LPMS_LED_OFF) {
+		GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, Bit_SET);
+	} else {
+		GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, Bit_RESET);
+	}
 }

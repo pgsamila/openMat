@@ -322,5 +322,9 @@ uint8_t setUartFormat(uint8_t* data);
 void updateUartFormat(void);
 void armHardwareTimestampReset(uint8_t* data);
 void setDefaultAlignmentOffset(void);
+void setLedOnoff(uint8_t* data);
+void updateLedOnoff(void);
+void setLedOnoff(uint8_t* data);
+void setDefaultLedOnoff(void);
 
 #endif

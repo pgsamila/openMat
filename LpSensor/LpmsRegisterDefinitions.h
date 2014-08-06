@@ -142,6 +142,7 @@
 #define SET_UART_BAUDRATE					(COMMAND_START_ADDRESS + 84)
 #define GET_UART_BAUDRATE					(COMMAND_START_ADDRESS + 85)
 #define SET_UART_FORMAT						(COMMAND_START_ADDRESS + 86)
+#define SET_LED_ONOFF						(COMMAND_START_ADDRESS + 87)
 
 #define	IAP_FLASH_START_ADDRESS 			(uint32_t)0x08060000
 #define IAP_MAX_PACKET_SIZE 				64
@@ -156,7 +157,7 @@
 #define NOT_USED_0								(uint32_t)(0x00000001 << 31)
 #define LPMS_GYR_AUTOCAL_ENABLED 				(uint32_t)(0x00000001 << 30)
 #define NOT_USED_1				 				(uint32_t)(0x00000001 << 29)
-#define NOT_USED_2			 					(uint32_t)(0x00000001 << 28)
+#define LPMS_LED_ENABLED	 					(uint32_t)(0x00000001 << 28)
 #define LPMS_GAIT_TRACKING_ENABLED 				(uint32_t)(0x00000001 << 27)
 #define LPMS_HEAVEMOTION_ENABLED 				(uint32_t)(0x00000001 << 26)
 #define	LPMS_ACC_COMP_ENABLED 					(uint32_t)(0x00000001 << 25)
@@ -389,5 +390,8 @@
 
 #define LPMS_ARM_TIMESTAMP_RESET 		0x00
 #define LPMS_DISARM_TIMESTAMP_RESET 	0x01
+
+#define LPMS_LED_OFF 					0x00
+#define LPMS_LED_ON	 				0x01
 
 #endif

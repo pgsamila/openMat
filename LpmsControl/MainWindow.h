@@ -97,7 +97,7 @@ using namespace boost;
 #define USE_HEAVEMOTION
 #define USE_MB_SERVER
 
-#define LPMS_CONTROL_VERSION "1.3.0"
+#define LPMS_CONTROL_VERSION "1.3.2"
 
 /* LPMS Control main window. */
 class MainWindow : public QMainWindow
@@ -299,6 +299,8 @@ public slots:
 	void magPlanarCalNewPage(int i);	
 	QWizardPage *magElipsoidCalPage(int pageNumber);
 	QWizardPage *magPlanarCalPage(int pageNumber);
+	void ledOff(void);
+	void ledOn(void);
 	
 private:
 	QList<QTreeWidgetItem *> lpmsTreeItems;

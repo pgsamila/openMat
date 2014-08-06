@@ -1042,10 +1042,19 @@ void LpmsSensor::update(void)
 			break;
 			}
 			
+			state = STATE_SET_LED_ONOFF;
+		}
+	break;
+	
+	case STATE_SET_LED_ONOFF:
+		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
+			bt->setLedOnoff(configData.ledOnoff);
+			LOGV("[LpmsSensor] LED onoff\n");
+			
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
 		}
-	break;
+	break;	
 		
 	// Writes parameters to the sensor flash memory.
 	case STATE_WRITE_PARAMETERS:	

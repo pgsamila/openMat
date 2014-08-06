@@ -34,6 +34,7 @@ extern uint8_t transferFormat;
 extern LpVector4f mQ_hx;
 extern LpVector4f mQ_offset;
 extern uint16_t ledFlashTime;
+extern uint8_t ledState;
 
 uint8_t writeRegisters(void)
 {
@@ -1428,4 +1429,35 @@ void armHardwareTimestampReset(uint8_t* data)
 	break;
 	}
 }
-	
+
+void setLedOnoff(uint8_t* data)
+{
+	uint32_t v = getUi32t(data);
+
+	switch(v) {
+	case LPMS_LED_ON:     
+		 gReg.data[LPMS_CONFIG] |= LPMS_LED_ENABLED;
+	break;
+
+	default:
+		gReg.data[LPMS_CONFIG] &= ~LPMS_LED_ENABLED;
+	break;
+	}
+
+	updateLedOnoff();
+}
+
+void updateLedOnoff(void)
+{
+	if ((gReg.data[LPMS_CONFIG] & LPMS_LED_ENABLED) == LPMS_LED_ENABLED) {
+		ledState = LPMS_LED_ON;
+	} else  {
+		ledState = LPMS_LED_OFF;
+	}
+}
+
+void setDefaultLedOnoff(void)
+{
+	ledState = LPMS_LED_OFF;
+	gReg.data[LPMS_CONFIG] &= ~LPMS_LED_ENABLED;
+}

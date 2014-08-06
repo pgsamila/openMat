@@ -45,6 +45,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	QGridLayout* gl4 = new QGridLayout();
 	QGridLayout* gl5 = new QGridLayout();
 	QGridLayout* gl6 = new QGridLayout();	
+	QGridLayout* gl7 = new QGridLayout();		
 
 	l = 0;
 	gl5->addWidget(new QLabel("Connection:"), l, 0); ++l;
@@ -102,7 +103,11 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	gl2->addWidget(centriCompModeCombo = new QComboBox(), l, 1); ++l;
 	gl2->addWidget(thresholdEnableCombo = new QComboBox(), l, 1); ++l;
 	gl2->addWidget(gyrAutocalibrationCombo = new QComboBox(), l, 1); ++l;
-	gl2->addWidget(lowPassCombo = new QComboBox(), l, 1); ++l;	
+	gl2->addWidget(lowPassCombo = new QComboBox(), l, 1); ++l;
+
+	l = 0;
+	gl7->addWidget(new QLabel("LED State:"), l, 0);
+	gl7->addWidget(ledCombo = new QComboBox(), l, 1); ++l;
 	
 	for (int i=0; i < 129; i++) indexItem->addItem(QString("%1").arg(i));
 	connect(indexItem, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOpenMATIndex(int)));
@@ -137,9 +142,9 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	
 	connect(samplingRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updatesamplingRate(int)));
 	
-	QComboBox* syncCombo = new QComboBox();
-	syncCombo->addItem(QString("On"));
-	syncCombo->addItem(QString("Off"));	
+	ledCombo->addItem(QString("Off"));
+	ledCombo->addItem(QString("On"));	
+	connect(ledCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLed(int)));
 	
 	parameterSetCombo->addItem(QString("Weak"));
 	parameterSetCombo->addItem(QString("Medium"));
@@ -694,6 +699,12 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	QTreeWidgetItem* dataTreeWidget = new QTreeWidgetItem(dataTreeItem);
 	tree->setItemWidget(dataTreeWidget, 0, w3);
 	
+	QWidget *w7 = new QWidget();
+	w7->setLayout(gl7);
+	QTreeWidgetItem* ledTreeItem = new QTreeWidgetItem(treeItem, QStringList(QString("LED")));
+	QTreeWidgetItem* ledTreeWidget = new QTreeWidgetItem(ledTreeItem);
+	tree->setItemWidget(ledTreeWidget, 0, w7);	
+	
 	heaveMotionEnabled = false;
 	
 	updateData();
@@ -762,6 +773,7 @@ void SensorGuiContainer::updateData(void) {
 	linAccCompModeCombo->blockSignals(true);
 	centriCompModeCombo->blockSignals(true);
 	lpBusDataModeCombo->blockSignals(true);
+	ledCombo->blockSignals(true);
 		
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {
 		// canProtocolCombo->blockSignals(false);	
@@ -1279,6 +1291,17 @@ void SensorGuiContainer::updateData(void) {
 	case SELECT_LPMS_LPBUS_DATA_MODE_16:		
 		lpBusDataModeCombo->setCurrentIndex(1);
 	break;
+	}
+	
+	sensor->getConfigurationPrm(PRM_LED_ONOFF, &i);		
+	switch (i) {
+	case SELECT_LPMS_LED_OFF:		
+		ledCombo->setCurrentIndex(0);
+	break;
+	
+	case SELECT_LPMS_LED_ON:		
+		ledCombo->setCurrentIndex(1);
+	break;
 	}	
 
 	selectAcc->blockSignals(false);
@@ -1301,6 +1324,7 @@ void SensorGuiContainer::updateData(void) {
 	linAccCompModeCombo->blockSignals(false);
 	centriCompModeCombo->blockSignals(false);
 	lpBusDataModeCombo->blockSignals(false);
+	ledCombo->blockSignals(false);
 
 	if (deviceType == DEVICE_LPMS_U || deviceType == DEVICE_LPMS_C) {	
 		canBaudrateCombo->blockSignals(false);	
@@ -1893,6 +1917,19 @@ void SensorGuiContainer::updateUartFormatIndex(int i)
 	
 	case 1:
 		sensor->setConfigurationPrm(PRM_UART_FORMAT, SELECT_LPMS_UART_FORMAT_CSV);
+	break;
+	}
+}
+
+void SensorGuiContainer::updateLed(int i)
+{
+	switch (ledCombo->currentIndex()) {
+	case 0:
+		sensor->setConfigurationPrm(PRM_LED_ONOFF, SELECT_LPMS_LED_OFF);
+	break;
+	
+	case 1:
+		sensor->setConfigurationPrm(PRM_LED_ONOFF, SELECT_LPMS_LED_ON);
 	break;
 	}
 }

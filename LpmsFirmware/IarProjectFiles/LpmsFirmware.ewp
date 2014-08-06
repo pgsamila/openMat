@@ -4179,7 +4179,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCU-Mk1Can-Firmware.bin</state>
+          <state>LpmsCU-Mk1-Firmware-LedMod.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

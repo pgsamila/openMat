@@ -290,6 +290,12 @@ void MainWindow::createMenuAndToolbar(void)
 	viewMenu->addAction(cubeMode4Action);
 		
 	toolbar->addSeparator();
+	
+	QAction* ledOffAction = new QAction(QIcon("./icons/arrow_down_32x32.png"), "Light off", this);	
+	toolbar->addAction(ledOffAction);
+	QAction* ledOnAction = new QAction(QIcon("./icons/arrow_up_32x32.png"), "Light on", this);
+	toolbar->addAction(ledOnAction);
+	toolbar->addSeparator();
 		
 	QWidget *stretchWidget = new QWidget();
 	stretchWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -320,7 +326,11 @@ void MainWindow::createMenuAndToolbar(void)
 	expertMenu->addAction(magMaCalculateAction);
 	expertMenu->addAction(magAutoMaCalculateAction);	
 	expertMenu->addSeparator();
-	expertMenu->addAction(versionAction);	
+	expertMenu->addAction(versionAction);
+
+	QMenu* ledMenu = menuBar()->addMenu("&LED");
+	ledMenu->addAction(ledOffAction);
+	ledMenu->addAction(ledOnAction);	
 	
 	connect(startMagAction, SIGNAL(triggered()), this, SLOT(calibrateMag()));
 	connect(startPlanarMagAction, SIGNAL(triggered()), this, SLOT(calibratePlanarMag()));	
@@ -359,6 +369,8 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
 	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));
 	connect(armTimestampResetAction, SIGNAL(triggered()), this, SLOT(armTimestampReset()));
+	connect(ledOnAction, SIGNAL(triggered()), this, SLOT(ledOn()));
+	connect(ledOffAction, SIGNAL(triggered()), this, SLOT(ledOff()));	
 }
 
 void MainWindow::updateCanBaudrate(int i)
@@ -430,6 +442,20 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	} else {
 		event->ignore();
 	}
+}
+
+void MainWindow::ledOff(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+
+	currentLpms->getSensor()->setConfigurationPrm(PRM_LED_ONOFF, SELECT_LPMS_LED_OFF);
+}
+
+void MainWindow::ledOn(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+
+	currentLpms->getSensor()->setConfigurationPrm(PRM_LED_ONOFF, SELECT_LPMS_LED_ON);
 }
 
 QWizardPage *MainWindow::magElipsoidCalPage(int pageNumber)
@@ -788,7 +814,6 @@ void MainWindow::openSensor(void)
 	
 	isConnecting = true;	
 	std::string deviceAddress = std::string(deviceList.getDeviceId(comboDeviceList->currentIndex()));
-
 
 	f = false;	
 	std::list<SensorGuiContainer *>::iterator it;		

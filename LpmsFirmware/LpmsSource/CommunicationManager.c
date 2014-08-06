@@ -991,6 +991,11 @@ void parsePacket(void)
 				sendAck();
 			break;
 
+			case SET_LED_ONOFF:
+				setLedOnoff(packet.data);
+				sendAck();
+			break;
+
 			default:
 			break;
 			}

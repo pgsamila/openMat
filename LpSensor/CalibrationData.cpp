@@ -255,6 +255,10 @@ bool CalibrationData::setParameter(int parameterIndex, int parameter)
 	case PRM_UART_FORMAT:
 		uartFormat = parameter;
 	break;
+	
+	case PRM_LED_ONOFF:
+		ledOnoff = parameter;
+	break;
 	}
 
 	calibrationMutex.unlock();
@@ -446,6 +450,10 @@ bool CalibrationData::getParameter(int parameterIndex, int *parameter)
 	
 	case PRM_UART_FORMAT:
 		*parameter = uartFormat;
+	break;
+
+	case PRM_LED_ONOFF:
+		*parameter = ledOnoff;
 	break;
 	}
 

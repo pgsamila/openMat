@@ -31,31 +31,19 @@
 
 #include "PlayControl.h"
 
-/*!
-	Constructor
-*/
+std::mutex recordMutex;
 
 PlayController::PlayController(QWidget* parent) : 
 	QWidget(parent) 
 {
 }
 
-/*!
-	Sets the length of the current motion sequence in milliseconds.
-*/
-
 void PlayController::setLength(double l) 
 {
 	length = l;
 }
 
-/*!
-	Constructor of an MotionPlayer Object. A shared pointer of 
-	the currently loaded model structure is passed.
-*/
-
-MotionPlayer::MotionPlayer(void /* HumanModel* hm */) :
-	// hm(hm),
+MotionPlayer::MotionPlayer(void) :
 	maxTime(9999),
 	fps(30),
 	recordingStarted(false),
@@ -66,29 +54,11 @@ MotionPlayer::MotionPlayer(void /* HumanModel* hm */) :
 	playbackFile("n/a"),
 	recordingFile("n/a")
 {
-	/* BOOST_FOREACH(Link* l, hm->linkList) {
-		linkList.push_back(l);
-		BOOST_FOREACH(Joint *j, l->jointList) {	
-			jointList.push_back(j);
-		}
-	} */
 }
-
-/*!
-	Returns the currently loaded playback file.
-*/
 
 std::string MotionPlayer::getPlaybackFile(void) {
 	return playbackFile;
 }
-
-/*!
-	Updates the joint angles from the link rotation 
-	matrices loaded from a motion data file. The update cycle 
-	is synchronized to the timestamp that is saved with
-	each frame. The sequence is restarted as soon as its end
-	is reached.
-*/
 
 bool MotionPlayer::updateJointsFromData(double t) 
 {
@@ -107,7 +77,6 @@ bool MotionPlayer::updateJointsFromData(double t)
 			(*i)->linkRotM.block<3, 3>(0, 0) = mat;
 			++i;
 		}
-		// hm->recalculateJoints();
 					
 		currentTime = d.timeStamp;		
 					
@@ -120,12 +89,6 @@ bool MotionPlayer::updateJointsFromData(double t)
 	
 	return true;
 }	
-
-/*!
-	Read the raw motion data file. So far there are no checks
-	if the data in the file actually matches with the current
-	model. Will be added for safety later on.
-*/
 
 bool MotionPlayer::readMotionDataFile(std::string fn) {
 	std::string line;
@@ -178,13 +141,6 @@ bool MotionPlayer::readMotionDataFile(std::string fn) {
 	return true;
 }
 
-/*!
-	This is the playback thread. It loops through the length of the loaded
-	motion file. 1000us are reserved for thread switching etc. Might be too
-	much for complex models. Thread finishes as soon as playback falg is 
-	false (e.g. stop command from GUI).
-*/
-
 void MotionPlayer::runPlay(void)
 {		
 	playTimer.reset();
@@ -194,28 +150,16 @@ void MotionPlayer::runPlay(void)
 	}
 }
 
-/*!
-	Returns the current playback time (for GUI).
-*/
-
 double MotionPlayer::currentPlayTime(void)
 {
 	return currentTime;
 }
-
-/*!
-	Returns playback state.
-*/
 
 bool MotionPlayer::isPlaying(void)
 {
 	return playStarted;
 }
 
-/*!
-	Starts the playback thread.
-*/
-	
 void MotionPlayer::play(void)
 {
 	if (playStarted == false) {		
@@ -225,11 +169,6 @@ void MotionPlayer::play(void)
 	}
 }
 
-/*!
-	Pauses the playback thread. Current playback time is saved for 
-	continuing playback later on.
-*/
-
 void MotionPlayer::pause(void)
 {
 	if (playStarted == true) {
@@ -238,10 +177,6 @@ void MotionPlayer::pause(void)
 	}
 }
 
-/*!
-	Resets the current playback time.
-*/
-
 void MotionPlayer::reset(void)
 {
 	playPointer = 0;
@@ -249,10 +184,6 @@ void MotionPlayer::reset(void)
 	playTimer.reset();
 	play();
 }
-
-/*! 
-	Opens recording file for motion recording and starts the recording thread.
-*/
 
 bool MotionPlayer::recordMotionDataFile(std::string fn)
 {
@@ -276,31 +207,15 @@ bool MotionPlayer::recordMotionDataFile(std::string fn)
 	return false;
 }
 
-/*!
-	Returns motion recording state.
-*/
-
 bool MotionPlayer::isRecording(void)
 {
 	return recordingStarted;
 }
 
-/*!
-	Stops recording.
-*/
-
 void MotionPlayer::stopRecording(void)
 {
 	recordingStarted = false;
 }
-
-/*!
-	This is the motion recording thread. Data is read from the 
-	recording queue and written in to the opened file. There might
-	be some mutexing issues here. To be checked.
-*/
-
-std::mutex recordMutex;
 	
 void MotionPlayer::runRecording(void)
 {		
@@ -312,16 +227,10 @@ void MotionPlayer::runRecording(void)
 		recordMutex.lock();
 		writeData();
 		recordMutex.unlock();
-		// std::this_thread::sleep(boost::posix_time::microseconds(1000));
 	}
 	
 	writeStream.close();
 }
-
-/*!
-	Writes the rotation matrix of each link from the recording queue
-	into the motion data file.
-*/
 
 void MotionPlayer::writeData(void)
 {
@@ -345,10 +254,6 @@ void MotionPlayer::writeData(void)
 		}
 	}
 }
-
-/*!
-	Exports the current motion data file as .csv file.
-*/
 
 bool MotionPlayer::writeCSVData(std::string fn)
 {
@@ -390,7 +295,6 @@ bool MotionPlayer::writeCSVData(std::string fn)
 			(*i)->linkRotM.block<3, 3>(0, 0) = mat;
 			++i;
 		}
-		// hm->recalculateJoints();
 
 		csvStream << d.timeStamp;		
 		BOOST_FOREACH(Link* l, linkList) {
@@ -413,28 +317,14 @@ bool MotionPlayer::writeCSVData(std::string fn)
 	return true;
 }
 
-/*!
-	Returns the current recording timestamp in ms.
-*/
-
 double MotionPlayer::currentRecordTime(void)
 {
 	return (double) frameTimer.measure() / 1000.0;
 }	
 
-/*!
-	Returns the name of the current motion data file.
-*/
-
 std::string MotionPlayer::getRecordingFile(void) {
 	return recordingFile;
 }	
-
-/*!
-	Enqueues the current link states into the recording queue.
-	Data is written to the actual recording file by the recording
-	thread.
-*/
 
 void MotionPlayer::newMotionData(void)
 {

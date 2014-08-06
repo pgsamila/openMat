@@ -53,7 +53,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	toolbar->setMovable(false);
 	toolbar->setFloatable(false);
 
-// Server IP address toolbar
 	QMenu* connectMenu = menuBar()->addMenu("&Connect");
 	
 	QAction* connect_action = new QAction(QIcon("./icons/bolt_32x32.png"), "&Connect", this);
@@ -96,8 +95,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	toolbar->addAction(connect_action);
 	toolbar->addAction(disconnect_action);
 	toolbar->addWidget(connection_status_widget);
-	
-// Recording toolbar
+
 	QMenu* measurementMenu = menuBar()->addMenu("&Measurement");
 
 	QAction* browse_rec_file_action = new QAction(QIcon("./icons/folder_stroke_32x32.png"), "&Browse record file", this);	
@@ -131,9 +129,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	toolbar->addWidget(w);
 	toolbar->addAction(browse_rec_file_action);
 	toolbar->addWidget(rec_time_widget);
-	// toolbar->addAction(export_csv_action);
-	
-// Playback toolbar
+
 	start_playback_action = new QAction(QIcon("./icons/play_24x32.png"), "&Playback data", this);
 	QAction* browse_playback_file_action = new QAction(QIcon("./icons/folder_stroke_32x32.png"), "&Browse replay file", this);
 	QAction* export_video_action = new QAction(QIcon("./icons/target_32x32.png"), "&Export to AVI", this); 
@@ -185,15 +181,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	
 	connect(connect_action, SIGNAL(triggered()), this, SLOT(ConnectServer()));
 	connect(disconnect_action, SIGNAL(triggered()), this, SLOT(DisconnectServer()));
-
 	connect(browse_rec_file_action, SIGNAL(triggered()), this, SLOT(BrowseRecordFile()));
 	connect(start_rec_action, SIGNAL(triggered()), this, SLOT(StartRecording()));
 	connect(export_csv_action, SIGNAL(triggered()), this, SLOT(ExportToCsv()));
-
 	connect(start_playback_action, SIGNAL(triggered()), this, SLOT(StartPlayback()));
 	connect(browse_playback_file_action, SIGNAL(triggered()), this, SLOT(BrowsePlaybackFile()));
 	connect(export_video_action, SIGNAL(triggered()), this, SLOT(ExportAviOfPlayback()));
-
 	connect(reset_offset_action, SIGNAL(triggered()), this, SLOT(ResetOffset()));
 	
 	hm.loadHumanModel("HumanModel.xml");

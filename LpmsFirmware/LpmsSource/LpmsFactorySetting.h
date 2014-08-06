@@ -42,7 +42,7 @@
 // <-- Deprecated type switched until here
 
 // Enables watchdog timer
-// #define ENABLE_WATCHDOG
+#define ENABLE_WATCHDOG
 
 // To enable pressure sensing
 #define ENABLE_PRESSURE

@@ -1305,6 +1305,8 @@ void MainWindow::saveCalibration(void)
 	if (currentLpms == 0 || isConnecting == true) return;
 	
 	currentLpms->getSensor()->saveCalibrationData();
+	
+	startWaitBar(5);
 }
 
 void MainWindow::updateLpmsFps(int v, int lpmsId)

@@ -1709,6 +1709,9 @@ void LpmsSensor::armTimestampReset(void)
 ** CALIBRATION
 ***********************************************************************/
 
+LpVector3f magAvg;
+bool runOnce;
+
 void LpmsSensor::startPlanarMagCalibration(void)
 {
 	int p;
@@ -1728,7 +1731,10 @@ void LpmsSensor::startPlanarMagCalibration(void)
 	for (int i=0; i<3; i++) {
 		bMax.data[i] = -1.0e4f;
 		bMin.data[i] = 1.0e4f;
+		magAvg.data[i] = 0.0f;		
 	}
+	
+	runOnce = true;
 }
 
 #define LPMS_MAG_CALIBRATION_DURATION_20S 20000
@@ -1738,13 +1744,21 @@ void LpmsSensor::checkPlanarMagCal(float T)
 	if (isPlanarMagCalibrationEnabled == true) {
 		magCalibrationDuration += T;
 	
+		if (runOnce == true) {
+			for (int i=0; i<3; i++) magAvg.data[i] = currentData.bRaw[i];
+			runOnce = false;
+		}	
+	
+		for (int i=0; i<3; i++) magAvg.data[i] = magAvg.data[i] * 0.9 + currentData.bRaw[i] * 0.1;
+	
 		for (int i=0; i<3; i++) {
 			if (currentData.bRaw[i] > bMax.data[i]) {
-				bMax.data[i] = currentData.bRaw[i];
+				bMax.data[i] = magAvg.data[i];
 				printf("[LpmsSensor] New maximum detected: Axis=%d, field=%f\n", i, currentData.bRaw[i]);
 			}
+			
 			if (currentData.bRaw[i] < bMin.data[i]) {
-				bMin.data[i] = currentData.bRaw[i];
+				bMin.data[i] = magAvg.data[i];
 				printf("[LpmsSensor] New minimum detected: Axis=%d, field=%f\n", i, currentData.bRaw[i]);
 			}
 		}	
@@ -1766,6 +1780,7 @@ void LpmsSensor::stopPlanarMagCalibration(void)
 
 	for (i=0; i<3; i++) {
 		bBias.data[i] = (bMax.data[i] + bMin.data[i]) / 2.0f;
+		printf("[LpmsSensor] Axis=%d, min=%f, max=%f\n", i, bMin.data[i], bMax.data[i]);
 		printf("[LpmsSensor] Calculated bias: Axis=%d, field=%f\n", i, bBias.data[i]);
 
 	}

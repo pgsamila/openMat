@@ -1709,9 +1709,6 @@ void LpmsSensor::armTimestampReset(void)
 ** CALIBRATION
 ***********************************************************************/
 
-LpVector3f magAvg;
-bool runOnce;
-
 void LpmsSensor::startPlanarMagCalibration(void)
 {
 	int p;

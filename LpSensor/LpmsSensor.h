@@ -389,6 +389,8 @@ private:
 	float timestampOffset;
 	int frameCounterOffset;
 	int currentOffsetResetMethod;
+	LpVector3f magAvg;
+	bool runOnce;
 }; 
 	
 #endif

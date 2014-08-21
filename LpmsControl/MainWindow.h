@@ -97,7 +97,7 @@ using namespace boost;
 #define USE_HEAVEMOTION
 #define USE_MB_SERVER
 
-#define LPMS_CONTROL_VERSION "1.3.0"
+#define LPMS_CONTROL_VERSION "1.3.3-dev"
 
 /* LPMS Control main window. */
 class MainWindow : public QMainWindow

@@ -1,4 +1,4 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.2"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.3-dev"
 # !define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1-vs2010\5.2.1\msvc2010_opengl"
 !define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl"
 

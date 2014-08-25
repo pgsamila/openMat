@@ -20,6 +20,18 @@
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content" /> 
 			
+		<TextView android:id="@+id/Heading"
+			style="@style/HeadingTextStyle"
+			android:text="Connected LPMS-B Devices"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:padding="5dp" />
+			
+		<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/connected_devices_list"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content" />			
+			
 		<Button xmlns:android="http://schemas.android.com/apk/res/android"
 			android:id="@+id/button_discover"
 			android:layout_width="fill_parent"

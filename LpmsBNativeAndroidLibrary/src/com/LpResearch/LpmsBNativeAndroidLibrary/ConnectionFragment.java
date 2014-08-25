@@ -38,13 +38,20 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	final int FRAGMENT_TAG = 0;
     public static final String ARG_SECTION_NUMBER = "section_number";
  	View rootView;
+	
 	BluetoothAdapter btAdapter;
+	OnConnectListener connectListener;
+	String currentLpms;
+	
 	ArrayList<String> dcLpms = new ArrayList<String>();	
 	ArrayAdapter dcAdapter;
 	ListView btList;
-	String currentLpms;
 	boolean firstDc;
-	OnConnectListener connectListener;	
+	
+	ArrayList<String> connectedDevicesLpms = new ArrayList<String>();	
+	ArrayAdapter connectedDevicesAdapter;
+	ListView connectedDevicesList;
+	boolean firstConnectedDevice;	
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -54,6 +61,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		
 		prepareButtons();
 		prepareDcList();	
+		prepareConnectedDevicesList();
 		
         return rootView;
     }
@@ -115,6 +123,24 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 					dcAdapter.notifyDataSetChanged();
 				} 
 			}
+			
+			if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				
+				if (device.getName().equals("LPMS-B")) {
+					if (firstConnectedDevice == true) {
+						connectedDevicesLpms.clear();
+						firstConnectedDevice = false;
+					}
+				
+					Log.d("lpms", "Discovered: " + device.getName());
+					
+					// currentLpms = device.getAddress();
+					
+					connectedDevicesLpms.add(device.getAddress());
+					connectedDevicesAdapter.notifyDataSetChanged();
+				} 
+			}			
 		}
 	};
 	
@@ -127,6 +153,28 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		dcLpms.add("Press Discover button to start discovery..");
 		dcAdapter.notifyDataSetChanged();
 		firstDc = true;
+	}
+	
+	public void prepareConnectedDevicesList() {
+		connectedDevicesList = (ListView) rootView.findViewById(R.id.connected_devices_list);
+		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
+		getActivity().registerReceiver(mReceiver, filter);
+		
+		connectedDevicesAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, connectedDevicesLpms);
+		
+		connectedDevicesList.setAdapter(connectedDevicesAdapter);
+		connectedDevicesLpms.add("Press connect button to connect to device..");
+		connectedDevicesAdapter.notifyDataSetChanged();
+		
+		firstConnectedDevice = true;
+		
+		connectedDevicesList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				int itemPosition = position;
+				String itemValue = (String) connectedDevicesList.getItemAtPosition(position);
+			}
+		}); 		
 	}
 	
 	public void startBtDiscovery() {

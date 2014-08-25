@@ -81,7 +81,6 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	TextView magXText, magYText, magZText;
 	TextView quatXText, quatYText, quatZText, quatWText;
 	TextView eulerXText, eulerYText, eulerZText;
-	LpmsBThread lpmsB;
 	BluetoothAdapter btAdapter;
 	boolean isLpmsBConnected = false;
 	int imuStatus = 0;
@@ -92,8 +91,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	private boolean getImage = true;
 
 	Handler updateFragmentsHandler = new Handler();
-	
 	LpmsBData imuData = new LpmsBData();
+
+	List<LpmsBThread> lpmsList = new ArrayList<LpmsBThread>();
+	LpmsBThread lpmsB;
 	
 	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
@@ -241,9 +242,17 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
     @Override
 	public void onConnect(String address) {
-		if (isLpmsBConnected == true) return;
+		// if (isLpmsBConnected == true) return;
+		
+		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+			if (address == it.next().getAddress()) {
+				Log.d("lpms", "This LPMS is already connected");
+				return;
+			}
+		}
 	
 		lpmsB = new LpmsBThread(btAdapter);
+		lpmsList.add(lpmsB);
 		
 		lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
 		lpmsB.connect(address, 0);
@@ -252,6 +261,15 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		imuStatus = 1;
 		
 		Log.d("lpms", "Connected");
+	}
+	
+	public void onSensorSelectionChanged(String address) {
+		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+			if (address == it.next().getAddress()) {
+				lpmsB = it.next();
+				return;
+			}
+		}
 	}
 	
     @Override

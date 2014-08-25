@@ -558,4 +558,9 @@ public class LpmsBThread extends Thread {
 	{
 		resetTimestamp = true;
 	}
+	
+	public String getAddress()
+	{
+		return mAddress;
+	}
 }	

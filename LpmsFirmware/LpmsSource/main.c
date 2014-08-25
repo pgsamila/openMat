@@ -25,6 +25,10 @@ int main(void)
 	initTimebase(); 	
 	initCommunicationManager();
 
+#ifdef ENABLE_INSOLE
+	initAdConverter();
+#endif
+
 #ifdef ENABLE_WATCHDOG
 	initWatchdog();
 #endif

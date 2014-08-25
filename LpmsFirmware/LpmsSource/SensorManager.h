@@ -26,19 +26,11 @@
 #include "LpmsRn42.h"
 #include "LpmsFactorySetting.h"
 #include "HeaveMotion.h"
+#include "AdConverter.h"
 
 #define LPMS_MEASUREMENT_PERIOD 250
 
 #define PRESSURE_T 100000
-
-// Number of iterations for gyrsocope calibration
-#define GYRO_ONLINE_CAL_ITER 			128
-
-// Amplitude threshold for gyrsocope auto-calibration
-#define GYR_CAL_THRES 				4.0f
-
-// Duration of gyroscope auto-calibration sequence
-#define GYR_CAL_TIMEOUT 			5000
 
 // Possible durations of manual gyroscope bias clibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)
@@ -51,67 +43,7 @@
 #define LPMS_MAG_CALIBRATION_DURATION_30S	(30.0f)
 #define LPMS_REF_CALIBRATION_DURATION_5S	(5.0f)
 #define LPMS_REF_CALIBRATION_DURATION_1S	(1.0f)
-#define LPMS_REF_CALIBRATION_DURATION_01S	(0.1f)
-
-// Sensor calibration parameters
-typedef struct _LpmsCalibrationData {
-	LpVector3f gyrOffset;
-	LpVector3f gyrGain;     
-	uint32_t gyrRange;
-	uint32_t gyrOutputRate;
-	LpMatrix3x3f gyrAlignment;
-	LpVector3f gyrAlignOffset;
-
-	LpVector3f accGain;
-	LpVector3f accOffset;
-	uint32_t accRange;
-	uint32_t accOutputRate;
-	LpMatrix3x3f accAlignment;
-
-	LpVector3f magGain;
-	LpVector3f magOffset;
-	LpMatrix3x3f magSoftIronMatrix;
-	LpMatrix3x3f magAlignmentMatrix;
-	LpVector3f magAlignmentOffset;	
-	uint32_t magRange;
-	uint32_t magOutputRate;
-	
-	LpVector3f gyrTempCalPrmA;
-	LpVector3f gyrTempCalPrmB;
-	LpVector3f gyrTempCalBaseV;
-	float gyrTempCalBaseT;
-
-	float lpAlpha;
-
-	uint32_t canMapping[16];
-	float canHeartbeatTiming;
-} LpmsCalibrationData;
-
-// LpFilter algorithm parameters
-typedef struct _LpFilterParameters { 
-	LpVector3f accRef;
-	LpVector3f magRef;
-
-	LpVector3f gyrThreshold;
-	LpVector3f magThreshold;
-
-	float accCovar;
-	float magCovar;
-
-	float magFieldEstimate;
-	float magInclination;
-              
-	uint32_t dynamicCovar;
-
-	uint32_t useGyrThreshold;
-	uint32_t useGyrAutoCal;
-
-	uint32_t filterMode;
-	uint32_t linAccCompMode;
-	uint32_t centriCompMode;
-	
-	LpVector4f offsetQ;
-} LpFilterParameters;  
+#define LPMS_REF_CALIBRATION_DURATION_01S	(0.1f) 
 
 // Initializes the sensor manager
 void initSensorManager(void);

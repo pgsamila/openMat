@@ -83,6 +83,10 @@ LpVector3f aRawNoLp;
 LpVector4f mQ_hx;
 LpVector4f mQ_offset;
 
+#ifdef ENABLE_INSOLE
+	float forceSensorOutput[N_FORCE_SENSORS];
+#endif
+
 extern uint8_t isSelfTestOn;
 extern LpmsReg gReg;
 extern uint8_t isFirmwareUpdating;
@@ -343,6 +347,13 @@ void updateSensorData(void)
 
 	checkGyrCal();
 	checkTimestampReset();
+
+#ifdef ENABLE_INSOLE
+	for (int i=0; i<N_FORCE_SENSORS; ++i) {
+		forceSensorOutput[i] = getForceSensorChannel(i);
+	}
+#endif
+
 }
 
 void checkTimestampReset(void)
@@ -373,7 +384,9 @@ void processSensorData(void)
 	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
 	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
  
-	gyrOnlineCal(T);
+	// gyrOnlineCal(T);
+	gyrOnlineCal(gyrRawData, T, isGyrCalibrationEnabled, &calibrationData, lpFilterParam);
+
 	applyLowPass();
 
 	bRaw.data[0] = tB.data[0];
@@ -397,12 +410,13 @@ void processSensorData(void)
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
   
-		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
-		lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
+		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, calibrationData, lpFilterParam);
+		// lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
+		lpFilterUpdate(a, b, g, &q, 0.005f, 0, &magNoise, calibrationData, lpFilterParam);
 
-		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE]);
+		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
 
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
 		
@@ -412,16 +426,15 @@ void processSensorData(void)
 		
 	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
 		
-		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, bInc, &magNoise);
+		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, bInc, &magNoise, calibrationData, lpFilterParam);
 		quaternionIdentity(&qAfterOffset); 
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
 		
 	} else {
 	  
-		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc);
+		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, calibrationData, lpFilterParam);
 		quaternionIdentity(&qAfterOffset);
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler();
-		
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
 	}
 }    
 
@@ -954,7 +967,11 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<4; i++) {
+#ifdef ENABLE_INSOLE
+								setFloat(&(data[i*4 + o]), forceSensorOutput[i], FLOAT_FULL_PRECISION);
+#else
                                 setFloat(&(data[i*4 + o]), qAfterOffset.data[i], FLOAT_FULL_PRECISION);
+#endif
                         }
                         o = o+16;
                 }	

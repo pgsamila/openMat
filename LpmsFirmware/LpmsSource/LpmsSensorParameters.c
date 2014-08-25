@@ -321,7 +321,8 @@ uint8_t setOrientationOffset(uint8_t* data)
 
 	if (v < LPMS_OFFSET_MODE_ALIGNMENT+1) setRegUInt32(LPMS_OFFSET_MODE, v);
 
-	calculateAlignmentOffset(q);
+	// calculateAlignmentOffset(q);
+	calculateAlignmentOffset(q, &mQ_hx, &mQ_offset);
 
 	setRegVector4f(LPMS_OFFSET_QUAT_0, mQ_offset);
 	setRegVector4f(LPMS_HEADING_OFFSET_0, mQ_hx);
@@ -581,9 +582,6 @@ uint8_t setAccCovar(uint8_t* data)
   	lpFilterParam.accCovar = getFloat(data);
 	f = setRegFloat(LPMS_ACC_COVAR_USER, lpFilterParam.accCovar);	
   
-	setCovariances();
-	setReferences();
-
 	return f;
 }
 
@@ -826,9 +824,6 @@ uint8_t setMagCovar(uint8_t* data)
   
   	lpFilterParam.magCovar = getFloat(data);  
 	f = setRegFloat(LPMS_MAG_COVAR_USER, lpFilterParam.magCovar);
-  
-	setCovariances();
-	setReferences();
 
 	return f;
 }

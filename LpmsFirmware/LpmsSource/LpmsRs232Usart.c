@@ -1,10 +1,10 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsFactorySetting.h"
+
 #ifdef USE_CANBUS_INTERFACE
 
 #include "LpmsRs232Usart.h"
@@ -38,7 +38,6 @@ void rs232PortSetGPIOConfig(void)
 
 void rs232PortInit(uint32_t baudrate)
 {
-	// rs232PortSetGPIOConfig();
 	rs232PortSetConfig(baudrate);
 	rs232PortSetDmaConfig();
 }
@@ -51,10 +50,7 @@ void rs232PortSetConfig(uint32_t baudrate)
 	RCC_AHB1PeriphClockCmd(RS232_GPIO_CLK, ENABLE);
 
 	RCC_APB2PeriphClockCmd(RS232_CLK, ENABLE);
-	
-	// GPIO_PinAFConfig(RS232_IO_PORT, RS232_CTS_SOURCE, RS232_CTS_AF);
-	// GPIO_PinAFConfig(RS232_IO_PORT, RS232_RTS_SOURCE, RS232_RTS_AF);
-	
+		
 	GPIO_PinAFConfig(RS232_IO_PORT, RS232_TX_SOURCE, RS232_TX_AF);
 	GPIO_PinAFConfig(RS232_IO_PORT, RS232_RX_SOURCE, RS232_RX_AF);
 	
@@ -62,12 +58,6 @@ void rs232PortSetConfig(uint32_t baudrate)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	
-	/* GPIO_InitStructure.GPIO_Pin = RS232_CTS_PIN;
-	GPIO_Init(RS232_IO_PORT, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = RS232_RTS_PIN;
-	GPIO_Init(RS232_IO_PORT, &GPIO_InitStructure); */
 	
 	GPIO_InitStructure.GPIO_Pin = RS232_TX_PIN;
 	GPIO_Init(RS232_IO_PORT, &GPIO_InitStructure);
@@ -144,8 +134,6 @@ void rs232PortSetDmaConfig(void)
 
 void rs232PortStartTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 {
-	// USART_SendData(RS232_PORT, (uint16_t) 0x49);
-
 	DMA_Cmd(RS232_TX_DMA_STREAM, DISABLE);
 
 	DMA_ClearFlag(RS232_TX_DMA_STREAM, RS232_TX_DMA_FLAG_TCIF);

@@ -1,7 +1,6 @@
 #include "stm32f2xx_it.h"
 
 __IO uint8_t systemStepTimeout = 0;
-extern __IO uint16_t CCR1_Val;
 
 void NMI_Handler(void)
 {

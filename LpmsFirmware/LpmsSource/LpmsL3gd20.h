@@ -130,6 +130,8 @@
 #define L3GD20_FM_STREAM_TO_FIFO_MODE	0x60
 #define L3GD20_FM_BYPASS_TO_STREAM_MODE	0x80
 
+#define GYR_I2C_TIMEOUT 1000
+
 #ifdef __cplusplus
 extern "C" {
 #endif 

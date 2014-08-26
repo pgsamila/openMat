@@ -1,7 +1,7 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** All rights reserved
+** Contact: info@lp-research.com
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -58,10 +58,6 @@
 #include <QSpacerItem>
 #include <QSizePolicy>
 
-#ifdef USE_ZEROC_ICE
-	#include "IceStormCommunication.h"
-#endif
-
 #include "Plot.h"
 #include "GraphWindow.h"
 #include "ThreeDWindow.h"
@@ -82,7 +78,6 @@
 #include <iostream>
 #include <vector>
 #include <list>
-using namespace std;
 
 #include <boost/shared_ptr.hpp>
 using namespace boost;
@@ -94,214 +89,109 @@ using namespace boost;
 #define MODE_FIELDMAP_WIN 2
 #define MODE_GAIT_TRACKING_WIN 3
 
-#define USE_HEAVEMOTION
-#define USE_MB_SERVER
-
 #define LPMS_CONTROL_VERSION "1.3.3-dev"
 
-/* LPMS Control main window. */
+#define GRAPH_UPDATE_PERIOD 25000
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
-	
+
 public:
-	/* Initializes main application window. */
 	MainWindow(QWidget *parent = 0);
-	
-	/* Destroys the MainWindow. */
 	~MainWindow();
-	
-	/* Creates graphs and 3D visualization. */
-	QGroupBox *createGraphs(void);
-
-	/* Creates LPMS device list. */
-	QWidget *createDeviceList(void);
-	
-	/* Creates accelerometer misalignment orientation wizard page. */
-	QWizardPage *maOrientationPage(const char* ts, const char* es);
-
-	/* Creates gyroscope misalignment orientation wizard page. */	
-	QWizardPage *gyrMaOrientationPage(const char* ts, const char* es);
 
 public slots:	
-	/* Displays graph window. */
-	void selectGraphWindow(void);
-	
-	/* Displays 2nd graph window. */	
-	void selectGraph2Window(void);
-	
-	/* Displays 3rd graph window. */	
-	void selectGraph3Window(void);
+	QWidget *createDeviceList(void);
+	QGroupBox *createGraphs(void);
+	void createMenuAndToolbar(void);
+	void closeEvent(QCloseEvent *event);
 
-	/* Displays 3D visualization. */
+	void selectGraphWindow(void);
+	void selectGraph2Window(void);
+	void selectGraph3Window(void);
+	void selectHeaveMotionWindow(void);
 	void selectThreeDWindow(void);
-	
-	/* Closes application. */
+	void selectFieldMapWindow(void);
+	void selectCubeMode1(void);
+	void selectCubeMode2(void);
+	void selectCubeMode4(void);
 	bool exitWindow(void);
 
-	/* Creates new sensor connection. */
-	void openSensor(void);
-	
-	/* Closes sensor connection. */
-	void closeSensor(void);
-
-	/* Starts and stops measurement. */
-	void startMeasurement(void);
-	
-	/* Stops measurement. */
-	void stopMeasurement(void);
-	
-	/* Recalibrates gyroscope. */
-	void recalibrate(void);
-	
-	/* Starts recording data. */
-	void recordData(void);
-	
-	/* Updates data of currently selected LPMS. */
-	void updateCurrentLpms(QTreeWidgetItem *current = 0, QTreeWidgetItem *previous = 0);
-		
-	/* Starts magnetometer calibration. */
-	void calibrateMag(void);
-	
-	/* Saves current calibration data to sensor. */
-	void saveCalibration(void);
-
-	/* Updates currently displayed FPS. */
-	void updateLpmsFps(int v, int lpmsId);
-	
-	/* Updates all sensor status data. */
 	void timerUpdate(void);
-		
-	/* Starts uploading a new firmware file. */
-	void uploadFirmware(void);
 
-	/* Starts uploading a new IAP file. */
-	void uploadIap(void);
-
-	/* Initializes application menu bar. */
-	void createMenuAndToolbar(void);
-	
-	/* Updates the upload timer status (firmware or IAP). */
-	void uploadTimerUpdate(void);
-	
-	/* Switches self-test on and off. */
-	void toggleSelfTest(void);
-	
-	/* Measures sensor latency. */
-	void measureLatency(void);
-	
-	/* Acquires the current magnetic field map. */
-	void getFieldMap(void);
-	
-	/* Switches to magnetic field map window. */
-	void selectFieldMapWindow(void);
-	
-	/* Retrieves the current software / firmware version. */
-	void getVersionInfo(void);
-	
-	/* Handles close application event. */
-	void closeEvent(QCloseEvent *event);
-	
-	/* Resets to factory settings. */
-	void resetToFactory(void);
-	
-	/* Starts accelerometer misalignment calibration. */
-	void misalignmentCal(void);
-	
-	/* Displays new page for misalignment calibration. */
-	void maNewPage(int i);
-	
-	/* Finishes misalignment calibration. */
-	void maFinished(int i);
-	
-	/* Creates misalignment finished wizard page. */
-	QWizardPage *maFinishedPage(void);
-	
-	/* Starts gyroscope misalignment calibration. */
-	void gyrMisalignmentCal(void);
-	
-	/* Displays gyroscope misalignment wizard new page. */
-	void gyrMaNewPage(int i);
-	
-	/* Finishes gyroscope misalignment calibration. */
-	void gyrMaFinished(int i);
-	
-	/* Displays gyroscope misalignment finished page. */
-	QWizardPage *gyrMaFinishedPage(void);
-	
-	/* Handles calibration timer update. */
-	void calTimerUpdate(void);
-	
-	/* Starts wait bar with duration t. */
-	void startWaitBar(int t);
-	
-	/* Opens add / remove devices dialog. */
-	void addRemoveDevices(void);
-	
-	/* Saves calibration data. */
-	void saveCalibrationData(void);
-	
-	/* Loads calibration data. */
-	void loadCalibrationData(void);
-	
-	/* Selects cube mode 1 (one cube). */
-	void selectCubeMode1(void);
-	
-	/* Selects cube mode 2 (two cubes). */
-	void selectCubeMode2(void);
-	
-	/* Selects cube mode 4 (four cubes). */
-	void selectCubeMode4(void);
-	
-	/* Browses record file name. */
-	void browseRecordFile(void);
-		
-	/* Updates magnetic field map. */
-	void updateMagneticFieldMap(void);
-	
-	/* Updates current baud rate to selected value. */
 	void updateCanBaudrate(int i);
-	
-	/* Displays the heave motion graph. */
-	void selectHeaveMotionWindow(void);
-	
-	/* Cancel firmware or IAP upload. */
-	void cancelUpload(void);
-	
-	/* Checks if optional features are available for the current sensor. */
+	void updateRs232Baudrate(int i);
+	void updateCurrentLpms(QTreeWidgetItem *current = 0, QTreeWidgetItem *previous = 0);
 	void checkOptionalFeatures(LpmsSensorI* sensor);
 
-	/* Selects gait tracking window. */
-	void selectGaitTrackingWindow(void);
-	
-	/* Starts data playback. */
-	void startReplay(void);
-	
-	/* Stops data playback. */
-	void stopReplay(void);
+	void openSensor(void);
+	void closeSensor(void);
+	void toggleSelfTest(void);
+	void startMeasurement(void);
+	void stopMeasurement(void);
 
-	/* Opens browser for playback file. */
-	void browsePlaybackFile(void);
-	
-	void magMisalignmentCal(void);
-	void calibratePlanarMag(void);
-	void magAutoMisalignmentCal(void);
-	void magMaNewPage(int i);
-	void magMaFinished(int i);
-	QWizardPage *magMaFinishedPage(void);
-	QWizardPage *magMaOrientationPage(const char* ts, const char* es);
 	void setOffset(void);
 	void resetOffset(void);
-	void resetHeading(void);	
-	void updateRs232Baudrate(int i);
+	void resetHeading(void);
 	void armTimestampReset(void);
-	void magElipsoidCalNewPage(int i);
-	void magPlanarCalNewPage(int i);	
-	QWizardPage *magElipsoidCalPage(int pageNumber);
+	void recalibrate(void);
+
+	void uploadFirmware(void);
+	void cancelUpload(void);
+	void uploadTimerUpdate(void);
+	void uploadIap(void);
+	void recordData(void);
+	void browseRecordFile(void);
+
+	void saveCalibration(void);
+	void addRemoveDevices(void);
+	void saveCalibrationData(void);
+	void loadCalibrationData(void);
+
+	void updateLpmsFps(int v, int lpmsId);
+	void measureLatency(void);
+	void getVersionInfo(void);
+	void resetToFactory(void);
+
+	void startWaitBar(int t);
+	void calTimerUpdate(void);
+
+	void magAutoMisalignmentCal(void);
+	void magMisalignmentCal(void);
+	void magMaNewPage(int i);
+	void magMaFinished(int i);
+	QWizardPage *magMaOrientationPage(const char* ts, const char* es);
+	QWizardPage *magMaFinishedPage(void);
+
+	void gyrMisalignmentCal(void);
+	void gyrMaNewPage(int i);
+	void gyrMaFinished(int i);
+	QWizardPage *gyrMaOrientationPage(const char* ts, const char* es);
+	QWizardPage *gyrMaFinishedPage(void);
+
+	QWizardPage *magEllipsoidCalPage(int pageNumber);
+	void magEllipsoidCalNewPage(int i);
+	void calibrateMag(void);
+
 	QWizardPage *magPlanarCalPage(int pageNumber);
+	void magPlanarCalNewPage(int i);
+	void calibratePlanarMag(void);
+
+	QWizardPage *maOrientationPage(const char* ts, const char* es);
+	QWizardPage *maFinishedPage(void);
+	void misalignmentCal(void);
+	void maNewPage(int i);
+	void maFinished(int i);
+
+	void updateMagneticFieldMap(void);
+	void getFieldMap(void);
+	void startReplay(void);
+	void stopReplay(void);
+	void browsePlaybackFile(void);
 	
 private:
-	QList<QTreeWidgetItem *> lpmsTreeItems;
+	QList<QTreeWidgetItem*> lpmsTreeItems;
 	QTreeWidget *lpmsTree;	
 	GraphWindow *graphWindow;
 	CubeWindowSelector *cubeWindowContainer;
@@ -397,21 +287,16 @@ private:
 	QToolBar *toolbar;
 	QMenu* viewMenu;
 	bool heaveMotionEnabled;
-	bool gaitTrackingEnabled;
-	GaitTrackingWindow *gaitTrackingWindow;
 	MotionPlayer *rePlayer;
 	QAction *replayAction;
 	string globalPlaybackFile;
 	QLineEdit *playbackFileEdit;
 	bool playbackFileSet;
-	
-#ifdef USE_ZEROC_ICE
-	IceStormPublisher *isp;		
-#endif
-
-#ifdef USE_MB_SERVER
+	bool isMagEllipsoidCalOn;
+	bool isMagPlanarCalOn;
+	QWizard* magEllipsoidCalWizard;
+	QWizard* magPlanarCalWizard;
 	MotionBuilderCommunication mbcom;
-#endif
 };
 
 #endif

@@ -384,7 +384,6 @@ void processSensorData(void)
 	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
 	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
  
-	// gyrOnlineCal(T);
 	gyrOnlineCal(gyrRawData, T, isGyrCalibrationEnabled, &calibrationData, lpFilterParam);
 
 	applyLowPass();
@@ -411,7 +410,6 @@ void processSensorData(void)
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
   
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, calibrationData, lpFilterParam);
-		// lpFilterUpdate(a, b, g, &q, T, bInc, &magNoise);
 		lpFilterUpdate(a, b, g, &q, 0.005f, 0, &magNoise, calibrationData, lpFilterParam);
 
 		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);

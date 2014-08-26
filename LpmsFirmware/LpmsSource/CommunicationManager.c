@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "CommunicationManager.h"
@@ -23,9 +22,9 @@ uint32_t rxFirmwarePacketSize = 0;
 uint32_t JumpAddress;
 pFunction Jump_To_Application;
 uint8_t isConfigForFirmwareUpdateSent = 0;
-volatile int firstTimeTx = 1;
-volatile int rs232FirstTimeTx = 1;
-volatile int ttlUsartFirstTimeTx = 1;
+__IO int firstTimeTx = 1;
+__IO int rs232FirstTimeTx = 1;
+__IO int ttlUsartFirstTimeTx = 1;
 
 extern uint8_t rxPacketBufferPtr;
 extern uint8_t processedPacketPtr;
@@ -439,28 +438,6 @@ void sendFirmwareUpdateNack(void)
 #endif
 }
 
-void ackForFirmwareUpdate(void)
-{
-#ifdef USE_CANBUS_INTERFACE
-	sendFirmwareUpdateAck();
-#endif
-
-#ifdef USE_BLUETOOTH_INTERFACE
-	sendAck();
-#endif
-}
-
-void nackForFirmwareUpdate(void)
-{
-#ifdef USE_CANBUS_INTERFACE
-	sendFirmwareUpdateNack();
-#endif
-
-#ifdef USE_BLUETOOTH_INTERFACE
-	sendNack();
-#endif
-}
-
 void parsePacket(void)
 {
   	uint8_t ui32[4];
@@ -475,6 +452,504 @@ void parsePacket(void)
 		
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 			switch (packet.function) {
+
+			// Modes of operation
+			case GOTO_COMMAND_MODE:
+				setCommandMode();
+				sendAck();				
+			break;				
+				
+			case GOTO_STREAM_MODE:
+				setStreamMode();
+				sendAck();				
+			break;
+				
+			case GOTO_SLEEP_MODE:
+				setSleepMode();
+				sendAck();	
+			break;
+
+			
+			// Orientation offset
+			case SET_ORIENTATION_OFFSET:
+				if (setOrientationOffset(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case RESET_ORIENTATION_OFFSET:
+				if (resetOrientationOffset(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+				
+			// Transmission frequency
+			case SET_STREAM_FREQ:
+#ifdef LPMS_BLE
+				sendAck();
+#else
+				if (setStreamFreq(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+#endif
+			break;
+			
+			
+			case GET_CONFIG:
+				getReg(ui32, 4, LPMS_CONFIG);
+				sendData(getImuID(), GET_CONFIG, 4, ui32);
+			break;
+
+			case GET_STATUS:
+				getStatus(ui32);
+				sendData(getImuID(), GET_STATUS, 4, ui32);
+			break;
+
+			
+			// OpenMAT ID
+			case SET_IMU_ID:
+				setReg(packet.length, packet.data, LPMS_IMU_ID);
+#ifdef USE_CANBUS_INTERFACE
+				resetCanId();
+#endif
+				sendAck();
+			break;
+
+			case GET_IMU_ID:
+				getReg(ui32, 4, LPMS_IMU_ID);
+				sendData(getImuID(), GET_IMU_ID, 4, ui32);
+			break;
+
+			
+			// Sensor ranges
+			case SET_GYR_RANGE:
+				if (setGyrRange(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+				
+			case GET_GYR_RANGE:
+				getReg(ui32, 4, LPMS_GYR_RANGE);
+				sendData(getImuID(), GET_GYR_RANGE, 4, ui32);
+			break;
+
+			case SET_ACC_RANGE:
+				if (setAccRange(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case GET_ACC_RANGE:
+				getReg(ui32, 4, LPMS_ACC_RANGE);
+				sendData(getImuID(), GET_ACC_RANGE, 4, ui32);
+			break;
+			
+			case SET_MAG_RANGE:
+				if (setMagRange(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case GET_MAG_RANGE:
+				getReg(ui32, 4, LPMS_MAG_RANGE);
+				sendData(getImuID(), GET_MAG_RANGE, 4, ui32);
+			break;
+
+			
+			// Filter modes and presets
+			case SET_FILTER_MODE:
+				if (setFilterMode(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;					
+				
+			case GET_FILTER_MODE:
+				getReg(ui32, 4, LPMS_FILTER_MODE);
+				sendData(getImuID(), GET_FILTER_MODE, 4, ui32);
+			break;
+			
+			case SET_FILTER_PRESET:
+				if (setFilterPreset(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case GET_FILTER_PRESET:
+				getReg(ui32, 4, LPMS_FILTER_PRESET);
+				sendData(getImuID(), GET_FILTER_PRESET, 4, ui32);
+			break;
+
+
+			// Sensor measurement data
+			case GET_SENSOR_DATA:
+				updateSensorData();
+				processSensorData();
+
+				getSensorData(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);				
+			break;
+
+			
+			// Magnetometer calibration and reference
+			case SET_HARD_IRON_OFFSET:
+				setHardIronOffsetData(packet.data);
+				sendAck();
+			break;
+
+			case GET_HARD_IRON_OFFSET:
+				getHardIronOffsetData(dataBuffer, &dataLength);		
+				sendData(getImuID(), GET_HARD_IRON_OFFSET, dataLength, dataBuffer);
+			break;	
+
+			case SET_SOFT_IRON_MATRIX:
+				setSoftIronMatrixData(packet.data);
+				sendAck();
+			break;
+
+			case GET_SOFT_IRON_MATRIX:
+				getSoftIronMatrixData(dataBuffer, &dataLength);		
+				sendData(getImuID(), GET_SOFT_IRON_MATRIX, dataLength, dataBuffer);
+			break;
+
+			case RESET_REFERENCE:
+				startRefCalibration();
+				sendAck();
+			break;
+
+			case SET_FIELD_ESTIMATE:
+				setFieldEstimateData(packet.data);
+				sendAck();
+			break;
+
+			case GET_FIELD_ESTIMATE:
+				getFieldEstimateData(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_FIELD_ESTIMATE, dataLength, dataBuffer);
+			break;
+
+
+			// Accelerometer misalignment
+			case SET_ACC_ALIGN_MATRIX:
+				setAccAlignMatrix(packet.data);
+				sendAck();
+			break;
+
+			case GET_ACC_ALIGN_MATRIX:
+				getAccAlignMatrix(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_ACC_ALIGN_MATRIX, dataLength, dataBuffer);
+			break;
+
+			case SET_ACC_BIAS:
+				if (setAccOffset(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case GET_ACC_BIAS:
+				getAccOffset(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_ACC_BIAS, dataLength, dataBuffer);
+			break;
+
+
+			// Gyroscope misalignment
+			case SET_GYR_ALIGN_MATRIX:
+				setGyrAlignMatrix(packet.data);
+				sendAck();
+			break;
+
+			case GET_GYR_ALIGN_MATRIX:
+				getGyrAlignMatrix(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_GYR_ALIGN_MATRIX, dataLength, dataBuffer);
+			break;
+
+			case SET_GYR_ALIGN_BIAS:
+				setGyrAlignBias(packet.data);
+				sendAck();
+			break;
+
+			case GET_GYR_ALIGN_BIAS:
+				getGyrAlignBias(dataBuffer, &dataLength);		
+				sendData(getImuID(), GET_GYR_ALIGN_BIAS, dataLength, dataBuffer);
+			break;
+
+			
+			// Low-pass filter
+			case SET_RAW_DATA_LP:
+				setRawDataLp(packet.data);
+				sendAck();
+			break;
+
+			case GET_RAW_DATA_LP:
+				getRawDataLp(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_RAW_DATA_LP, dataLength, dataBuffer);
+			break;
+
+
+			// Timestamp reset
+			case SET_TIMESTAMP:
+				setTimestamp(packet.data);
+				sendAck();
+			break;
+
+			case SET_ARM_HARDWARE_TIMESTAMP_RESET:
+				armHardwareTimestampReset(packet.data);
+				sendAck();
+			break;
+
+
+			// Automatic calibration
+			case SET_LIN_ACC_COMP_MODE:
+				setLinAccCompMode(packet.data);
+				sendAck();
+			break;
+
+			case GET_LIN_ACC_COMP_MODE:
+				getLinAccCompMode(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_LIN_ACC_COMP_MODE, dataLength, dataBuffer);
+			break;
+			
+
+			case SET_CENTRI_COMP_MODE:
+				setCentriCompMode(packet.data);
+				sendAck();
+			break;
+			
+			case GET_CENTRI_COMP_MODE:
+				getCentriCompMode(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_CENTRI_COMP_MODE, dataLength, dataBuffer);
+			break;
+
+			case ENABLE_GYR_AUTOCAL:
+				if (setEnableGyrAutoCal(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case ENABLE_GYR_THRES:
+				if (setEnableGyrThresh(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case START_GYR_CALIBRA:
+				startGyrCalibration();
+				sendAck();			
+			break;
+
+
+			// CAN bus settings
+			case SET_CAN_MAPPING:
+				setCanMapping(packet.data);
+				sendAck();
+			break;
+
+			case GET_CAN_MAPPING:
+				getCanMapping(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_CAN_MAPPING, dataLength, dataBuffer);
+			break;
+
+			case SET_CAN_HEARTBEAT:
+				setCanHeartbeat(packet.data);
+				sendAck();
+			break;
+
+			case GET_CAN_HEARTBEAT:
+				getCanHeartbeat(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_CAN_HEARTBEAT, dataLength, dataBuffer);
+			break;
+
+			case SET_CAN_CHANNEL_MODE:
+				setCanChannelMode(packet.data);
+				sendAck();
+			break;
+
+			case SET_CAN_POINT_MODE:
+				setCanPointMode(packet.data);
+				sendAck();
+			break;
+
+			case SET_CAN_START_ID:
+				setCanStartId(packet.data);
+				sendAck();
+			break;
+
+			case SET_CAN_BAUDRATE:
+				if (setCanBaudrate(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case GET_CAN_CONFIGURATION:
+				getCanConfiguration(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_CAN_CONFIGURATION, dataLength, dataBuffer);
+			break;
+
+			
+			// Transmission data format
+			case SET_TRANSMIT_DATA:
+#ifdef LPMS_BLE
+				sendAck();
+#else
+				setTransmitData(packet.data);
+				sendAck();
+#endif
+			break;	
+
+			case SET_LPBUS_DATA_MODE:
+#ifdef LPMS_BLE
+				sendAck();
+#else
+				setLpBusDataMode(packet.data);
+				sendAck();
+#endif
+			break;
+
+
+			// Magnetometer misalignment
+			case SET_MAG_ALIGNMENT_MATRIX:
+				setMagAlignMatrix(packet.data);
+				sendAck();
+			break;
+
+			case GET_MAG_ALIGNMENT_MATRIX:
+				getMagAlignMatrix(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_ALIGNMENT_MATRIX, dataLength, dataBuffer);
+			break;			
+
+
+			case SET_MAG_ALIGNMENT_BIAS:
+				setMagAlignBias(packet.data);
+				sendAck();
+			break;
+
+			case GET_MAG_ALIGNMENT_BIAS:
+				getMagAlignBias(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_ALIGNMENT_BIAS, dataLength, dataBuffer);
+			break;
+
+			
+			// Magnetometer reference
+			case SET_MAG_REFRENCE:
+				setMagReference(packet.data);
+				sendAck();
+			break;
+
+			case GET_MAG_REFERENCE:
+				getMagReference(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
+			break;
+
+
+			// UART communication
+			case SET_UART_BAUDRATE:
+				setUartBaudrate(packet.data);
+				sendAck();
+			break;
+			
+			case GET_UART_BAUDRATE:
+				getUartBaudrate(dataBuffer, &dataLength);
+				sendData(getImuID(), GET_UART_BAUDRATE, dataLength, dataBuffer);
+			break;
+			
+			case SET_UART_FORMAT:
+				setUartFormat(packet.data);
+				sendAck();
+			break;
+
+			
+			// Flash and test
+			case WRITE_REGISTERS:
+				if (writeRegisters() == 1) {
+					sendAck();
+				} else {
+					sendNack();
+				}
+			break;
+
+			case RESTORE_FACTORY_VALUE:
+				if (resetToFactory() == 0) {
+					sendNack();
+				} else {
+					sendAck();
+					initSensorManager();
+				}
+			break;
+
+			case GET_FIRMWARE_VERSION:
+				getFirmwareVersion(dataBuffer, &dataLength);			
+				sendData(getImuID(), GET_FIRMWARE_VERSION, dataLength, dataBuffer);
+			break;
+
+			case SELF_TEST:
+				if (setSelfTest(packet.data)) {
+					sendAck();
+				} else {
+					sendNack();
+				}		
+			break;
+
+			case UPDATE_IAP:
+				TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
+				if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
+					isFirmwareUpdating = 1;
+					rxFirmwarePacketCounter = 0;
+					rxFirmwarePacketSize = 0;
+					for (uint8_t i = 0; i < packet.length; i++) {
+						rxFirmwarePacketSize = rxFirmwarePacketSize | (((uint32_t)packet.data[i]) << (8 * i));
+					}
+					flash_destination = IAP_FLASH_START_ADDRESS;  
+ 
+					FLASH_Unlock();
+					FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR); 
+					if (FLASH_EraseSector(FLASH_Sector_7, VoltageRange_3) != FLASH_COMPLETE) {
+					  	sendNack();
+					} else {
+					  	sendAck();
+					}
+				} else if ((packet.length != 4) && (isFirmwareUpdating == 1)) {
+#ifdef LPMS_BLE
+					if (copyRamToFlash_128bytes(&flash_destination, (uint32_t*)buffer)) {
+#else
+					if (copyRamToFlash_256bytes(&flash_destination, (uint32_t*)buffer)) {
+#endif
+						rxFirmwarePacketCounter++;
+						sendAck();
+						if (rxFirmwarePacketCounter >= rxFirmwarePacketSize) {
+							isFirmwareUpdating = 0;
+							rxFirmwarePacketCounter = 0;
+						}
+					} else {
+						sendNack();
+						
+					}
+				}
+				TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+			break;
+
 			case UPDATE_FIRMWARE:
 				TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
 			  	if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
@@ -533,463 +1008,6 @@ void parsePacket(void)
 				}
 				TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
 			break;
-			
-			case GOTO_COMMAND_MODE:
-				setCommandMode();
-				sendAck();				
-			break;				
-				
-			case GOTO_STREAM_MODE:
-				setStreamMode();
-				sendAck();				
-			break;
-				
-			case GOTO_SLEEP_MODE:
-				setSleepMode();
-				sendAck();	
-			break;
-				
-			case RESTORE_FACTORY_VALUE:
-				if (resetToFactory() == 0) {
-					sendNack();
-				} else {
-					sendAck();
-					initSensorManager();
-				}
-			break;
-				
-			case SET_ORIENTATION_OFFSET:
-				if (setOrientationOffset(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-
-			case RESET_ORIENTATION_OFFSET:
-				if (resetOrientationOffset(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-				
-			case SELF_TEST:
-				if (setSelfTest(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}		
-			break;
-				
-			case SET_IMU_ID:
-				setReg(packet.length, packet.data, LPMS_IMU_ID);
-#ifdef USE_CANBUS_INTERFACE
-				resetCanId();
-#endif
-				sendAck();
-			break;
-				
-			case SET_STREAM_FREQ:
-#ifdef LPMS_BLE
-				sendAck();
-#else
-				if (setStreamFreq(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-#endif
-			break;
-				
-			case START_GYR_CALIBRA:
-				startGyrCalibration();
-				sendAck();			
-			break;
-				
-			case SET_GYR_RANGE:
-				if (setGyrRange(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-				
-			case SET_ACC_RANGE:
-				if (setAccRange(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-			
-			case SET_MAG_RANGE:
-				if (setMagRange(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-				
-			case SET_ACC_BIAS:
-				if (setAccOffset(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-				
-			case RESET_REFERENCE:
-				startRefCalibration();
-				sendAck();
-			break;
-				
-			case ENABLE_GYR_THRES:
-				if (setEnableGyrThresh(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-			
-			case SET_FILTER_MODE:
-				if (setFilterMode(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;					
-				
-			case SET_FILTER_PRESET:
-				if (setFilterPreset(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;		  
-			
-			case GET_CONFIG:
-				getReg(ui32, 4, LPMS_CONFIG);
-				sendData(getImuID(), GET_CONFIG, 4, ui32);
-			break;
-			
-			case GET_IMU_ID:
-				getReg(ui32, 4, LPMS_IMU_ID);
-				sendData(getImuID(), GET_IMU_ID, 4, ui32);
-			break;
-			
-			case GET_STATUS:
-				getStatus(ui32);
-				sendData(getImuID(), GET_STATUS, 4, ui32);
-			break;
-				
-			case GET_GYR_RANGE:
-				getReg(ui32, 4, LPMS_GYR_RANGE);
-				sendData(getImuID(), GET_GYR_RANGE, 4, ui32);
-			break;
-			
-			case GET_ACC_RANGE:
-				getReg(ui32, 4, LPMS_ACC_RANGE);
-				sendData(getImuID(), GET_ACC_RANGE, 4, ui32);
-			break;
-			
-			case GET_MAG_RANGE:
-				getReg(ui32, 4, LPMS_MAG_RANGE);
-				sendData(getImuID(), GET_MAG_RANGE, 4, ui32);
-			break;
-			
-			case GET_ACC_BIAS:
-				getAccOffset(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_ACC_BIAS, dataLength, dataBuffer);
-			break;		
-				
-			case GET_SENSOR_DATA:
-				updateSensorData();
-				processSensorData();
-
-				getSensorData(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_SENSOR_DATA, dataLength, dataBuffer);				
-			break;
-				
-			case GET_FILTER_MODE:
-				getReg(ui32, 4, LPMS_FILTER_MODE);
-				sendData(getImuID(), GET_FILTER_MODE, 4, ui32);
-			break;
-			
-			case GET_FILTER_PRESET:
-				getReg(ui32, 4, LPMS_FILTER_PRESET);
-				sendData(getImuID(), GET_FILTER_PRESET, 4, ui32);
-			break;
-				
-			case UPDATE_IAP:
-				TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
-				if ((packet.length == 4) && (isFirmwareUpdating == 0)) {
-					isFirmwareUpdating = 1;
-					rxFirmwarePacketCounter = 0;
-					rxFirmwarePacketSize = 0;
-					for (uint8_t i = 0; i < packet.length; i++) {
-						rxFirmwarePacketSize = rxFirmwarePacketSize | (((uint32_t)packet.data[i]) << (8 * i));
-					}
-					flash_destination = IAP_FLASH_START_ADDRESS;  
- 
-					FLASH_Unlock();
-					FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR); 
-					if (FLASH_EraseSector(FLASH_Sector_7, VoltageRange_3) != FLASH_COMPLETE) {
-					  	sendNack();
-					} else {
-					  	sendAck();
-					}
-				} else if ((packet.length != 4) && (isFirmwareUpdating == 1)) {
-#ifdef LPMS_BLE
-					if (copyRamToFlash_128bytes(&flash_destination, (uint32_t*)buffer)) {
-#else
-					if (copyRamToFlash_256bytes(&flash_destination, (uint32_t*)buffer)) {
-#endif
-						rxFirmwarePacketCounter++;
-						sendAck();
-						if (rxFirmwarePacketCounter >= rxFirmwarePacketSize) {
-							isFirmwareUpdating = 0;
-							rxFirmwarePacketCounter = 0;
-						}
-					} else {
-						sendNack();
-						
-					}
-				}
-				TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-			break;
-				
-			case WRITE_REGISTERS:
-				if (writeRegisters() == 1) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-
-			case ENABLE_GYR_AUTOCAL:
-				if (setEnableGyrAutoCal(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-
-			case SET_CAN_BAUDRATE:
-				if (setCanBaudrate(packet.data)) {
-					sendAck();
-				} else {
-					sendNack();
-				}
-			break;
-
-			case GET_HARD_IRON_OFFSET:
-				getHardIronOffsetData(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_HARD_IRON_OFFSET, dataLength, dataBuffer);
-			break;
-
-			case GET_SOFT_IRON_MATRIX:
-				getSoftIronMatrixData(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_SOFT_IRON_MATRIX, dataLength, dataBuffer);
-			break;
-
-			case GET_FIELD_ESTIMATE:
-				getFieldEstimateData(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_FIELD_ESTIMATE, dataLength, dataBuffer);
-			break;
-
-			case SET_HARD_IRON_OFFSET:
-				setHardIronOffsetData(packet.data);
-				sendAck();
-			break;	
-
-			case SET_SOFT_IRON_MATRIX:
-				setSoftIronMatrixData(packet.data);
-				sendAck();
-			break;
-
-			case SET_FIELD_ESTIMATE:
-				setFieldEstimateData(packet.data);
-				sendAck();
-			break;
-
-			case SET_ACC_ALIGN_MATRIX:
-				setAccAlignMatrix(packet.data);
-				sendAck();
-			break;
-
-			case GET_ACC_ALIGN_MATRIX:
-				getAccAlignMatrix(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_ACC_ALIGN_MATRIX, dataLength, dataBuffer);
-			break;
-
-			case SET_GYR_ALIGN_MATRIX:
-				setGyrAlignMatrix(packet.data);
-				sendAck();
-			break;
-
-			case SET_GYR_ALIGN_BIAS:
-				setGyrAlignBias(packet.data);
-				sendAck();
-			break;
-
-			case GET_GYR_ALIGN_MATRIX:
-				getGyrAlignMatrix(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_GYR_ALIGN_MATRIX, dataLength, dataBuffer);
-			break;
-
-			case GET_GYR_ALIGN_BIAS:
-				getGyrAlignBias(dataBuffer, &dataLength);		
-				sendData(getImuID(), GET_GYR_ALIGN_BIAS, dataLength, dataBuffer);
-			break;
-
-			case SET_TRANSMIT_DATA:
-#ifdef LPMS_BLE
-				sendAck();
-#else
-				setTransmitData(packet.data);
-				sendAck();
-#endif
-			break;	
-
-			case GET_FIRMWARE_VERSION:
-				getFirmwareVersion(dataBuffer, &dataLength);			
-				sendData(getImuID(), GET_FIRMWARE_VERSION, dataLength, dataBuffer);
-			break;
-
-			case GET_RAW_DATA_LP:
-				getRawDataLp(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_RAW_DATA_LP, dataLength, dataBuffer);
-			break;
-
-			case SET_RAW_DATA_LP:
-				setRawDataLp(packet.data);
-				sendAck();
-			break;
-
-			case SET_CAN_MAPPING:
-				setCanMapping(packet.data);
-				sendAck();
-			break;
-
-			case GET_CAN_MAPPING:
-				getCanMapping(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_CAN_MAPPING, dataLength, dataBuffer);
-			break;
-
-			case SET_CAN_HEARTBEAT:
-				setCanHeartbeat(packet.data);
-				sendAck();
-			break;
-
-			case GET_CAN_HEARTBEAT:
-				getCanHeartbeat(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_CAN_HEARTBEAT, dataLength, dataBuffer);
-			break;
-
-			case SET_TIMESTAMP:
-				setTimestamp(packet.data);
-				sendAck();
-			break;
-
-			case SET_ARM_HARDWARE_TIMESTAMP_RESET:
-				armHardwareTimestampReset(packet.data);
-				sendAck();
-			break;
-
-			case SET_LIN_ACC_COMP_MODE:
-				setLinAccCompMode(packet.data);
-				sendAck();
-			break;
-
-			case GET_LIN_ACC_COMP_MODE:
-				getLinAccCompMode(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_LIN_ACC_COMP_MODE, dataLength, dataBuffer);
-			break;
-			
-			case SET_CENTRI_COMP_MODE:
-				setCentriCompMode(packet.data);
-				sendAck();
-			break;
-			
-			case GET_CENTRI_COMP_MODE:
-				getCentriCompMode(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_CENTRI_COMP_MODE, dataLength, dataBuffer);
-			break;
-
-			case GET_CAN_CONFIGURATION:
-				getCanConfiguration(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_CAN_CONFIGURATION, dataLength, dataBuffer);
-			break;
-
-			case SET_CAN_CHANNEL_MODE:
-				setCanChannelMode(packet.data);
-				sendAck();
-			break;
-
-			case SET_CAN_POINT_MODE:
-				setCanPointMode(packet.data);
-				sendAck();
-			break;
-
-			case SET_CAN_START_ID:
-				setCanStartId(packet.data);
-				sendAck();
-			break;
-
-			case SET_LPBUS_DATA_MODE:
-#ifdef LPMS_BLE
-				sendAck();
-#else
-				setLpBusDataMode(packet.data);
-				sendAck();
-#endif
-			break;
-
-			case SET_MAG_ALIGNMENT_MATRIX:
-				setMagAlignMatrix(packet.data);
-				sendAck();
-			break;
-
-			case SET_MAG_ALIGNMENT_BIAS:
-				setMagAlignBias(packet.data);
-				sendAck();
-			break;
-
-			case SET_MAG_REFRENCE:
-				setMagReference(packet.data);
-				sendAck();
-			break;
-
-			case GET_MAG_ALIGNMENT_MATRIX:
-				getMagAlignMatrix(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_MAG_ALIGNMENT_MATRIX, dataLength, dataBuffer);
-			break;			
-
-			case GET_MAG_ALIGNMENT_BIAS:
-				getMagAlignBias(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_MAG_ALIGNMENT_BIAS, dataLength, dataBuffer);
-			break;
-
-			case GET_MAG_REFERENCE:
-				getMagReference(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_MAG_REFERENCE, dataLength, dataBuffer);
-			break;
-
-			case SET_UART_BAUDRATE:
-				setUartBaudrate(packet.data);
-				sendAck();
-			break;
-			
-			case GET_UART_BAUDRATE:
-				getUartBaudrate(dataBuffer, &dataLength);
-				sendData(getImuID(), GET_UART_BAUDRATE, dataLength, dataBuffer);
-			break;
-			
-			case SET_UART_FORMAT:
-				setUartFormat(packet.data);
-				sendAck();
-			break;
 
 			default:
 			break;
@@ -1016,40 +1034,14 @@ void parsePacket(void)
 				sendData(getImuID(), GET_STATUS, 4, ui32);				
 			break;
 
-                        case SET_TIMESTAMP:
-                                setTimestamp(packet.data);
-                        break;
-				
-			default:
-			break;
-			}
-				
-			processedPacketPtr++;
-			if (processedPacketPtr >= MAX_RX_PACKET_BUFFER) processedPacketPtr = 0;
-		} else if (getCurrentMode() == LPMS_SLEEP_MODE) {
-			switch (packet.function) {				
-			case GOTO_STREAM_MODE:
-				setStreamMode();
-				sendAck();
-			break;
-				
-			case GOTO_COMMAND_MODE:
-				setCommandMode();
-				sendAck();
-			break;
-				
-			case GET_STATUS:
-				getStatus(ui32);
-				sendData(getImuID(), GET_STATUS, 4, ui32);		
+			case SET_TIMESTAMP:
+				setTimestamp(packet.data);
 			break;
 				
 			default:
 			break;
 			}
 				
-			processedPacketPtr++;
-			if (processedPacketPtr >= MAX_RX_PACKET_BUFFER) processedPacketPtr = 0;
-		} else {
 			processedPacketPtr++;
 			if (processedPacketPtr >= MAX_RX_PACKET_BUFFER) processedPacketPtr = 0;
 		}

@@ -9,6 +9,10 @@
 #ifndef LPMS_ASSIGNMENTS_H
 #define LPMS_ASSIGNMENTS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "stm32f2xx.h"     
 
 #include "LpMatrix.h"

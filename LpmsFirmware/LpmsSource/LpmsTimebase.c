@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsTimebase.h"
@@ -9,8 +8,7 @@
 uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
-uint16_t ledFlashTime = 5000;
-__IO uint16_t CCR1_Val = 2499;
+uint16_t ledFlashTime = 400;
 
 void initTimebase(void)
 {

@@ -1,10 +1,10 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsFactorySetting.h"
+
 #ifdef USE_CANBUS_INTERFACE
 
 #include "LpmsTTLUsart.h"
@@ -50,10 +50,7 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	RCC_AHB1PeriphClockCmd(TTL_USART_GPIO_CLK, ENABLE);
 
 	RCC_APB2PeriphClockCmd(TTL_USART_CLK, ENABLE);
-	
-	// GPIO_PinAFConfig(RS232_IO_PORT, RS232_CTS_SOURCE, RS232_CTS_AF);
-	// GPIO_PinAFConfig(RS232_IO_PORT, RS232_RTS_SOURCE, RS232_RTS_AF);
-	
+		
 	GPIO_PinAFConfig(TTL_USART_IO_PORT, TTL_USART_TX_SOURCE, TTL_USART_TX_AF);
 	GPIO_PinAFConfig(TTL_USART_IO_PORT, TTL_USART_RX_SOURCE, TTL_USART_RX_AF);
 	
@@ -61,13 +58,7 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	
-	/* GPIO_InitStructure.GPIO_Pin = RS232_CTS_PIN;
-	GPIO_Init(RS232_IO_PORT, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = RS232_RTS_PIN;
-	GPIO_Init(RS232_IO_PORT, &GPIO_InitStructure); */
-	
+		
 	GPIO_InitStructure.GPIO_Pin = TTL_USART_TX_PIN;
 	GPIO_Init(TTL_USART_IO_PORT, &GPIO_InitStructure);
 	
@@ -98,7 +89,7 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; // USART_HardwareFlowControl_RTS_CTS;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	USART_DeInit(TTL_USART_PORT);
 	USART_Init(TTL_USART_PORT, &USART_InitStructure);
@@ -144,8 +135,6 @@ void ttlUsartPortSetDmaConfig(void)
 
 void ttlUsartPortStartTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 {
-	// USART_SendData(RS232_PORT, (uint16_t) 0x49);
-
 	DMA_Cmd(TTL_USART_TX_DMA_STREAM, DISABLE);
 
 	DMA_ClearFlag(TTL_USART_TX_DMA_STREAM, TTL_USART_TX_DMA_FLAG_TCIF);

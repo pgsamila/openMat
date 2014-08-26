@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsSensorParameters.h"
@@ -317,11 +316,10 @@ uint8_t setStreamFreq(uint8_t* data)
 
 uint8_t setOrientationOffset(uint8_t* data)
 {
-	uint32_t v = getUi32t(data); // LPMS_OFFSET_MODE_ALIGNMENT;
+	uint32_t v = getUi32t(data);
 
 	if (v < LPMS_OFFSET_MODE_ALIGNMENT+1) setRegUInt32(LPMS_OFFSET_MODE, v);
 
-	// calculateAlignmentOffset(q);
 	calculateAlignmentOffset(q, &mQ_hx, &mQ_offset);
 
 	setRegVector4f(LPMS_OFFSET_QUAT_0, mQ_offset);
@@ -1412,15 +1410,14 @@ void armHardwareTimestampReset(uint8_t* data)
 		GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 		isTimestampResetArmed = 1;
-		ledFlashTime = 2000;
+		ledFlashTime = 200;
 	break;
 
 	case LPMS_DISARM_TIMESTAMP_RESET:
 		GPIO_PinAFConfig(GPIOA, GPIO_Pin_13, GPIO_AF_SWJ);
 
 		isTimestampResetArmed = 0;
-		ledFlashTime = 5000;
+		ledFlashTime = 400;
 	break;
 	}
 }
-	

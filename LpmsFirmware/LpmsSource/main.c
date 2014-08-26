@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "stm32f2xx.h"
@@ -11,6 +10,7 @@
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 
+extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
 extern __IO uint8_t systemStepTimeout;
 
@@ -38,7 +38,7 @@ int main(void)
 			if (systemStepTimeout == 1) {
 				systemStepTimeout = 0;
 
-				if (ledC % 400 == 0) updateAliveLed();
+				if (ledC % ledFlashTime == 0) updateAliveLed();
 				++ledC;
 
 				updateSensorData();
@@ -88,7 +88,7 @@ int main(void)
 			if (systemStepTimeout == 1) {
 				systemStepTimeout = 0;
 
-				if (ledC % 400 == 0) updateAliveLed();
+				if (ledC % ledFlashTime == 0) updateAliveLed();
 				++ledC;
 
 				updateSensorData();
@@ -136,25 +136,6 @@ int main(void)
 #endif
 				parsePacket();
 			}
-		} else if (getCurrentMode() == LPMS_SLEEP_MODE) {
-		  
-#ifdef USE_CANBUS_INTERFACE
-#ifdef USE_RS232_INTERFACE
-			pollSerialPortData();
-			rs232PortPollData();
-#elif defined USE_TTL_UART_INTERFACE
-			pollSerialPortData();
-			ttlUsartPortPollData();
-#else
-			pollSerialPortData();
-			pollCanBusData();
-#endif
-#else
-			pollBluetoothData();
-#endif
-			parsePacket();
-
-			sendQueue();
 		}
   	}
 }

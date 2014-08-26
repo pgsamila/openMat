@@ -1,7 +1,7 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** All rights reserved
+** Contact: info@lp-research.com
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -32,18 +32,66 @@
 #include "MainWindow.h"
 
 static LpmsDeviceList deviceList;
-bool useHeaveMotion = 0;
 
-#ifdef USE_CALLBACK
-	void lpmsCallback(ImuData d, const char* id)
-	{
-		for (int i=0; i<deviceList.nDevices; ++i) {
-			if (strcmp(deviceList.device[i].deviceId, id) == 0) {
-				deviceList.device[i].data = d;
-			}
-		}
-	}
-#endif
+MainWindow::MainWindow(QWidget *parent)
+{	
+	std::cout << "[MainWindow] Initializing program" << std::endl;
+	
+	heaveMotionEnabled = false;
+	
+	sm = LpmsSensorManagerFactory();
+
+	QSplitter *s0 = new QSplitter();
+	
+	s0->addWidget(createDeviceList());
+	s0->addWidget(createGraphs());
+	
+	createMenuAndToolbar();
+	
+	rescanD = new RescanDialog(sm, comboDeviceList, &deviceList, this);
+	
+	s0->setStretchFactor(0, 3);
+	s0->setStretchFactor(1, 5);
+		
+	QHBoxLayout *h0 = new QHBoxLayout();
+	h0->addWidget(s0);
+	
+	QWidget* cw = new QWidget();
+	cw->setLayout(h0);
+	setCentralWidget(cw);
+		
+	this->setMinimumSize(800, 600);
+	showMaximized();
+	
+	setWindowTitle("LpmsControl GUI");
+	
+	isRunning = false;
+	isConnecting = false;
+	calibratingMag	= false;
+	
+	mbcom.startServer();
+	
+	QTimer* timer = new QTimer(this);
+	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+    timer->start(5);
+	
+	textUpdateCounter = 0;
+	maIsCalibrating = false;
+	mode = MODE_GRAPH_WIN;
+	
+	isMagEllipsoidCalOn = false;
+	isMagPlanarCalOn = false;
+
+	rePlayer = new MotionPlayer();
+	
+	mm.reset();
+}
+
+MainWindow::~MainWindow()
+{
+}
+
+
 
 QWidget *MainWindow::createDeviceList(void)
 {	
@@ -66,19 +114,16 @@ QGroupBox *MainWindow::createGraphs(void)
 	cubeWindowContainer = new CubeWindowSelector();
 	graphWindow = new GraphWindow();	
 	fieldMapWindow = new FieldMapContainer();
-	gaitTrackingWindow = new GaitTrackingWindow();
 	
 	graphLayout->addWidget(graphWindow);
 	graphLayout->addWidget(cubeWindowContainer);
 	graphLayout->addWidget(fieldMapWindow);
-	graphLayout->addWidget(gaitTrackingWindow);
 		
 	QGroupBox *gb = new QGroupBox("Data view");
 	gb->setLayout(graphLayout);	
 	
 	cubeWindowContainer->hide();
 	fieldMapWindow->hide();
-	gaitTrackingWindow->hide();
 	
 	return gb;
 }
@@ -361,68 +406,6 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(armTimestampResetAction, SIGNAL(triggered()), this, SLOT(armTimestampReset()));
 }
 
-void MainWindow::updateCanBaudrate(int i)
-{
-	sm->setCanBaudrate(i);
-}
-
-void MainWindow::updateRs232Baudrate(int i)
-{
-	sm->setRs232Baudrate(i);
-}
-
-MainWindow::MainWindow(QWidget *parent)
-{	
-	std::cout << "[MainWindow] Initializing program" << std::endl;
-	
-	heaveMotionEnabled = false;
-	gaitTrackingEnabled = false;
-	
-	sm = LpmsSensorManagerFactory();
-
-	QSplitter *s0 = new QSplitter();
-	
-	s0->addWidget(createDeviceList());
-	s0->addWidget(createGraphs());
-	
-	createMenuAndToolbar();
-	
-	rescanD = new RescanDialog(sm, comboDeviceList, &deviceList, this);
-	
-	s0->setStretchFactor(0, 3);
-	s0->setStretchFactor(1, 5);
-		
-	QHBoxLayout *h0 = new QHBoxLayout();
-	h0->addWidget(s0);
-	
-	QWidget* cw = new QWidget();
-	cw->setLayout(h0);
-	setCentralWidget(cw);
-		
-	this->setMinimumSize(800, 600);
-	showMaximized();
-	
-	setWindowTitle("LpmsControl GUI");
-	
-	isRunning = false;
-	isConnecting = false;
-	calibratingMag	= false;
-	
-	mbcom.startServer();
-	
-	QTimer* timer = new QTimer(this);
-	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-    timer->start(5);
-	
-	textUpdateCounter = 0;
-	maIsCalibrating = false;
-	mode = MODE_GRAPH_WIN;
-	
-	rePlayer = new MotionPlayer();
-	
-	mm.reset();
-}
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	if (exitWindow() == true) {
@@ -432,258 +415,112 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
-QWizardPage *MainWindow::magElipsoidCalPage(int pageNumber)
+
+
+void MainWindow::selectGraphWindow(void)
 {
-	QWizardPage *page = new QWizardPage;
-	QLabel *label;
+	cubeWindowContainer->hide();
+	fieldMapWindow->hide();
 	
-	page->setTitle(std::string("Magnetic field map").c_str());
-		
-	switch (pageNumber) {
-	case 0:
-		page->setTitle(std::string("Magnetic field map").c_str());
-		label = new QLabel((std::string("Please continuously rotate the selected LPMS around roll, pitch and yaw axis for 30s. The calibration algorithm will create a map of your environment magnetic field and use it to calculate hard / soft iron calibration parameters.")).c_str());
-	break;
+	graphWindow->setMode(GRAPH_MODE_RAW);
+	graphWindow->show();
 	
-	case 1:
-		page->setTitle(std::string("Alignment").c_str());
-		label = new QLabel((std::string("Please hold the sensor in a motionless state for 5s. The alignment of the magnetometer inclination axis and the vertical axis (gravity vector) will be calculated.")).c_str());
-	break;
-	
-	default:
-		page->setTitle(std::string("Calibration finished").c_str());
-		label = new QLabel((std::string("Magnetometer calibration has been finished. Please check the field map window if the number of acquired field points during the calibration process were enough to generate a good ellipsoid fit. See the manual for more information.")).c_str());
-	break;	
-	}
-	
-	label->setWordWrap(true);
-
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(label);
-	page->setLayout(layout);
-
-	return page;
+	mode = MODE_GRAPH_WIN;
 }
 
-void MainWindow::magElipsoidCalNewPage(int i)
+void MainWindow::selectGraph2Window(void)
 {
-	switch (i) {
-	case 1:
-		currentLpms->getSensor()->startMagCalibration();
-		startWaitBar(45);
-	break;
+	cubeWindowContainer->hide();	
+	fieldMapWindow->hide();
 	
-	case 2:
-		currentLpms->getSensor()->startMagReferenceCal();	
-		startWaitBar(5);		
-	break;
-	}
+	graphWindow->setMode(GRAPH_MODE_ORIENTATION);
+	graphWindow->show();
+	
+	mode = MODE_GRAPH_WIN;
 }
 
-void MainWindow::calibrateMag(void)
+void MainWindow::selectGraph3Window(void)
 {
-	QList<QWizard::WizardButton> layout;
+	cubeWindowContainer->hide();	
+	fieldMapWindow->hide();
 
-	if (currentLpms == 0 || isConnecting == true) return;
+	graphWindow->setMode(GRAPH_MODE_PRESSURE);
+	graphWindow->show();	
 	
-	QWizard* magElipsoidCalWizard = new QWizard(this);
-
-	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
-	magElipsoidCalWizard->setButtonLayout(layout);
-	
-	magElipsoidCalWizard->addPage(magElipsoidCalPage(0));
-	magElipsoidCalWizard->addPage(magElipsoidCalPage(1));
-	magElipsoidCalWizard->addPage(magElipsoidCalPage(2));	
-	
-	magElipsoidCalWizard->setWindowTitle("Magnetometer hard / soft iron calibration (ellipsoid)");
-	magElipsoidCalWizard->show();
-		
-	connect(magElipsoidCalWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magElipsoidCalNewPage(int)));
-	
-	if (isRunning == false) startMeasurement();
+	mode = MODE_GRAPH_WIN;	
 }
 
-QWizardPage *MainWindow::magPlanarCalPage(int pageNumber)
+void MainWindow::selectHeaveMotionWindow(void)
 {
-	QWizardPage *page = new QWizardPage;
-	QLabel *label;
-	
-	page->setTitle(std::string("Magnetic field map").c_str());
-		
-	switch (pageNumber) {
-	case 0:
-		page->setTitle(std::string("Magnetic field map").c_str());
-		label = new QLabel((std::string("Please continuously rotate the selected LPMS around roll, pitch and yaw axis for 30s. The calibration algorithm will create a map of your environment magnetic field and use it to calculate hard / soft iron calibration parameters.")).c_str());
-	break;
-	
-	case 1:
-		page->setTitle(std::string("Alignment").c_str());
-		label = new QLabel((std::string("Please hold the sensor in a motionless state for 5s. The alignment of the magnetometer inclination axis and the vertical axis (gravity vector) will be calculated.")).c_str());
-	break;
-	
-	default:
-		page->setTitle(std::string("Calibration finished").c_str());
-		label = new QLabel((std::string("Magnetometer calibration has been finished. Please check the field map window if the calibration process was able to generate a good fit. See the manual for more information.")).c_str());
-	break;	
-	}
-	
-	label->setWordWrap(true);
+	cubeWindowContainer->hide();	
+	fieldMapWindow->hide();
 
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(label);
-	page->setLayout(layout);
-
-	return page;
+	graphWindow->setMode(GRAPH_MODE_HEAVEMOTION);
+	graphWindow->show();	
+	
+	mode = MODE_GRAPH_WIN;
 }
 
-void MainWindow::magPlanarCalNewPage(int i)
+void MainWindow::selectThreeDWindow(void)
 {
-	switch (i) {
-	case 1:
-		currentLpms->getSensor()->startPlanarMagCalibration();
-		startWaitBar(45);
-	break;
+	graphWindow->hide();
+	fieldMapWindow->hide();
+
+	cubeWindowContainer->update();
+	cubeWindowContainer->show();
 	
-	case 2:
-		currentLpms->getSensor()->startMagReferenceCal();	
-		startWaitBar(5);		
-	break;
-	}
+	mode = MODE_THREED_WIN;
 }
 
-void MainWindow::calibratePlanarMag(void)
+void MainWindow::selectFieldMapWindow(void)
 {
-	QList<QWizard::WizardButton> layout;	
+	graphWindow->hide();
+	cubeWindowContainer->hide();
 	
-	if (currentLpms == 0 || isConnecting == true) return;
+	fieldMapWindow->show();
 	
-	QWizard* magPlanarCalWizard = new QWizard(this);
-		
-	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
-	magPlanarCalWizard->setButtonLayout(layout);
-	
-	magPlanarCalWizard->addPage(magPlanarCalPage(0));
-	magPlanarCalWizard->addPage(magPlanarCalPage(1));
-	magPlanarCalWizard->addPage(magPlanarCalPage(2));	
-	
-	magPlanarCalWizard->setWindowTitle("Magnetometer hard / soft iron calibration (planar)");
-	magPlanarCalWizard->show();
-		
-	connect(magPlanarCalWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magPlanarCalNewPage(int)));
-	
-	if (isRunning == false) startMeasurement();
-} 
-
-void MainWindow::updateMagneticFieldMap(void)
-{
-	float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3];
-	float hardIronOffset[3];
-	float softIronMatrix[3][3];
-	float fieldRadius;
-	ImuData imuData;
-
-	currentLpms->getSensor()->getFieldMap(fieldMap);
-	currentLpms->getSensor()->getHardIronOffset(hardIronOffset);
-	currentLpms->getSensor()->getSoftIronMatrix(softIronMatrix, &fieldRadius);
-	imuData = currentLpms->getSensor()->getCurrentData();
-
-	fieldMapWindow->updateFieldMap(fieldMap, hardIronOffset, softIronMatrix, fieldRadius, imuData.b);
+	mode = MODE_FIELDMAP_WIN;
 }
 
-void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void MainWindow::selectCubeMode1(void)
 {
-	bool f;
-	int i;
-	int fi;
-	
-	std::list<SensorGuiContainer *>::iterator it;
-	std::list<SensorGuiContainer *>::iterator fit;	
-	
-	f = false;
-	i = 0;
-	fi = 0;
-		
-	if (lpmsTree->topLevelItemCount() == 0 || lpmsTree->currentItem() == NULL) {
-		return;
-	}
+	cubeMode1Action->setChecked(true);
+	cubeMode2Action->setChecked(false);
+	cubeMode4Action->setChecked(false);
 
-	QTreeWidgetItem *temp;	
-	QTreeWidgetItem *wi = lpmsTree->currentItem();
-	if (wi->childCount() > 0) {
-		QTreeWidgetItem *si = wi->child(0);
-		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(si, 0);
-	} else {
-		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(wi, 0);
-	}	
-	
-	QTreeWidgetItem *checkItem = lpmsTree->currentItem();
-	int itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
-	
-	while (itemIndex == -1) {
-		checkItem = checkItem->parent();
-		itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
-	}
-		
-	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {
-		(*it)->updateData();
-		if (itemIndex == lpmsTree->indexOfTopLevelItem((*it)->treeItem)) {
-			f = true;
-			fit = it;
-			fi = i;
-		}
-		++i;
-	}	
-	
-	if (f == true) {		
-		currentLpms = *fit;
-		currentLpms->openMatId = (*fit)->getSensor()->getOpenMatId();		
-		graphWindow->setActiveLpms((*fit)->getSensor()->getOpenMatId());
-		updateMagneticFieldMap();
-	} else {
-		if (lpmsTree->topLevelItemCount() > 0) {	
-			currentLpms = lpmsList.front();
-			updateMagneticFieldMap();
-		} else {
-			currentLpms = 0;
-			startButton->setStyleSheet("QPushButton { color: black; }");	
-			startButton->setText("Start measurement");
-			isRunning = false;
-		}
-	}
-
-	graphWindow->clearGraphs();
+	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_1);
 }
 
-void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
+void MainWindow::selectCubeMode2(void)
 {
-	int i;
-	
-	sensor->getConfigurationPrm(PRM_HEAVEMOTION_ENABLED, &i);	
-	if (i == SELECT_HEAVEMOTION_ENABLED && heaveMotionEnabled == false) {
-		heaveMotionEnabled = true;
-		
-		QAction* heaveMotionGraphAction = new QAction(QIcon("./icons/bars_32x32.png"), "Heave motion window", this);
-		
-		viewMenu->addSeparator();
-		viewMenu->addAction(heaveMotionGraphAction);
-		toolbar->addAction(heaveMotionGraphAction);
-		connect(heaveMotionGraphAction, SIGNAL(triggered()), this, SLOT(selectHeaveMotionWindow()));
-	}
-	
-	sensor->getConfigurationPrm(PRM_GAIT_TRACKING_ENABLED, &i);
-	if (i == SELECT_GAIT_TRACKING_ENABLED && gaitTrackingEnabled == false) {
-		gaitTrackingEnabled = true;
-		
-		QAction* gaitTrackingGraphAction = new QAction(QIcon("./icons/user_24x32.png"), "Gait tracking window", this);
-		
-		viewMenu->addSeparator();
-		viewMenu->addAction(gaitTrackingGraphAction);
-		toolbar->addAction(gaitTrackingGraphAction);
-		connect(gaitTrackingGraphAction, SIGNAL(triggered()), this, SLOT(selectGaitTrackingWindow()));
-	}
-}	
+	cubeMode1Action->setChecked(false);
+	cubeMode2Action->setChecked(true);
+	cubeMode4Action->setChecked(false);
 
-#define GRAPH_UPDATE_PERIOD 25000
+	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_2);
+}
+
+void MainWindow::selectCubeMode4(void)
+{
+	cubeMode1Action->setChecked(false);
+	cubeMode2Action->setChecked(false);
+	cubeMode4Action->setChecked(true);
+	
+	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_4);
+}
+
+bool MainWindow::exitWindow(void)
+{
+	QMessageBox msgBox;
+	
+	closeSensor();
+	
+	mbcom.stopServer();
+	
+	return true;
+}
+
+
 
 void MainWindow::timerUpdate(void)
 {
@@ -765,15 +602,117 @@ void MainWindow::timerUpdate(void)
 					(*it)->getSensor()->getDeviceId(id);
 					fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
 				break;
-				
-				case MODE_GAIT_TRACKING_WIN:
-					gaitTrackingWindow->update(imuData);
-				break;
 				}
 			} 
 		}
 	}
 }
+
+#ifdef USE_CALLBACK
+	void lpmsCallback(ImuData d, const char* id)
+	{
+		for (int i=0; i<deviceList.nDevices; ++i) {
+			if (strcmp(deviceList.device[i].deviceId, id) == 0) {
+				deviceList.device[i].data = d;
+			}
+		}
+	}
+#endif
+
+
+
+void MainWindow::updateCanBaudrate(int i)
+{
+	sm->setCanBaudrate(i);
+}
+
+void MainWindow::updateRs232Baudrate(int i)
+{
+	sm->setRs232Baudrate(i);
+}
+
+void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+{
+	bool f;
+	int i;
+	int fi;
+	
+	std::list<SensorGuiContainer *>::iterator it;
+	std::list<SensorGuiContainer *>::iterator fit;	
+	
+	f = false;
+	i = 0;
+	fi = 0;
+		
+	if (lpmsTree->topLevelItemCount() == 0 || lpmsTree->currentItem() == NULL) {
+		return;
+	}
+
+	QTreeWidgetItem *temp;	
+	QTreeWidgetItem *wi = lpmsTree->currentItem();
+	if (wi->childCount() > 0) {
+		QTreeWidgetItem *si = wi->child(0);
+		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(si, 0);
+	} else {
+		temp = (QTreeWidgetItem *)lpmsTree->itemWidget(wi, 0);
+	}
+	
+	QTreeWidgetItem *checkItem = lpmsTree->currentItem();
+	int itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
+	
+	while (itemIndex == -1) {
+		checkItem = checkItem->parent();
+		itemIndex = lpmsTree->indexOfTopLevelItem(checkItem);
+	}
+		
+	for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {
+		(*it)->updateData();
+		if (itemIndex == lpmsTree->indexOfTopLevelItem((*it)->treeItem)) {
+			f = true;
+			fit = it;
+			fi = i;
+		}
+		++i;
+	}	
+	
+	if (f == true) {		
+		currentLpms = *fit;
+		currentLpms->openMatId = (*fit)->getSensor()->getOpenMatId();		
+		graphWindow->setActiveLpms((*fit)->getSensor()->getOpenMatId());
+		updateMagneticFieldMap();
+	} else {
+		if (lpmsTree->topLevelItemCount() > 0) {	
+			currentLpms = lpmsList.front();
+			updateMagneticFieldMap();
+		} else {
+			currentLpms = 0;
+			startButton->setStyleSheet("QPushButton { color: black; }");	
+			startButton->setText("Start measurement");
+			isRunning = false;
+		}
+	}
+
+	graphWindow->clearGraphs();
+}
+
+void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
+{
+	int i;
+	
+	sensor->getConfigurationPrm(PRM_HEAVEMOTION_ENABLED, &i);	
+	if (i == SELECT_HEAVEMOTION_ENABLED && heaveMotionEnabled == false) {
+		heaveMotionEnabled = true;
+		
+		QAction* heaveMotionGraphAction = new QAction(QIcon("./icons/bars_32x32.png"), "Heave motion window", this);
+		
+		viewMenu->addSeparator();
+		viewMenu->addAction(heaveMotionGraphAction);
+		toolbar->addAction(heaveMotionGraphAction);
+		connect(heaveMotionGraphAction, SIGNAL(triggered()), this, SLOT(selectHeaveMotionWindow()));
+	}
+}	
+
+
 
 void MainWindow::openSensor(void)
 {
@@ -914,6 +853,8 @@ void MainWindow::stopMeasurement(void)
 	isRunning = false;
 }
 
+
+
 void MainWindow::setOffset(void)
 {
 	std::list<SensorGuiContainer *>::iterator it;
@@ -991,6 +932,8 @@ void MainWindow::recalibrate(void)
 	
 	startWaitBar(60);
 }
+
+
 
 void MainWindow::uploadFirmware(void)
 {
@@ -1203,102 +1146,7 @@ void MainWindow::browseRecordFile(void)
 	}
 }
 
-void MainWindow::selectGraphWindow(void)
-{
-	cubeWindowContainer->hide();
-	fieldMapWindow->hide();
-	gaitTrackingWindow->hide();
-	
-	graphWindow->setMode(GRAPH_MODE_RAW);
-	graphWindow->show();
-	
-	mode = MODE_GRAPH_WIN;
-}
 
-void MainWindow::selectGraph2Window(void)
-{
-	cubeWindowContainer->hide();	
-	fieldMapWindow->hide();
-	gaitTrackingWindow->hide();
-	
-	graphWindow->setMode(GRAPH_MODE_ORIENTATION);
-	graphWindow->show();
-	
-	mode = MODE_GRAPH_WIN;
-}
-
-void MainWindow::selectGraph3Window(void)
-{
-	cubeWindowContainer->hide();	
-	fieldMapWindow->hide();
-	gaitTrackingWindow->hide();
-
-	graphWindow->setMode(GRAPH_MODE_PRESSURE);
-	graphWindow->show();	
-	
-	mode = MODE_GRAPH_WIN;	
-}
-
-void MainWindow::selectHeaveMotionWindow(void)
-{
-	cubeWindowContainer->hide();	
-	fieldMapWindow->hide();
-	gaitTrackingWindow->hide();
-
-	graphWindow->setMode(GRAPH_MODE_HEAVEMOTION);
-	graphWindow->show();	
-	
-	mode = MODE_GRAPH_WIN;
-}
-
-void MainWindow::selectGaitTrackingWindow(void)
-{
-	cubeWindowContainer->hide();	
-	fieldMapWindow->hide();
-	graphWindow->hide();	
-	
-	gaitTrackingWindow->show();
-		
-	mode = MODE_GAIT_TRACKING_WIN;
-}
-
-void MainWindow::selectThreeDWindow(void)
-{
-	graphWindow->hide();
-	fieldMapWindow->hide();
-	gaitTrackingWindow->hide();
-
-	cubeWindowContainer->update();
-	cubeWindowContainer->show();
-	
-	mode = MODE_THREED_WIN;
-}
-
-void MainWindow::selectFieldMapWindow(void)
-{
-	graphWindow->hide();
-	cubeWindowContainer->hide();
-	gaitTrackingWindow->hide();
-	
-	fieldMapWindow->show();
-	
-	mode = MODE_FIELDMAP_WIN;
-}
-
-bool MainWindow::exitWindow(void)
-{
-	QMessageBox msgBox;
-	
-	closeSensor();
-	
-	mbcom.stopServer();
-	
-	return true;
-}
-
-MainWindow::~MainWindow()
-{
-}
 
 void MainWindow::saveCalibration(void)
 {
@@ -1308,6 +1156,39 @@ void MainWindow::saveCalibration(void)
 	
 	startWaitBar(5);
 }
+
+void MainWindow::addRemoveDevices(void)
+{
+	stopMeasurement();
+
+	rescanD->show();
+}
+
+void MainWindow::saveCalibrationData(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	QString qfn = QFileDialog::getOpenFileName(this, "Load calibration data", "./", "");
+	string fn = qfn.toStdString();
+		
+	if (!(fn == "")) {		
+		currentLpms->getSensor()->loadCalibrationData(fn.c_str());
+	}	
+}
+
+void MainWindow::loadCalibrationData(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	QString qfn = QFileDialog::getSaveFileName(this, "Save calibration data", "./", "");
+	string fn = qfn.toStdString();
+		
+	if (!(fn == "")) {		
+		currentLpms->getSensor()->saveCalibrationData(fn.c_str());
+	}	
+}
+
+
 
 void MainWindow::updateLpmsFps(int v, int lpmsId)
 {
@@ -1321,13 +1202,6 @@ void MainWindow::measureLatency(void)
 	if (currentLpms == 0 || isConnecting == true) return;
 	
 	currentLpms->getSensor()->measureAvgLatency();
-}
-
-void MainWindow::getFieldMap(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-
-	currentLpms->getSensor()->acquireFieldMap();	
 }
 
 void MainWindow::getVersionInfo(void)
@@ -1368,6 +1242,461 @@ void MainWindow::resetToFactory(void)
 
 	currentLpms->getSensor()->resetToFactorySettings();
 }
+
+
+
+void MainWindow::startWaitBar(int t)
+{
+	if (maIsCalibrating == true) {
+		maWizard->hide();
+	}
+
+	calProgress = new QProgressDialog("Calibrating LPMS. Please wait..", QString() /* "Cancel" */, 0, t, this);
+	calProgress->setWindowFlags(calProgress->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    calProgress->setWindowModality(Qt::WindowModal);
+	calProgress->setMinimumWidth(400);
+	calProgress->setAutoReset(false);
+	calProgress->show();
+
+	calTimer = new QTimer(this);
+	connect(calTimer, SIGNAL(timeout()), this, SLOT(calTimerUpdate()));
+    calTimer->start(500);
+
+	calMaxTime = t;
+	calTime = 0;
+}
+
+void MainWindow::calTimerUpdate(void)
+{
+	++calTime;
+
+	if (calTime > calMaxTime) {
+		delete calProgress;
+		delete calTimer;
+
+		if (maIsCalibrating == true) {
+			maWizard->show();
+		}
+		
+		if (isMagEllipsoidCalOn == true) {
+			magEllipsoidCalWizard->show();
+			if (magEllipsoidCalWizard->currentId() == 2) isMagEllipsoidCalOn = false;
+		}
+		
+		if (isMagPlanarCalOn == true) {
+			magPlanarCalWizard->show();
+			if (magPlanarCalWizard->currentId() == 2) isMagPlanarCalOn = false;
+		}		
+	} else {
+		calProgress->setValue(calTime);
+	}
+}
+
+
+
+void MainWindow::magAutoMisalignmentCal(void)
+{
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	if (isRunning == false) startMeasurement();
+	
+	currentLpms->getSensor()->startAutoMagMisalignCal();
+	
+	startWaitBar(45);
+}
+
+void MainWindow::magMisalignmentCal(void)
+{
+	QMessageBox msgBox;
+	int ret;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+
+	msgBox.setText("Changing the magnetometer misalignment matrix can significantly "
+		"affect the performance of your sensor. Before setting a new "
+		"misalignment matrix, please make sure that you know what you "
+		"are doing. Anyway, parameters will not be saved to the internal "
+		"flash memory of the sensor until you choose to save calibration "
+		"parameters. Also you can backup your current parameters by"
+		"saving them to a file (see the Calibration menu).");		
+
+	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+	msgBox.setDefaultButton(QMessageBox::No);
+	ret = msgBox.exec();
+
+	switch (ret) {
+		case QMessageBox::Yes:
+			break;
+			
+		case QMessageBox::No:
+			return;
+			break;
+			
+		default:
+			break;
+	}
+	
+	maWizard = new QWizard(this);
+	QList<QWizard::WizardButton> layout;
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	maWizard->setButtonLayout(layout);
+	
+	maWizard->addPage(maOrientationPage("Z-AXIS UP - Coils OFF", "Z-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("Z-AXIS UP - Coils ON", "Z-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));	
+	
+	maWizard->addPage(maOrientationPage("Z-AXIS DOWN - Coils OFF", "Z-AXIS facing DOWNARDS. Switch Helmholtz coils OFF. "));	
+	maWizard->addPage(maOrientationPage("Z-AXIS DOWN - Coils ON", "Z-AXIS facing DOWNARDS. Switch Helmholtz coils ON. "));
+	
+	maWizard->addPage(maOrientationPage("X-AXIS UP - Coils OFF", "X-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("X-AXIS UP - Coils ON", "X-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));
+	
+	maWizard->addPage(maOrientationPage("X-AXIS DOWN - Coils OFF", "X-AXIS facing DOWNARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("X-AXIS DOWN - Coils ON", "X-AXIS facing DOWNARDS. Switch Helmholtz coils ON. "));	
+
+	maWizard->addPage(maOrientationPage("Y-AXIS UP - Coils OFF", "Y-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("Y-AXIS UP - Coils ON", "Y-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));
+	
+	maWizard->addPage(maOrientationPage("Y-AXIS DOWN - Coils OFF", "Y-AXIS facing DOWNWARDS. Switch Helmholtz coils OFF. "));
+	maWizard->addPage(maOrientationPage("Y-AXIS DOWN - Coils ON", "Y-AXIS facing DOWNWARDS. Switch Helmholtz coils ON. "));	
+		
+	maWizard->addPage(gyrMaFinishedPage());
+	
+	maWizard->setWindowTitle("Magnetometer Misalignment Calibration");
+	maWizard->show();
+		
+	connect(maWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magMaNewPage(int)));
+	connect(maWizard, SIGNAL(finished(int)), this, SLOT(magMaFinished(int)));
+	
+	currentLpms->getSensor()->initMagMisalignCal();
+	
+	maCalibrationFinished = false;
+	maIsCalibrating = true;
+}
+
+void MainWindow::magMaNewPage(int i)
+{
+	currentLpms->getSensor()->startGetGyrMisalign(i-1);	
+	if (i == 12) maCalibrationFinished = true;
+	startWaitBar(10);
+}
+
+void MainWindow::magMaFinished(int i)
+{
+	if (maCalibrationFinished == true) {
+		currentLpms->getSensor()->calcGyrMisalignMatrix();
+	}
+	
+	maIsCalibrating = false;
+}
+
+QWizardPage *MainWindow::magMaOrientationPage(const char* ts, const char* es)
+{
+	QWizardPage *page = new QWizardPage;
+	
+	page->setTitle((std::string("Calibrating to orientation: ") + std::string(ts)).c_str());
+
+	QLabel *label = new QLabel((std::string("Please put the selected LPMS on a horizontal surface, with the ") + std::string(es) + std::string("After aligning the sensor in this orientation press the next button. Please do not move the sensor for around 3s.")).c_str());
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+QWizardPage *MainWindow::magMaFinishedPage(void)
+{
+	QWizardPage *page = new QWizardPage;
+	
+	page->setTitle("Calibration finished");
+
+	QLabel *label = new QLabel("Misalignment calibration has been finished successfully.");
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+
+
+void MainWindow::gyrMisalignmentCal(void)
+{
+	QMessageBox msgBox;
+	int ret;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+
+	msgBox.setText("Changing the gyroscope misalignment matrix can significantly "
+		"affect the performance of your sensor. Before setting a new "
+		"misalignment matrix, please make sure that you know what you "
+		"are doing. Anyway, parameters will not be saved to the internal "
+		"flash memory of the sensor until you choose to save calibration "
+		"parameters. Also you can backup your current parameters by"
+		"saving them to a file (see the Calibration menu).");		
+
+	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+	msgBox.setDefaultButton(QMessageBox::No);
+	ret = msgBox.exec();
+
+	switch (ret) {
+		case QMessageBox::Yes:
+			break;
+			
+		case QMessageBox::No:
+			return;
+			break;
+			
+		default:
+			break;
+	}
+	
+	maWizard = new QWizard(this);
+	QList<QWizard::WizardButton> layout;
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	maWizard->setButtonLayout(layout);
+	
+	maWizard->addPage(gyrMaOrientationPage("X-AXIS", "right hand"));
+	maWizard->addPage(gyrMaOrientationPage("Y-AXIS", "left hand"));	
+	maWizard->addPage(gyrMaOrientationPage("Z-AXIS", "right hand"));	
+		
+	maWizard->addPage(gyrMaFinishedPage());
+	
+	maWizard->setWindowTitle("Gyroscope Misalignment Calibration");
+	maWizard->show();
+		
+	connect(maWizard, SIGNAL(currentIdChanged(int)), this, SLOT(gyrMaNewPage(int)));
+	connect(maWizard, SIGNAL(finished(int)), this, SLOT(gyrMaFinished(int)));
+	
+	currentLpms->getSensor()->initGyrMisalignCal();
+	
+	maCalibrationFinished = false;
+	maIsCalibrating = true;
+}
+
+void MainWindow::gyrMaNewPage(int i)
+{
+	switch (i) {
+	case 1:
+		currentLpms->getSensor()->startGetGyrMisalign(0);
+		startWaitBar(10);
+	break;
+	
+	case 2:
+		currentLpms->getSensor()->startGetGyrMisalign(1);
+		startWaitBar(10);
+	break;
+
+	case 3:
+		currentLpms->getSensor()->startGetGyrMisalign(2);
+		maCalibrationFinished = true;		
+		startWaitBar(10);
+	break;
+	}
+}
+
+void MainWindow::gyrMaFinished(int i)
+{
+	if (maCalibrationFinished == true) {
+		currentLpms->getSensor()->calcGyrMisalignMatrix();
+	}
+	
+	maIsCalibrating = false;
+}
+
+QWizardPage *MainWindow::gyrMaOrientationPage(const char* ts, const char* es)
+{
+	QWizardPage *page = new QWizardPage;
+	
+	page->setTitle((std::string("Rotation axis: ") + std::string(ts)).c_str());
+
+	QLabel *label = new QLabel((std::string("Please LEFT-HAND rotate the sensor at a constant angular rate of 45 rpm, with its ") + std::string(ts) + std::string(" pointing UP.")).c_str());
+	
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+QWizardPage *MainWindow::gyrMaFinishedPage(void)
+{
+	QWizardPage *page = new QWizardPage;
+	
+	page->setTitle("Calibration finished");
+
+	QLabel *label = new QLabel("Misalignment calibration has been finished successfully.");
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+
+
+QWizardPage *MainWindow::magEllipsoidCalPage(int pageNumber)
+{
+	QWizardPage *page = new QWizardPage;
+	QLabel *label;
+	
+	page->setTitle(std::string("Magnetic field map").c_str());
+		
+	switch (pageNumber) {
+	case 0:
+		page->setTitle(std::string("Magnetic field map").c_str());
+		label = new QLabel((std::string("Please continuously rotate the selected LPMS around roll, pitch and yaw axis for 30s. The calibration algorithm will create a map of your environment magnetic field and use it to calculate hard / soft iron calibration parameters.")).c_str());
+	break;
+	
+	case 1:
+		page->setTitle(std::string("Alignment").c_str());
+		label = new QLabel((std::string("Please hold the sensor in a motionless state for 10s. The alignment of the magnetometer inclination axis and the vertical axis (gravity vector) will be calculated.")).c_str());
+	break;
+	
+	case 2:
+		page->setTitle(std::string("Calibration finished").c_str());
+		label = new QLabel((std::string("Magnetometer calibration has been finished. Please check the field map window if the number of acquired field points during the calibration process were enough to generate a good ellipsoid fit. See the manual for more information.")).c_str());
+	break;	
+	}
+	
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+void MainWindow::magEllipsoidCalNewPage(int i)
+{
+	switch (i) {
+	case 1:
+		currentLpms->getSensor()->startMagCalibration();
+		magEllipsoidCalWizard->hide();		
+		startWaitBar(45);
+	break;
+	
+	case 2:
+		currentLpms->getSensor()->startMagReferenceCal();	
+		magEllipsoidCalWizard->hide();		
+		startWaitBar(10);		
+	break;
+	}
+}
+
+void MainWindow::calibrateMag(void)
+{
+	QList<QWizard::WizardButton> layout;
+
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	magEllipsoidCalWizard = new QWizard(this);
+
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	magEllipsoidCalWizard->setButtonLayout(layout);
+	
+	magEllipsoidCalWizard->addPage(magEllipsoidCalPage(0));
+	magEllipsoidCalWizard->addPage(magEllipsoidCalPage(1));
+	magEllipsoidCalWizard->addPage(magEllipsoidCalPage(2));	
+	
+	magEllipsoidCalWizard->setWindowTitle("Magnetometer hard / soft iron calibration (ellipsoid)");
+	magEllipsoidCalWizard->show();
+		
+	connect(magEllipsoidCalWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magEllipsoidCalNewPage(int)));
+	
+	isMagEllipsoidCalOn = true;
+	
+	if (isRunning == false) startMeasurement();
+}
+
+
+
+QWizardPage *MainWindow::magPlanarCalPage(int pageNumber)
+{
+	QWizardPage *page = new QWizardPage;
+	QLabel *label;
+	
+	page->setTitle(std::string("Magnetic field map").c_str());
+		
+	switch (pageNumber) {
+	case 0:
+		page->setTitle(std::string("Magnetic field map").c_str());
+		label = new QLabel((std::string("Please continuously rotate the selected LPMS around roll, pitch and yaw axis for 30s. The calibration algorithm will create a map of your environment magnetic field and use it to calculate hard / soft iron calibration parameters.")).c_str());
+	break;
+	
+	case 1:
+		page->setTitle(std::string("Alignment").c_str());
+		label = new QLabel((std::string("Please hold the sensor in a motionless state for 5s. The alignment of the magnetometer inclination axis and the vertical axis (gravity vector) will be calculated.")).c_str());
+	break;
+	
+	default:
+		page->setTitle(std::string("Calibration finished").c_str());
+		label = new QLabel((std::string("Magnetometer calibration has been finished. Please check the field map window if the calibration process was able to generate a good fit. See the manual for more information.")).c_str());
+	break;	
+	}
+	
+	label->setWordWrap(true);
+
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->addWidget(label);
+	page->setLayout(layout);
+
+	return page;
+}
+
+void MainWindow::magPlanarCalNewPage(int i)
+{
+	switch (i) {
+	case 1:
+		currentLpms->getSensor()->startPlanarMagCalibration();
+		magPlanarCalWizard->hide();		
+		startWaitBar(45);
+	break;
+	
+	case 2:
+		currentLpms->getSensor()->startMagReferenceCal();	
+		magPlanarCalWizard->hide();
+		startWaitBar(10);
+	break;
+	}
+}
+
+void MainWindow::calibratePlanarMag(void)
+{
+	QList<QWizard::WizardButton> layout;	
+	
+	if (currentLpms == 0 || isConnecting == true) return;
+	
+	magPlanarCalWizard = new QWizard(this);
+		
+	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
+	magPlanarCalWizard->setButtonLayout(layout);
+	
+	magPlanarCalWizard->addPage(magPlanarCalPage(0));
+	magPlanarCalWizard->addPage(magPlanarCalPage(1));
+	magPlanarCalWizard->addPage(magPlanarCalPage(2));	
+	
+	magPlanarCalWizard->setWindowTitle("Magnetometer hard / soft iron calibration (planar)");
+	magPlanarCalWizard->show();
+		
+	connect(magPlanarCalWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magPlanarCalNewPage(int)));
+	
+	isMagPlanarCalOn = true;	
+	
+	if (isRunning == false) startMeasurement();
+} 
+
+
 
 QWizardPage *MainWindow::maOrientationPage(const char* ts, const char* es)
 {
@@ -1505,346 +1834,32 @@ void MainWindow::maFinished(int i)
 	maIsCalibrating = false;
 }
 
-void MainWindow::startWaitBar(int t)
+
+
+void MainWindow::updateMagneticFieldMap(void)
 {
-	if (maIsCalibrating == true) {
-		maWizard->hide();
-	}
+	float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3];
+	float hardIronOffset[3];
+	float softIronMatrix[3][3];
+	float fieldRadius;
+	ImuData imuData;
 
-	calProgress = new QProgressDialog("Calibrating LPMS. Please wait..", QString() /* "Cancel" */, 0, t, this);
-	calProgress->setWindowFlags(calProgress->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    calProgress->setWindowModality(Qt::WindowModal);
-	calProgress->setMinimumWidth(400);
-	calProgress->setAutoReset(false);
-	calProgress->show();
+	currentLpms->getSensor()->getFieldMap(fieldMap);
+	currentLpms->getSensor()->getHardIronOffset(hardIronOffset);
+	currentLpms->getSensor()->getSoftIronMatrix(softIronMatrix, &fieldRadius);
+	imuData = currentLpms->getSensor()->getCurrentData();
 
-	calTimer = new QTimer(this);
-	connect(calTimer, SIGNAL(timeout()), this, SLOT(calTimerUpdate()));
-    calTimer->start(500);
-
-	calMaxTime = t;
-	calTime = 0;
+	fieldMapWindow->updateFieldMap(fieldMap, hardIronOffset, softIronMatrix, fieldRadius, imuData.b);
 }
 
-void MainWindow::calTimerUpdate(void)
-{
-	++calTime;
-
-	if (calTime > calMaxTime) {
-		delete calProgress;
-		delete calTimer;
-
-		if (maIsCalibrating == true) {
-			maWizard->show();
-		}
-	} else {
-		calProgress->setValue(calTime);
-	}
-}
-
-void MainWindow::addRemoveDevices(void)
-{
-	stopMeasurement();
-
-	rescanD->show();
-}
-
-void MainWindow::saveCalibrationData(void)
+void MainWindow::getFieldMap(void)
 {
 	if (currentLpms == 0 || isConnecting == true) return;
-	
-	QString qfn = QFileDialog::getOpenFileName(this, "Load calibration data", "./", "");
-	string fn = qfn.toStdString();
-		
-	if (!(fn == "")) {		
-		currentLpms->getSensor()->loadCalibrationData(fn.c_str());
-	}	
+
+	currentLpms->getSensor()->acquireFieldMap();	
 }
 
-void MainWindow::loadCalibrationData(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-	
-	QString qfn = QFileDialog::getSaveFileName(this, "Save calibration data", "./", "");
-	string fn = qfn.toStdString();
-		
-	if (!(fn == "")) {		
-		currentLpms->getSensor()->saveCalibrationData(fn.c_str());
-	}	
-}
 
-void MainWindow::magAutoMisalignmentCal(void)
-{
-	if (currentLpms == 0 || isConnecting == true) return;
-	
-	if (isRunning == false) startMeasurement();
-	
-	currentLpms->getSensor()->startAutoMagMisalignCal();
-	
-	startWaitBar(45);
-}
-
-void MainWindow::magMisalignmentCal(void)
-{
-	QMessageBox msgBox;
-	int ret;
-
-	if (currentLpms == 0 || isConnecting == true) return;
-
-	msgBox.setText("Changing the magnetometer misalignment matrix can significantly "
-		"affect the performance of your sensor. Before setting a new "
-		"misalignment matrix, please make sure that you know what you "
-		"are doing. Anyway, parameters will not be saved to the internal "
-		"flash memory of the sensor until you choose to save calibration "
-		"parameters. Also you can backup your current parameters by"
-		"saving them to a file (see the Calibration menu).");		
-
-	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-
-	msgBox.setDefaultButton(QMessageBox::No);
-	ret = msgBox.exec();
-
-	switch (ret) {
-		case QMessageBox::Yes:
-			break;
-			
-		case QMessageBox::No:
-			return;
-			break;
-			
-		default:
-			break;
-	}
-	
-	maWizard = new QWizard(this);
-	QList<QWizard::WizardButton> layout;
-	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
-	maWizard->setButtonLayout(layout);
-	
-	maWizard->addPage(maOrientationPage("Z-AXIS UP - Coils OFF", "Z-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
-	maWizard->addPage(maOrientationPage("Z-AXIS UP - Coils ON", "Z-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));	
-	
-	maWizard->addPage(maOrientationPage("Z-AXIS DOWN - Coils OFF", "Z-AXIS facing DOWNARDS. Switch Helmholtz coils OFF. "));	
-	maWizard->addPage(maOrientationPage("Z-AXIS DOWN - Coils ON", "Z-AXIS facing DOWNARDS. Switch Helmholtz coils ON. "));
-	
-	maWizard->addPage(maOrientationPage("X-AXIS UP - Coils OFF", "X-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
-	maWizard->addPage(maOrientationPage("X-AXIS UP - Coils ON", "X-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));
-	
-	maWizard->addPage(maOrientationPage("X-AXIS DOWN - Coils OFF", "X-AXIS facing DOWNARDS. Switch Helmholtz coils OFF. "));
-	maWizard->addPage(maOrientationPage("X-AXIS DOWN - Coils ON", "X-AXIS facing DOWNARDS. Switch Helmholtz coils ON. "));	
-
-	maWizard->addPage(maOrientationPage("Y-AXIS UP - Coils OFF", "Y-AXIS facing UPWARDS. Switch Helmholtz coils OFF. "));
-	maWizard->addPage(maOrientationPage("Y-AXIS UP - Coils ON", "Y-AXIS facing UPWARDS. Switch Helmholtz coils ON. "));
-	
-	maWizard->addPage(maOrientationPage("Y-AXIS DOWN - Coils OFF", "Y-AXIS facing DOWNWARDS. Switch Helmholtz coils OFF. "));
-	maWizard->addPage(maOrientationPage("Y-AXIS DOWN - Coils ON", "Y-AXIS facing DOWNWARDS. Switch Helmholtz coils ON. "));	
-		
-	maWizard->addPage(gyrMaFinishedPage());
-	
-	maWizard->setWindowTitle("Magnetometer Misalignment Calibration");
-	maWizard->show();
-		
-	connect(maWizard, SIGNAL(currentIdChanged(int)), this, SLOT(magMaNewPage(int)));
-	connect(maWizard, SIGNAL(finished(int)), this, SLOT(magMaFinished(int)));
-	
-	currentLpms->getSensor()->initMagMisalignCal();
-	
-	maCalibrationFinished = false;
-	maIsCalibrating = true;
-}
-
-void MainWindow::magMaNewPage(int i)
-{
-	currentLpms->getSensor()->startGetGyrMisalign(i-1);	
-	if (i == 12) maCalibrationFinished = true;
-	startWaitBar(10);
-}
-
-void MainWindow::magMaFinished(int i)
-{
-	if (maCalibrationFinished == true) {
-		currentLpms->getSensor()->calcGyrMisalignMatrix();
-	}
-	
-	maIsCalibrating = false;
-}
-
-QWizardPage *MainWindow::magMaOrientationPage(const char* ts, const char* es)
-{
-	QWizardPage *page = new QWizardPage;
-	
-	page->setTitle((std::string("Calibrating to orientation: ") + std::string(ts)).c_str());
-
-	QLabel *label = new QLabel((std::string("Please put the selected LPMS on a horizontal surface, with the ") + std::string(es) + std::string("After aligning the sensor in this orientation press the next button. Please do not move the sensor for around 3s.")).c_str());
-	label->setWordWrap(true);
-
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(label);
-	page->setLayout(layout);
-
-	return page;
-}
-
-QWizardPage *MainWindow::magMaFinishedPage(void)
-{
-	QWizardPage *page = new QWizardPage;
-	
-	page->setTitle("Calibration finished");
-
-	QLabel *label = new QLabel("Misalignment calibration has been finished successfully.");
-	label->setWordWrap(true);
-
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(label);
-	page->setLayout(layout);
-
-	return page;
-}
-
-void MainWindow::gyrMisalignmentCal(void)
-{
-	QMessageBox msgBox;
-	int ret;
-
-	if (currentLpms == 0 || isConnecting == true) return;
-
-	msgBox.setText("Changing the gyroscope misalignment matrix can significantly "
-		"affect the performance of your sensor. Before setting a new "
-		"misalignment matrix, please make sure that you know what you "
-		"are doing. Anyway, parameters will not be saved to the internal "
-		"flash memory of the sensor until you choose to save calibration "
-		"parameters. Also you can backup your current parameters by"
-		"saving them to a file (see the Calibration menu).");		
-
-	msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-
-	msgBox.setDefaultButton(QMessageBox::No);
-	ret = msgBox.exec();
-
-	switch (ret) {
-		case QMessageBox::Yes:
-			break;
-			
-		case QMessageBox::No:
-			return;
-			break;
-			
-		default:
-			break;
-	}
-	
-	maWizard = new QWizard(this);
-	QList<QWizard::WizardButton> layout;
-	layout << QWizard::Stretch << QWizard::NextButton << QWizard::CancelButton << QWizard::FinishButton;
-	maWizard->setButtonLayout(layout);
-	
-	maWizard->addPage(gyrMaOrientationPage("X-AXIS", "right hand"));
-	maWizard->addPage(gyrMaOrientationPage("Y-AXIS", "left hand"));	
-	maWizard->addPage(gyrMaOrientationPage("Z-AXIS", "right hand"));	
-		
-	maWizard->addPage(gyrMaFinishedPage());
-	
-	maWizard->setWindowTitle("Gyroscope Misalignment Calibration");
-	maWizard->show();
-		
-	connect(maWizard, SIGNAL(currentIdChanged(int)), this, SLOT(gyrMaNewPage(int)));
-	connect(maWizard, SIGNAL(finished(int)), this, SLOT(gyrMaFinished(int)));
-	
-	currentLpms->getSensor()->initGyrMisalignCal();
-	
-	maCalibrationFinished = false;
-	maIsCalibrating = true;
-}
-
-void MainWindow::gyrMaNewPage(int i)
-{
-	switch (i) {
-	case 1:
-		currentLpms->getSensor()->startGetGyrMisalign(0);
-		startWaitBar(10);
-	break;
-	
-	case 2:
-		currentLpms->getSensor()->startGetGyrMisalign(1);
-		startWaitBar(10);
-	break;
-
-	case 3:
-		currentLpms->getSensor()->startGetGyrMisalign(2);
-		maCalibrationFinished = true;		
-		startWaitBar(10);
-	break;
-	}
-}
-
-void MainWindow::gyrMaFinished(int i)
-{
-	if (maCalibrationFinished == true) {
-		currentLpms->getSensor()->calcGyrMisalignMatrix();
-	}
-	
-	maIsCalibrating = false;
-}
-
-QWizardPage *MainWindow::gyrMaOrientationPage(const char* ts, const char* es)
-{
-	QWizardPage *page = new QWizardPage;
-	
-	page->setTitle((std::string("Rotation axis: ") + std::string(ts)).c_str());
-
-	QLabel *label = new QLabel((std::string("Please LEFT-HAND rotate the sensor at a constant angular rate of 45 rpm, with its ") + std::string(ts) + std::string(" pointing UP.")).c_str());
-	
-	label->setWordWrap(true);
-
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(label);
-	page->setLayout(layout);
-
-	return page;
-}
-
-QWizardPage *MainWindow::gyrMaFinishedPage(void)
-{
-	QWizardPage *page = new QWizardPage;
-	
-	page->setTitle("Calibration finished");
-
-	QLabel *label = new QLabel("Misalignment calibration has been finished successfully.");
-	label->setWordWrap(true);
-
-	QVBoxLayout *layout = new QVBoxLayout;
-	layout->addWidget(label);
-	page->setLayout(layout);
-
-	return page;
-}
-
-void MainWindow::selectCubeMode1(void)
-{
-	cubeMode1Action->setChecked(true);
-	cubeMode2Action->setChecked(false);
-	cubeMode4Action->setChecked(false);
-
-	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_1);
-}
-
-void MainWindow::selectCubeMode2(void)
-{
-	cubeMode1Action->setChecked(false);
-	cubeMode2Action->setChecked(true);
-	cubeMode4Action->setChecked(false);
-
-	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_2);
-}
-
-void MainWindow::selectCubeMode4(void)
-{
-	cubeMode1Action->setChecked(false);
-	cubeMode2Action->setChecked(false);
-	cubeMode4Action->setChecked(true);
-	
-	cubeWindowContainer->selectCube(CUBE_VIEW_MODE_4);
-}
 
 void MainWindow::startReplay(void)
 {

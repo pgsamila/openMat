@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsFactorySetting.h"
@@ -211,8 +210,6 @@ uint8_t pollCanBusData(void)
 	
 	while ((CAN_MessagePending(CAN_PORT, CAN_FIFO0) > 0)) {
 		CAN_Receive(CAN_PORT, CAN_FIFO0, &m);
-
-		// if (m.StdId != AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + getImuID()) continue;
 
 		for (int i=0; i<m.DLC; i++) {
 			b = m.Data[i];

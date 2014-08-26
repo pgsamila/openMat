@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #include "LpmsAssignments.h"
@@ -33,6 +32,7 @@ void getReg(uint8_t* data, uint16_t length, uint32_t address)
 	}
 }
 
+
 uint32_t conFtoI(float f)
 {
 	float2int f2int;
@@ -48,6 +48,7 @@ float conItoF(uint32_t v)
 
 	return f2int.float_val;
 }
+
 
 uint32_t getUi32t(uint8_t* data)
 {
@@ -178,52 +179,6 @@ void setI16t(uint8_t* data, int16_t v)
 	}
 }
 
-/* uint16_t basetable[512];
-uint16_t shifttable[512];
-uint16_t isGeneratedTable = 0;
-
-void generateTables() {
-	unsigned int i;
-	int e;
-
-	for(i=0; i < 256; ++i){
-		e = i-127;
-
-		if (e < -24) { // Very small numbers map to zero
-			basetable[i | 0x000] = 0x0000;
-			basetable[i | 0x100] = 0x8000;
-			shifttable[i | 0x000] = 24;
-			shifttable[i | 0x100] = 24;
-		} else if (e < -14){ // Small numbers map to denorms
-			basetable[i | 0x000] = (0x0400>>(-e-14));
-			basetable[i | 0x100] = (0x0400>>(-e-14)) | 0x8000;
-			shifttable[i | 0x000] = -e-1;
-			shifttable[i | 0x100] = -e-1;
-		} else if (e <= 15){ // Normal numbers just lose precision
-			basetable[i | 0x000] = ((e+15)<<10);
-			basetable[i | 0x100] = ((e+15)<<10) | 0x8000;
-			shifttable[i | 0x000] = 13;
-			shifttable[i | 0x100] = 13;
-		} else if (e < 128){ // Large numbers map to Infinity
-			basetable[i | 0x000] = 0x7C00;
-			basetable[i | 0x100] = 0xFC00;
-			shifttable[i | 0x000] = 24;
-			shifttable[i | 0x100] = 24;
-		} else { // Infinity and NaN's stay Infinity and NaN's
-			basetable[i | 0x000] = 0x7C00;
-			basetable[i | 0x100] = 0xFC00;
-			shifttable[i | 0x000] = 13;
-			shifttable[i | 0x100] = 13;
-		}
-	}
-
-	isGeneratedTable = 1;
-} */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 char *itobase10(char *buf, int32_t value) {
     sprintf(buf, "%d", value);
     return buf;
@@ -275,17 +230,7 @@ void setFloat(uint8_t* data, float v, uint8_t prec)
 	uint32_t f = conFtoI(v);
 	uint16_t h;
 	
-	// if (isGeneratedTable == 0) generateTables();
-
 	switch (prec) {
-	case FLOAT_HALF_PRECISION:
-		/* h = basetable[(f >> 23) & 0x1ff] + ((f & 0x007fffff) >> shifttable[( f >> 23) & 0x1ff]);
-	
-		for (int i=0; i<2; i++) {
-			data[i] = (h >> (i * 8)) & (uint8_t) 0xff;
-		} */
-	break;
-
 	case FLOAT_FULL_PRECISION:
 		for (int i=0; i<4; i++) {
 			data[i] = (f >> (i * 8)) & (uint8_t) 0xff;
@@ -422,9 +367,7 @@ uint8_t getRegMatrix3x3f(uint8_t i, LpMatrix3x3f *m)
 }
 
 uint8_t writeRegToFlash(uint8_t i)
-{
-	// address = USER_FLASH_START_ADDRESS + (uint32_t) i * 4;
-	
+{	
 	writeCompleteRegisterSet();
 	
 	return 1;

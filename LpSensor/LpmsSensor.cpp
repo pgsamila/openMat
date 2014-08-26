@@ -1,7 +1,7 @@
 /***********************************************************************
-** Copyright (C) LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** All rights reserved
+** Contact: info@lp-research.com
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -32,14 +32,6 @@
 #include "LpmsSensor.h"
 
 const float pi = 3.141592f;
-
-#define WAIT_AFTER_CONNECT 500000
-#define STATUS_PERIOD 500000
-#define WAIT_IAP_WRITE_TIME 3000000
-#define STREAM_N_PREPARE 100
-#define FIRMWARE_BACKUP_FILE "LpmsFirmwareBackupFile.txt"
-
-
 
 /***********************************************************************
 ** CONSTRUCTORS / DESTRUCTORS
@@ -199,7 +191,7 @@ void LpmsSensor::update(void)
 	if (stopped == true) return;	
 		
 	switch (state) {
-	// Initiates the connection to the sensor using the hardware interface.
+	// Initiates the connection to the sensor using the hardware interface
 	case STATE_CONNECT:
 		setConnectionStatus(SENSOR_CONNECTION_CONNECTING);
 		setSensorStatus(SENSOR_STATUS_PAUSED);
@@ -211,7 +203,7 @@ void LpmsSensor::update(void)
 		state = STATE_WAIT_CONNECT;		
 	break;
 		
-	// Waits for a successful connect for a certain time period.
+	// Waits for a successful connect for a certain time period
 	case STATE_WAIT_CONNECT:
 		if (lpmsTimer.measure() < bt->getConnectWait() && bt->deviceStarted() == false) {
 			state = STATE_WAIT_CONNECT;
@@ -232,13 +224,8 @@ void LpmsSensor::update(void)
 			lpmsTimer.reset();	
 			LOGV("[LpmsSensor] Waiting after connect..\n");
 			
-			/* if (deviceType == DEVICE_LPMS_BLE) {
-				state = STATE_MEASURE;
-				setSensorStatus(SENSOR_STATUS_RUNNING);			
-			} else { */
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_GOTO_COMMAND_MODE;
-			//}
+			state = STATE_GET_SETTINGS;
+			getConfigState = C_STATE_GOTO_COMMAND_MODE;
 		}
 	break;
 
@@ -264,7 +251,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_CONFIG;			
 			break;			
 			
-			// Gets the current configuration word. 
+			// Gets the current configuration word
 			case C_STATE_GET_CONFIG:
 				LOGV("[LpmsSensor] Get configuration data\n");
 				bt->getConfig();
@@ -272,7 +259,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_FILTER_MODE;
 			break;
 			
-			// Retrieves the current filter mode.
+			// Retrieves the current filter mode
 			case C_STATE_FILTER_MODE:
 				LOGV("[LpmsSensor] Get filter mode\n");			
 				bt->getFilterMode();
@@ -280,7 +267,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_FILTER_PRESET;			
 			break;
 
-			// Retrieves the current filter parameter preset.
+			// Retrieves the current filter parameter preset
 			case C_STATE_FILTER_PRESET:
 				LOGV("[LpmsSensor] Get filter preset\n");			
 				bt->getFilterPreset();
@@ -288,7 +275,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GYR_RANGE;			
 			break;			
 			
-			// Retrieves the current gyroscope range.
+			// Retrieves the current gyroscope range
 			case C_STATE_GYR_RANGE:
 				LOGV("[LpmsSensor] Get gyr. range parameters\n");
 				bt->getGyrRange();
@@ -296,7 +283,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_ACC_RANGE;			
 			break;
 			
-			// Retrieves the current accelerometer range.
+			// Retrieves the current accelerometer range
 			case C_STATE_ACC_RANGE:
 				LOGV("[LpmsSensor] Get acc. range parameters\n");
 				bt->getAccRange();
@@ -304,7 +291,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_MAG_RANGE;
 			break;
 
-			// Retrieves the current magnetometer range.
+			// Retrieves the current magnetometer range
 			case C_STATE_MAG_RANGE:
 				LOGV("[LpmsSensor] Get mag. range parameters\n");
 				bt->getMagRange();
@@ -312,7 +299,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_IMU_ID;			
 			break;
 
-			// Retrieves the current IMU ID.
+			// Retrieves the current IMU ID
 			case C_STATE_IMU_ID:
 				LOGV("[LpmsSensor] Get IMU ID\n");
 				bt->getImuId();
@@ -320,7 +307,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_HARD;			
 			break;	
 
-			// Retrieves hard iron matrix.
+			// Retrieves hard iron matrix
 			case C_STATE_GET_HARD:
 				LOGV("[LpmsSensor] Get hard iron offset\n");
 				bt->getHardIronOffset();
@@ -328,7 +315,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_SOFT;			
 			break;
 
-			// Retrieves hard soft matrix.
+			// Retrieves hard soft matrix
 			case C_STATE_GET_SOFT:
 				LOGV("[LpmsSensor] Get soft iron matrix\n");
 				bt->getSoftIronMatrix();
@@ -336,7 +323,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_ESTIMATE;			
 			break;
 			
-			// Retrieves field estimate.
+			// Retrieves field estimate
 			case C_STATE_GET_ESTIMATE:
 				LOGV("[LpmsSensor] Get field estimate\n");
 				bt->getFieldEstimate();
@@ -344,7 +331,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_MAG_ALIGNMENT_MATRIX;
 			break;
 			
-			// Retrieves magnetometer alignment matrix.
+			// Retrieves magnetometer alignment matrix
 			case C_STATE_GET_MAG_ALIGNMENT_MATRIX:
 				LOGV("[LpmsSensor] Get magnetometer alignment matrix\n");
 				bt->getMagAlignmentMatrix();
@@ -352,7 +339,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_MAG_ALIGNMENT_BIAS;
 			break;			
 
-			// Retrieves magnetometer alignment matrix.
+			// Retrieves magnetometer alignment matrix
 			case C_STATE_GET_MAG_ALIGNMENT_BIAS:
 				LOGV("[LpmsSensor] Get magnetometer alignment bias\n");
 				bt->getMagAlignmentBias();
@@ -360,7 +347,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_MAG_REFERENCE;
 			break;			
 
-			// Retrieves magnetometer alignment matrix.
+			// Retrieves magnetometer alignment matrix
 			case C_STATE_GET_MAG_REFERENCE:
 				LOGV("[LpmsSensor] Get magnetometer reference\n");
 				bt->getMagReference();
@@ -368,7 +355,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_ACC_ALIGNMENT;
 			break;			
 			
-			// Retrieves accelerometer alignment matrix.
+			// Retrieves accelerometer alignment matrix
 			case C_STATE_GET_ACC_ALIGNMENT:
 				LOGV("[LpmsSensor] Get acc. alignment matrix\n");
 				bt->getAccAlignment();
@@ -376,7 +363,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_ACC_BIAS;			
 			break;	
 
-			// Retrieves accelerometer bias.
+			// Retrieves accelerometer bias
 			case C_STATE_GET_ACC_BIAS:
 				LOGV("[LpmsSensor] Get acc. bias\n");
 				bt->getAccBias();
@@ -384,7 +371,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_GET_GYR_ALIGNMENT;			
 			break;
 			
-			// Retrieves gyroscope alignment matrix.
+			// Retrieves gyroscope alignment matrix
 			case C_STATE_GET_GYR_ALIGNMENT:
 				LOGV("[LpmsSensor] Get gyr. alignment matrix\n");
 				bt->getGyrAlignment();
@@ -447,14 +434,6 @@ void LpmsSensor::update(void)
 				state = STATE_GET_SETTINGS;
 				getConfigState = C_STATE_GET_UART_BAUDRATE;		
 			break;
-
-			// Resets sensor timestamp
-			/* case C_RESET_SENSOR_TIMESTAMP:
-				LOGV("[LpmsSensor] Resetting timestamp\n");
-				bt->setTimestamp(0.0f);
-				state = STATE_GET_SETTINGS;
-				getConfigState = C_STATE_SETTINGS_DONE;		
-			break; */
 			
 			case C_STATE_GET_UART_BAUDRATE:
 				LOGV("[LpmsSensor] Get UART baud rate\n");
@@ -463,7 +442,7 @@ void LpmsSensor::update(void)
 				getConfigState = C_STATE_SETTINGS_DONE;		
 			break;		
 		
-			/* Resets the timer and retrieves the field map (soft/hard iron calibration parameters). */
+			// Resets the timer and retrieves the field map (soft/hard iron calibration parameters)
 			case C_STATE_SETTINGS_DONE:	
 				LOGV("[LpmsSensor] Done reading configuration\n");			
 			
@@ -498,8 +477,7 @@ void LpmsSensor::update(void)
 	case STATE_MEASURE:
 		assertConnected();		
 		
-		// LOGV("[LpmsSensor] STATE MEASURE");	
-		// Start next measurement step only if program is not waiting for data or ACK.
+		// Start next measurement step only if program is not waiting for data or ACK
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			if (bt->getMode() != SELECT_LPMS_MODE_STREAM) {
 				bt->setStreamMode();
@@ -521,7 +499,7 @@ void LpmsSensor::update(void)
 			break;
 		}
 				
-		// Load current data from hardware and calculate rotation matrix and Euler angle.		
+		// Load current data from hardware and calculate rotation matrix and Euler angle
 		if (bt->getLatestImuData(&imuData) == false) break;
 		
 		frameTime = lpmsTimer.measure() / 1000.0f;	
@@ -532,7 +510,7 @@ void LpmsSensor::update(void)
 		quaternionToMatrix(&q, &m);
 		convertLpMatrixToArray(&m, imuData.rotationM);		
 
-		// Add frame number timestamp and IMU ID to current ImuData.
+		// Add frame number timestamp and IMU ID to current ImuData
 		++frameNo;
 		imuData.frameCount = frameNo;	
 		imuData.openMatId = configData.openMatId;				
@@ -574,7 +552,7 @@ void LpmsSensor::update(void)
 		convertLpVector3fToArray(&b, imuData.b);
 		convertLpVector3fToArray(&g, imuData.g);
 	
-		// Checks, if calibration is active. 
+		// Checks, if calibration is active
 		checkMagCal(frameTime);
 		checkPlanarMagCal(frameTime);
 		checkMisalignCal(frameTime);
@@ -586,14 +564,14 @@ void LpmsSensor::update(void)
 			gm.update(&imuData);
 		}
 		
-		// Sets current data.
+		// Sets current data
 		setCurrentData(imuData);
 		
-		// Checks, if data saving is active.
+		// Checks, if data saving is active
 		checkSaveData();
 	break;
 	
-	// Prepares parameter adjustment by switching to command mode.
+	// Prepares parameter adjustment by switching to command mode
 	case PREPARE_PARAMETER_ADJUSTMENT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			bt->setCommandMode();
@@ -601,7 +579,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Enables / disables gyroscope threshold.
+	// Enables / disables gyroscope threshold
 	case STATE_SET_CONFIG:
 	case STATE_ENABLE_THRESHOLD:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
@@ -620,7 +598,7 @@ void LpmsSensor::update(void)
 		}	
 	break;
 	
-	// Enables / disables gyroscope autocalibration.
+	// Enables / disables gyroscope autocalibration
 	case STATE_GYR_AUTOCALIBRATION:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_GYR_AUTOCALIBRATION, &p);
@@ -638,7 +616,7 @@ void LpmsSensor::update(void)
 		}	
 	break;	
 	
-	// Sets current gyroscope range.
+	// Sets current gyroscope range
 	case STATE_SET_GYR_RANGE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_GYR_RANGE, &p);
@@ -648,7 +626,7 @@ void LpmsSensor::update(void)
 		}		
 	break;
 
-	// Sets accelerometer range.
+	// Sets accelerometer range
 	case STATE_SET_ACC_RANGE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_ACC_RANGE, &p);
@@ -658,7 +636,7 @@ void LpmsSensor::update(void)
 		}	
 	break;
 	
-	// Sets magnetometer range.
+	// Sets magnetometer range
 	case STATE_SET_MAG_RANGE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_MAG_RANGE, &p);
@@ -668,7 +646,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets current filter mode.
+	// Sets current filter mode
 	case STATE_SET_FILTER_MODE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_FILTER_MODE, &p);
@@ -698,7 +676,7 @@ void LpmsSensor::update(void)
 		}
 	break;	
 
-	// Sets current filter parameter set.
+	// Sets current filter parameter set
 	case STATE_SET_PARAMETER_SET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_PARAMETER_SET, &p);
@@ -724,7 +702,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets current low-pass filter setting.
+	// Sets current low-pass filter setting
 	case STATE_SET_LP_FILTER:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			configData.getParameter(PRM_LOW_PASS, &p);
@@ -734,7 +712,7 @@ void LpmsSensor::update(void)
 		}
 	break;	
 
-	// Sets OpenMAT ID.
+	// Sets OpenMAT ID
 	case STATE_SET_OPENMAT_ID:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_OPENMAT_ID, &p);
@@ -744,7 +722,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets CAN protocol.
+	// Sets CAN protocol
 	case STATE_SET_CAN_PROTOCOL:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_CAN_STREAM_FORMAT, &p);
@@ -754,7 +732,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets CAN baudrate.
+	// Sets CAN baudrate
 	case STATE_SET_CAN_BAUDRATE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_CAN_BAUDRATE, &p);
@@ -764,7 +742,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 
-	// Sets sampling rate.
+	// Sets sampling rate
 	case STATE_SET_SAMPLING_RATE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_SAMPLING_RATE, &p);
@@ -774,7 +752,7 @@ void LpmsSensor::update(void)
 		}
 	break;	
 	
-	// Sets hard iron offset.
+	// Sets hard iron offset
 	case STATE_SET_HARD_IRON_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setHardIronOffset(configData.hardIronOffset);
@@ -783,7 +761,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 
-	// Sets soft iron matrix.
+	// Sets soft iron matrix
 	case STATE_SET_SOFT_IRON_MATRIX:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setSoftIronMatrix(configData.softIronMatrix);
@@ -792,7 +770,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets field estimate.
+	// Sets field estimate
 	case STATE_SET_FIELD_ESTIMATE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setFieldEstimate(configData.fieldRadius);
@@ -801,7 +779,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets magnetometer alignment matrix.
+	// Sets magnetometer alignment matrix
 	case STATE_SET_MAG_ALIGNMENT_MATRIX:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setMagAlignmentMatrix(configData.magMAlignmentMatrix);
@@ -810,7 +788,7 @@ void LpmsSensor::update(void)
 		}
 	break;	
 	
-	// Sets magnetometer alignment bias.
+	// Sets magnetometer alignment bias
 	case STATE_SET_MAG_ALIGNMENT_BIAS:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setMagAlignmentBias(configData.magMAlignmentBias);
@@ -819,7 +797,7 @@ void LpmsSensor::update(void)
 		}
 	break;	
 
-	// Sets magnetometer reference.
+	// Sets magnetometer reference
 	case STATE_SET_MAG_REFERENCE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setMagReference(configData.magReference);
@@ -828,7 +806,7 @@ void LpmsSensor::update(void)
 		}
 	break;		
 	
-	// Sets gyroscope alignment.
+	// Sets gyroscope alignment
 	case STATE_SET_GYR_ALIGNMENT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setGyrAlignment(configData.gyrMisalignMatrix);
@@ -837,7 +815,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets gyroscope alignment matrix.
+	// Sets gyroscope alignment matrix
 	case STATE_SET_GYR_ALIGNMENT_BIAS:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setGyrAlignmentBias(configData.gyrAlignmentBias);
@@ -846,7 +824,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Sets accelerometer alignment.
+	// Sets accelerometer alignment
 	case STATE_SET_ACC_ALIGNMENT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setAccAlignment(configData.misalignMatrix);
@@ -1047,7 +1025,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 		
-	// Writes parameters to the sensor flash memory.
+	// Writes parameters to the sensor flash memory
 	case STATE_WRITE_PARAMETERS:	
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			bt->writeRegisters();
@@ -1057,7 +1035,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Starts uploading firmware.
+	// Starts uploading firmware
 	case STATE_UPLOAD_FIRMWARE:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->startUploadFirmware(firmwareFilename);		
@@ -1066,7 +1044,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Starts checking state of firmware upload.
+	// Starts checking state of firmware upload
 	case STATE_CHECK_FIRMWARE_UPLOAD:
 		if (bt->getCurrentState() == UPDATE_FIRMWARE) {
 		} else {
@@ -1075,7 +1053,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Waits for firmware writing to be finished (10s).
+	// Waits for firmware writing to be finished (10s)
 	case STATE_WAIT_FIRMWARE_WRITE:
 		if (lpmsTimer.measure() > WAIT_FIRMWARE_WRITE_TIME) {
 			state = STATE_GET_SETTINGS;
@@ -1089,7 +1067,7 @@ void LpmsSensor::update(void)
 		}
 	break;	
 
-	// Starts uploading the IAP.
+	// Starts uploading the IAP
 	case STATE_UPLOAD_IAP:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->startUploadIap(iapFilename);		
@@ -1098,7 +1076,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Starts checking the status of the IAP upload.
+	// Starts checking the status of the IAP upload
 	case STATE_CHECK_IAP_UPLOAD:
 		if (bt->getCurrentState() == UPDATE_IAP) {
 		} else {
@@ -1107,7 +1085,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Waits for IAP writing to be finished.
+	// Waits for IAP writing to be finished
 	case STATE_WAIT_IAP_WRITE:
 		if (lpmsTimer.measure() > WAIT_IAP_WRITE_TIME) {
 			state = STATE_GET_SETTINGS;
@@ -1120,7 +1098,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Initiates self-test.
+	// Initiates self-test
 	case STATE_SET_SELF_TEST:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			configData.getParameter(PRM_SELF_TEST, &p);
@@ -1129,7 +1107,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Retrieves communication latency.
+	// Retrieves communication latency
 	case STATE_GET_LATENCY:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {		
 			setSensorStatus(SENSOR_STATUS_CALIBRATING);
@@ -1143,7 +1121,6 @@ void LpmsSensor::update(void)
 			} else {
 				avgLatency = accLatency / (float)(latencyCounter-1) / 2.0f;
 				std::cout << "[LpmsSensor] Average latency: " << avgLatency << "ms" << std::endl;
-				// configData.setParameter(PRM_SELF_TEST, &p);
 				state = STATE_MEASURE;	
 			}
 			
@@ -1161,7 +1138,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Waits for calibration to finish.
+	// Waits for calibration to finish
 	case STATE_CALIBRATING:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			switch (getConfigState) {
@@ -1184,7 +1161,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Resets offset.
+	// Resets offset
 	case STATE_RESET_ORIENTATION_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->resetOrientationOffset();
@@ -1192,7 +1169,7 @@ void LpmsSensor::update(void)
 		}	
 	break;
 	
-	// Sets offset.
+	// Sets offset
 	case STATE_SET_ORIENTATION_OFFSET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setOrientationOffset(currentOffsetResetMethod);
@@ -1200,7 +1177,7 @@ void LpmsSensor::update(void)
 		}	
 	break;	
 	
-	// Restores factory defaults.
+	// Restores factory defaults
 	case STATE_RESET_TO_FACTORY_DEFAULTS:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->restoreFactoryValue();
@@ -1211,7 +1188,7 @@ void LpmsSensor::update(void)
 		}
 	break;
 	
-	// Resets sensor timestamp.
+	// Resets sensor timestamp
 	case STATE_RESET_TIMESTAMP:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setTimestamp(0.0f);
@@ -1225,14 +1202,14 @@ void LpmsSensor::update(void)
 	case STATE_ARM_TIMESTAMP_RESET:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {	
 			bt->armTimestampReset(LPMS_ARM_TIMESTAMP_RESET);
-			LOGV("[LpmsSensor] Arm timestamp reset\n");
+			LOGV("[LpmsSensor] Arm hardware timestamp reset\n");
 			
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GET_CONFIG;
 		}
 	break;
 	
-	// Error state.
+	// Error state
 	case STATE_NONE:
 		state = STATE_NONE;
 	break;
@@ -1446,9 +1423,7 @@ bool LpmsSensor::updateParameters(void)
 	if (state != STATE_MEASURE) {
 		return false;
 	}
-	
-	// if (deviceType == DEVICE_LPMS_BLE) return false;
-	
+		
 	state = PREPARE_PARAMETER_ADJUSTMENT;
 	getConfigState = STATE_SET_CONFIG;
 	
@@ -1458,8 +1433,6 @@ bool LpmsSensor::updateParameters(void)
 bool LpmsSensor::setConfigurationPrm(int parameterIndex, int parameter)
 {	
 	bool f = true;
-
-	// if (deviceType == DEVICE_LPMS_BLE) return f;	
 	
 	configData.setParameter(parameterIndex, parameter);
 
@@ -1480,9 +1453,7 @@ bool LpmsSensor::setConfigurationPrm(int parameterIndex, int parameter)
 bool LpmsSensor::setConfigurationPrm(int parameterIndex, int *parameter)
 {	
 	bool f = true;
-	
-	// if (deviceType == DEVICE_LPMS_BLE) return f;
-	
+		
 	configData.setParameter(parameterIndex, parameter);	
 	
 	f = updateParameters();
@@ -1705,6 +1676,7 @@ void LpmsSensor::armTimestampReset(void)
 }
 
 
+
 /***********************************************************************
 ** CALIBRATION
 ***********************************************************************/
@@ -1733,8 +1705,6 @@ void LpmsSensor::startPlanarMagCalibration(void)
 	
 	runOnce = true;
 }
-
-#define LPMS_MAG_CALIBRATION_DURATION_20S 20000
 
 void LpmsSensor::checkPlanarMagCal(float T)
 {
@@ -1784,10 +1754,10 @@ void LpmsSensor::stopPlanarMagCalibration(void)
 	
 	for (i=0; i<3; i++) {
 		bRadius.data[i] = bMax.data[i] - bBias.data[i];
-		sqSum += bRadius.data[i]; // * bRadius.data[i];
+		sqSum += bRadius.data[i];
 	}
 	
-	configData.fieldRadius = sqSum / 3; // sqrt(sqSum);
+	configData.fieldRadius = sqSum / 3;
 	
 	matZero3x3(&configData.softIronMatrix);
 	for (int i=0; i<3; i++) {
@@ -1825,8 +1795,6 @@ void LpmsSensor::startMagCalibration(void)
 	
 	bCalInitEllipsoidFit();
 }
-
-#define LPMS_MAG_CALIBRATION_DURATION_20S 20000
 
 void LpmsSensor::checkMagCal(float T)
 {
@@ -1875,8 +1843,6 @@ void LpmsSensor::stopMagCalibration(void)
 	
 	updateParameters();
 }
-
-#define N_ALIGNMENT_SETS 6
 
 void LpmsSensor::initMisalignCal(void)
 {
@@ -2025,8 +1991,6 @@ void LpmsSensor::startGetGyrMisalign(int i)
 	}
 }
 
-#define CALC_GYR_MA_DURATION 5000.0f
-
 void LpmsSensor::checkGyrMisalignCal(float T)
 {
 	if (isGetGyrMisalign == true) {
@@ -2110,9 +2074,7 @@ void LpmsSensor::resetTimestamp(void)
 
 void LpmsSensor::setTimestamp(float t)
 {
-	// if ((bt->getMode() == SELECT_LPMS_MODE_STREAM) && (bt->deviceStarted() == true) && (state == STATE_MEASURE)) {
-		bt->setTimestamp(t);
-	// }
+	bt->setTimestamp(t);
 }
 
 void LpmsSensor::startAutoMagMisalignCal(void)
@@ -2136,9 +2098,6 @@ void LpmsSensor::startAutoMagMisalignCal(void)
 	
 	bMACalInitEllipsoidFit();
 }
-
-#define LPMS_REF_CALIBRATION_DURATION_1S	(1000.0f)
-#define LPMS_REF_CALIBRATION_DURATION_20S	(20000.0f)
 
 void LpmsSensor::checkAutoMagMisalignCal(float T)
 {
@@ -2328,8 +2287,6 @@ void LpmsSensor::checkMagMisalignCal(float T)
 		misalignTime += T;
 		if (misalignTime > 2000.0f) {
 			isMagMisalignCalEnabled = false;
-
-			printf("Average mag. vector %d: ", misalignSetIndex);
 			
 			for (int i=0; i<3; i++) {
 				if (misalignSamples == 0) break;
@@ -2338,11 +2295,8 @@ void LpmsSensor::checkMagMisalignCal(float T)
 					misalignAData[misalignSetIndex].data[i] = misalignADataAcc.data[i] / misalignSamples;
 				} else {
 					misalignAData[misalignSetIndex].data[i] = (misalignADataAcc.data[i] / misalignSamples) - misalignAData[misalignSetIndex-1].data[i];
-				}
-				
-				printf("%f ", misalignAData[misalignSetIndex].data[i]);
+				}				
 			}
-			printf("\n");
 			
 			vectZero3x1(&misalignADataAcc);
 			
@@ -2366,8 +2320,6 @@ void LpmsSensor::calcMagMisalignCal(void)
 	
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
 	updateParameters();
-	
-	printf("updated: %x\n", prevDataSelection);
 }
 
 

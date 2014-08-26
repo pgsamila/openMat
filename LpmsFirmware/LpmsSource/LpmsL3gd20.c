@@ -1,5 +1,5 @@
 /***********************************************************************
-** (C) LP-RESEARCH Inc.
+** (c) LP-RESEARCH Inc.
 ** info@lp-research.com
 ***********************************************************************/
 
@@ -62,8 +62,6 @@ void writeGyrRegister(uint8_t address, uint8_t data)
 	dataBuffer[0] = data;
 	gyrI2cWrite(address, 1, dataBuffer);
 }
-
-#define GYR_I2C_TIMEOUT 1000
 
 int gyrI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char const *data)
 {	

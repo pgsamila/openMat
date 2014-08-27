@@ -6,8 +6,66 @@
 #include "LpMatrix.h"
 
 #define FLT_EPSILON 1.192092896e-07f
+#define SQRT_MAGIC_F 0x5f3759df
 
 const float r2d = 57.2958f;
+
+float fastSqrt(const float x)
+{
+	const float xhalf = 0.5f*x;
+	
+	union {
+		float x;
+		int i;
+	} u;
+
+	u.x = x;
+	u.i = SQRT_MAGIC_F - (u.i >> 1);
+	
+	return x*u.x*(1.5f - xhalf*u.x*u.x);
+}
+
+float invSqrt (float x)
+{
+	float xhalf = 0.5f*x;
+	int i = *(int*)&x;
+
+	i = 0x5f3759df - (i>>1);
+	x = *(float*)&i;
+	x = x * (1.5f-xhalf*x*x);
+
+	return x;
+}
+
+float fastCos(float x)
+{
+	float cos;
+
+	x += 1.57079632;
+
+	if (x > 3.14159265) x -= 6.28318531;
+	
+	if (x < 0) {
+		cos = 1.27323954 * x + 0.405284735 * x * x;
+		
+		
+		if (cos < 0) {
+			cos = .225 * (cos *-cos - cos) + cos;
+		} else {
+			cos = .225 * (cos * cos - cos) + cos;
+		}
+	} else {
+		cos = 1.27323954 * x - 0.405284735 * x * x;
+		
+		if (cos < 0) {
+			cos = .225 * (cos *-cos - cos) + cos;
+		} else {
+			cos = .225 * (cos * cos - cos) + cos;
+		}
+	}
+
+	return cos;
+}
 
 int matAdd3x3(LpMatrix3x3f* src1, LpMatrix3x3f* src2, LpMatrix3x3f* dest)
 {
@@ -709,17 +767,18 @@ void matCopy3x3(LpMatrix3x3f* src, LpMatrix3x3f* dest)
 
 float vect4x1Norm(LpVector4f src)
 {
-	float f = 1.0f / sqrtf(src.data[0]*src.data[0] + 
-		src.data[1]*src.data[1] + src.data[2]*src.data[2] + 
-		src.data[3]*src.data[3]);
+	// float f = 1.0f / sqrtf(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2] + src.data[3]*src.data[3]);
+
+	float f = invSqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2] + src.data[3]*src.data[3]);
 	
 	return f;
 }
 
 float vect3x1Norm(LpVector3f src)
 {
-	float f = 1.0f / sqrtf(src.data[0]*src.data[0] + 
-		src.data[1]*src.data[1] + src.data[2]*src.data[2]);
+	// float f = 1.0f / sqrtf(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2]);
+
+	float f = invSqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2]);
 	
 	return f;
 }
@@ -803,6 +862,7 @@ void quaternionToEuler(LpVector4f *q, LpVector3f *r)
 	float sp;
 
 	quaternionToMatrix(q, &tM);
+
 	sp = tM.data[0][2];
 	if (sp > 1.0f) {
 		sp = 1.0f;
@@ -810,14 +870,24 @@ void quaternionToEuler(LpVector4f *q, LpVector3f *r)
 		sp = -1.0f;
 	}
 
+	// theta = fxpt_atan2((int16_t)(sp*10000.0f), (int16_t)(sqrt2((1.0 + sp)*(1.0-sp))*10000.0f))/(float)0x8000 * M_1_PI * 4;
+	
 	theta = -asin(sp);
-	cp = cos(theta);	
+	cp = fastCos(theta);
+
 	if (cp > (8192.0f * FLT_EPSILON)) {
 		r->data[1] = theta;
+
+		// r->data[2] = (float)(fxpt_atan2((int16_t)(tM.data[0][1]*10000.0f), (int16_t)(tM.data[0][0]*10000.0f)))/(float)0x8000 * M_1_PI * 4;
+		// r->data[0] = (float)(fxpt_atan2((int16_t)(tM.data[1][2]*10000.0f), (int16_t)(tM.data[2][2]*10000.0f)))/(float)0x8000 * M_1_PI * 4;
+
 		r->data[2] = atan2(tM.data[0][1], tM.data[0][0]);
 		r->data[0] = atan2(tM.data[1][2], tM.data[2][2]);
 	} else {
 		r->data[1] = theta;
+
+		// r->data[2] = (float) -fxpt_atan2((int16_t)(tM.data[1][0]*10000.0f), (int16_t)(tM.data[1][1]*10000.0f))/(float)0x8000 * M_1_PI * 4;
+
 		r->data[2] = -atan2(tM.data[1][0], tM.data[1][1]);
 		r->data[0] = 0;
 	}

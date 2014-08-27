@@ -574,7 +574,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsB-Mk1-Firmware.bin</state>
+          <state>LpmsB-Mk1-Firmware-1.3.3-dev.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>

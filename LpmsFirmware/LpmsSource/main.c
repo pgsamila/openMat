@@ -38,8 +38,9 @@ int main(void)
 			if (systemStepTimeout == 1) {
 				systemStepTimeout = 0;
 
-				if (ledC % ledFlashTime == 0) updateAliveLed();
 				++ledC;
+				ledC %= ledFlashTime;
+				if (ledC == 0) updateAliveLed();
 
 				updateSensorData();
 				processSensorData();
@@ -88,8 +89,9 @@ int main(void)
 			if (systemStepTimeout == 1) {
 				systemStepTimeout = 0;
 
-				if (ledC % ledFlashTime == 0) updateAliveLed();
 				++ledC;
+				ledC %= ledFlashTime;
+				if (ledC == 0) updateAliveLed();
 
 				updateSensorData();
 				processSensorData();
@@ -107,6 +109,7 @@ int main(void)
 					}
 #endif
 				}
+
 
 #ifdef LPMS_BLE			
 				if (connectedInterface == USB_CONNECTED) sendQueue();

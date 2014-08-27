@@ -28,7 +28,7 @@
 #include "HeaveMotion.h"
 #include "AdConverter.h"
 
-#define LPMS_MEASUREMENT_PERIOD 250
+#define LPMS_MEASUREMENT_PERIOD 0.0025f
 
 #define PRESSURE_T 100000
 

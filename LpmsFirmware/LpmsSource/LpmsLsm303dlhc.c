@@ -577,6 +577,7 @@ uint8_t getMagRawData(float* xAxis, float* yAxis, float* zAxis)
 	temp = (temp << 8) | data_buffer[5];
 	*yAxis = -(float) temp;
 #endif
+
 	return 1;
 }
 

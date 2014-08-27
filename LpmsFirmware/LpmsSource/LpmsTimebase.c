@@ -8,7 +8,7 @@
 uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
-uint16_t ledFlashTime = 400;
+uint16_t ledFlashTime = LPMS_LED_PERIOD;
 
 void initTimebase(void)
 {

@@ -1,9 +1,6 @@
 /***********************************************************************
-** Filter for sensor fusion 
-**
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #ifndef LP_FILTER_C_VERSION
@@ -12,9 +9,10 @@
 #define GYR_TEMP_TABLE_MAX 16
 #define GYR_CAL_MIN_TEMP_DIFF 5.0f
 
-#define GYRO_ONLINE_CAL_ITER 256
-#define GYR_CAL_THRES 0.0075f
-#define GYR_CAL_TIMEOUT	3000
+#define GYRO_ONLINE_CAL_ITER 32
+#define GYR_CAL_THRES 40.0f
+#define GYR_CAL_TIMEOUT	5.0f
+#define GYR_THRESHOLD 0.05f
 
 #define LPMS_FILTER_GYR 0
 #define LPMS_FILTER_GYR_ACC 1
@@ -120,8 +118,8 @@ void lpFilterUpdate(LpVector3f a,
 	float T, 
 	float bInclination, 
 	float *bNoise, 
-	LpmsCalibrationData calibrationData, 
-	LpFilterParameters lpFilterParam);
+	LpmsCalibrationData *calibrationData, 
+	LpFilterParameters *lpFilterParam);
 
 void lpFilterEulerUpdate(
 	LpVector3f a, 
@@ -132,22 +130,22 @@ void lpFilterEulerUpdate(
 	float T, 
 	float bInclination, 
 	float *bNoise,
-	LpmsCalibrationData calibrationData, 
-	LpFilterParameters lpFilterParam);
+	LpmsCalibrationData *calibrationData, 
+	LpFilterParameters *lpFilterParam);
 
 
 void lpOrientationFromAccMag(LpVector3f b,
 	LpVector3f a,
 	LpVector3f *r,
 	float *i,
-	LpmsCalibrationData calibrationData,
-	LpFilterParameters lpFilterParam);
+	LpmsCalibrationData *calibrationData,
+	LpFilterParameters *lpFilterParam);
 
 void gyrOnlineCal(LpVector3f gyrRawData, 
 	float T,
 	int isGyrCalibrationEnabled,
 	LpmsCalibrationData *calibrationData, 
-	LpFilterParameters lpFilterParam);
+	LpFilterParameters *lpFilterParam);
 
 void gyroToInertial(LpVector4f qI, 
 	LpVector3f *wO, 

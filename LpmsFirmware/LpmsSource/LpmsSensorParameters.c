@@ -1410,14 +1410,14 @@ void armHardwareTimestampReset(uint8_t* data)
 		GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 		isTimestampResetArmed = 1;
-		ledFlashTime = 200;
+		ledFlashTime = LPMS_LED_PERIOD / 4;
 	break;
 
 	case LPMS_DISARM_TIMESTAMP_RESET:
 		GPIO_PinAFConfig(GPIOA, GPIO_Pin_13, GPIO_AF_SWJ);
 
 		isTimestampResetArmed = 0;
-		ledFlashTime = 400;
+		ledFlashTime = LPMS_LED_PERIOD;
 	break;
 	}
 }

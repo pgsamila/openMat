@@ -53,7 +53,7 @@ int32_t cumulatedRefCounter = 0;
 float refCalibrationDuration = 0;
 LpVector3f maxGyr;	
 LpVector3f minGyr;	
-float T = 0.0025f;
+float T = LPMS_MEASUREMENT_PERIOD;
 uint32_t lpmsStatus = 0;
 static __IO uint8_t isDataSending = 0;
 uint32_t pressureTime = 0;
@@ -76,7 +76,7 @@ LpVector3f tB;
 static float d2r = 0.01745f;
 uint32_t measurementTime = 0;
 float sendTime = 0.0f;
-float heaveTime = 0.0025f;
+float heaveTime = LPMS_MEASUREMENT_PERIOD;
 LpVector3f heaveOutput;
 float heaveY = 0.0f;
 LpVector3f aRawNoLp;
@@ -323,13 +323,13 @@ void updateSensorData(void)
 #endif
 		
 #ifdef USE_CANBUS_INTERFACE
-		canHeartbeatTime += 0.0025f;
+		canHeartbeatTime += LPMS_MEASUREMENT_PERIOD;
 #endif
 
 		++measurementTime;
 
 #ifdef ENABLE_PRESSURE
-		pressureTime += 0.0025f;
+		pressureTime += LPMS_MEASUREMENT_PERIOD;
 
 		if (pressureTime > PRESSURE_T) {
 			pressureTime = 0;
@@ -361,7 +361,7 @@ void checkTimestampReset(void)
 	if (isTimestampResetArmed == 1) {
 		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_13) == RESET) {
 			measurementTime = 0;
-			ledFlashTime = 5000;
+			ledFlashTime = LPMS_LED_PERIOD;
 		}
 	}
 }
@@ -376,15 +376,15 @@ void processSensorData(void)
 
 	aRawNoLp = aRaw;
 
-	gRaw.data[0] = (gyrRawData.data[0] * calibrationData.gyrGain.data[0] * d2r) - calibrationData.gyrOffset.data[0];
-	gRaw.data[1] = (gyrRawData.data[1] * calibrationData.gyrGain.data[1] * d2r) - calibrationData.gyrOffset.data[1];
-	gRaw.data[2] = (gyrRawData.data[2] * calibrationData.gyrGain.data[2] * d2r) - calibrationData.gyrOffset.data[2];
+	gRaw.data[0] = (gyrRawData.data[0] - calibrationData.gyrOffset.data[0]) * calibrationData.gyrGain.data[0] * d2r;
+	gRaw.data[1] = (gyrRawData.data[1] - calibrationData.gyrOffset.data[1]) * calibrationData.gyrGain.data[1] * d2r;
+	gRaw.data[2] = (gyrRawData.data[2] - calibrationData.gyrOffset.data[2]) * calibrationData.gyrGain.data[2] * d2r;
 
 	tB.data[0] = magRawData.data[0] * calibrationData.magGain.data[0];
 	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
 	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
  
-	gyrOnlineCal(gyrRawData, T, isGyrCalibrationEnabled, &calibrationData, lpFilterParam);
+	gyrOnlineCal(gyrRawData, LPMS_MEASUREMENT_PERIOD, isGyrCalibrationEnabled, &calibrationData, &lpFilterParam);
 
 	applyLowPass();
 
@@ -397,7 +397,6 @@ void processSensorData(void)
 	b.data[2] = tB.data[2];
 
 	b = correctB(b);
-	checkRefCal();
 
 	matVectMult3(&calibrationData.accAlignment, &aRaw, &a);
 	vectAdd3x1(&calibrationData.accOffset, &a, &a);
@@ -407,10 +406,8 @@ void processSensorData(void)
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
-  
-		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, calibrationData, lpFilterParam);
-		lpFilterUpdate(a, b, g, &q, 0.005f, 0, &magNoise, calibrationData, lpFilterParam);
+			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {		
+		lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
 
 		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
 
@@ -424,13 +421,13 @@ void processSensorData(void)
 		
 	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
 		
-		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, bInc, &magNoise, calibrationData, lpFilterParam);
+		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, 0, &magNoise, &calibrationData, &lpFilterParam);
 		quaternionIdentity(&qAfterOffset); 
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
 		
 	} else {
 	  
-		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, calibrationData, lpFilterParam);
+		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, &calibrationData, &lpFilterParam);
 		quaternionIdentity(&qAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
 	}
@@ -625,13 +622,13 @@ void stopGyrCalibration(void)
 	float o;
 	
 	for (uint8_t i = 0; i < 3; i++) {
-		o = (float)((float)cumulatedGyrData[i] / (float)cumulatedGyrCounter) * calibrationData.gyrGain.data[i] * d2r;
+		o = (float)cumulatedGyrData[i] / (float)cumulatedGyrCounter;
 		calibrationData.gyrOffset.data[i] = o;
 		gReg.data[LPMS_GYR_BIAS_X + i] = conFtoI(o);
 
-		gDrift.data[i] = ((float)((float)endGyrData[i] / (float)endGyrCounter) - (float)((float)startGyrData[i] / (float)startGyrCounter)) / LPMS_GYR_CALIBRATION_DURATION_30S * calibrationData.gyrGain.data[i] * d2r;
+		gDrift.data[i] = ((float)((float)endGyrData[i] / (float)endGyrCounter) - (float)((float)startGyrData[i] / (float)startGyrCounter)) / LPMS_GYR_CALIBRATION_DURATION_30S;
 		
-		lpFilterParam.gyrThreshold.data[i] = (float) maxGyr.data[i] * calibrationData.gyrGain.data[i] * d2r - o;
+		lpFilterParam.gyrThreshold.data[i] = (float) maxGyr.data[i] - o;
 		gReg.data[LPMS_GYR_THRES_X + i] = conFtoI(lpFilterParam.gyrThreshold.data[i]);
 		
 		cumulatedGyrData[i] = 0;
@@ -735,7 +732,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
     uint8_t sl;
-	float mT = measurementTime * 0.0025f;
+	float mT = measurementTime * LPMS_MEASUREMENT_PERIOD;
 
 	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;
 	data[o] = ','; ++o;
@@ -819,7 +816,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
-	float mT = measurementTime * 0.0025f;
+	float mT = measurementTime * LPMS_MEASUREMENT_PERIOD;
 
 #ifdef LPMS_BLE
 	if (connectedInterface == USB_CONNECTED) {

@@ -25,6 +25,8 @@
 #define SYSTEM_STEP_TIMER TIM4
 #define SYSTEM_STEP_TIMER_CLK RCC_APB1Periph_TIM4
 
+#define LPMS_LED_PERIOD 400
+
 // I2C bus timeout
 #define I2C_TIMEOUT_S 1000
 

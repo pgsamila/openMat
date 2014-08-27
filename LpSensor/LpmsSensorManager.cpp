@@ -332,8 +332,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
-				
-					
+						
 		lm.lock();
 		for (i = sensorList.begin(); i != sensorList.end(); ++i) {
 			(*i)->startSaveData(&saveDataHandle);

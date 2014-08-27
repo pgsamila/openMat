@@ -1,6 +1,7 @@
 #include "stm32f2xx_it.h"
 
 __IO uint8_t systemStepTimeout = 0;
+__IO uint8_t stepDiv = 0;
 
 void NMI_Handler(void)
 {
@@ -62,6 +63,10 @@ void TIM3_IRQHandler(void)
 {
 	if (TIM_GetFlagStatus(TIM3, TIM_FLAG_Update) != RESET) {
 		TIM_ClearFlag(TIM3, TIM_IT_Update);  
-		systemStepTimeout = 1;
+		/* ++stepDiv;
+		if (stepDiv > 1) { */
+			systemStepTimeout = 1;
+		/*	stepDiv = 0;
+		} */
 	}
 }

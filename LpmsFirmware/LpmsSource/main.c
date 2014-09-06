@@ -9,6 +9,7 @@
 #include "SensorManager.h"
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
+#include "Watchdog.h"
 
 extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
@@ -19,6 +20,7 @@ int main(void)
 	int sendCounter = 0;
 	uint16_t ledC = 0;
 
+	initIWatchdog();
 	setGPIOConfig();
 	setSystemStepTimer();	
 	initSensorManager();
@@ -29,10 +31,6 @@ int main(void)
 	initAdConverter();
 #endif
 
-#ifdef ENABLE_WATCHDOG
-	initWatchdog();
-#endif
-
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 			if (systemStepTimeout == 1) {
@@ -41,6 +39,7 @@ int main(void)
 				++ledC;
 				ledC %= ledFlashTime;
 				if (ledC == 0) updateAliveLed();
+				resetIWatchdog();
 
 				updateSensorData();
 				processSensorData();
@@ -92,6 +91,7 @@ int main(void)
 				++ledC;
 				ledC %= ledFlashTime;
 				if (ledC == 0) updateAliveLed();
+				resetIWatchdog();
 
 				updateSensorData();
 				processSensorData();

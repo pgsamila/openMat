@@ -71,6 +71,8 @@ typedef struct _LpVector4f {
 #endif
 
 float fastSqrt(const float x);
+float fastSin(float x);
+float fastCos(float x);
 
 // Matrix manipulation functions
 float matDet3x3(LpMatrix3x3f* src);

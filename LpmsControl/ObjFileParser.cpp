@@ -1,25 +1,33 @@
-/****************************************************************************
-**
-** Copyright (C) 2011 LP-Research
+/***********************************************************************
+** (c) LP-RESEARCH Inc.
 ** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** Contact: info@lp-research.com
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
-** OpenMAT is free software: you can redistribute it and/or modify it under 
-** the terms of the GNU General Public License as published by the Free 
-** Software Foundation, either version 3 of the License, or (at your option) 
-** any later version.
-** 
-** OpenMAT is distributed in the hope that it will be useful, but WITHOUT 
-** ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-** FITNESS FOR A PARTICULAR PURPOSE. See the GNU \ General Public License 
-** for more details.
-** 
-** You should have received a copy of the GNU General Public License along 
-** with the OpenMAT library. If not, see <http://www.gnu.org/licenses/>.
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
 **
-****************************************************************************/
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***********************************************************************/
 
 #include "ObjFileParser.h"
 
@@ -32,9 +40,10 @@
 #define OBJ_FILE_VERTEX_PART 6
 #define OBJ_FILE_NORMAL_PART 7
 
-bool ObjFileParser::parse(string filename) 
+bool ObjFileParser::parse(std::string filename) 
 {
 	bool f;
+	float maxSize;
 	
 	std::vector<Eigen::Vector3f> vertexNormalList;
 	std::vector<Eigen::Vector3f> vertexList;
@@ -158,6 +167,11 @@ bool ObjFileParser::parse(string filename)
 		}
 	}
 
+	/* if (vertexList.size() == 0 || vertexList.size() > 5000) {
+		cout << "[ObjFileParser] Invalid number of vertices" << endl;	
+		return false;
+	} */
+	
 	maxVertex << -9999, -9999, -9999;
 	minVertex << 9999, 9999, 9999;
 	
@@ -168,12 +182,28 @@ bool ObjFileParser::parse(string filename)
 		}
 	}
 	
-	centerVertex = (maxVertex - minVertex) * 0.5;
+	maxSize = 0;
+	for (unsigned int j=0; j < 3; j++) {
+		if ((maxVertex(j) - minVertex(j)) > maxSize) maxSize = (maxVertex(j) - minVertex(j));
+	}
+
+	centerVertex = (maxVertex + minVertex) * 0.5;
+	
+	for (unsigned int i=0; i<faceList.size(); i++) {				
+		for (unsigned int j=0; j<faceList[i].vertexList.size(); j++) {
+			for (unsigned int k=0; k<3; k++) {
+				faceList[i].vertexList[j](k) = (faceList[i].vertexList[j](k) - centerVertex(k)) / maxSize * 4.0f;
+			}
+		}
+	}
+
+	for (unsigned int j=0; j < 3; j++) {
+		scaledSize(j) = (maxVertex(j) - minVertex(j)) / maxSize * 4.0f;
+	}
 	
 	cout << "[ObjFileParser] Processed vertices: " << vertexList.size() << endl;	
 	cout << "[ObjFileParser] Processed vertex normals: " << vertexNormalList.size() << endl;		
 	cout << "[ObjFileParser] Processed faces: " << faceList.size() << endl;	
-
 	cout << "[ObjFileParser] Center: " << centerVertex(0) << " " << centerVertex(1) << " " << centerVertex(2) << endl;
 	
 	fs.close();
@@ -184,4 +214,9 @@ bool ObjFileParser::parse(string filename)
 std::vector<ObjFace> ObjFileParser::getFaceList(void)
 {
 	return faceList;
+}
+
+Eigen::Vector3f ObjFileParser::getScaledSize(void)
+{
+	return scaledSize;
 }

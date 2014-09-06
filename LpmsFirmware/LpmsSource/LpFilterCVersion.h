@@ -10,8 +10,8 @@
 #define GYR_CAL_MIN_TEMP_DIFF 5.0f
 
 #define GYRO_ONLINE_CAL_ITER 32
-#define GYR_CAL_THRES 40.0f
-#define GYR_CAL_TIMEOUT	5.0f
+#define GYR_CAL_THRES 45.0f
+#define GYR_CAL_TIMEOUT	7.5f
 #define GYR_THRESHOLD 0.05f
 
 #define LPMS_FILTER_GYR 0

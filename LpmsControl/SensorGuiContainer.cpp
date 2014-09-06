@@ -50,7 +50,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	gl5->addWidget(new QLabel("Connection:"), l, 0); ++l;
 	gl5->addWidget(new QLabel("Sensor status:"), l, 0); ++l;
 	gl5->addWidget(new QLabel("Device ID:"), l, 0); ++l;
-	gl5->addWidget(new QLabel("Firmware Version:"), l, 0); ++l;
+	gl5->addWidget(new QLabel("Firmware version:"), l, 0); ++l;
 
 	l = 0;
 	gl->addWidget(new QLabel("IMU ID:"), l, 0); ++l;	
@@ -118,7 +118,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		baudRateCombo->addItem(QString("921600 bps"));
 		connect(baudRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateBaudRateIndex(int)));
 		
-		uartFormatCombo->addItem(QString("LP-BUS (binary)"));
+		uartFormatCombo->addItem(QString("LPBUS (binary)"));
 		uartFormatCombo->addItem(QString("ASCII (CSV)"));
 		connect(uartFormatCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateUartFormatIndex(int)));
 	}
@@ -616,7 +616,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	}
 	
 	l = 0;
-	selectedDataGl->addWidget(new QLabel("LpBus data mode:"), l, 0);
+	selectedDataGl->addWidget(new QLabel("LPBUS data mode:"), l, 0);
 	selectedDataGl->addWidget(lpBusDataModeCombo = new QComboBox(), l, 1); ++l;
 	lpBusDataModeCombo->addItem(QString("32-bit floating point"));
 	lpBusDataModeCombo->addItem(QString("16-bit integer"));

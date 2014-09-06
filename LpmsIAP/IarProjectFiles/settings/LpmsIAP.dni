@@ -34,6 +34,8 @@ Checksum=-775467322
 ShowArgs=0
 [Disassembly]
 MixedMode=1
+[RecentFlashDownload]
+Path=E:\Dropbox (LP-Research Inc.)\LpResearch\ProductDevelopment\Firmware\Binaries\LpmsFirmware1.3.0_PRODUCTION\LpmsCuNewRs232\Exe\LpmsFirmware.out
 [CallStackLog]
 Enabled=0
 [DriverProfiling]
@@ -41,8 +43,6 @@ Enabled=0
 Mode=3
 Graph=0
 Symbiont=0
-[RecentFlashDownload]
-Path=E:\Dropbox (LP-Research Inc.)\LpResearch\ProductDevelopment\Firmware\Binaries\LpmsFirmware1.3.0_PRODUCTION\LpmsCuNewRs232\Exe\LpmsFirmware.out
 [PowerLog]
 LogEnabled=0
 GraphEnabled=0

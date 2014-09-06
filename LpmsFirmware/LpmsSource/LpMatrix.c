@@ -25,7 +25,7 @@ float fastSqrt(const float x)
 	return x*u.x*(1.5f - xhalf*u.x*u.x);
 }
 
-float invSqrt (float x)
+float invSqrt(float x)
 {
 	float xhalf = 0.5f*x;
 	int i = *(int*)&x;
@@ -65,6 +65,31 @@ float fastCos(float x)
 	}
 
 	return cos;
+}
+
+float fastSin(float x)
+{
+	float sin;
+
+	if (x < 0) {
+		sin = 1.27323954 * x + .405284735 * x * x;
+	
+		if (sin < 0) {
+			sin = .225 * (sin *-sin - sin) + sin;
+		} else {
+			sin = .225 * (sin * sin - sin) + sin;
+		}
+	} else {
+		sin = 1.27323954 * x - 0.405284735 * x * x;
+		
+		if (sin < 0) {
+			sin = .225 * (sin *-sin - sin) + sin;
+		} else {
+			sin = .225 * (sin * sin - sin) + sin;
+		}
+	}
+
+	return sin;
 }
 
 int matAdd3x3(LpMatrix3x3f* src1, LpMatrix3x3f* src2, LpMatrix3x3f* dest)

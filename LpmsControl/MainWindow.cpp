@@ -315,12 +315,13 @@ void MainWindow::createMenuAndToolbar(void)
 	QAction* pressureGraphAction = new QAction(QIcon("./icons/eyedropper_32x32.png"), "Pressu&re window", this);
 	QAction* threedAction = new QAction(QIcon("./icons/share_32x32.png"), "3D &visualization", this);
 	QAction* fieldMapAction = new QAction(QIcon("./icons/sun_fill_32x32.png"), "&Magnetic field map", this);
-	cubeMode1Action = new QAction("3D view mode 1", this);
+	QAction* loadObjFileAction = new QAction("&Load object file", this);
+	cubeMode1Action = new QAction("3D view mode &1", this);
 	cubeMode1Action->setCheckable(true);
 	cubeMode1Action->setChecked(true);
-	cubeMode2Action = new QAction("3D view mode 2", this);	
+	cubeMode2Action = new QAction("3D view mode &2", this);	
 	cubeMode2Action->setCheckable(true);
-	cubeMode4Action = new QAction("3D view mode 4", this);	
+	cubeMode4Action = new QAction("3D view mode &4", this);	
 	cubeMode4Action->setCheckable(true);
 
 	viewMenu->addAction(graphAction);
@@ -333,6 +334,8 @@ void MainWindow::createMenuAndToolbar(void)
 	viewMenu->addAction(cubeMode1Action);
 	viewMenu->addAction(cubeMode2Action);
 	viewMenu->addAction(cubeMode4Action);
+	viewMenu->addSeparator();
+	viewMenu->addAction(loadObjFileAction);
 		
 	toolbar->addSeparator();
 		
@@ -404,6 +407,7 @@ void MainWindow::createMenuAndToolbar(void)
 	connect(setOffsetAction, SIGNAL(triggered()), this, SLOT(setOffset()));	
 	connect(resetOffsetAction, SIGNAL(triggered()), this, SLOT(resetOffset()));
 	connect(armTimestampResetAction, SIGNAL(triggered()), this, SLOT(armTimestampReset()));
+	connect(loadObjFileAction, SIGNAL(triggered()), this, SLOT(loadObjFile()));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -969,7 +973,7 @@ void MainWindow::uploadFirmware(void)
 			break;
 	}
 
-	qfilename = QFileDialog::getOpenFileName(this, "Open firmware file", "./", "");
+	qfilename = QFileDialog::getOpenFileName(this, "Open firmware file", "./", "Binaries (*.bin)");
 	fn = qfilename.toStdString();
 	
 	if (fn == "") return;
@@ -1079,7 +1083,7 @@ void MainWindow::uploadIap(void)
 			break;
 	}
 
-	QString qfilename = QFileDialog::getOpenFileName(this, "Open IAP file", "./", "");
+	QString qfilename = QFileDialog::getOpenFileName(this, "Open IAP file", "./", "Binaries (*.bin)");
 	string fn = qfilename.toStdString();
 
 	if (!qfilename.contains("LpmsCRS_IAP.bin")) {
@@ -1894,5 +1898,15 @@ void MainWindow::browsePlaybackFile(void)
 		globalPlaybackFile = playbackFilename;
 		playbackFileEdit->setText(playbackFilename.c_str());
 		playbackFileSet = true;
+	}
+}
+
+void MainWindow::loadObjFile(void)
+{
+	QString qFilename = QFileDialog::getOpenFileName(this, "Load 3D OBJ file", "./", "OBJ files (*.obj)");
+	string objFilename = qFilename.toStdString();	
+	
+	if (!(objFilename == "")) {
+		cubeWindowContainer->getSelectedCube()->loadObjFile(objFilename);
 	}
 }

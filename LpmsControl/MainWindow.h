@@ -189,6 +189,7 @@ public slots:
 	void startReplay(void);
 	void stopReplay(void);
 	void browsePlaybackFile(void);
+	void loadObjFile(void);
 	
 private:
 	QList<QTreeWidgetItem*> lpmsTreeItems;

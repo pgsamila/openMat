@@ -309,18 +309,9 @@ void updateSensorData(void)
 			lpFilterParam.accRef, lpFilterParam.magRef,
 			T); */
 	} else {
-
-#ifdef ENABLE_WATCHDOG
-		WWDG_Enable(0x7F);
-#endif
-
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
-
-#ifdef ENABLE_WATCHDOG
-		WWDG_DeInit();
-#endif
 		
 #ifdef USE_CANBUS_INTERFACE
 		canHeartbeatTime += LPMS_MEASUREMENT_PERIOD;
@@ -948,7 +939,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<3; i++) {
-                                setFloat(&(data[i*4 + o]), bRaw.data[i], FLOAT_FULL_PRECISION);
+							setFloat(&(data[i*4 + o]), bRaw.data[i], FLOAT_FULL_PRECISION);
                         }
                         o = o+12;
                 }
@@ -962,11 +953,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<4; i++) {
-#ifdef ENABLE_INSOLE
-								setFloat(&(data[i*4 + o]), forceSensorOutput[i], FLOAT_FULL_PRECISION);
-#else
-                                setFloat(&(data[i*4 + o]), qAfterOffset.data[i], FLOAT_FULL_PRECISION);
-#endif
+	                        setFloat(&(data[i*4 + o]), qAfterOffset.data[i], FLOAT_FULL_PRECISION);
                         }
                         o = o+16;
                 }	
@@ -980,23 +967,31 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<3; i++) {
+#ifdef ENABLE_INSOLE
+								setFloat(&(data[i*4 + o]), forceSensorOutput[i], FLOAT_FULL_PRECISION);
+#else
                                 setFloat(&(data[i*4 + o]), linAcc.data[i], FLOAT_FULL_PRECISION);
+#endif
                         }
                         o = o+12;
                 }
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
-                        setFloat(&(data[0 + o]), pressure, FLOAT_FULL_PRECISION);
+#ifdef ENABLE_INSOLE
+						setFloat(&(data[o]), forceSensorOutput[3], FLOAT_FULL_PRECISION);
+#else
+                        setFloat(&(data[o]), pressure, FLOAT_FULL_PRECISION);
+#endif
                         o = o+4;
                 }
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)  {
-                        setFloat(&(data[0 + o]), altitude, FLOAT_FULL_PRECISION);
+                        setFloat(&(data[o]), altitude, FLOAT_FULL_PRECISION);
                         o = o+4;
                 }	
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0)  {
-                        setFloat(&(data[0 + o]), temperature, FLOAT_FULL_PRECISION);
+                        setFloat(&(data[o]), temperature, FLOAT_FULL_PRECISION);
                         o = o+4;
                 }
         
@@ -1012,11 +1007,4 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 	*l = o;
 	
 	return 1;
-}
-
-void initWatchdog(void)
-{
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_WWDG, ENABLE);
-	WWDG_SetPrescaler(WWDG_Prescaler_8);
-	WWDG_SetWindowValue(0x7F);
 }

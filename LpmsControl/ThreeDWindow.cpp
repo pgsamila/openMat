@@ -46,27 +46,21 @@ ThreeDWindow::ThreeDWindow(QWidget *parent, QGLWidget *shareWidget)
 	zRot(0),
 	xSRot(0),
 	ySRot(0),
-	zSRot(0)
+	zSRot(0),
+	objFileSet(false)
 {
 	QTimer *timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(updateWindow()));
     timer->start(33);
-
-#ifdef USE_POINT_CUBE
-	caseObj.parse("LpmsCase.obj");
-#endif
-	lpmsCaseScale = 0.085f;	
-
-	scale << lpmsCaseScale, lpmsCaseScale, -lpmsCaseScale;
-	for (unsigned int i=0; i<caseObj.faceList.size(); i++) {
-		caseObj.faceList[i].vertexList[0] = (caseObj.faceList[i].vertexList[0] - caseObj.centerVertex).cwiseProduct(scale);
-		caseObj.faceList[i].vertexList[1] = (caseObj.faceList[i].vertexList[1] - caseObj.centerVertex).cwiseProduct(scale);
-		caseObj.faceList[i].vertexList[2] = (caseObj.faceList[i].vertexList[2] - caseObj.centerVertex).cwiseProduct(scale);
-	}
 	
 	zeroImuData(&imuData);
 	
 	rM = Eigen::Matrix3f::Identity();
+}
+
+void ThreeDWindow::loadObjFile(std::string filename)
+{
+	if (caseObj.parse(filename) == true) objFileSet = true;
 }
 
 void ThreeDWindow::zeroImuData(ImuData* id)
@@ -185,16 +179,13 @@ void ThreeDWindow::paintGL()
 	Eigen::Vector3f l;
 	float radius = 0.1f;
 
-#define USE_POINT_CUBE
-#ifdef USE_POINT_CUBE
-	drawPointCube();
-	l = Eigen::Vector3f(2.4f, 0.9f, 1.4f);
-#endif
-
-#ifdef USE_LPMS_CUBE
-	drawLpmsCase();
-	l = (caseObj.maxVertex - caseObj.centerVertex) * lpmsCaseScale + Eigen::Vector3f(0.35f, 0.35f, 0.35f);
-#endif
+	if (objFileSet == false) {
+		drawPointCube();
+		l = Eigen::Vector3f(2.4f, 0.9f, 1.4f);
+	} else {
+		drawLpmsCase();
+		l = caseObj.getScaledSize() * 0.5f + Eigen::Vector3f(0.2f, 0.2f, 0.2f);
+	}
 	
 	glColor3f((GLfloat) 0.0f, (GLfloat) 0.0f, (GLfloat) 0.8f);		
 	M = Eigen::AngleAxisf(0 * d2r, Eigen::Vector3f::UnitX()) * 
@@ -248,7 +239,7 @@ void ThreeDWindow::paintGL()
 			0, 0, 0, 1;	
 		
 	drawCylinder(l(2), radius / 2, rM * M);
-	drawCone(0.3f, radius, rM4 * T4, ""); // "Y");
+	drawCone(0.3f, radius, rM4 * T4, ""); // "Y"); */
 }
 
 void ThreeDWindow::drawBackground(void)
@@ -427,7 +418,7 @@ void ThreeDWindow::drawGridCube(void)
 void ThreeDWindow::drawLpmsCase(void)
 {
 	std::vector<ObjFace> faceList = caseObj.getFaceList();
-
+	
 	glColor3f((GLfloat) 0.9, (GLfloat) 0.9, (GLfloat) 0.9);		
 	
 	for (unsigned int i=0; i<faceList.size(); i++) {

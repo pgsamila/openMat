@@ -46,12 +46,14 @@ class ObjFileParser {
 public:
 	bool parse(string filename);
 	std::vector<ObjFace> getFaceList(void);
+	Eigen::Vector3f getScaledSize(void);
 	
 	std::vector<ObjFace> faceList;
 	ifstream fs;	
 	Eigen::Vector3f centerVertex;
 	Eigen::Vector3f minVertex;
-	Eigen::Vector3f maxVertex;	
+	Eigen::Vector3f maxVertex;
+	Eigen::Vector3f scaledSize;
 };
 
 #endif

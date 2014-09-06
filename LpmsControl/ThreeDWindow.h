@@ -47,7 +47,6 @@ using namespace std;
 
 class QGLShaderProgram;
 
-/* Class shows 3d-cube visualization of sampled IMU data. */
 class ThreeDWindow : public QGLWidget
 {
     Q_OBJECT
@@ -68,6 +67,7 @@ public:
 	Eigen::Vector3f fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW];
 	Eigen::Vector3f hardIronOffset;
 	Eigen::Matrix3f softIronMatrix;
+	bool objFileSet;
 
     ThreeDWindow(QWidget *parent = 0, QGLWidget *shareWidget = 0);
     ~ThreeDWindow();
@@ -91,6 +91,7 @@ public:
 	void drawFieldMap(void);
 	int heightForWidth(int w);
 	bool hasHeightForWidth();
+	void loadObjFile(std::string filename);
 
 signals:
     void clicked();

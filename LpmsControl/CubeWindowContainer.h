@@ -164,6 +164,13 @@ public:
 	{
 		return mode;
 	}
+	
+	void loadObjFile(std::string fn)
+	{
+		for (unsigned i=0; i<cubeWindows.size(); ++i) {		
+			cubeWindows[i]->loadObjFile(fn);
+		}
+	}	
 };
 
 class CubeWindowSelector : public QWidget

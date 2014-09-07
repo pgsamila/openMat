@@ -72,7 +72,6 @@ import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment;
 import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment.MyFragmentListener;
 import com.LpResearch.LpmsBNativeAndroidLibrary.ConnectionFragment.OnConnectListener;
 
-// Main activity. Connects to LPMS-B and displays orientation values
 public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener, OnConnectListener
 {
 	Timer mTimer;
@@ -109,7 +108,6 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		}
 	};	
 	
-	// Initializes application
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -167,16 +165,16 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		updateFragmentsHandler.removeCallbacks(mUpdateFragmentsTask);
 	}
 
-	// Timer method that is periodically called every 100ms to display data
 	private void timerMethod() {
 		handler.post(new Runnable() {
 			public void run() {	
-				if (lpmsB != null && isLpmsBConnected == true) {
-					// Retrieves data from LPMS-B sensor
-					synchronized (imuData) {
-						imuData = lpmsB.getLpmsBData();
+				// synchronized (lpmsB) {
+					if (lpmsB != null && isLpmsBConnected == true) {
+						// synchronized (imuData) {
+							imuData = lpmsB.getLpmsBData();
+						// }
 					}
-				}
+				// }
 			}
 		});
 	}
@@ -204,10 +202,8 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 	}
 	
-	// Called when acvtivity is started 
     @Override
     protected void onStart() {
-		// Creates timer and initalizes to 100ms period
 		mTimer = new Timer();
 		mTimer.schedule(new TimerTask() {
 			@Override
@@ -219,7 +215,6 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
         super.onStart();
     }
 	
-	// Everytime the activity is resumed re-connect to LPMS-B
     @Override
     protected void onResume() {	
 		startUpdateFragments();	
@@ -227,49 +222,61 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
         super.onResume();
     }
 	
-	// Called when activity is paused or screen orientation changes
     @Override
     protected void onPause() {
-		// Disconnects LPMS-B
-		if (lpmsB != null && isLpmsBConnected == true) {
-			isLpmsBConnected = false;
-			lpmsB.close();
-			imuStatus = 0;
-		}
+		// synchronized (lpmsB) {	
+			if (lpmsB != null && isLpmsBConnected == true) {
+				isLpmsBConnected = false;
+				lpmsB.close();
+				imuStatus = 0;
+			}
+		// }
 	
         super.onPause();
     }
 	
     @Override
-	public void onConnect(String address) {
-		// if (isLpmsBConnected == true) return;
-		
-		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
-			if (address == it.next().getAddress()) {
-				Log.d("lpms", "This LPMS is already connected");
-				return;
+	public void onConnect(String address) {		
+		// synchronized (lpmsList) {	
+			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+				if (address == it.next().getAddress()) {
+					Log.d("lpms", "Already connected: " + address);
+					
+					return;
+				}
 			}
-		}
-	
-		lpmsB = new LpmsBThread(btAdapter);
-		lpmsList.add(lpmsB);
 		
-		lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
-		lpmsB.connect(address, 0);
-		
-		isLpmsBConnected = true;
-		imuStatus = 1;
-		
-		Log.d("lpms", "Connected");
+			lpmsB = new LpmsBThread(btAdapter);
+			lpmsList.add(lpmsB);
+			
+			lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
+			lpmsB.connect(address, 0);
+			
+			isLpmsBConnected = true;
+			imuStatus = 1;
+			
+			Log.d("lpms", "Connected: " + lpmsB.getAddress());
+		// }
 	}
 	
 	public void onSensorSelectionChanged(String address) {
-		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
-			if (address == it.next().getAddress()) {
-				lpmsB = it.next();
-				return;
+		// synchronized (lpmsList) {	
+			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+				LpmsBThread e = it.next();
+			
+				if (address.equals(e.getAddress())) {
+					Log.d("lpms", "Selected: " + e.getAddress());			
+					lpmsB = e;
+					
+					DataFragment dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(2));
+					if (dataFragment != null) {
+						dataFragment.clearView();
+					}
+					
+					return;
+				}
 			}
-		}
+		// }
 	}
 	
     @Override
@@ -277,7 +284,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		if (isLpmsBConnected == false) return;
 		
 		isLpmsBConnected = false;
-		if (lpmsB != null) lpmsB.close();
+		
+		// synchronized (lpmsB) {		
+			if (lpmsB != null) lpmsB.close();
+		// }
+		
 		imuStatus = 0;
 	}
 }

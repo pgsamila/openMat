@@ -16,6 +16,7 @@ import android.app.FragmentTransaction;
 import android.view.*;
 import android.widget.*;
 import android.widget.Adapter;
+import android.widget.AbsListView;
 import android.os.*;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,7 +43,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	BluetoothAdapter btAdapter;
 	OnConnectListener connectListener;
 	String currentLpms;
-	
+		
 	ArrayList<String> dcLpms = new ArrayList<String>();	
 	ArrayAdapter dcAdapter;
 	ListView btList;
@@ -73,6 +74,10 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		b.setOnClickListener(this);
 		b = (Button) rootView.findViewById(R.id.button_disconnect);
 		b.setOnClickListener(this);
+		b = (Button) rootView.findViewById(R.id.button_start_logging);
+		b.setOnClickListener(this);
+		b = (Button) rootView.findViewById(R.id.button_stop_logging);
+		b.setOnClickListener(this);		
 	}
 	
     @Override
@@ -98,6 +103,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	}
 	
 	void startBtConnect() {
+		btAdapter.cancelDiscovery();
 		Log.d("lpms", "Connect: " + currentLpms);
 		if (btAdapter != null && !currentLpms.equals("")) {
 			connectListener.onConnect(currentLpms);
@@ -111,48 +117,72 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				
-				if (device.getName().equals("LPMS-B")) {
-					if (firstDc == true) {
-						dcLpms.clear();
-						firstDc = false;
+				synchronized (dcLpms) {				
+					if (device.getName().equals("LPMS-B")) {
+						if (firstDc == true) {
+							dcLpms.clear();							
+							btList.getChildAt(0).setBackgroundColor(Color.BLUE);
+							currentLpms = device.getAddress();							
+							
+							firstDc = false;							
+						}
+					
+						Log.d("lpms", "Discovered: " + device.getName() + " " + device.getAddress());
+						
+						dcLpms.add(device.getAddress());
+						dcAdapter.notifyDataSetChanged();
 					}
-				
-					Log.d("lpms", "Discovered: " + device.getName());
-					currentLpms = device.getAddress();
-					dcLpms.add(device.getAddress());
-					dcAdapter.notifyDataSetChanged();
-				} 
+				}
 			}
 			
 			if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				
-				if (device.getName().equals("LPMS-B")) {
-					if (firstConnectedDevice == true) {
-						connectedDevicesLpms.clear();
-						firstConnectedDevice = false;
+				synchronized (connectedDevicesLpms) {	
+					if (device.getName().equals("LPMS-B")) {
+						if (firstConnectedDevice == true) {
+							connectedDevicesLpms.clear();							
+							connectedDevicesList.getChildAt(0).setBackgroundColor(Color.BLUE);
+							((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
+							
+							firstConnectedDevice = false;							
+						}
+					
+						Log.d("lpms", "Connected: " + device.getName() + " " + device.getAddress());
+						
+						connectedDevicesLpms.add(device.getAddress());
+						connectedDevicesAdapter.notifyDataSetChanged();
 					}
-				
-					Log.d("lpms", "Discovered: " + device.getName());
-					
-					// currentLpms = device.getAddress();
-					
-					connectedDevicesLpms.add(device.getAddress());
-					connectedDevicesAdapter.notifyDataSetChanged();
-				} 
+				}
 			}			
 		}
 	};
 	
 	public void prepareDcList() {
 		btList = (ListView) rootView.findViewById(R.id.list);
+		
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		getActivity().registerReceiver(mReceiver, filter);
 		dcAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, dcLpms);
 		btList.setAdapter(dcAdapter);
 		dcLpms.add("Press Discover button to start discovery..");
 		dcAdapter.notifyDataSetChanged();
-		firstDc = true;
+		firstDc = true;			
+		
+		btList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				for(int a = 0; a < parent.getChildCount(); a++) {
+					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+				}			
+				view.setBackgroundColor(Color.BLUE);
+					
+				int itemPosition = position;
+				currentLpms = (String) btList.getItemAtPosition(position);
+				
+				Log.d("lpms", "Select: " + currentLpms);
+			}
+		});
 	}
 	
 	public void prepareConnectedDevicesList() {
@@ -171,25 +201,24 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		connectedDevicesList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				for(int a = 0; a < parent.getChildCount(); a++) {
+					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+				}			
+				view.setBackgroundColor(Color.BLUE);
+				
 				int itemPosition = position;
 				String itemValue = (String) connectedDevicesList.getItemAtPosition(position);
+				((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(itemValue);
+				
+				Log.d("lpms", "Selected: " + itemValue);
 			}
 		}); 		
 	}
 	
 	public void startBtDiscovery() {
 		Log.d("lpms", "Start discovery");
-		btAdapter.startDiscovery();
-		
-		btList.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-			int position, long id) {
-				int itemPosition = position;
-				currentLpms = (String) btList.getItemAtPosition(position);
-				Log.d("lpms", "Select: " + currentLpms);
-			}
-		}); 		
+		btAdapter.cancelDiscovery();
+		btAdapter.startDiscovery();		
 	}
 	
 	@Override
@@ -245,16 +274,5 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 
 	@Override
 	public void updateView(LpmsBData d, int s) {
-		TextView text = (TextView) rootView.findViewById(R.id.connection_status);
-		
-		switch (s) {
-		case 0:
-			text.setText("Not connected");
-		break;
-		
-		default:
-			text.setText("Connected to LPMS-B (" + currentLpms + ")");
-		break;
-		}
 	}
 }

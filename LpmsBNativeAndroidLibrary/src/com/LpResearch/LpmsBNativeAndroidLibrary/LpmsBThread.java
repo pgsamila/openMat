@@ -48,15 +48,11 @@ import android.view.inputmethod.*;
 
 import java.lang.reflect.Method;
 
-// Thread class to retrieve data from LPMS-B (and eventually control configuration of LPMS-B)
 public class LpmsBThread extends Thread {
-	// Log tag
 	final String TAG = "LpmsB";
 	
-	// Standard Bluetooth serial protocol UUID
 	final UUID MY_UUID_INSECURE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");	
 	
-	// LpBus identifiers
 	final int PACKET_ADDRESS0 = 0;
 	final int PACKET_ADDRESS1 = 1;
 	final int PACKET_FUNCTION0 = 2;
@@ -68,7 +64,6 @@ public class LpmsBThread extends Thread {
 	final int PACKET_LENGTH0 = 8;
 	final int PACKET_LENGTH1 = 9;
 	
-	// LPMS-B function registers (most important ones only, currently only LPMS_GET_SENSOR_DATA is used)
 	final int LPMS_ACK = 0;
 	final int LPMS_NACK = 1;
 	final int LPMS_GET_CONFIG = 4;	
@@ -79,10 +74,8 @@ public class LpmsBThread extends Thread {
 	final int LPMS_GET_SENSOR_DATA = 9;
  	final int LPMS_SET_TRANSMIT_DATA = 10;	
 	
-	// State machine states. Currently no states are supported
 	final int STATE_IDLE = 0;
 	
-	// Class members
 	int rxState = PACKET_END;
 	byte[] rxBuffer = new byte[512];
 	byte[] txBuffer = new byte[512];
@@ -120,12 +113,10 @@ public class LpmsBThread extends Thread {
 	
 	LpmsBData mLpmsBData = new LpmsBData();
 
-	// Initializes object with Bluetooth adapter adapter
 	LpmsBThread(BluetoothAdapter adapter) {
 		mAdapter = adapter;
 	}
 
-	// Connects to LPMS-B with Bluetooth address address
 	public void connect(String address, int id) {
 		mAddress = address;
 		imuId = id;
@@ -175,15 +166,12 @@ public class LpmsBThread extends Thread {
 			return;
 		}			
 		
-		// Starts new reader thread
 		Thread t = new Thread(new ClientReadThread());
         t.start();
 	}
 	
-	// Class to continuously read data from LPMS-B
     public class ClientReadThread implements Runnable {
         public void run() {
-			// Starts state machine thread
         	Thread t = new Thread(new ClientStateThread());	
         	t.start();	
 	
@@ -194,13 +182,11 @@ public class LpmsBThread extends Thread {
 					break;
 				}
 				
-				// Parses received LpBus data
 				parse();
 			}
 		}
 	}	
 	
-	// State machine thread class
     public class ClientStateThread implements Runnable {
         public void run() {
 			try {				
@@ -229,8 +215,6 @@ public class LpmsBThread extends Thread {
 		}
 	}
 	
-	// Sets acquisition parameters. Selects which data is to be sampled.
-	// Important: These setting need to correspond with your sensor settings.
 	void setAcquisitionParameters(	boolean isGetGyroscope,
 									boolean isGetAcceleration,
 									boolean isGetMagnetometer,
@@ -245,7 +229,6 @@ public class LpmsBThread extends Thread {
 		this.isGetLinearAcceleration = isGetLinearAcceleration;
 	}
 	
-	// Parses received sensor data (received with function value LPMS_GET_SENSOR_DATA)
 	void parseSensorData() {
 		int o = 0;
 		float r2d = 57.2958f;
@@ -297,13 +280,11 @@ public class LpmsBThread extends Thread {
 		}
 	}
 	
-	// Returns LpmsBData structure with current sensor data
 	LpmsBData getLpmsBData() {
 		LpmsBData d = new LpmsBData(mLpmsBData);
 		return d;
 	}
 	
-	// Parses LpBus function
 	void parseFunction() {	
 		switch (currentFunction) {
 		case LPMS_ACK:
@@ -329,7 +310,6 @@ public class LpmsBThread extends Thread {
 		case LPMS_GOTO_SLEEP_MODE:
 		break;
 		
-		// If new sensor data is received parse the data
 	 	case LPMS_GET_SENSOR_DATA:
 			parseSensorData();
 		break;
@@ -342,7 +322,6 @@ public class LpmsBThread extends Thread {
 		waitForData = false;
 	}
 	
-	// Parses LpBus raw data
 	void parse() {
 		int lrcReceived = 0;
 	
@@ -427,7 +406,6 @@ public class LpmsBThread extends Thread {
 		}
 	}
 	
-	// Sends data to sensor	
 	void sendData(int address, int function, int length) {
 		int txLrcCheck;
 
@@ -464,17 +442,14 @@ public class LpmsBThread extends Thread {
 		}
 	}
 	
-	// Sends ACK to sensor
 	void sendAck() {
 		sendData(0, LPMS_ACK, 0);
 	}
 	
-	// Sends NACK to sensor
 	void sendNack() {
 		sendData(0, LPMS_NACK, 0);
 	}
 	
-	// Converts received 32-bit word to float values
 	float convertRxbytesToFloat(int offset, byte buffer[]) {
 		int v = 0;
 		byte[] t = new byte[4];
@@ -486,7 +461,6 @@ public class LpmsBThread extends Thread {
 		return Float.intBitsToFloat(ByteBuffer.wrap(t).getInt(0)); 
 	}
 	
-	// Converts received 32-bit word to int value
 	int convertRxbytesToInt(int offset, byte buffer[]) {
 		int v;
 		byte[] t = new byte[4];
@@ -500,7 +474,6 @@ public class LpmsBThread extends Thread {
 		return v; 
 	}
 	
-	// Converts received 16-bit word to int value
 	int convertRxbytesToInt16(int offset, byte buffer[]) {
 		int v;
 		byte[] t = new byte[2];
@@ -514,7 +487,6 @@ public class LpmsBThread extends Thread {
 		return v; 
 	}	
 	
-	// Converts 32-bit int value to output bytes
 	void convertIntToTxbytes(int v, int offset, byte buffer[]) {
 		byte[] t = ByteBuffer.allocate(4).putInt(v).array();
 	
@@ -523,7 +495,6 @@ public class LpmsBThread extends Thread {
 		}
 	}
 	
-	// Converts 16-bit int value to output bytes
 	void convertInt16ToTxbytes(int v, int offset, byte buffer[]) {
 		byte[] t = ByteBuffer.allocate(2).putShort((short) v).array();
 	
@@ -532,7 +503,6 @@ public class LpmsBThread extends Thread {
 		}
 	}	
 
-	// Converts 32-bit float value to output bytes
 	void convertFloatToTxbytes(float f, int offset, byte buffer[]) {
 		int v = Float.floatToIntBits(f);
 		byte[] t = ByteBuffer.allocate(4).putInt(v).array();
@@ -542,7 +512,6 @@ public class LpmsBThread extends Thread {
 		}
 	}
 	
-	// Closes connection to sensor
 	public void close() {
 		isConnected = false;	
 	

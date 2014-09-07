@@ -49,7 +49,7 @@ public class DataFragment extends MyFragment {
 	private GraphViewSeries magSeries1;
 	private GraphViewSeries magSeries2;		
 
-	int dataCount = 100;	
+	int dataCount = 100;
  	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -192,5 +192,21 @@ public class DataFragment extends MyFragment {
 		magGraph.setViewPort(dataCount-100, 100);	
 
 		dataCount++;
+	}
+	
+	public void clearView() {		
+		dataCount = 100;
+		
+		accSeries0.resetData(new GraphViewData[] { });
+		accSeries1.resetData(new GraphViewData[] { });
+		accSeries2.resetData(new GraphViewData[] { });
+		
+		gyrSeries0.resetData(new GraphViewData[] { });
+		gyrSeries1.resetData(new GraphViewData[] { });
+		gyrSeries2.resetData(new GraphViewData[] { });
+		
+		magSeries0.resetData(new GraphViewData[] { });
+		magSeries1.resetData(new GraphViewData[] { });
+		magSeries2.resetData(new GraphViewData[] { });			
 	}
 }

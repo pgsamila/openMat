@@ -9,7 +9,6 @@
 		android:orientation="vertical">
 		
 		<TextView android:id="@+id/Heading"
-			style="@style/HeadingTextStyle"
 			android:text="Accelerometer"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
@@ -23,7 +22,6 @@
 			android:id="@+id/accGraph" />		
 
 		<TextView android:id="@+id/Heading"
-			style="@style/HeadingTextStyle"
 			android:text="Gyroscope"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
@@ -38,7 +36,6 @@
 			android:id="@+id/gyrGraph" />
 			
 		<TextView android:id="@+id/Heading"
-			style="@style/HeadingTextStyle"
 			android:text="Magnetometer"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"

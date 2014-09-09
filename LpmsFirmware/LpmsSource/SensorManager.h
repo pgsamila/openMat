@@ -30,7 +30,7 @@
 
 #define LPMS_MEASUREMENT_PERIOD 0.0025f
 
-#define PRESSURE_T 100000
+#define PRESSURE_T 400
 
 // Possible durations of manual gyroscope bias clibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)

@@ -56,7 +56,7 @@ LpVector3f minGyr;
 float T = LPMS_MEASUREMENT_PERIOD;
 uint32_t lpmsStatus = 0;
 static __IO uint8_t isDataSending = 0;
-uint32_t pressureTime = 0;
+uint16_t pressureTime = 0;
 float canHeartbeatTime = 0.0f;
 float gLowX = 0.0f;
 float gLowY = 0.0f;
@@ -320,7 +320,7 @@ void updateSensorData(void)
 		++measurementTime;
 
 #ifdef ENABLE_PRESSURE
-		pressureTime += LPMS_MEASUREMENT_PERIOD;
+		++pressureTime;
 
 		if (pressureTime > PRESSURE_T) {
 			pressureTime = 0;

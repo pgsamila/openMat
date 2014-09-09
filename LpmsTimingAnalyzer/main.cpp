@@ -37,7 +37,7 @@ void streamDataTask(float t)
 
 	// Gets a LpmsSensorManager instance
 	LpmsSensorManagerI* manager = LpmsSensorManagerFactory();
-	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:06:66:4B:25:03");
+	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:06:66:62:C0:7A");
 
 	threadRunning = true;
 	

@@ -46,16 +46,16 @@ void setPressureI2CConfig(void)
 
 uint8_t waitPressureI2CStandbyState(void)      
 {
-	// startTimeoutCounting();
+    startTimeoutCounting();
 
-	do {
+    do {
 		I2C_GenerateSTART(PRESSURE_I2C_PORT, ENABLE);
 		I2C_ReadRegister(PRESSURE_I2C_PORT, I2C_Register_SR1);
 		I2C_Send7bitAddress(PRESSURE_I2C_PORT, PRESSURE_I2C_ADDRESS, I2C_Direction_Transmitter);
 		
-		/* if (getTimeout() > I2C_TIMEOUT_S) {
+		if (getTimeout() > I2C_TIMEOUT_S) {
 			return 0;
-		} */
+		} 
 	} while (!(I2C_ReadRegister(PRESSURE_I2C_PORT, I2C_Register_SR1) & 0x0002));
 	
 	I2C_ClearFlag(PRESSURE_I2C_PORT, I2C_FLAG_AF);

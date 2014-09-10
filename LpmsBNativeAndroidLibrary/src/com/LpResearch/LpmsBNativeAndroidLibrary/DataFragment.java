@@ -172,8 +172,8 @@ public class DataFragment extends MyFragment {
 	}
 
 	@Override
-	public void updateView(LpmsBData d, int s) {
-		if (s == 0) return;
+	public void updateView(LpmsBData d, ImuStatus s) {
+		if (s.measurementStarted == false) return;
 	
 		accSeries0.appendData(new GraphViewData((double)dataCount, d.acc[0]), true, 200);			
 		accSeries1.appendData(new GraphViewData((double)dataCount, d.acc[1]), true, 200);

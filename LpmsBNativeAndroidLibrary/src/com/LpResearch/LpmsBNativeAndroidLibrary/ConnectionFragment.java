@@ -47,12 +47,16 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	ArrayList<String> dcLpms = new ArrayList<String>();	
 	ArrayAdapter dcAdapter;
 	ListView btList;
-	boolean firstDc;
+	boolean firstDc = true;
 	
 	ArrayList<String> connectedDevicesLpms = new ArrayList<String>();	
 	ArrayAdapter connectedDevicesAdapter;
 	ListView connectedDevicesList;
-	boolean firstConnectedDevice;	
+	boolean firstConnectedDevice = true;
+	
+	TextView loggingStateText;
+
+	boolean preLogStatus = false;	
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,7 +65,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		btAdapter = BluetoothAdapter.getDefaultAdapter();
 		
 		prepareButtons();
-		prepareDcList();	
+		prepareDiscoveredDevicesList();	
 		prepareConnectedDevicesList();
 		
         return rootView;
@@ -77,7 +81,8 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		b = (Button) rootView.findViewById(R.id.button_start_logging);
 		b.setOnClickListener(this);
 		b = (Button) rootView.findViewById(R.id.button_stop_logging);
-		b.setOnClickListener(this);		
+		b.setOnClickListener(this);
+		loggingStateText = (TextView) rootView.findViewById(R.id.logging_status);
 	}
 	
     @Override
@@ -93,20 +98,57 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		
 		case R.id.button_disconnect:
 			connectListener.onDisconnect();
+			onDisconnect();
 		break;
+		
+		case R.id.button_start_logging:
+			connectListener.startLogging();
+		break;
+		
+		case R.id.button_stop_logging:
+			connectListener.stopLogging();
+		break;		
         }
     }
 	
 	public interface OnConnectListener {
 		public void onConnect(String address);
 		public void onDisconnect();
+		public void startLogging();
+		public void stopLogging();		
 	}
 	
 	void startBtConnect() {
 		btAdapter.cancelDiscovery();
-		Log.d("lpms", "Connect: " + currentLpms);
+
 		if (btAdapter != null && !currentLpms.equals("")) {
+			Toast.makeText(getActivity(), "Connecting to " + currentLpms, Toast.LENGTH_SHORT).show();
+			
 			connectListener.onConnect(currentLpms);
+		}
+	}
+	
+	void onDisconnect() {
+		synchronized (connectedDevicesLpms) {		
+			for (ListIterator<String> it = connectedDevicesLpms.listIterator(); it.hasNext(); ) {
+				String e = it.next();
+			
+				if (currentLpms.equals(e)) {		
+					connectedDevicesLpms.remove(e);
+					connectedDevicesAdapter.notifyDataSetChanged();				
+					
+					if (connectedDevicesLpms.size() == 0) {
+						connectedDevicesLpms.add("Press connect button to connect to device..");
+						connectedDevicesAdapter.notifyDataSetChanged();
+						
+						firstConnectedDevice = true;
+						
+						connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.black));
+					}
+					
+					return;
+				}
+			}	
 		}
 	}
 	
@@ -121,14 +163,12 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 					if (device.getName().equals("LPMS-B")) {
 						if (firstDc == true) {
 							dcLpms.clear();							
-							btList.getChildAt(0).setBackgroundColor(Color.BLUE);
+							btList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
 							currentLpms = device.getAddress();							
 							
 							firstDc = false;							
 						}
-					
-						Log.d("lpms", "Discovered: " + device.getName() + " " + device.getAddress());
-						
+											
 						dcLpms.add(device.getAddress());
 						dcAdapter.notifyDataSetChanged();
 					}
@@ -142,14 +182,12 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 					if (device.getName().equals("LPMS-B")) {
 						if (firstConnectedDevice == true) {
 							connectedDevicesLpms.clear();							
-							connectedDevicesList.getChildAt(0).setBackgroundColor(Color.BLUE);
+							connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
 							((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
 							
 							firstConnectedDevice = false;							
 						}
-					
-						Log.d("lpms", "Connected: " + device.getName() + " " + device.getAddress());
-						
+											
 						connectedDevicesLpms.add(device.getAddress());
 						connectedDevicesAdapter.notifyDataSetChanged();
 					}
@@ -158,12 +196,11 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		}
 	};
 	
-	public void prepareDcList() {
+	public void prepareDiscoveredDevicesList() {
 		btList = (ListView) rootView.findViewById(R.id.list);
-		
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		getActivity().registerReceiver(mReceiver, filter);
-		dcAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, dcLpms);
+		dcAdapter = new ArrayAdapter(getActivity(), R.layout.list_view_text_item, dcLpms);
 		btList.setAdapter(dcAdapter);
 		dcLpms.add("Press Discover button to start discovery..");
 		dcAdapter.notifyDataSetChanged();
@@ -172,15 +209,15 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		btList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				if (firstDc == true) return;
+			
 				for(int a = 0; a < parent.getChildCount(); a++) {
 					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
 				}			
-				view.setBackgroundColor(Color.BLUE);
+				view.setBackgroundColor(getResources().getColor(R.color.navy));
 					
 				int itemPosition = position;
 				currentLpms = (String) btList.getItemAtPosition(position);
-				
-				Log.d("lpms", "Select: " + currentLpms);
 			}
 		});
 	}
@@ -189,34 +226,32 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		connectedDevicesList = (ListView) rootView.findViewById(R.id.connected_devices_list);
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
 		getActivity().registerReceiver(mReceiver, filter);
-		
-		connectedDevicesAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, connectedDevicesLpms);
-		
+		connectedDevicesAdapter = new ArrayAdapter(getActivity(), R.layout.list_view_text_item, connectedDevicesLpms);
 		connectedDevicesList.setAdapter(connectedDevicesAdapter);
 		connectedDevicesLpms.add("Press connect button to connect to device..");
 		connectedDevicesAdapter.notifyDataSetChanged();
-		
 		firstConnectedDevice = true;
 		
 		connectedDevicesList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				if (firstConnectedDevice == true) return;			
+			
 				for(int a = 0; a < parent.getChildCount(); a++) {
 					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
 				}			
-				view.setBackgroundColor(Color.BLUE);
+				view.setBackgroundColor(getResources().getColor(R.color.navy));
 				
 				int itemPosition = position;
 				String itemValue = (String) connectedDevicesList.getItemAtPosition(position);
 				((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(itemValue);
-				
-				Log.d("lpms", "Selected: " + itemValue);
 			}
 		}); 		
 	}
 	
 	public void startBtDiscovery() {
-		Log.d("lpms", "Start discovery");
+		Toast.makeText(getActivity(), "Starting discovery..", Toast.LENGTH_SHORT).show();		
+		
 		btAdapter.cancelDiscovery();
 		btAdapter.startDiscovery();		
 	}
@@ -273,6 +308,15 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	}
 
 	@Override
-	public void updateView(LpmsBData d, int s) {
+	public void updateView(LpmsBData d, ImuStatus s) {
+		if (preLogStatus != s.isLogging) {
+			preLogStatus = s.isLogging;
+			
+			if (s.isLogging == true) {
+				loggingStateText.setText("Logging to " + s.logFileName);
+			} else {
+				loggingStateText.setText("Logging is OFF");
+			}
+		}
 	}
 }

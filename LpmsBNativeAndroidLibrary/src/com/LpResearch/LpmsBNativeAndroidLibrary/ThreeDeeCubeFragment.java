@@ -76,8 +76,8 @@ public class ThreeDeeCubeFragment extends MyFragment {
 	}
 
 	@Override
-	public void updateView(LpmsBData d, int s) {
-		if (s == 0) return;	
+	public void updateView(LpmsBData d, ImuStatus s) {
+		if (s.measurementStarted == false) return;	
 
 		glView.lmRenderer.q[0] = d.quat[0];
 		glView.lmRenderer.q[1] = d.quat[1];

@@ -1,38 +1,3 @@
-/***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
-**
-** Redistribution and use in source and binary forms, with 
-** or without modification, are permitted provided that the 
-** following conditions are met:
-**
-** Redistributions of source code must retain the above copyright 
-** notice, this list of conditions and the following disclaimer.
-** Redistributions in binary form must reproduce the above copyright 
-** notice, this list of conditions and the following disclaimer in 
-** the documentation and/or other materials provided with the 
-** distribution.
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
-** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
-** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***********************************************************************/
-
-/* 	Before using this application please ensure the following:
-	1. 	The Bluetooth ID in this program equals the Bluetooth ID of your 
-		LPMS-B sensor (LpmsBThread.connect)
-	2. 	The data acquisition settings correspond to the settings in 
-		the LpmsControl application (LpmsBThread.setAcquisitionParameters) */
-
 package com.LpResearch.LpmsBNativeAndroidLibrary;
 
 import java.net.*;
@@ -82,22 +47,27 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	TextView eulerXText, eulerYText, eulerZText;
 	BluetoothAdapter btAdapter;
 	boolean isLpmsBConnected = false;
-	int imuStatus = 0;
 	
-	Handler handler = new Handler();	
+	ImuStatus imuStatus = new ImuStatus();
+	Handler handler = new Handler();
+	Handler updateFragmentsHandler = new Handler();
+	LpmsBData imuData = new LpmsBData();
 	
 	private int updateRate = 25;
 	private boolean getImage = true;
-
-	Handler updateFragmentsHandler = new Handler();
-	LpmsBData imuData = new LpmsBData();
 
 	List<LpmsBThread> lpmsList = new ArrayList<LpmsBThread>();
 	LpmsBThread lpmsB;
 	
 	private Map<Integer, String> mFragmentMap = new HashMap<Integer, String>();
 	private AppSectionsPagerAdapter mAppSectionsPagerAdapter;
-	ViewPager mViewPager;	
+	ViewPager mViewPager;
+
+	OutputStreamWriter logFileWriter;
+	boolean isLoggingStarted = false;
+	FileOutputStream logFileStream;
+	
+	boolean stopPollThread = false;
 	
 	private Runnable mUpdateFragmentsTask = new Runnable() {
 		public void run() {	
@@ -117,6 +87,11 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
         setContentView(R.layout.main);
 		initializeViews();
+		
+		Thread t = new Thread(new DataAnalysisThread());
+        t.start();
+		
+		Log.e("lpms", "Initializing..");		
     }
 
 	void initializeViews() {
@@ -150,7 +125,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		updateFragmentsHandler.postDelayed(mUpdateFragmentsTask, 100);
 	}
 
-	public void updateFragment(LpmsBData d, int s) {
+	public void updateFragment(LpmsBData d, ImuStatus s) {
 		int key = mViewPager.getCurrentItem();
 		
 		MyFragment statusFragment = (MyFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(key));
@@ -167,17 +142,32 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 
 	private void timerMethod() {
 		handler.post(new Runnable() {
-			public void run() {	
-				// synchronized (lpmsB) {
-					if (lpmsB != null && isLpmsBConnected == true) {
-						// synchronized (imuData) {
-							imuData = lpmsB.getLpmsBData();
-						// }
-					}
-				// }
+			public void run() {
 			}
 		});
 	}
+	
+	public class DataAnalysisThread implements Runnable {
+        public void run() {
+			while (stopPollThread == false) {
+				synchronized (lpmsList) {
+					for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+						LpmsBThread e = it.next();
+						if (e.hasNewData() == true) {
+							LpmsBData d = e.getLpmsBData();
+							if (lpmsB.getAddress().equals(e.getAddress())) imuData = d;
+							logLpmsData(d);
+						}
+					}
+				}
+				
+				/* try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+                } */
+			}
+		}
+	}		
 	
 	@Override
 	public void onAttachFragment(Fragment fragment) {
@@ -224,71 +214,123 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
     @Override
     protected void onPause() {
-		// synchronized (lpmsB) {	
-			if (lpmsB != null && isLpmsBConnected == true) {
-				isLpmsBConnected = false;
-				lpmsB.close();
-				imuStatus = 0;
-			}
-		// }
+		if (lpmsB != null && isLpmsBConnected == true) {
+			isLpmsBConnected = false;
+			lpmsB.close();
+			imuStatus.measurementStarted = false;
+		}
 	
         super.onPause();
     }
 	
     @Override
-	public void onConnect(String address) {		
-		// synchronized (lpmsList) {	
+	public void onConnect(String address) {	
+		synchronized (lpmsList) {	
 			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
 				if (address == it.next().getAddress()) {
-					Log.d("lpms", "Already connected: " + address);
+					Toast.makeText(getBaseContext(), address + " is already connected.", Toast.LENGTH_SHORT).show();		
 					
 					return;
 				}
 			}
+		}
+	
+		lpmsB = new LpmsBThread(btAdapter);
+		lpmsList.add(lpmsB);
 		
-			lpmsB = new LpmsBThread(btAdapter);
-			lpmsList.add(lpmsB);
-			
-			lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
-			lpmsB.connect(address, 0);
-			
-			isLpmsBConnected = true;
-			imuStatus = 1;
-			
-			Log.d("lpms", "Connected: " + lpmsB.getAddress());
-		// }
+		lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
+		lpmsB.connect(address, 0);
+		
+		isLpmsBConnected = true;
+		imuStatus.measurementStarted = true;
+		
+		Toast.makeText(getBaseContext(), "Connected to " + address, Toast.LENGTH_SHORT).show();	
+	}
+	
+	public boolean isExternalStorageWritable() {
+		String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public void startLogging() {
+		if (isExternalStorageWritable() == true) {
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+				String currentDateandTime = sdf.format(new Date());			
+				File logFile = new File("/sdcard/LpResearch/DataLog" + currentDateandTime + ".csv");
+				logFile.createNewFile();
+				logFileStream = new FileOutputStream(logFile);
+				logFileWriter = new OutputStreamWriter(logFileStream);
+				Toast.makeText(getBaseContext(), "Logging to " + logFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+				isLoggingStarted = true;				
+				logFileWriter.append("SensorId, TimeStamp (s), AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2)\n");
+				imuStatus.isLogging = true;
+				imuStatus.logFileName = logFile.getAbsolutePath();
+			} catch (Exception e) {
+				Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+			}
+		} else {
+			Toast.makeText(getBaseContext(), "Couldn't write to external storage. Please detach device from PC.", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void logLpmsData(LpmsBData d) {
+		if (isLoggingStarted == true) {
+			try {		
+				Log.e("lpms", d.imuId + ", " + d.timestamp + ", " + d.linAcc[0]);				
+				logFileWriter.append(d.imuId + ", " + d.timestamp + ", " + d.gyr[0] + ", " + d.gyr[1] + ", " + d.gyr[2] + ", " + d.acc[0] + ", " + d.acc[1] + ", " + d.acc[2] + ", " + d.mag[0] + ", " + d.mag[1] + ", " + d.mag[2] + ", " + d.quat[0] + ", " + d.quat[1] + ", " + d.quat[2] + ", " + d.quat[3] + ", " + d.euler[0] + ", " + d.euler[1] + ", " + d.euler[2] + ", " + d.linAcc[0] + ", " + d.linAcc[1] + ", " + d.linAcc[2] +  "\n");
+			} catch (Exception e) {
+				Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+	
+	public void stopLogging() {
+		if (isLoggingStarted == false) return;
+		try {		
+			logFileWriter.close();
+			logFileStream.close();
+			isLoggingStarted = false;
+			imuStatus.isLogging = false;
+			Toast.makeText(getBaseContext(), "Logging stopped", Toast.LENGTH_SHORT).show();			
+		} catch (Exception e) {
+			Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+		}
 	}
 	
 	public void onSensorSelectionChanged(String address) {
-		// synchronized (lpmsList) {	
-			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
-				LpmsBThread e = it.next();
-			
-				if (address.equals(e.getAddress())) {
-					Log.d("lpms", "Selected: " + e.getAddress());			
-					lpmsB = e;
-					
-					DataFragment dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(2));
-					if (dataFragment != null) {
-						dataFragment.clearView();
-					}
-					
-					return;
-				}
+		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+			LpmsBThread e = it.next();
+		
+			if (address.equals(e.getAddress())) {		
+				lpmsB = e;
+				DataFragment dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(2));
+				if (dataFragment != null) dataFragment.clearView();
+
+				return;
 			}
-		// }
+		}
 	}
-	
+		
     @Override
 	public void onDisconnect() {
-		if (isLpmsBConnected == false) return;
+		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+			LpmsBThread e = it.next();
 		
-		isLpmsBConnected = false;
-		
-		// synchronized (lpmsB) {		
-			if (lpmsB != null) lpmsB.close();
-		// }
-		
-		imuStatus = 0;
+			if (lpmsB.getAddress().equals(e.getAddress())) {		
+				Toast.makeText(getBaseContext(), "Disconnected " + e.getAddress(), Toast.LENGTH_SHORT).show();
+				
+				e.close();
+				lpmsList.remove(e);
+				if (lpmsList.size() == 0) {
+					imuStatus.measurementStarted = false;
+				}
+				
+				return;
+			}
+		}		
 	}
 }

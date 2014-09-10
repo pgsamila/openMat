@@ -1,32 +1,3 @@
-/***********************************************************************
-** Copyright (C) 2012 LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
-**
-** Redistribution and use in source and binary forms, with 
-** or without modification, are permitted provided that the 
-** following conditions are met:
-**
-** Redistributions of source code must retain the above copyright 
-** notice, this list of conditions and the following disclaimer.
-** Redistributions in binary form must reproduce the above copyright 
-** notice, this list of conditions and the following disclaimer in 
-** the documentation and/or other materials provided with the 
-** distribution.
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
-** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
-** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***********************************************************************/
-
 package com.LpResearch.LpmsBNativeAndroidLibrary;
 
 import java.net.*;
@@ -110,17 +81,24 @@ public class LpmsBThread extends Thread {
 	DataOutputStream dos;
 	public float startStamp = 0.0f;
 	public boolean resetTimestamp = true;
+	boolean newDataFlag = false;	
 	
 	LpmsBData mLpmsBData = new LpmsBData();
 
 	LpmsBThread(BluetoothAdapter adapter) {
 		mAdapter = adapter;
 	}
+	
+	public boolean hasNewData() {
+		boolean f = newDataFlag;	
+		newDataFlag = false;
+		return f;
+	}
 
 	public void connect(String address, int id) {
 		mAddress = address;
 		imuId = id;
-			
+
 		Log.e(TAG, "[LpmsBThread] Connect to: " + mAddress);
 
         if (mAdapter == null) {
@@ -173,7 +151,7 @@ public class LpmsBThread extends Thread {
     public class ClientReadThread implements Runnable {
         public void run() {
         	Thread t = new Thread(new ClientStateThread());	
-        	t.start();	
+        	t.start();
 	
 			while (mSocket.isConnected() == true) {
 				try {
@@ -183,6 +161,11 @@ public class LpmsBThread extends Thread {
 				}
 				
 				parse();
+				
+				/* try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+				} */
 			}
 		}
 	}	
@@ -207,6 +190,10 @@ public class LpmsBThread extends Thread {
 						++timeout;
 					} 
 			
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e) {
+					}
 				}
 			} catch (Exception e) {
 				Log.d(TAG, "[LpmsBThread] Connection interrupted");
@@ -278,6 +265,8 @@ public class LpmsBThread extends Thread {
 			mLpmsBData.linAcc[1] = convertRxbytesToFloat(o, rxBuffer); o += 4;
 			mLpmsBData.linAcc[2] = convertRxbytesToFloat(o, rxBuffer); o += 4;
 		}
+		
+		newDataFlag = true;
 	}
 	
 	LpmsBData getLpmsBData() {

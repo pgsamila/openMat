@@ -37,9 +37,9 @@ import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment;
 import com.LpResearch.LpmsBNativeAndroidLibrary.MyFragment.MyFragmentListener;
 import com.LpResearch.LpmsBNativeAndroidLibrary.ConnectionFragment.OnConnectListener;
 
-public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener, OnConnectListener
-{
+public class LpmsBMainActivity extends FragmentActivity implements ActionBar.TabListener, MyFragmentListener, OnConnectListener {
 	Timer mTimer;
+	
 	TextView gyrXText, gyrYText, gyrZText;
 	TextView accXText, accYText, accZText;
 	TextView magXText, magYText, magZText;
@@ -153,18 +153,14 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				synchronized (lpmsList) {
 					for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
 						LpmsBThread e = it.next();
-						if (e.hasNewData() == true) {
-							LpmsBData d = e.getLpmsBData();
-							if (lpmsB.getAddress().equals(e.getAddress())) imuData = d;
-							logLpmsData(d);
+						LpmsBData d = new LpmsBData();
+						while (e.hasNewData() == true) {						
+							d = e.getLpmsBData();
+							if (lpmsB.getAddress().equals(e.getAddress())) imuData = new LpmsBData(d);
+							logLpmsData(new LpmsBData(d));
 						}
 					}
 				}
-				
-				/* try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-                } */
 			}
 		}
 	}		
@@ -224,22 +220,24 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
     }
 	
     @Override
-	public void onConnect(String address) {	
+	public void onConnect(String address) {
+		int id = 0;
+	
 		synchronized (lpmsList) {	
 			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
 				if (address == it.next().getAddress()) {
-					Toast.makeText(getBaseContext(), address + " is already connected.", Toast.LENGTH_SHORT).show();		
-					
+					Toast.makeText(getBaseContext(), address + " is already connected.", Toast.LENGTH_SHORT).show();
 					return;
 				}
+				id++;
 			}
 		}
-	
+		
 		lpmsB = new LpmsBThread(btAdapter);
 		lpmsList.add(lpmsB);
 		
 		lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
-		lpmsB.connect(address, 0);
+		lpmsB.connect(address, id);
 		
 		isLpmsBConnected = true;
 		imuStatus.measurementStarted = true;
@@ -266,7 +264,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				logFileWriter = new OutputStreamWriter(logFileStream);
 				Toast.makeText(getBaseContext(), "Logging to " + logFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 				isLoggingStarted = true;				
-				logFileWriter.append("SensorId, TimeStamp (s), AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2)\n");
+				logFileWriter.append("SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2)\n");
 				imuStatus.isLogging = true;
 				imuStatus.logFileName = logFile.getAbsolutePath();
 			} catch (Exception e) {
@@ -279,9 +277,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
 	public void logLpmsData(LpmsBData d) {
 		if (isLoggingStarted == true) {
-			try {		
-				Log.e("lpms", d.imuId + ", " + d.timestamp + ", " + d.linAcc[0]);				
-				logFileWriter.append(d.imuId + ", " + d.timestamp + ", " + d.gyr[0] + ", " + d.gyr[1] + ", " + d.gyr[2] + ", " + d.acc[0] + ", " + d.acc[1] + ", " + d.acc[2] + ", " + d.mag[0] + ", " + d.mag[1] + ", " + d.mag[2] + ", " + d.quat[0] + ", " + d.quat[1] + ", " + d.quat[2] + ", " + d.quat[3] + ", " + d.euler[0] + ", " + d.euler[1] + ", " + d.euler[2] + ", " + d.linAcc[0] + ", " + d.linAcc[1] + ", " + d.linAcc[2] +  "\n");
+			try {					
+				synchronized(logFileWriter) {				
+					logFileWriter.append(d.imuId + ", " + d.timestamp + ", " + d.frameNumber + ", " + d.gyr[0] + ", " + d.gyr[1] + ", " + d.gyr[2] + ", " + d.acc[0] + ", " + d.acc[1] + ", " + d.acc[2] + ", " + d.mag[0] + ", " + d.mag[1] + ", " + d.mag[2] + ", " + d.quat[0] + ", " + d.quat[1] + ", " + d.quat[2] + ", " + d.quat[3] + ", " + d.euler[0] + ", " + d.euler[1] + ", " + d.euler[2] + ", " + d.linAcc[0] + ", " + d.linAcc[1] + ", " + d.linAcc[2] +  "\n");
+				}
 			} catch (Exception e) {
 				Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
 			}
@@ -290,8 +289,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	
 	public void stopLogging() {
 		if (isLoggingStarted == false) return;
-		try {		
-			logFileWriter.close();
+		try {				
+			synchronized(logFileWriter) {			
+				logFileWriter.close();
+			}
 			logFileStream.close();
 			isLoggingStarted = false;
 			imuStatus.isLogging = false;
@@ -317,20 +318,22 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
     @Override
 	public void onDisconnect() {
-		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
-			LpmsBThread e = it.next();
-		
-			if (lpmsB.getAddress().equals(e.getAddress())) {		
-				Toast.makeText(getBaseContext(), "Disconnected " + e.getAddress(), Toast.LENGTH_SHORT).show();
-				
-				e.close();
-				lpmsList.remove(e);
-				if (lpmsList.size() == 0) {
-					imuStatus.measurementStarted = false;
+		synchronized (lpmsList) {	
+			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+				LpmsBThread e = it.next();
+			
+				if (lpmsB.getAddress().equals(e.getAddress())) {		
+					Toast.makeText(getBaseContext(), "Disconnected " + e.getAddress(), Toast.LENGTH_SHORT).show();
+					
+					e.close();
+					lpmsList.remove(e);
+					if (lpmsList.size() == 0) {
+						imuStatus.measurementStarted = false;
+					}
+					
+					return;
 				}
-				
-				return;
 			}
-		}		
+		}
 	}
 }

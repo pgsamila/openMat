@@ -150,7 +150,7 @@ void LpmsSensorManager::run(void)
 	float prevTimestamp = 0.0f;
 	int deviceType = 0;
 
-#ifdef _WIN32	
+#ifdef _WIN32
     OSVERSIONINFO osvi;
 
     ZeroMemory(&osvi, sizeof(OSVERSIONINFO));

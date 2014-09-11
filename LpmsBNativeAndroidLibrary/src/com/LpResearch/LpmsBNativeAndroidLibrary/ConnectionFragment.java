@@ -158,17 +158,17 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				
 				synchronized (dcLpms) {				
 					if (device.getName().equals("LPMS-B")) {
+						for (ListIterator<String> it = dcLpms.listIterator(); it.hasNext(); ) {
+							if (device.getAddress().equals(it.next())) return;
+						}
 						if (firstDc == true) {
 							dcLpms.clear();							
 							btList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
-							currentLpms = device.getAddress();							
-							
+							currentLpms = device.getAddress();								
 							firstDc = false;							
-						}
-											
+						}						
 						dcLpms.add(device.getAddress());
 						dcAdapter.notifyDataSetChanged();
 					}
@@ -177,17 +177,14 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 			
 			if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				
 				synchronized (connectedDevicesLpms) {	
 					if (device.getName().equals("LPMS-B")) {
 						if (firstConnectedDevice == true) {
 							connectedDevicesLpms.clear();							
 							connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
 							((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
-							
 							firstConnectedDevice = false;							
 						}
-											
 						connectedDevicesLpms.add(device.getAddress());
 						connectedDevicesAdapter.notifyDataSetChanged();
 					}

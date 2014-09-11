@@ -6,6 +6,10 @@ import java.io.*;
 import java.text.*;
 import java.nio.ByteBuffer;
 import java.io.FileDescriptor;
+import java.math.BigDecimal;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.lang.reflect.Method;
 
 import android.bluetooth.*;
 import android.util.*;
@@ -17,10 +21,8 @@ import android.util.*;
 import android.content.*;
 import android.view.inputmethod.*;
 
-import java.lang.reflect.Method;
-
 public class LpmsBThread extends Thread {
-	final String TAG = "LpmsB";
+	final String TAG = "lpms";
 	
 	final UUID MY_UUID_INSECURE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");	
 	
@@ -80,19 +82,14 @@ public class LpmsBThread extends Thread {
 	int imuId = 0;
 	DataOutputStream dos;
 	public float startStamp = 0.0f;
-	public boolean resetTimestamp = true;
+	public boolean resetTimestampFlag = true;
 	boolean newDataFlag = false;	
-	
+	LinkedBlockingDeque<LpmsBData> dataQueue = new LinkedBlockingDeque<LpmsBData>();
 	LpmsBData mLpmsBData = new LpmsBData();
+	int frameCounter = 0;
 
 	LpmsBThread(BluetoothAdapter adapter) {
 		mAdapter = adapter;
-	}
-	
-	public boolean hasNewData() {
-		boolean f = newDataFlag;	
-		newDataFlag = false;
-		return f;
 	}
 
 	public void connect(String address, int id) {
@@ -144,14 +141,18 @@ public class LpmsBThread extends Thread {
 			return;
 		}			
 		
+		resetTimestamp();
+		
 		Thread t = new Thread(new ClientReadThread());
         t.start();
+		
+		frameCounter = 0;
 	}
 	
     public class ClientReadThread implements Runnable {
         public void run() {
-        	Thread t = new Thread(new ClientStateThread());	
-        	t.start();
+        	/* Thread t = new Thread(new ClientStateThread());	
+        	t.start(); */
 	
 			while (mSocket.isConnected() == true) {
 				try {
@@ -161,11 +162,6 @@ public class LpmsBThread extends Thread {
 				}
 				
 				parse();
-				
-				/* try {
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-				} */
 			}
 		}
 	}	
@@ -216,18 +212,20 @@ public class LpmsBThread extends Thread {
 		this.isGetLinearAcceleration = isGetLinearAcceleration;
 	}
 	
+	public static float round(float d, int decimalPlace) {
+		BigDecimal bd = new BigDecimal(Float.toString(d));
+		bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+		return bd.floatValue();
+	}	
+	
 	void parseSensorData() {
 		int o = 0;
 		float r2d = 57.2958f;
 	
-		mLpmsBData.imuId = imuId;	
-
-		if (resetTimestamp == true) {
-			startStamp = convertRxbytesToFloat(o, rxBuffer);
-			resetTimestamp = false;
-		}
-		
-		mLpmsBData.timestamp = convertRxbytesToFloat(o, rxBuffer) - startStamp; o += 4;
+		mLpmsBData.imuId = imuId;
+		mLpmsBData.timestamp = convertRxbytesToFloat(o, rxBuffer); o += 4;
+		mLpmsBData.frameNumber = frameCounter;
+		frameCounter++;
 		
 	 	if (isGetGyroscope == true) {
 			mLpmsBData.gyr[0] = convertRxbytesToFloat(o, rxBuffer) * r2d; o += 4;
@@ -266,12 +264,25 @@ public class LpmsBThread extends Thread {
 			mLpmsBData.linAcc[2] = convertRxbytesToFloat(o, rxBuffer); o += 4;
 		}
 		
+		dataQueue.addFirst(new LpmsBData(mLpmsBData));
+		
 		newDataFlag = true;
 	}
 	
-	LpmsBData getLpmsBData() {
-		LpmsBData d = new LpmsBData(mLpmsBData);
-		return d;
+	public boolean hasNewData() {
+		if (dataQueue.peekLast() != null) {
+			return true;
+		}
+		return false;
+	}	
+	
+	public LpmsBData getLpmsBData() {
+		if (dataQueue.peekLast() != null) {
+			LpmsBData d = new LpmsBData(dataQueue.peekLast());
+			dataQueue.removeLast();
+			return d;
+		}
+		return null;
 	}
 	
 	void parseFunction() {	
@@ -512,13 +523,11 @@ public class LpmsBThread extends Thread {
 		Log.d(TAG, "[LpmsBThread] Connection closed");		
 	}
 	
-	public void resetTimestamp()
-	{
-		resetTimestamp = true;
+	public void resetTimestamp() {
+		resetTimestampFlag = true;
 	}
 	
-	public String getAddress()
-	{
+	public String getAddress() {
 		return mAddress;
 	}
 }	

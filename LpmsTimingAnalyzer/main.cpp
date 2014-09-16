@@ -10,10 +10,7 @@
 
 using namespace std;
 
-// Forward Declarations
 void printMenu(void);
-
-// Send data thread
 bool threadRunning = false;
 bool stopThread = false;
 
@@ -35,20 +32,19 @@ void streamDataTask(float t)
 	long long lastTimeStampMM = 0;
 	long long timeStampMM = 0;
 
-	// Gets a LpmsSensorManager instance
 	LpmsSensorManagerI* manager = LpmsSensorManagerFactory();
-	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:06:66:62:C0:7A");
+
+	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:06:66:62:C0:7A");
+	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_RS232, "COM159");	
+	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_U, "A4004frO");
+	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_C, "0");
 
 	threadRunning = true;
 	
 	mm.reset();
 	while (!stopThread) { 
-
-		// Checks, if conncted
 		if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED) {
 			if (runOnce) {
-
-				// 1s buffer 
 				std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			}
 			
@@ -87,10 +83,8 @@ void streamDataTask(float t)
 	
 	cout << "Total Elapsed time: " <<  (timeGetTime() - startTimeStampMM) / 1000.0f << endl;
 
-	// Removes the initialized sensor
 	manager->removeSensor(lpms);
-		
-	// Deletes LpmsSensorManager object 
+
 	delete manager;
 
 	threadRunning = false;
@@ -108,8 +102,6 @@ int main(int argc, char *argv[])
 		
 		getline(cin, input);
 		switch (input[0]) {
-
-		// connect to server
 		case 's':
 			if (!threadRunning) {
 				float runTime;
@@ -129,26 +121,22 @@ int main(int argc, char *argv[])
 			}
 		break;
 			
-		// disconnect from server
 		case 'x':
 			stopThread = true;
 		break;
 
-		// quit program
 		case 'q':
 			cout << "[Main] Quiting main program" << endl;
 			quit = true;
 			stopThread = true;
 			break;
 
-			// default
 		default:
 			cout << "[Main] Unknown command. Try again" << endl;
 		break;
 		}
 	}
 	
-	// wait for thread to terminate
 	cout << "[Main] Terminating...\n";
 	while (threadRunning) std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	

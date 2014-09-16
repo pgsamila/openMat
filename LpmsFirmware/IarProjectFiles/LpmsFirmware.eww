@@ -35,6 +35,14 @@
         <project>LpmsFirmware</project>
         <configuration>LpmsCuOldHeaveMotion</configuration>
       </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpInsole</configuration>
+      </member>
+      <member>
+        <project>LpmsFirmware</project>
+        <configuration>LpmsBle</configuration>
+      </member>
     </batchDefinition>
   </batchBuild>
 </workspace>

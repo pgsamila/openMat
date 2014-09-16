@@ -198,13 +198,7 @@ void LpmsSensorManager::run(void)
 					(*i)->update();				
 				}
 				lm.unlock();
-			}
-			
-#ifdef _WIN32
-			if (bIsWindows7orLater == false) {
-				std::this_thread::sleep_for(std::chrono::microseconds(500));
-			}			
-#endif		
+			}	
 		break;
 
 		case SMANAGER_LIST:

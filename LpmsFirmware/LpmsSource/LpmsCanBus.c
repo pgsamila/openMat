@@ -309,6 +309,8 @@ uint8_t pollCanBusData(void)
 	return 1;
 }
 
+#define CAN_TIMEOUT 1000
+
 void CANStartCANOpenDataTransfer(uint16_t cobId, uint8_t* pDataBuffer)
 {
 	int i;
@@ -326,7 +328,7 @@ void CANStartCANOpenDataTransfer(uint16_t cobId, uint8_t* pDataBuffer)
 	gTransmitMailbox = CAN_NO_MB;
 	gTransmitMailbox = CAN_Transmit(CAN_PORT, &canOpenMsg);
 
-	while ((CAN_TransmitStatus(CAN_PORT, gTransmitMailbox) !=  CANTXOK) && (timeout <= 0xffff)) timeout++;
+	while ((CAN_TransmitStatus(CAN_PORT, gTransmitMailbox) !=  CANTXOK) && (timeout <= CAN_TIMEOUT)) timeout++;
 }
 
 uint8_t checkCANOpenHeartbeat(void)

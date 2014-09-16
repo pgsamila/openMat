@@ -1370,9 +1370,10 @@ void LpmsSensor::run(void)
 
 void LpmsSensor::close(void)
 {
-	bt->close();
-	
 	stopped = true;
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	bt->close();
 }
 
 void LpmsSensor::startCalibrateGyro(void)
@@ -1716,7 +1717,7 @@ void LpmsSensor::checkPlanarMagCal(float T)
 			runOnce = false;
 		}	
 	
-		for (int i=0; i<3; i++) magAvg.data[i] = magAvg.data[i] * 0.9 + currentData.bRaw[i] * 0.1;
+		for (int i=0; i<3; i++) magAvg.data[i] = magAvg.data[i] * 0.9f + currentData.bRaw[i] * 0.1f;
 	
 		for (int i=0; i<3; i++) {
 			if (currentData.bRaw[i] > bMax.data[i]) {

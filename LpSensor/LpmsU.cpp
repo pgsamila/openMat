@@ -131,6 +131,8 @@ void LpmsU::close(void)
 	stopStreaming();	
 	isOpen = false;
 	FT_Close(ftHandle); 
+	
+	cout << "[LpmsU] Connection to " << idNumber << " closed." << endl;
 }	
 
 bool LpmsU::read(unsigned char *rxBuffer, unsigned long *bytesReceived) 

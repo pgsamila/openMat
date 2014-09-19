@@ -419,6 +419,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
+
+
 void MainWindow::selectGraphWindow(void)
 {
 	cubeWindowContainer->hide();

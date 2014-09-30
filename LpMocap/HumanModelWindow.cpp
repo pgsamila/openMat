@@ -223,18 +223,7 @@ void HumanModelWindow::drawHumanModel(void)
 				dir_vector = vector_2 - vector_1;
 				
 				rotation_matrix = Eigen::Quaternionf().setFromTwoVectors(Eigen::Vector3f(1.0f, 0, 0), dir_vector);
-				
 				vector_length = (vector_1 - vector_2).norm();
-				
-				/* glDisable(GL_LIGHTING);
-				glColor3f(1.0f, 0.0f, 0.0f);		
-				glLineWidth(3.0f);
-				glBegin(GL_LINES);
-				glVertex3f(vector_1(0),  vector_1(1), vector_1(2));
-				glVertex3f(vector_2(0),  vector_2(1), vector_2(2));
-				glEnd();
-				glEnable(GL_LIGHTING); */
-
 				drawDiamond(rotation_matrix, vector_1, vector_length, blue, true);
 			}
 		}

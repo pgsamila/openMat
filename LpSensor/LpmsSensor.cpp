@@ -1289,10 +1289,17 @@ int LpmsSensor::getConnectionStatus(void)
 void LpmsSensor::setCurrentData(ImuData d)
 {
 	sensorMutex.lock();
+	
 	currentData = d;
+	
+	if (dataQueue.size() < 64) { 
+		dataQueue.push(d);
+	}
+	
 	if (callbackSet == true) {
 		lpmsCallback(d, deviceId.c_str());
 	}
+	
 	sensorMutex.unlock();	
 }
 
@@ -1302,12 +1309,28 @@ void LpmsSensor::setCallback(LpmsCallback cb)
 	callbackSet = true;
 }
 
+bool LpmsSensor::hasImuData(void)
+{
+	if (dataQueue.size() > 0) return true;
+	
+	return false;
+}
+
 ImuData LpmsSensor::getCurrentData(void)
 {
 	ImuData d;
 	
+	bt->zeroImuData(&d);
+	
 	sensorMutex.lock();
-	d = currentData;
+	
+	if (dataQueue.size() > 0) {
+		d = dataQueue.front();
+		dataQueue.pop();
+	} else {
+		d = currentData;
+	}
+	
 	sensorMutex.unlock();
 
 	return d;

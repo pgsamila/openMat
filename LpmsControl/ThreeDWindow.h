@@ -68,6 +68,9 @@ public:
 	Eigen::Vector3f hardIronOffset;
 	Eigen::Matrix3f softIronMatrix;
 	bool objFileSet;
+	float glob_translate_x;
+	float glob_translate_y;
+	float glob_translate_z;	
 
     ThreeDWindow(QWidget *parent = 0, QGLWidget *shareWidget = 0);
     ~ThreeDWindow();
@@ -104,7 +107,8 @@ public slots:
 	void rotateSceneBy(int xAngle, int yAngle, int zAngle);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);	
-    void paintGL();	
+    void paintGL();
+	void wheelEvent(QWheelEvent *event);
 };
 
 #endif

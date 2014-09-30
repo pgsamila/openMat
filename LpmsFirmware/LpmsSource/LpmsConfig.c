@@ -246,38 +246,38 @@ uint8_t resetToFactory(void)
 	f2int.float_val = (float)LPMS_FACTORY_MAG_THRES_Z;
 	gReg.data[LPMS_MAG_THRES_Z] = f2int.u32_val;
 	
-	f2int.float_val = (float)LPMS_FACTORY_ACC_COMP_GAIN_1;
+	f2int.float_val = 0;
 	gReg.data[LPMS_ACC_COMP_GAIN_1] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_ACC_COVAR_1;
 	gReg.data[LPMS_ACC_COVAR_1] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_COMP_GAIN_1;
+	f2int.float_val = 0;
 	gReg.data[LPMS_MAG_COMP_GAIN_1] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_MAG_COVAR_1;
 	gReg.data[LPMS_MAG_COVAR_1] = f2int.u32_val;
 	
-	f2int.float_val = (float)LPMS_FACTORY_ACC_COMP_GAIN_2;
+	f2int.float_val = 0;
 	gReg.data[LPMS_ACC_COMP_GAIN_2] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_ACC_COVAR_2;
 	gReg.data[LPMS_ACC_COVAR_2] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_COMP_GAIN_2;
+	f2int.float_val = 0;
 	gReg.data[LPMS_MAG_COMP_GAIN_2] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_MAG_COVAR_2;
 	gReg.data[LPMS_MAG_COVAR_2] = f2int.u32_val;
 	
-	f2int.float_val = (float)LPMS_FACTORY_ACC_COMP_GAIN_3;
+	f2int.float_val = 0;
 	gReg.data[LPMS_ACC_COMP_GAIN_3] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_ACC_COVAR_3;
 	gReg.data[LPMS_ACC_COVAR_3] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_COMP_GAIN_3;
+	f2int.float_val = 0;
 	gReg.data[LPMS_MAG_COMP_GAIN_3] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_MAG_COVAR_3;
 	gReg.data[LPMS_MAG_COVAR_3] = f2int.u32_val;
 	
-	f2int.float_val = (float)LPMS_FACTORY_ACC_COMP_GAIN_USER;
+	f2int.float_val = 0;
 	gReg.data[LPMS_ACC_COMP_GAIN_USER] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_ACC_COVAR_USER;
 	gReg.data[LPMS_ACC_COVAR_USER] = f2int.u32_val;
-	f2int.float_val = (float)LPMS_FACTORY_MAG_COMP_GAIN_USER;
+	f2int.float_val = 0;
 	gReg.data[LPMS_MAG_COMP_GAIN_USER] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_MAG_COVAR_USER;
 	gReg.data[LPMS_MAG_COVAR_USER] = f2int.u32_val;

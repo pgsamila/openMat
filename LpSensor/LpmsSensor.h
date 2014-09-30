@@ -36,6 +36,7 @@
 #include <fstream>
 #include <mutex>
 #include <iomanip>
+#include <queue>
 
 #ifdef _WIN32
 	#include "windows.h"
@@ -226,6 +227,7 @@ public:
 	void setCurrentData(ImuData d);
 	void setCallback(LpmsCallback cb);
 	ImuData getCurrentData(void);
+	bool hasImuData(void);
 	void getCalibratedSensorData(float g[3], float a[3], float b[3]);
 	void getQuaternion(float q[4]); 
 	void getEulerAngle(float r[3]); 
@@ -389,6 +391,7 @@ private:
 	int currentOffsetResetMethod;
 	LpVector3f magAvg;
 	bool runOnce;
+	std::queue<ImuData> dataQueue;
 }; 
 	
 #endif

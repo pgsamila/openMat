@@ -56,6 +56,10 @@ ThreeDWindow::ThreeDWindow(QWidget *parent, QGLWidget *shareWidget)
 	zeroImuData(&imuData);
 	
 	rM = Eigen::Matrix3f::Identity();
+	
+	glob_translate_x = 0.0f;
+	glob_translate_y = 0.0f;
+	glob_translate_z = 0.0f;
 }
 
 void ThreeDWindow::loadObjFile(std::string filename)
@@ -160,6 +164,9 @@ void ThreeDWindow::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+	
+    glTranslatef(glob_translate_x, glob_translate_y, glob_translate_z);	
+	
     glTranslatef(0.0f, 0.0f, -20.0f);
 
 	drawBackground();
@@ -246,16 +253,17 @@ void ThreeDWindow::drawBackground(void)
 {
 	glDisable(GL_CULL_FACE);		
 	glDisable(GL_LIGHTING);
+	
 	glBegin(GL_QUADS);
-
 	glColor3f((GLfloat) 0.8, (GLfloat) 0.8, (GLfloat) 1.0);
-	glVertex3f(-10.0, 10.0, -10.0);
-	glVertex3f(-10.0,-10.0, -10.0);
+	glVertex3f(-50.0, 50.0, -50.0);
+	glVertex3f(-50.0, -50.0, -50.0);
 
 	glColor3f((GLfloat) 0.2, (GLfloat) 0.2, (GLfloat) 1.0);
-	glVertex3f(10.0, -10.0, -10.0);
-	glVertex3f(10.0, 10.0, -10.0);
+	glVertex3f(50.0, -50.0, -50.0);
+	glVertex3f(50.0, 50.0, -50.0);
 	glEnd();	
+	
 	glEnable(GL_LIGHTING);	
 	glEnable(GL_CULL_FACE);
 }
@@ -536,22 +544,22 @@ void ThreeDWindow::drawAxes(void)
 	glColor3f(0.0, 0.0, 1.0);
 	glBegin(GL_LINES);
 	glNormal3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(10.0, 0.0, 0.0f);
-	glVertex3f(-10.0, 0.0, 0.0f);
+	glVertex3f(50.0, 0.0, 0.0f);
+	glVertex3f(-50.0, 0.0, 0.0f);
 	glEnd();
 
 	glColor3f(1.0, 0.0, 0.0);	
 	glBegin(GL_LINES);
 	glNormal3f(0.0f, 0.0f, 1.0f);	
-	glVertex3f(0.0, -10.0, 0.0f);
-	glVertex3f(0.0, 10.0, 0.0f);
+	glVertex3f(0.0, -50.0, 0.0f);
+	glVertex3f(0.0, 50.0, 0.0f);
 	glEnd();	
 	
 	glColor3f(0.0, 1.0, 0.0);	
 	glBegin(GL_LINES);
 	glNormal3f(0.0f, 1.0f, 0.0f);	
-	glVertex3f(0.0, 0.0, -10.0f);
-	glVertex3f(0.0, 0.0, 10.0f);
+	glVertex3f(0.0, 0.0, -50.0f);
+	glVertex3f(0.0, 0.0, 50.0f);
 	glEnd();
 	glEnable(GL_LIGHTING);	
 }
@@ -578,7 +586,7 @@ void ThreeDWindow::resizeGL(int width, int height)
     glViewport((width - side) / 2, (height - side) / 2, side, side);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-	glFrustum(-0.6, +0.6, -0.6, +0.6, 4.0, 100.0);
+	glFrustum(-0.6, +0.6, -0.6, +0.6, 4.0, 200.0);
 	glMatrixMode(GL_MODELVIEW);	
 	glEnable(GL_NORMALIZE);
 }
@@ -671,4 +679,9 @@ void ThreeDWindow::mouseMoveEvent(QMouseEvent *event)
 	}
 	
 	lastPos = event->pos();
+}
+
+void ThreeDWindow::wheelEvent(QWheelEvent *event)
+{
+	glob_translate_z += (float)event->angleDelta().y() / 100.0f;
 }

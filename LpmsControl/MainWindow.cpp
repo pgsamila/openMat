@@ -522,8 +522,6 @@ bool MainWindow::exitWindow(void)
 	return true;
 }
 
-
-
 void MainWindow::timerUpdate(void)
 {
 	list<SensorGuiContainer *>::iterator it;	
@@ -556,13 +554,17 @@ void MainWindow::timerUpdate(void)
 
 		if ((*it)->getSensor()->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED && 
 			(*it)->getSensor()->getSensorStatus() == SENSOR_STATUS_RUNNING) {
-			
 
 			(*it)->checkOptionalFeatures();
 			checkOptionalFeatures((*it)->getSensor());
 			
 			if (mode == MODE_THREED_WIN && ((cubeWindowContainer->getMode() == CUBE_VIEW_MODE_2) || (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_4))) {
-				imuData = (*it)->getSensor()->getCurrentData();
+				if ((*it)->getSensor()->hasImuData() == false) break;
+				
+				while ((*it)->getSensor()->hasImuData() == true) {
+					imuData = (*it)->getSensor()->getCurrentData();	
+				}
+				
 				cubeWindowContainer->getSelectedCube()->updateData(imuData);			
 			}
 			
@@ -578,7 +580,11 @@ void MainWindow::timerUpdate(void)
 					}
 				}
 #else
-				imuData = (*it)->getSensor()->getCurrentData();
+				if ((*it)->getSensor()->hasImuData() == false) break;
+				
+				while ((*it)->getSensor()->hasImuData() == true) {
+					imuData = (*it)->getSensor()->getCurrentData();	
+				} 
 #endif
 				
 				switch (mode) {

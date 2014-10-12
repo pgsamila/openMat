@@ -79,6 +79,7 @@ public class LpmsBThread extends Thread {
 	boolean isGetQuaternion = true;
 	boolean isGetEulerAngler = true;
 	boolean isGetLinearAcceleration = true;
+	boolean isGetPressure = true;
 	int imuId = 0;
 	DataOutputStream dos;
 	public float startStamp = 0.0f;
@@ -92,7 +93,7 @@ public class LpmsBThread extends Thread {
 		mAdapter = adapter;
 	}
 
-	public void connect(String address, int id) {
+	boolean connect(String address, int id) {
 		mAddress = address;
 		imuId = id;
 
@@ -101,7 +102,7 @@ public class LpmsBThread extends Thread {
         if (mAdapter == null) {
 			Log.e(TAG, "[LpmsBThread] Didn't find Bluetooth adapter");
 
-			return;
+			return false;
         }
 	
 		mAdapter.cancelDiscovery();
@@ -111,7 +112,7 @@ public class LpmsBThread extends Thread {
 			mDevice = mAdapter.getRemoteDevice(mAddress);
 		} catch (IllegalArgumentException e) {
 			Log.e(TAG, "[LpmsBThread] Invalid Bluetooth address", e);
-			return;
+			return false;
 		}
 
 		mSocket = null;
@@ -120,7 +121,7 @@ public class LpmsBThread extends Thread {
 			mSocket = mDevice.createInsecureRfcommSocketToServiceRecord(MY_UUID_INSECURE);
 		} catch (Exception e) {
 			Log.e(TAG, "[LpmsBThread] Socket create() failed", e);
-			return;
+			return false;
 		}
 	
 		Log.e(TAG, "[LpmsBThread] Trying to connect..");	
@@ -128,7 +129,7 @@ public class LpmsBThread extends Thread {
 			mSocket.connect();
 		} catch (IOException e) {
 			Log.e(TAG, "[LpmsBThread] Couldn't connect to device", e);
-			return;
+			return false;
 		}
 	
 		Log.e(TAG, "[LpmsBThread] Connected!");		
@@ -138,7 +139,7 @@ public class LpmsBThread extends Thread {
 			mOutStream = mSocket.getOutputStream();
 		} catch (IOException e) {
 			Log.e(TAG, "[LpmsBThread] Streams not created", e);
-			return;
+			return false;
 		}			
 		
 		resetTimestamp();
@@ -147,6 +148,8 @@ public class LpmsBThread extends Thread {
         t.start();
 		
 		frameCounter = 0;
+		
+		return true;
 	}
 	
     public class ClientReadThread implements Runnable {
@@ -203,18 +206,21 @@ public class LpmsBThread extends Thread {
 									boolean isGetMagnetometer,
 									boolean isGetQuaternion,
 									boolean isGetEulerAngler,
-									boolean isGetLinearAcceleration) {
+									boolean isGetLinearAcceleration,
+									boolean isGetPressure) {
 		this.isGetGyroscope = isGetGyroscope;
 		this.isGetAcceleration = isGetAcceleration;
 		this.isGetMagnetometer = isGetMagnetometer;
 		this.isGetQuaternion = isGetQuaternion;
 		this.isGetEulerAngler = isGetEulerAngler;
 		this.isGetLinearAcceleration = isGetLinearAcceleration;
+		this.isGetPressure = isGetPressure;
 	}
 	
 	public static float round(float d, int decimalPlace) {
 		BigDecimal bd = new BigDecimal(Float.toString(d));
 		bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
+		
 		return bd.floatValue();
 	}	
 	
@@ -263,6 +269,10 @@ public class LpmsBThread extends Thread {
 			mLpmsBData.linAcc[1] = convertRxbytesToFloat(o, rxBuffer); o += 4;
 			mLpmsBData.linAcc[2] = convertRxbytesToFloat(o, rxBuffer); o += 4;
 		}
+		
+	 	if (isGetPressure == true) {	
+			mLpmsBData.pressure = convertRxbytesToFloat(o, rxBuffer); o += 4;
+		}		
 		
 		dataQueue.addFirst(new LpmsBData(mLpmsBData));
 		
@@ -513,6 +523,8 @@ public class LpmsBThread extends Thread {
 	}
 	
 	public void close() {
+		mAdapter.cancelDiscovery();
+		
 		isConnected = false;	
 	
 		try {

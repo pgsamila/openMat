@@ -93,7 +93,55 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		
 		Log.e("lpms", "Initializing..");		
     }
-
+	
+	@Override
+	protected void onDestroy() {
+		stopPollThread = true;
+		
+		synchronized (lpmsList) {
+			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+				LpmsBThread e = it.next();
+				e.close();
+			}
+		}
+		
+		super.onDestroy();
+	}	
+	
+    @Override
+    protected void onStart() {
+		mTimer = new Timer();
+		mTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				timerMethod();
+			}
+		}, 25, 25);	
+		
+        super.onStart();		
+    }
+	
+    @Override
+    protected void onStop() {
+		mTimer.cancel();
+		
+		super.onStop();
+    }	
+	
+    @Override
+    protected void onResume() {	
+		startUpdateFragments();	
+	
+        super.onResume();
+    }
+	
+    @Override
+    protected void onPause() {
+		stopUpdateFragments();
+	
+        super.onPause();
+    }	
+	
 	void initializeViews() {
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(getSupportFragmentManager());
 		
@@ -187,38 +235,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	@Override
 	public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
 	}
-	
-    @Override
-    protected void onStart() {
-		mTimer = new Timer();
-		mTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				timerMethod();
-			}
-		}, 25, 25);	
-	
-        super.onStart();
-    }
-	
-    @Override
-    protected void onResume() {	
-		startUpdateFragments();	
-	
-        super.onResume();
-    }
-	
-    @Override
-    protected void onPause() {
-		if (lpmsB != null && isLpmsBConnected == true) {
-			isLpmsBConnected = false;
-			lpmsB.close();
-			imuStatus.measurementStarted = false;
-		}
-	
-        super.onPause();
-    }
-	
+		
     @Override
 	public void onConnect(String address) {
 		int id = 0;
@@ -231,18 +248,21 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				}
 				id++;
 			}
-		}
 		
-		lpmsB = new LpmsBThread(btAdapter);
-		lpmsList.add(lpmsB);
-		
-		lpmsB.setAcquisitionParameters(true, true, true, true, true, true);			
-		lpmsB.connect(address, id);
-		
-		isLpmsBConnected = true;
-		imuStatus.measurementStarted = true;
-		
-		Toast.makeText(getBaseContext(), "Connected to " + address, Toast.LENGTH_SHORT).show();	
+			lpmsB = new LpmsBThread(btAdapter);
+			
+			lpmsB.setAcquisitionParameters(true, true, true, true, true, true, true);			
+			if (lpmsB.connect(address, id) == true) {
+				lpmsList.add(lpmsB);
+
+				isLpmsBConnected = true;
+				imuStatus.measurementStarted = true;
+				
+				Toast.makeText(getBaseContext(), "Connected to " + address, Toast.LENGTH_SHORT).show();	
+			} else {
+				Toast.makeText(getBaseContext(), "Connection to " + address + " failed. Please reconnect.", Toast.LENGTH_SHORT).show();	
+			}
+		}		
 	}
 	
 	public boolean isExternalStorageWritable() {
@@ -264,7 +284,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				logFileWriter = new OutputStreamWriter(logFileStream);
 				Toast.makeText(getBaseContext(), "Logging to " + logFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 				isLoggingStarted = true;				
-				logFileWriter.append("SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2)\n");
+				logFileWriter.append("SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (mPa)\n");
 				imuStatus.isLogging = true;
 				imuStatus.logFileName = logFile.getAbsolutePath();
 			} catch (Exception e) {
@@ -279,7 +299,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 		if (isLoggingStarted == true) {
 			try {					
 				synchronized(logFileWriter) {				
-					logFileWriter.append(d.imuId + ", " + d.timestamp + ", " + d.frameNumber + ", " + d.gyr[0] + ", " + d.gyr[1] + ", " + d.gyr[2] + ", " + d.acc[0] + ", " + d.acc[1] + ", " + d.acc[2] + ", " + d.mag[0] + ", " + d.mag[1] + ", " + d.mag[2] + ", " + d.quat[0] + ", " + d.quat[1] + ", " + d.quat[2] + ", " + d.quat[3] + ", " + d.euler[0] + ", " + d.euler[1] + ", " + d.euler[2] + ", " + d.linAcc[0] + ", " + d.linAcc[1] + ", " + d.linAcc[2] +  "\n");
+					logFileWriter.append(d.imuId + ", " + d.timestamp + ", " + d.frameNumber + ", " + d.gyr[0] + ", " + d.gyr[1] + ", " + d.gyr[2] + ", " + d.acc[0] + ", " + d.acc[1] + ", " + d.acc[2] + ", " + d.mag[0] + ", " + d.mag[1] + ", " + d.mag[2] + ", " + d.quat[0] + ", " + d.quat[1] + ", " + d.quat[2] + ", " + d.quat[3] + ", " + d.euler[0] + ", " + d.euler[1] + ", " + d.euler[2] + ", " + d.linAcc[0] + ", " + d.linAcc[1] + ", " + d.linAcc[2] + ", " + d.pressure +  "\n");
 				}
 			} catch (Exception e) {
 				Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -303,15 +323,17 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 	}
 	
 	public void onSensorSelectionChanged(String address) {
-		for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
-			LpmsBThread e = it.next();
-		
-			if (address.equals(e.getAddress())) {		
-				lpmsB = e;
-				DataFragment dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(2));
-				if (dataFragment != null) dataFragment.clearView();
+		synchronized (lpmsList) {	
+			for (ListIterator<LpmsBThread> it = lpmsList.listIterator(); it.hasNext(); ) {
+				LpmsBThread e = it.next();
+			
+				if (address.equals(e.getAddress())) {		
+					lpmsB = e;
+					DataFragment dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(2));
+					if (dataFragment != null) dataFragment.clearView();
 
-				return;
+					return;
+				}
 			}
 		}
 	}

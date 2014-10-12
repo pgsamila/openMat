@@ -10,6 +10,7 @@ public class LpmsBData {
 	public float[] quat = new float[4];
 	public float[] euler = new float[3];
 	public float[] linAcc = new float[3];
+	public float pressure;
 	
 	public LpmsBData() {
 	}
@@ -25,5 +26,7 @@ public class LpmsBData {
 		for (int i=0; i<4; i++) quat[i] = d.quat[i];
 		for (int i=0; i<3; i++) euler[i] = d.euler[i];
 		for (int i=0; i<3; i++) linAcc[i] = d.linAcc[i];
+		
+		pressure = d.pressure;
 	}	
 }

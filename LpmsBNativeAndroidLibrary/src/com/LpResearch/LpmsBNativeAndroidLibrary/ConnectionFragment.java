@@ -185,7 +185,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 							((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
 							firstConnectedDevice = false;							
 						}
-						connectedDevicesLpms.add(device.getAddress() + device.getImuId());
+						connectedDevicesLpms.add(device.getAddress()/* + device.getImuId()*/);
 						connectedDevicesAdapter.notifyDataSetChanged();
 					}
 				}

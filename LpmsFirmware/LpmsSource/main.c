@@ -19,7 +19,7 @@ int main(void)
 {
 	int sendCounter = 0;
 	uint16_t ledC = 0;
-
+	
 	initIWatchdog();
 	setGPIOConfig();
 	setSystemStepTimer();	
@@ -83,7 +83,11 @@ int main(void)
 				pollBluetoothData();
 #endif
 				parsePacket();
-			}			
+
+#ifdef LOW_POWER_MODE
+				__WFI();
+#endif
+			}
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
 				systemStepTimeout = 0;
@@ -138,6 +142,10 @@ int main(void)
 				pollBluetoothData();
 #endif
 				parsePacket();
+
+#ifdef LOW_POWER_MODE
+				__WFI();
+#endif
 			}
 		}
   	}

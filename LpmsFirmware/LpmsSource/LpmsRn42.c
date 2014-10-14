@@ -257,6 +257,11 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 #endif
 	msDelay(50);
 
+#ifdef LOW_POWER_MODE
+	bluetoothLowPowerSettings();
+	msDelay(50);
+#endif
+
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(baudrate);
 	bluetoothReset();
@@ -265,6 +270,21 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
   	DMA_Cmd(BT_USART_RX_DMA_STREAM, ENABLE);
 
 	return 1;
+}
+
+uint8_t bluetoothLowPowerSettings(void)
+{
+	uint8_t c1[16] = "SY,0000";
+	uint8_t c2[16] = "S%,1000";
+	uint8_t c3[16] = "SW,0050";
+	
+	bluetoothSendCommand(c1, 7);
+	msDelay(50);
+
+	bluetoothSendCommand(c2, 7);
+	msDelay(50);
+
+	return bluetoothSendCommand(c3, 7);
 }
 
 void bluetoothReset(void)

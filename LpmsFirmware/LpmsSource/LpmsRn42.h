@@ -166,4 +166,8 @@ uint8_t checkConnectionStatus(void);
 
 uint8_t bluetoothGotoSleepMode(void);
 
+uint8_t bluetoothLowPowerSettings(void);
+
+uint8_t bluetoothSendCommand(uint8_t* command, int length);
+
 #endif

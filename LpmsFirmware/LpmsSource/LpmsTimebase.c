@@ -77,8 +77,12 @@ void setSystemStepTimer(void)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 
 	NVIC_Init(&NVIC_InitStructure);
-	
+
+#ifdef LOW_POWER_MODE
+	TIM_TimeBaseStructure.TIM_Period = 9999;
+#else 
 	TIM_TimeBaseStructure.TIM_Period = 2499;
+#endif
 	TIM_TimeBaseStructure.TIM_Prescaler = 59;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;

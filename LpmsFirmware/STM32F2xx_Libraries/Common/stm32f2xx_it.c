@@ -63,10 +63,6 @@ void TIM3_IRQHandler(void)
 {
 	if (TIM_GetFlagStatus(TIM3, TIM_FLAG_Update) != RESET) {
 		TIM_ClearFlag(TIM3, TIM_IT_Update);  
-		/* ++stepDiv;
-		if (stepDiv > 1) { */
-			systemStepTimeout = 1;
-		/*	stepDiv = 0;
-		} */
+		systemStepTimeout = 1;
 	}
 }

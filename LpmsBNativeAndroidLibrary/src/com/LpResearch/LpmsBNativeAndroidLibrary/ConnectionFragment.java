@@ -43,6 +43,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	BluetoothAdapter btAdapter;
 	OnConnectListener connectListener;
 	String currentLpms;
+	String currentConnectedLpms;
 		
 	ArrayList<String> dcLpms = new ArrayList<String>();	
 	ArrayAdapter dcAdapter;
@@ -97,7 +98,6 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		break;
 		
 		case R.id.button_disconnect:
-			connectListener.onDisconnect();
 			onDisconnect();
 		break;
 		
@@ -129,24 +129,29 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	}
 	
 	void onDisconnect() {
-		synchronized (connectedDevicesLpms) {		
-			for (ListIterator<String> it = connectedDevicesLpms.listIterator(); it.hasNext(); ) {
-				String e = it.next();
-			
-				if (currentLpms.equals(e)) {		
-					connectedDevicesLpms.remove(e);
-					connectedDevicesAdapter.notifyDataSetChanged();				
+		connectListener.onDisconnect();	
+	
+		synchronized (connectedDevicesLpms) {
+			Log.e("lpms", "[ConnectionFragment] Remove from list: " + currentConnectedLpms);
+			if (connectedDevicesLpms.remove(currentConnectedLpms) == true) {
+				connectedDevicesAdapter.notifyDataSetChanged();				
+				
+				if (connectedDevicesLpms.size() == 0) {
+					connectedDevicesLpms.add("Press connect button to connect to device..");
+					connectedDevicesAdapter.notifyDataSetChanged();
 					
-					if (connectedDevicesLpms.size() == 0) {
-						connectedDevicesLpms.add("Press connect button to connect to device..");
-						connectedDevicesAdapter.notifyDataSetChanged();
-						
-						firstConnectedDevice = true;
-						
-						connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.black));
-					}
+					firstConnectedDevice = true;
 					
-					return;
+					connectedDevicesList.getChildAt(0).setBackgroundColor(Color.TRANSPARENT);
+				} else { 
+					for(int a = 0; a < connectedDevicesList.getChildCount(); a++) {
+						connectedDevicesList.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+					}								
+					connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+					currentConnectedLpms = (String) connectedDevicesList.getItemAtPosition(0);
+					((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(currentConnectedLpms);
+					
+					Log.e("lpms", "[ConnectionFragment] After disconnect selected: " + currentConnectedLpms);						
 				}
 			}	
 		}
@@ -158,37 +163,30 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				synchronized (dcLpms) {				
-					if (device.getName().equals("LPMS-B")) {
-						for (ListIterator<String> it = dcLpms.listIterator(); it.hasNext(); ) {
-							if (device.getAddress().equals(it.next())) return;
+				
+				if (device == null) return;
+				
+				synchronized (dcLpms) {	
+					if ((device.getName() != null) && (device.getName().length() > 0)) {
+						if (device.getName().equals("LPMS-B")) {
+							for (ListIterator<String> it = dcLpms.listIterator(); it.hasNext(); ) {
+								if (device.getAddress().equals(it.next())) return;
+							}
+							if (firstDc == true) {
+								dcLpms.clear();							
+								btList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+								currentLpms = device.getAddress();								
+								firstDc = false;							
+							}						
+							dcLpms.add(device.getAddress());
+							dcAdapter.notifyDataSetChanged();
 						}
-						if (firstDc == true) {
-							dcLpms.clear();							
-							btList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
-							currentLpms = device.getAddress();								
-							firstDc = false;							
-						}						
-						dcLpms.add(device.getAddress());
-						dcAdapter.notifyDataSetChanged();
 					}
 				}
 			}
 			
 			if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				synchronized (connectedDevicesLpms) {	
-					if (device.getName().equals("LPMS-B")) {
-						if (firstConnectedDevice == true) {
-							connectedDevicesLpms.clear();							
-							connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
-							((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
-							firstConnectedDevice = false;							
-						}
-						connectedDevicesLpms.add(device.getAddress()/* + device.getImuId()*/);
-						connectedDevicesAdapter.notifyDataSetChanged();
-					}
-				}
 			}			
 		}
 	};
@@ -232,7 +230,7 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		connectedDevicesList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				if (firstConnectedDevice == true) return;			
+				if (firstConnectedDevice == true) return;
 			
 				for(int a = 0; a < parent.getChildCount(); a++) {
 					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
@@ -242,9 +240,44 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 				int itemPosition = position;
 				String itemValue = (String) connectedDevicesList.getItemAtPosition(position);
 				((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(itemValue);
+				
+				currentConnectedLpms = itemValue;
+				Log.e("lpms", "[ConnectionFragment] Switched to pos " + itemPosition + " value " + itemValue);				
 			}
 		}); 		
 	}
+	
+	public void confirmConnected(BluetoothDevice device) {
+		synchronized (connectedDevicesLpms) {
+			Log.e("lpms", "[ConnectionFragment] Connecion callback to device: " + device.getAddress());
+		
+			if (device.getName().equals("LPMS-B")) {
+				for (ListIterator<String> it = connectedDevicesLpms.listIterator(); it.hasNext(); ) {
+					if (device.getAddress().equals(it.next())) {
+						Log.e("lpms", "[ConnectionFragment] Detected double device: " + device.getAddress());
+						return;
+					}
+				}
+				if (firstConnectedDevice == true) {
+					connectedDevicesLpms.clear();							
+					connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+					((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
+					firstConnectedDevice = false;							
+				}				
+				connectedDevicesLpms.add(device.getAddress() /* + device.getImuId()*/);
+				connectedDevicesAdapter.notifyDataSetChanged();
+				
+				for(int a = 0; a < connectedDevicesList.getChildCount(); a++) {
+					connectedDevicesList.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+				}													
+				connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+				currentConnectedLpms = (String) btList.getItemAtPosition(0);
+				((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(currentConnectedLpms);	
+
+				Log.e("lpms", "[ConnectionFragment] After connect selected: " + currentConnectedLpms);
+			}
+		}
+	}	
 	
 	public void startBtDiscovery() {
 		Toast.makeText(getActivity(), "Starting discovery..", Toast.LENGTH_SHORT).show();		

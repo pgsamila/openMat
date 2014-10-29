@@ -76,17 +76,17 @@ public class DataFragment extends MyFragment {
 		gyrLayout.addView(gyrGraph);
 		magLayout.addView(magGraph);
 		
-		accSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 1), new GraphViewData[] { });
-		accSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 1), new GraphViewData[] { });
-		accSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 1), new GraphViewData[] { });
+		accSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 4), new GraphViewData[] { });
+		accSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 4), new GraphViewData[] { });
+		accSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 4), new GraphViewData[] { });
 
-		gyrSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 1), new GraphViewData[] { });
-		gyrSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 1), new GraphViewData[] { });
-		gyrSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 1), new GraphViewData[] { });
+		gyrSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 4), new GraphViewData[] { });
+		gyrSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 4), new GraphViewData[] { });
+		gyrSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 4), new GraphViewData[] { });
 
-		magSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 1), new GraphViewData[] { });
-		magSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 1), new GraphViewData[] { });
-		magSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 1), new GraphViewData[] { });
+		magSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 4), new GraphViewData[] { });
+		magSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 4), new GraphViewData[] { });
+		magSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 4), new GraphViewData[] { });
 
 		accGraph.addSeries(accSeries0);
 		accGraph.addSeries(accSeries1);

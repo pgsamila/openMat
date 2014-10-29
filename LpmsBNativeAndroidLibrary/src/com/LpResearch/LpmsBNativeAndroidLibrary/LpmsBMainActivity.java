@@ -258,7 +258,10 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 				isLpmsBConnected = true;
 				imuStatus.measurementStarted = true;
 				
-				Toast.makeText(getBaseContext(), "Connected to " + address, Toast.LENGTH_SHORT).show();	
+				Toast.makeText(getBaseContext(), "Connected to " + address, Toast.LENGTH_SHORT).show();
+				
+				ConnectionFragment connectionFragment = (ConnectionFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(0));
+				if (connectionFragment != null) connectionFragment.confirmConnected(lpmsB.getDevice());
 			} else {
 				Toast.makeText(getBaseContext(), "Connection to " + address + " failed. Please reconnect.", Toast.LENGTH_SHORT).show();	
 			}
@@ -329,6 +332,7 @@ public class LpmsBMainActivity extends FragmentActivity implements ActionBar.Tab
 			
 				if (address.equals(e.getAddress())) {		
 					lpmsB = e;
+					Log.e("lpms", "[LpmsBMainActivity] In main activity: " + lpmsB.getAddress());
 					DataFragment dataFragment = (DataFragment) getSupportFragmentManager().findFragmentByTag(mFragmentMap.get(2));
 					if (dataFragment != null) dataFragment.clearView();
 

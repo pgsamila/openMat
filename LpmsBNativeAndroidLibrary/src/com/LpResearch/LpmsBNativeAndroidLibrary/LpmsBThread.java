@@ -49,11 +49,13 @@ public class LpmsBThread extends Thread {
 	
 	final int STATE_IDLE = 0;
 	
+	final int MAX_BUFFER = 512;
+	
 	int rxState = PACKET_END;
-	byte[] rxBuffer = new byte[512];
-	byte[] txBuffer = new byte[512];
-	byte[] rawTxData = new byte[256];
-	byte[] rawRxBuffer = new byte[256];	
+	byte[] rxBuffer = new byte[MAX_BUFFER];
+	byte[] txBuffer = new byte[MAX_BUFFER];
+	byte[] rawTxData = new byte[MAX_BUFFER];
+	byte[] rawRxBuffer = new byte[MAX_BUFFER];	
 	int currentAddress;
 	int currentFunction;
 	int currentLength;
@@ -384,14 +386,18 @@ public class LpmsBThread extends Thread {
 					lrcCheck = (currentAddress & 0xffff) + (currentFunction & 0xffff) + (currentLength & 0xffff);
 					
 					for (int j=0; j<currentLength; j++) {
-						lrcCheck += (int) rxBuffer[j] & 0xff;
-					}		
+						if (j < MAX_BUFFER) {
+							lrcCheck += (int) rxBuffer[j] & 0xff;
+						} else break;
+ 					}		
 						
 					inBytes[0] = b;		
 					rxState = PACKET_LRC_CHECK1;								
 				} else {	
-					rxBuffer[rxIndex] = b;
-					++rxIndex;
+					if (rxIndex < MAX_BUFFER) {
+						rxBuffer[rxIndex] = b;
+						++rxIndex;
+					} else break;
 				}
 			break;
 				
@@ -541,5 +547,9 @@ public class LpmsBThread extends Thread {
 	
 	public String getAddress() {
 		return mAddress;
+	}
+	
+	public BluetoothDevice getDevice() {
+		return mDevice;
 	}
 }	

@@ -161,8 +161,10 @@ void initSensorManager(void)
 	} else {
 		lpFilterParam.useGyrAutoCal = 0;
 	}
-	
+
+#ifndef USE_MPU9150
 	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
+#endif
 	
 	f2int.u32_val = gReg.data[LPMS_ACC_GAIN_X];
 	calibrationData.accGain.data[0] = f2int.float_val;
@@ -198,8 +200,10 @@ void initSensorManager(void)
 	calibrationData.accAlignment.data[2][2] = conItoF(gReg.data[LPMS_ACC_ALIG_22]);
 	
 	calibrationData.accRange = gReg.data[LPMS_ACC_RANGE];
-	
+
+#ifndef USE_MPU9150
 	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
+#endif
 
 	f2int.u32_val = gReg.data[LPMS_MAG_GAIN_X];
 	calibrationData.magGain.data[0] = f2int.float_val;
@@ -243,7 +247,9 @@ void initSensorManager(void)
 	
 	lpFilterParam.magInclination = conItoF(gReg.data[LPMS_MAG_FIELD_INC]);
 	
+#ifndef USE_MPU9150
 	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
+#endif
 	
 	lpFilterParam.filterMode = gReg.data[LPMS_FILTER_MODE];
 	lpFilterParam.magFieldEstimate = conItoF(gReg.data[LPMS_MAG_FIELD_EST]);
@@ -254,7 +260,11 @@ void initSensorManager(void)
 		lpFilterParam.dynamicCovar = 0;
 	}
 
+#ifndef USE_MPU9150
 	if (!initPressureSensor()) lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
+#else
+	initMpu();
+#endif
 	                       
 	qOffset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
 	qOffset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
@@ -309,9 +319,13 @@ void updateSensorData(void)
 			lpFilterParam.accRef, lpFilterParam.magRef,
 			T); */
 	} else {
+#ifdef USE_MPU9150
+		pollDmp();
+#else
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
+#endif
 		
 #ifdef USE_CANBUS_INTERFACE
 		canHeartbeatTime += LPMS_MEASUREMENT_PERIOD;
@@ -361,6 +375,13 @@ void processSensorData(void)
 {     
 	float bInc;
 
+#ifdef USE_MPU9150
+	int i;
+
+	for (i=0; i<3; ++i) calibrationData.accGain.data[0] = 1.0f / 16384.0f;
+	for (i=0; i<3; ++i) calibrationData.gyrGain.data[0] = 1.0f / 16.375f;
+#endif
+
 	aRaw.data[0] = accRawData.data[0] * calibrationData.accGain.data[0];
 	aRaw.data[1] = accRawData.data[1] * calibrationData.accGain.data[1];
 	aRaw.data[2] = accRawData.data[2] * calibrationData.accGain.data[2];
@@ -371,29 +392,26 @@ void processSensorData(void)
 	gRaw.data[1] = (gyrRawData.data[1] - calibrationData.gyrOffset.data[1]) * calibrationData.gyrGain.data[1] * d2r;
 	gRaw.data[2] = (gyrRawData.data[2] - calibrationData.gyrOffset.data[2]) * calibrationData.gyrGain.data[2] * d2r;
 
-	tB.data[0] = magRawData.data[0] * calibrationData.magGain.data[0];
-	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
-	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
+	bRaw.data[0] = magRawData.data[0] * calibrationData.magGain.data[0];
+	bRaw.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
+	bRaw.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
  
 	gyrOnlineCal(gyrRawData, LPMS_MEASUREMENT_PERIOD, isGyrCalibrationEnabled, &calibrationData, &lpFilterParam);
 
 	applyLowPass();
 
-	bRaw.data[0] = tB.data[0];
-	bRaw.data[1] = tB.data[1];
-	bRaw.data[2] = tB.data[2];
+	b = correctB(bRaw);
 
-	b.data[0] = tB.data[0];
-	b.data[1] = tB.data[1];
-	b.data[2] = tB.data[2];
-
-	b = correctB(b);
-
+#ifdef USE_MPU9150
+	a = aRaw;
+	g = gRaw;
+#else
 	matVectMult3(&calibrationData.accAlignment, &aRaw, &a);
 	vectAdd3x1(&calibrationData.accOffset, &a, &a);
 
 	matVectMult3(&calibrationData.gyrAlignment, &gRaw, &g);
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
+#endif
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 

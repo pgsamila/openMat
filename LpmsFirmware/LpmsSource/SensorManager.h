@@ -27,6 +27,7 @@
 #include "LpmsFactorySetting.h"
 #include "HeaveMotion.h"
 #include "AdConverter.h"
+#include "LpmsMpu.h"
 
 #define LPMS_MEASUREMENT_PERIOD 0.0025f
 

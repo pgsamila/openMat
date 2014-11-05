@@ -76,4 +76,8 @@ void updateAliveLed(void);
 
 uint16_t getTransferCycles(void);
 
+void delay_ms(uint32_t ms);
+
+void get_ms(unsigned long *ms);
+
 #endif

@@ -8131,6 +8131,15 @@
       <name>$PROJ_DIR$\..\..\..\openmat-closedsource\HeaveMotion.c</name>
     </file>
     <file>
+      <name>$PROJ_DIR$\..\LpmsSource\i2c_mpu.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\inv_mpu.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\inv_mpu_dmp_motion_driver.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\..\openmat-closedsource\LpFilterCVersion.c</name>
     </file>
     <file>
@@ -8159,6 +8168,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\LpmsSource\LpmsModbus.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsMpu.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\LpmsSource\LpmsRn42.c</name>

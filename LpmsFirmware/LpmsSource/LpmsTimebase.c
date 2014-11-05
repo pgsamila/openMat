@@ -116,6 +116,16 @@ void msDelay(uint32_t ms)
 	}
 }
 
+void delay_ms(uint32_t ms)
+{
+	msDelay(ms);
+}
+
+void get_ms(unsigned long *ms)
+{
+	*ms = 0;
+}
+
 void startTimeStepCounting(void)
 {
   	TIM_SetCounter(SYSTEM_STEP_TIMER, 0);

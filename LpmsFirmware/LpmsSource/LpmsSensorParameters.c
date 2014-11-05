@@ -371,8 +371,17 @@ uint8_t setGyrRange(uint8_t* data)
 		return 0;
 	break;
 	}
-	
+
+#ifdef USE_MPU9150
+	float gG;
+	int i;
+	/* mpu_set_gyro_fsr(calibrationData.gyrRange);
+	mpu_get_gyro_sens(&gG);
+	for (i=0; i<3; ++i) calibrationData.gyrGain.data[i] = gG; */
+#else	
 	setGyrFullScale(calibrationData.gyrRange);
+#endif
+
 	setRegUInt32(LPMS_GYR_RANGE, calibrationData.gyrRange);
 	setRegVector3f(LPMS_GYR_GAIN_X, calibrationData.gyrGain);
 	
@@ -499,7 +508,15 @@ uint8_t setAccRange(uint8_t* data)
 	break;
 	}
 	
-	setAccFullScale(calibrationData.accRange);
+#ifdef USE_MPU9150
+	mpu_set_accel_fsr(calibrationData.accRange);
+#else	
+	float aG;
+	/* setAccFullScale(calibrationData.accRange);
+	mpu_get_accel_sens(&aG);
+	for (i=0; i<3; ++i) calibrationData.accGain.data[i] = gG; */
+#endif
+
 	setRegUInt32(LPMS_ACC_RANGE, calibrationData.accRange);
 	setRegVector3f(LPMS_ACC_GAIN_X, calibrationData.accGain);
 	
@@ -632,8 +649,12 @@ uint8_t setMagRange(uint8_t* data)
 		return 0;
 	break;
 	}
-	
+
+#ifdef USE_MPU9150
+#else	
 	setMagFullScale(calibrationData.magRange);
+#endif
+
 	setRegUInt32(LPMS_MAG_RANGE, calibrationData.magRange);
 	setRegVector3f(LPMS_MAG_GAIN_X, calibrationData.magGain);
 	

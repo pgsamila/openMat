@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent)
 	
 	QTimer* timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-    timer->start(5);
+    timer->start(1);
 	
 	textUpdateCounter = 0;
 	maIsCalibrating = false;
@@ -90,8 +90,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 }
-
-
 
 QWidget *MainWindow::createDeviceList(void)
 {	
@@ -419,8 +417,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	}
 }
 
-
-
 void MainWindow::selectGraphWindow(void)
 {
 	cubeWindowContainer->hide();
@@ -586,33 +582,33 @@ void MainWindow::timerUpdate(void)
 				
 				while ((*it)->getSensor()->hasImuData() == true) {
 					imuData = (*it)->getSensor()->getCurrentData();	
+					
+					switch (mode) {
+					case MODE_GRAPH_WIN:
+						graphWindow->plotDataSet(imuData);
+					break;
+
+					case MODE_THREED_WIN:
+						if (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_1) {
+							cubeWindowContainer->getSelectedCube()->updateData(imuData);
+						}
+					break;
+					
+					case MODE_FIELDMAP_WIN:
+						if ((*it)->getSensor()->hasNewFieldMap() == true) {
+							(*it)->getSensor()->getFieldMap((*it)->fieldMap);
+							(*it)->getSensor()->getHardIronOffset((*it)->hardIronOffset);
+							(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
+							fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius, imuData.b);
+						}
+					
+						char id[64];
+						(*it)->getSensor()->getDeviceId(id);
+						fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
+					break;
+					}					
 				} 
 #endif
-				
-				switch (mode) {
-				case MODE_GRAPH_WIN:
-					graphWindow->plotDataSet(imuData);
-				break;
-
-				case MODE_THREED_WIN:
-					if (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_1) {
-						cubeWindowContainer->getSelectedCube()->updateData(imuData);
-					}
-				break;
-				
-				case MODE_FIELDMAP_WIN:
-					if ((*it)->getSensor()->hasNewFieldMap() == true) {
-						(*it)->getSensor()->getFieldMap((*it)->fieldMap);
-						(*it)->getSensor()->getHardIronOffset((*it)->hardIronOffset);
-						(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
-						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius, imuData.b);
-					}
-				
-					char id[64];
-					(*it)->getSensor()->getDeviceId(id);
-					fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
-				break;
-				}
 			} 
 		}
 	}
@@ -628,8 +624,6 @@ void MainWindow::timerUpdate(void)
 		}
 	}
 #endif
-
-
 
 void MainWindow::updateCanBaudrate(int i)
 {
@@ -721,8 +715,6 @@ void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
 		connect(heaveMotionGraphAction, SIGNAL(triggered()), this, SLOT(selectHeaveMotionWindow()));
 	}
 }	
-
-
 
 void MainWindow::openSensor(void)
 {
@@ -863,8 +855,6 @@ void MainWindow::stopMeasurement(void)
 	isRunning = false;
 }
 
-
-
 void MainWindow::setOffset(void)
 {
 	std::list<SensorGuiContainer *>::iterator it;
@@ -942,8 +932,6 @@ void MainWindow::recalibrate(void)
 	
 	startWaitBar(60);
 }
-
-
 
 void MainWindow::uploadFirmware(void)
 {
@@ -1156,8 +1144,6 @@ void MainWindow::browseRecordFile(void)
 	}
 }
 
-
-
 void MainWindow::saveCalibration(void)
 {
 	if (currentLpms == 0 || isConnecting == true) return;
@@ -1197,8 +1183,6 @@ void MainWindow::loadCalibrationData(void)
 		currentLpms->getSensor()->saveCalibrationData(fn.c_str());
 	}	
 }
-
-
 
 void MainWindow::updateLpmsFps(int v, int lpmsId)
 {
@@ -1253,8 +1237,6 @@ void MainWindow::resetToFactory(void)
 	currentLpms->getSensor()->resetToFactorySettings();
 }
 
-
-
 void MainWindow::startWaitBar(int t)
 {
 	if (maIsCalibrating == true) {
@@ -1301,8 +1283,6 @@ void MainWindow::calTimerUpdate(void)
 		calProgress->setValue(calTime);
 	}
 }
-
-
 
 void MainWindow::magAutoMisalignmentCal(void)
 {
@@ -1432,8 +1412,6 @@ QWizardPage *MainWindow::magMaFinishedPage(void)
 	return page;
 }
 
-
-
 void MainWindow::gyrMisalignmentCal(void)
 {
 	QMessageBox msgBox;
@@ -1552,8 +1530,6 @@ QWizardPage *MainWindow::gyrMaFinishedPage(void)
 	return page;
 }
 
-
-
 QWizardPage *MainWindow::magEllipsoidCalPage(int pageNumber)
 {
 	QWizardPage *page = new QWizardPage;
@@ -1629,8 +1605,6 @@ void MainWindow::calibrateMag(void)
 	if (isRunning == false) startMeasurement();
 }
 
-
-
 QWizardPage *MainWindow::magPlanarCalPage(int pageNumber)
 {
 	QWizardPage *page = new QWizardPage;
@@ -1705,8 +1679,6 @@ void MainWindow::calibratePlanarMag(void)
 	
 	if (isRunning == false) startMeasurement();
 } 
-
-
 
 QWizardPage *MainWindow::maOrientationPage(const char* ts, const char* es)
 {
@@ -1844,8 +1816,6 @@ void MainWindow::maFinished(int i)
 	maIsCalibrating = false;
 }
 
-
-
 void MainWindow::updateMagneticFieldMap(void)
 {
 	float fieldMap[ABSMAXPITCH][ABSMAXROLL][ABSMAXYAW][3];
@@ -1868,8 +1838,6 @@ void MainWindow::getFieldMap(void)
 
 	currentLpms->getSensor()->acquireFieldMap();	
 }
-
-
 
 void MainWindow::startReplay(void)
 {

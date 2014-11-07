@@ -91,7 +91,7 @@ using namespace boost;
 
 #define LPMS_CONTROL_VERSION "1.3.3-dev"
 
-#define GRAPH_UPDATE_PERIOD 25000
+#define GRAPH_UPDATE_PERIOD 1000
 
 class MainWindow : public QMainWindow
 {

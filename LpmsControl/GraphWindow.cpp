@@ -51,43 +51,43 @@ GraphWindow::GraphWindow(QWidget* parent) : QWidget(parent)
 
     accGraph = new Plot("", "Samples", "Accelerometer (g)", 
 		"X", "Y", "Z", "",
-		0, 128, 3, -8.0f, 8.0f, accLegend);	
+		0, 500, 3, -8.0f, 8.0f, accLegend);	
 		
     gyroGraph = new Plot("", "Samples", "Gyroscope (deg / s)", 
 		"X", "Y", "Z", "",
-		0, 128, 3, -2000.0f, 2000.0f, gyroLegend);	
+		0, 500, 3, -2000.0f, 2000.0f, gyroLegend);	
 		
     magGraph = new Plot("", "Samples", "Magnetometer (uT)", 
 		"X", "Y", "Z", "",		
-		0, 128, 3, -200, 200, magLegend);	
+		0, 500, 3, -200, 200, magLegend);	
 		
     quaternionGraph = new Plot("", "Samples", "Quaternion (norm)", 
 		"W", "X", "Y", "Z",			
-		0, 128, 4, -1.0f, 1.0f, quaternionLegend);	
+		0, 500, 4, -1.0f, 1.0f, quaternionLegend);	
 		
     angleGraph = new Plot("", "Samples", "Euler angle (degree)", 
 		"X", "Y", "Z", "",			
-		0, 128, 3, -181.0f, 181.0f, angleLegend);	
+		0, 500, 3, -181.0f, 181.0f, angleLegend);	
 	
 	pressureGraph = new Plot("", "Samples", "Bar. Pressure (kPa)", 
 		"P", "", "", "", 
-		0, 128, 1, 0.0f, 200.0f, pressureLegend);	
+		0, 500, 1, 0.0f, 200.0f, pressureLegend);	
 
 	altitudeGraph = new Plot("", "Samples", "Altitude (m)", 
 		"A", "", "", "", 
-		0, 128, 1, -50.0f, 50.0f, altitudeLegend);	
+		0, 500, 1, -50.0f, 50.0f, altitudeLegend);	
 		
 	temperatureGraph = new Plot("", "Samples", "Temperature (deg. C)", 
 		"T", "", "", "",
-		0, 128, 1, -50.0f, 50.0f, temperatureLegend);
+		0, 500, 1, -50.0f, 50.0f, temperatureLegend);
     
 	linAccGraph = new Plot("", "Samples", "Linear acceleration (g)", 
 		"X", "Y", "Z", "",	
-		0, 128, 3, -2.5f, 2.5f, linAccLegend);
+		0, 500, 3, -2.5f, 2.5f, linAccLegend);
 		
 	heaveMotionGraph = new Plot("", "Samples", "Heave height (m)", 
 		"h", "", "", "",
-		0, 128, 1, -1.0f, 1.0f, heaveMotionLegend);
+		0, 500, 1, -1.0f, 1.0f, heaveMotionLegend);
 	
 	QGridLayout *vLayout = new QGridLayout();
 	

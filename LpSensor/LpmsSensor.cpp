@@ -532,7 +532,7 @@ void LpmsSensor::update(void)
 
 		// Corrects magnetometer measurement
 		if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
-			vectSub3x1(&configData.hardIronOffset, &bRaw, &b);		
+			vectSub3x1(&bRaw, &configData.hardIronOffset, &b);		
 			matVectMult3(&configData.softIronMatrix, &b, &b);
 		} else {
 			vectZero3x1(&b);
@@ -545,8 +545,16 @@ void LpmsSensor::update(void)
 		} else {
 			vectZero3x1(&a);
 		}
-
-		g = gRaw;
+    
+    // Corrects gyro measurement
+    if ((bt->getConfigReg() & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {      
+        matVectMult3(&configData.gyrMisalignMatrix, &gRaw, &g);
+        vectAdd3x1(&configData.gyrAlignmentBias, &g, &g);
+    } else {
+        vectZero3x1(&g);
+    }
+    //g = gRaw;
+		 
 	
 		convertLpVector3fToArray(&a, imuData.a);
 		convertLpVector3fToArray(&b, imuData.b);
@@ -1294,6 +1302,9 @@ void LpmsSensor::setCurrentData(ImuData d)
 	
 	if (dataQueue.size() < 64) { 
 		dataQueue.push(d);
+	} else {		
+		dataQueue.pop();
+		dataQueue.push(d);
 	}
 	
 	if (callbackSet == true) {
@@ -1309,11 +1320,9 @@ void LpmsSensor::setCallback(LpmsCallback cb)
 	callbackSet = true;
 }
 
-bool LpmsSensor::hasImuData(void)
+int LpmsSensor::hasImuData(void)
 {
-	if (dataQueue.size() > 0) return true;
-	
-	return false;
+	return dataQueue.size();
 }
 
 ImuData LpmsSensor::getCurrentData(void)
@@ -2380,7 +2389,7 @@ void LpmsSensor::checkSaveData(void)
 
 	sensorMutex.lock();
 	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(3) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(6) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
 	}
 	sensorMutex.unlock();
 }

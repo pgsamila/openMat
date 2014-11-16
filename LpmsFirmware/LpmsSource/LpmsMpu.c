@@ -71,7 +71,7 @@ void initMpu(void)
 
 	mpu_set_gyro_fsr(2000);
 	mpu_set_accel_fsr(4);
-	// mpu_set_lpf(42);
+	mpu_set_lpf(42);
 
 	mpu_set_compass_sample_rate(10);
 
@@ -148,9 +148,9 @@ void pollDmp(void)
 		  	for (i=0; i<3; ++i) accRawData.data[i] = (float) accel[i];			
 		}
 
-		if (mpu_get_compass_reg(mag, &sensor_timestamp) > -1) {
+		/* if (mpu_get_compass_reg(mag, &sensor_timestamp) > -1) {
 		  	for (i=0; i<3; ++i) magRawData.data[i] = (float) mag[i];
-		}
+		} */
 	}
 }
 
@@ -158,25 +158,17 @@ void runSelfTest(void)
 {
 	int result;
 	long gyro[3], accel[3];
- 	float sens;
 	unsigned short accel_sens;
 
 	result = mpu_run_self_test(gyro, accel);
 
-	if (result == 0x7) {
-		mpu_get_gyro_sens(&sens);
-		
-		gyro[0] = (long)(gyro[0] * sens);
-		gyro[1] = (long)(gyro[1] * sens);
-		gyro[2] = (long)(gyro[2] * sens);
-		
-		dmp_set_gyro_bias(gyro);
+	if ((result & 0x2) == 0x2) {		
 		mpu_get_accel_sens(&accel_sens);
 		
 		accel[0] *= accel_sens;
 		accel[1] *= accel_sens;
 		accel[2] *= accel_sens;
 		
-		dmp_set_accel_bias(accel);
+		mpu_set_accel_bias_6050_reg(accel);
 	}
 }

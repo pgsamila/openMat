@@ -66,6 +66,14 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	GPIO_Init(TTL_USART_IO_PORT, &GPIO_InitStructure);
 	
 	switch (baudrate & LPMS_UART_BAUDRATE_MASK) {
+	case LPMS_UART_BAUDRATE_4800:
+		USART_InitStructure.USART_BaudRate = 4800;
+	break;
+
+	case LPMS_UART_BAUDRATE_9600:
+		USART_InitStructure.USART_BaudRate = 9600;
+	break;
+
 	case LPMS_UART_BAUDRATE_19200:
 		USART_InitStructure.USART_BaudRate = 19200;
 	break;
@@ -75,11 +83,11 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	break;
 
 	case LPMS_UART_BAUDRATE_115200:
-	USART_InitStructure.USART_BaudRate = 115200;
+		USART_InitStructure.USART_BaudRate = 115200;
 	break;
 
 	case LPMS_UART_BAUDRATE_921600:
-	USART_InitStructure.USART_BaudRate = 921600;
+		USART_InitStructure.USART_BaudRate = 921600;
 	break;
 	
 	default:

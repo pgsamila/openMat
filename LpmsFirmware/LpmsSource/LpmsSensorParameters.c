@@ -511,10 +511,7 @@ uint8_t setAccRange(uint8_t* data)
 #ifdef USE_MPU9150
 	mpu_set_accel_fsr(calibrationData.accRange);
 #else	
-	float aG;
-	/* setAccFullScale(calibrationData.accRange);
-	mpu_get_accel_sens(&aG);
-	for (i=0; i<3; ++i) calibrationData.accGain.data[i] = gG; */
+	setAccFullScale(calibrationData.accRange);
 #endif
 
 	setRegUInt32(LPMS_ACC_RANGE, calibrationData.accRange);

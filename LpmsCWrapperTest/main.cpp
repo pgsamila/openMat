@@ -5,8 +5,8 @@
 int main(int argc, char *argv[])
 {
 	initializeLpms();
-	// connectToLpmsCU("A1019SC3");
-	connectToLpmsB("00:06:66:4B:24:F5");
+	connectToLpmsCU("AH01WSVM");
+	// connectToLpmsB("00:06:66:4B:24:F5");
 	
 	while (1) {
 		printf("q: %f %f %f %f\n", getQuaternionW(), getQuaternionX(), getQuaternionY(), getQuaternionZ());

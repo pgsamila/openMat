@@ -59,6 +59,7 @@
 	#include "LpmsBBluetooth.h"	
 	#include "LpmsRS232.h"
 	#include "LpmsBle2.h"
+	#include "LpmsAnt.h"
 #endif
 
 #ifdef __GNUC__

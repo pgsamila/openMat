@@ -66,6 +66,16 @@ DiscoveryItem::DiscoveryItem(QTreeWidget* tree, string deviceId, int deviceType,
 		gl->addWidget(interfaceTypeItem = new QLabel("RS-232"), 1, 1);
 		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-CUR (Port: ") + deviceId.c_str() + ")"));
 	break;
+	
+	case DEVICE_LPMS_ANT:
+		gl->addWidget(interfaceTypeItem = new QLabel("ANT+"), 1, 1);
+		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-ANT (Port: ") + deviceId.c_str() + ")"));
+	break;	
+	
+	default:
+		gl->addWidget(interfaceTypeItem = new QLabel("USB"), 1, 1);
+		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-CU (USB ID:") + deviceId.c_str() + ")"));
+	break;	
 	}
 
 	QTreeWidgetItem* subTreeItem = new QTreeWidgetItem(treeItem);

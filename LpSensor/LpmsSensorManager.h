@@ -44,6 +44,7 @@
 	#include "CanEngine.h"
 	#include "LpmsRS232.h"
 	#include "BleEngine.h"
+	#include "LpmsAnt.h"
 #endif
 
 #ifdef __GNUC__

@@ -378,8 +378,8 @@ void processSensorData(void)
 #ifdef USE_MPU9150
 	int i;
 
-	for (i=0; i<3; ++i) calibrationData.accGain.data[0] = 1.0f / 16384.0f;
-	for (i=0; i<3; ++i) calibrationData.gyrGain.data[0] = 1.0f / 16.375f;
+	for (i=0; i<3; ++i) calibrationData.accGain.data[i] = 1.0f / 16384.0f * 2.0f;
+	for (i=0; i<3; ++i) calibrationData.gyrGain.data[i] = 1.0f / 16.375f;
 #endif
 
 	aRaw.data[0] = accRawData.data[0] * calibrationData.accGain.data[0];
@@ -402,16 +402,11 @@ void processSensorData(void)
 
 	b = correctB(bRaw);
 
-#ifdef USE_MPU9150
-	a = aRaw;
-	g = gRaw;
-#else
 	matVectMult3(&calibrationData.accAlignment, &aRaw, &a);
 	vectAdd3x1(&calibrationData.accOffset, &a, &a);
 
 	matVectMult3(&calibrationData.gyrAlignment, &gRaw, &g);
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
-#endif
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 

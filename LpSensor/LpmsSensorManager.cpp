@@ -214,6 +214,7 @@ void LpmsSensorManager::run(void)
 				LpmsRS232::listDevices(&deviceList);
 			}
 			LpmsU::listDevices(&deviceList);
+			LpmsAnt::listDevices(&deviceList);
 			LpmsBBluetooth::listDevices(&deviceList);			
 
 			managerState = SMANAGER_MEASURE;
@@ -275,6 +276,11 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 		sensor = new LpmsSensor(DEVICE_LPMS_U, deviceId);
 		sensorList.push_back(sensor);
 	break;
+	
+	case DEVICE_LPMS_ANT:	
+		sensor = new LpmsSensor(DEVICE_LPMS_ANT, deviceId);
+		sensorList.push_back(sensor);
+	break;	
 	
 	case DEVICE_LPMS_RS232:	
 		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);

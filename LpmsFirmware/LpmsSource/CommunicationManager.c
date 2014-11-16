@@ -48,9 +48,9 @@ void initCommunicationManager(void)
 	serialPortInit(USART_BAUDRATE_921600);
 #elif defined USE_TTL_UART_INTERFACE
 #ifdef LPMS_BLE	
-	ttlUsartPortInit(USART_BAUDRATE_9600);
+	ttlUsartPortInit(LPMS_UART_BAUDRATE_9600);
 #else
-	ttlUsartPortInit(gReg.data[LPMS_UART_BAUDRATE]);
+	ttlUsartPortInit(LPMS_UART_BAUDRATE_57600 /* gReg.data[LPMS_UART_BAUDRATE] */);
 #endif
 	
 	connectedInterface = TTL_UART_CONNECTED;
@@ -100,6 +100,8 @@ uint8_t sendDataAscii(uint16_t length, uint8_t *data)
 
 	return 1;
 }
+
+uint8_t testC = 0;
 
 uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *data)
 {
@@ -210,8 +212,9 @@ uint8_t sendData(uint16_t address, uint16_t function, uint16_t length, uint8_t *
 
 	if (txIndex+11+length < MAX_BUFFER) {
 		for (i=0; i<(11+length); ++i) {
-			txBuffer[txIndex] = txData[i];
+			txBuffer[txIndex] = txData[i]; // testC; // 
 			++txIndex;
+			++testC;
 		}
 	} else {
 		asm("NOP");
@@ -905,11 +908,15 @@ void parsePacket(void)
 			break;
 
 			case SELF_TEST:
+#ifdef USE_MPU9150				
+				runSelfTest();
+#else
 				if (setSelfTest(packet.data)) {
 					sendAck();
 				} else {
 					sendNack();
-				}		
+				}
+#endif
 			break;
 
 			case UPDATE_IAP:

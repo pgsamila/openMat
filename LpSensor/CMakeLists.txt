@@ -75,17 +75,26 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(WINDOWS_PCAN_PATH "C:/pcan-basic" CACHE STRING "")
 	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
 	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
+	set(WINDOWS_ANTLIB_PATH "C:/ANT_LIB" CACHE STRING "")
 
 	include_directories("${WINDOWS_PCAN_PATH}/Include")
 	include_directories("${WINDOWS_BOOST_PATH}")
 	include_directories("${WINDOWS_PUGIXML_PATH}/src")
 	include_directories("${WINDOWS_FTDI_PATH}")
+	include_directories("${WINDOWS_ANTLIB_PATH}/inc")
+	include_directories("${WINDOWS_ANTLIB_PATH}/software/serial")
+	include_directories("${WINDOWS_ANTLIB_PATH}/software/system")	
+	include_directories("${WINDOWS_ANTLIB_PATH}/software/USB")
+	include_directories("${WINDOWS_ANTLIB_PATH}/software/USB/devices")	
+	include_directories("${WINDOWS_ANTLIB_PATH}/software/USB/device_handles")		
+	include_directories("${WINDOWS_ANTLIB_PATH}/software/ANTFS")	
 	
 	include_directories("../OpenMATCommon")
 	include_directories("../LpSensor")
 	
 	include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
 	link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+	link_directories("${WINDOWS_ANTLIB_PATH}/Release")	
 
 	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
 		link_directories("${WINDOWS_FTDI_PATH}/i386")
@@ -152,6 +161,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		LpmsIoInterface.cpp	
 		LpmsU.cpp	
 		LpmsRS232.cpp
+		LpmsAnt.cpp
 		LpmsSensor.cpp	
 		LpMatrix.c
 		RingBuffer.c
@@ -262,6 +272,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			target_link_libraries(LpSensor Ws2_32.lib)
 			target_link_libraries(LpSensor ftd2xx.lib)
 			target_link_libraries(LpSensor Bthprops.lib Setupapi.lib)
+			target_link_libraries(LpSensor ANT_LIB.lib)			
 			
 			if (USE_JUSTTHREAD)	
 				target_link_libraries(LpSensor justthread_vc10_mt.lib)
@@ -273,6 +284,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 			target_link_libraries(LpSensorD Ws2_32.lib)
 			target_link_libraries(LpSensorD ftd2xx.lib)
 			target_link_libraries(LpSensorD Bthprops.lib Setupapi.lib)
+			target_link_libraries(LpSensor ANT_LIB.lib)			
 
 			if (USE_JUSTTHREAD)	
 				target_link_libraries(LpSensor justthread_vc10_mtd.lib)

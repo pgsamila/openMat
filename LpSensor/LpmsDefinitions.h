@@ -13,6 +13,7 @@
 #define DEVICE_LPMS_C 	2 // LPMS-CU (CAN bus)
 #define DEVICE_LPMS_BLE 3 // LPMS-BLE (Bluetooth low energy)
 #define DEVICE_LPMS_RS232 4 // LPMS-CUR (RS-232)
+#define DEVICE_LPMS_ANT 5 // LPMS-CUR (RS-232)
 
 #define SENSOR_STATUS_ERROR 		3
 #define SENSOR_STATUS_CALIBRATING 	2

@@ -5,6 +5,7 @@
 
 LpmsSensorManagerI* manager;
 LpmsSensorI* lpms;
+ImuData latestData;
 
 int connected = 0;
 int initialized = 0;
@@ -30,12 +31,19 @@ void APIENTRY connectToLpmsCU(const char* deviceId)
 		connected = 1;
 	}
 }
+
+void checkNewData(void) 
+{
+	while (lpms->hasImuData() == true) {
+		latestData = lpms->getCurrentData();	
+	}
+}
 			
 float APIENTRY getQuaternionW(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.q[0];
+		checkNewData();
+		return latestData.q[0];
 	}
 	
 	return 0.0f;
@@ -44,8 +52,8 @@ float APIENTRY getQuaternionW(void)
 float APIENTRY getQuaternionX(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.q[1];
+		checkNewData();
+		return latestData.q[1];
 	}
 	
 	return 0.0f;
@@ -54,8 +62,8 @@ float APIENTRY getQuaternionX(void)
 float APIENTRY getQuaternionY(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.q[2];
+		checkNewData();
+		return latestData.q[2];
 	}
 	
 	return 0.0f;
@@ -64,8 +72,8 @@ float APIENTRY getQuaternionY(void)
 float APIENTRY getQuaternionZ(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.q[3];
+		checkNewData();
+		return latestData.q[3];
 	}
 	
 	return 0.0f;
@@ -74,8 +82,8 @@ float APIENTRY getQuaternionZ(void)
 float APIENTRY getEulerX(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.r[0];
+		checkNewData();
+		return latestData.r[0];
 	}
 	
 	return 0.0f;
@@ -84,8 +92,8 @@ float APIENTRY getEulerX(void)
 float APIENTRY getEulerY(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.r[1];
+		checkNewData();
+		return latestData.r[1];
 	}
 	
 	return 0.0f;
@@ -94,8 +102,8 @@ float APIENTRY getEulerY(void)
 float APIENTRY getEulerZ(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.r[2];
+		checkNewData();
+		return latestData.r[2];
 	}
 	
 	return 0.0f;
@@ -104,8 +112,8 @@ float APIENTRY getEulerZ(void)
 float APIENTRY getGyrX(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.g[0];
+		checkNewData();
+		return latestData.g[0];
 	}
 	
 	return 0.0f;
@@ -114,8 +122,8 @@ float APIENTRY getGyrX(void)
 float APIENTRY getGyrY(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.g[1];
+		checkNewData();
+		return latestData.g[1];
 	}
 	
 	return 0.0f;
@@ -124,8 +132,8 @@ float APIENTRY getGyrY(void)
 float APIENTRY getGyrZ(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.g[2];
+		checkNewData();
+		return latestData.g[2];
 	}
 	
 	return 0.0f;
@@ -134,8 +142,8 @@ float APIENTRY getGyrZ(void)
 float APIENTRY getAccX(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.a[0];
+		checkNewData();
+		return latestData.a[0];
 	}
 	
 	return 0.0f;
@@ -144,8 +152,8 @@ float APIENTRY getAccX(void)
 float APIENTRY getAccY(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.a[1];
+		checkNewData();
+		return latestData.a[1];
 	}
 	
 	return 0.0f;
@@ -154,8 +162,8 @@ float APIENTRY getAccY(void)
 float APIENTRY getAccZ(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.a[2];
+		checkNewData();
+		return latestData.a[2];
 	}
 	
 	return 0.0f;
@@ -164,8 +172,8 @@ float APIENTRY getAccZ(void)
 float APIENTRY getMagX(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.b[0];
+		checkNewData();
+		return latestData.b[0];
 	}
 	
 	return 0.0f;
@@ -174,8 +182,8 @@ float APIENTRY getMagX(void)
 float APIENTRY getMagY(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.b[1];
+		checkNewData();
+		return latestData.b[1];
 	}
 	
 	return 0.0f;
@@ -184,8 +192,8 @@ float APIENTRY getMagY(void)
 float APIENTRY getMagZ(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.b[2];
+		checkNewData();
+		return latestData.b[2];
 	}
 	
 	return 0.0f;
@@ -194,8 +202,8 @@ float APIENTRY getMagZ(void)
 float APIENTRY getLinAccX(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.linAcc[0];
+		checkNewData();
+		return latestData.linAcc[0];
 	}
 	
 	return 0.0f;
@@ -204,8 +212,8 @@ float APIENTRY getLinAccX(void)
 float APIENTRY getLinAccY(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.linAcc[1];
+		checkNewData();
+		return latestData.linAcc[1];
 	}
 	
 	return 0.0f;
@@ -214,8 +222,8 @@ float APIENTRY getLinAccY(void)
 float APIENTRY getLinAccZ(void)
 {
 	if (connected == 1) {
-		ImuData d = lpms->getCurrentData();
-		return d.linAcc[2];
+		checkNewData();
+		return latestData.linAcc[2];
 	}
 	
 	return 0.0f;

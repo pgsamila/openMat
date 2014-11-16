@@ -38,7 +38,7 @@ void mpu_i2c_init(void)
 	I2C_Cmd(I2C2, ENABLE);
 }
 
-#define I2C_TIMEOUT 1500
+#define I2C_TIMEOUT 5000
 #define I2C_MAX_TRIALS 10
 
 int i2c_write(unsigned char slave_addr, unsigned char reg_addr, unsigned char length, unsigned char const *data)

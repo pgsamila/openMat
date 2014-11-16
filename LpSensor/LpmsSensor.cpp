@@ -100,6 +100,10 @@ const float pi = 3.141592f;
 	case DEVICE_LPMS_BLE:
 		bt = new LpmsBle(&(this->configData));
 	break;	
+	
+	case DEVICE_LPMS_ANT:
+		bt = new LpmsAnt(&(this->configData));
+	break;	
 #endif
 
 #ifdef __GNUC__
@@ -187,6 +191,7 @@ void LpmsSensor::update(void)
 	int pa[64];
 	LpVector4f q;
 	LpMatrix3x3f m;
+	int deviceType;
 		
 	if (stopped == true) return;	
 		
@@ -226,6 +231,11 @@ void LpmsSensor::update(void)
 			
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GOTO_COMMAND_MODE;
+			
+			this->configData.getParameter(PRM_DEVICE_TYPE, &deviceType);
+			if (deviceType == DEVICE_LPMS_ANT) {
+				getConfigState = C_STATE_SETTINGS_DONE;
+			}
 		}
 	break;
 
@@ -1916,9 +1926,9 @@ void LpmsSensor::checkMisalignCal(float T)
 		++misalignSamples;
 				
 		for (int i=0; i<3; i++) {
-			if (aRaw.data[i] > 0.5) {
+			if (aRaw.data[i] > 0.25) {
 				misalignBData[misalignSetIndex].data[i] = 1.0f;
-			} else if (aRaw.data[i] < -0.5) {
+			} else if (aRaw.data[i] < -0.25) {
 				misalignBData[misalignSetIndex].data[i] = -1.0f;
 			} else {
 				misalignBData[misalignSetIndex].data[i] = 0.0f;

@@ -473,4 +473,61 @@ td:not(.linenos) .linenodiv { padding: 0 !important; }
 <li>change default communication frequencies to 10, 25, 50, 400, 800Hz<br />
 &ndash; <strong>TODO: fix up LPMS_STREAM_FREQ_XXXHZ_ENABLED headers</strong><br />
 &ndash; <strong>TODO: decide communication frequencies</strong></li>
-</ul></body></html>
+</ul>
+<h2 id="lpsensor"><a name="user-content-lpsensor" href="#lpsensor" class="headeranchor-link"  aria-hidden="true"><span class="headeranchor"></span></a>LpSensor</h2>
+<ul>
+<li>fix inverted raw mag data sign bug</li>
+<li>fix gyro raw data<br />
+&ndash; LpmsSensor.cpp</li>
+</ul>
+<pre><code class="cpp">void LpmsSensor::update(void)
+{
+    ...
+    // Corrects magnetometer measurement
+    if ((bt-&gt;getConfigReg() &amp; LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
+        vectSub3x1(&amp;bRaw, &amp;configData.hardIronOffset, &amp;b);      
+        matVectMult3(&amp;configData.softIronMatrix, &amp;b, &amp;b);
+    } else {
+        vectZero3x1(&amp;b);
+    }
+    ...
+    // Corrects gyro measurement
+    if ((bt-&gt;getConfigReg() &amp; LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {      
+        matVectMult3(&amp;configData.gyrMisalignMatrix, &amp;gRaw, &amp;g);
+        vectAdd3x1(&amp;configData.gyrAlignmentBias, &amp;g, &amp;g);
+    } else {
+        vectZero3x1(&amp;g);
+    }
+    //g = gRaw;
+    ...
+}
+</code></pre>
+
+<ul>
+<li>set save data precision to 6<br />
+&ndash; <code>void LpmsSensor::checkSaveData(void)</code></li>
+<li>fix dataQueue update in setCurrentData function<br />
+&ndash; LpmsSensor.cpp</li>
+</ul>
+<pre><code class="cpp">void LpmsSensor::setCurrentData(ImuData d)
+{
+    ...
+    if (dataQueue.size() &lt; 64) { 
+        dataQueue.push(d);
+    } else {        
+        dataQueue.pop();
+        dataQueue.push(d);
+    }
+    ... 
+}
+</code></pre>
+
+<ul>
+<li>change hasImuData to return dataQueue size<br />
+&ndash; LpmsSensor.cpp LpmsSensor.h LpmsSensorI.h</li>
+</ul>
+<pre><code class="cpp">int LpmsSensor::hasImuData(void)
+{
+    return dataQueue.size();
+}
+</code></pre></body></html>

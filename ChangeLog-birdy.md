@@ -87,3 +87,57 @@ void setSystemStepTimer(void)
 - change default communication frequencies to 10, 25, 50, 400, 800Hz
 -- **TODO: fix up LPMS_STREAM_FREQ_XXXHZ_ENABLED headers**
 -- **TODO: decide communication frequencies**
+
+
+## LpSensor
+- fix inverted raw mag data sign bug
+- fix gyro raw data
+-- LpmsSensor.cpp
+``` cpp
+void LpmsSensor::update(void)
+{
+    ...
+    // Corrects magnetometer measurement
+    if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
+        vectSub3x1(&bRaw, &configData.hardIronOffset, &b);      
+        matVectMult3(&configData.softIronMatrix, &b, &b);
+    } else {
+        vectZero3x1(&b);
+    }
+    ...
+    // Corrects gyro measurement
+    if ((bt->getConfigReg() & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {      
+        matVectMult3(&configData.gyrMisalignMatrix, &gRaw, &g);
+        vectAdd3x1(&configData.gyrAlignmentBias, &g, &g);
+    } else {
+        vectZero3x1(&g);
+    }
+    //g = gRaw;
+    ...
+}
+```
+- set save data precision to 6
+-- `void LpmsSensor::checkSaveData(void)`
+- fix dataQueue update in setCurrentData function
+-- LpmsSensor.cpp
+``` cpp
+void LpmsSensor::setCurrentData(ImuData d)
+{
+    ...
+    if (dataQueue.size() < 64) { 
+        dataQueue.push(d);
+    } else {        
+        dataQueue.pop();
+        dataQueue.push(d);
+    }
+    ... 
+}
+```
+- change hasImuData to return dataQueue size
+-- LpmsSensor.cpp LpmsSensor.h LpmsSensorI.h
+``` cpp
+int LpmsSensor::hasImuData(void)
+{
+    return dataQueue.size();
+}
+```

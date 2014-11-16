@@ -146,7 +146,7 @@ void waitGyrI2CStandbyState(void);
 void writeGyrRegister(uint8_t address, uint8_t data);
 
 // Reads gyroscope register
-void readGyrRegister(uint8_t* pBuffer, uint8_t address);
+void readGyrRegister(uint8_t* pBuffer, unsigned char length, uint8_t address);
 
 // Sets gyroscope output data rate and powerMode
 uint8_t setGyroOutputDataRateAndPowerMode(uint32_t outputDataRate, uint8_t powerMode);

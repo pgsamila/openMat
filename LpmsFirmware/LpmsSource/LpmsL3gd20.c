@@ -4,6 +4,7 @@
 ***********************************************************************/
 
 #include "LpmsL3gd20.h"
+//#include "LpStopwatch.h"
 
 void setGyrI2CConfig(void)
 {
@@ -100,22 +101,25 @@ int gyrI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char cons
 	return 0;
 }
 
-void readGyrRegister(uint8_t* pBuffer, uint8_t address)
+void readGyrRegister(uint8_t* pBuffer, unsigned char length, uint8_t address)
 {
-	gyrI2cRead(address, 1, pBuffer);
+	gyrI2cRead(address, length, pBuffer);
 }
 
 int gyrI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data)
-{  
+{   	  
   	uint8_t ok = 0;
 	uint32_t to = 0;
+	//while(I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY));
 	
 	while (ok == 0) {
+		//Send I2C1 START condition
 		I2C_GenerateSTART(GYR_I2C_PORT, ENABLE);
 		to = 0;
 		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) && to < GYR_I2C_TIMEOUT) ++to;
 		if (to >= GYR_I2C_TIMEOUT) continue;
-	
+		
+		//Send slave Address for write
 		I2C_Send7bitAddress(GYR_I2C_PORT, GYR_I2C_ADDRESS, I2C_Direction_Transmitter);
 		to = 0;
 		while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED) && to < GYR_I2C_TIMEOUT) ++to;
@@ -123,7 +127,8 @@ int gyrI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data
 		
 		ok = 1;	
 	}
-
+	
+	//Send address of register
 	I2C_SendData(GYR_I2C_PORT, reg_addr);	
 	to = 0;
 	while (!I2C_CheckEvent(GYR_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED) && to < GYR_I2C_TIMEOUT);
@@ -163,7 +168,7 @@ int gyrI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data
 	}
 	
 	I2C_AcknowledgeConfig(GYR_I2C_PORT, ENABLE);
-
+	
 	return 0;
 }
 
@@ -256,7 +261,7 @@ uint8_t isGyrDataReady(void)
 {
  	uint8_t is_data_ready = 0;	
 	
-	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	readGyrRegister(&is_data_ready, 1, L3GD20_STATUS_REG);
 	if ((is_data_ready & 0x08) == 0) return 0;
 	
 	return 1;
@@ -266,7 +271,7 @@ uint8_t isGyrXDataReady(void)
 {
  	uint8_t is_data_ready = 0;	
 	
-	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	readGyrRegister(&is_data_ready, 1, L3GD20_STATUS_REG);
 	if ((is_data_ready & 0x01) == 0) return 0;
 	
 	return 1;
@@ -276,7 +281,7 @@ uint8_t isGyrYDataReady(void)
 {
  	uint8_t is_data_ready = 0;	
 	
-	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	readGyrRegister(&is_data_ready, 1, L3GD20_STATUS_REG);
 	if ((is_data_ready & 0x02) == 0) return 0;
 	
 	return 1;
@@ -286,7 +291,7 @@ uint8_t isGyrZDataReady(void)
 {
  	uint8_t is_data_ready = 0;	
 	
-	readGyrRegister(&is_data_ready, L3GD20_STATUS_REG);
+	readGyrRegister(&is_data_ready, 1, L3GD20_STATUS_REG);
 	if ((is_data_ready & 0x04) == 0) return 0;
 	
 	return 1;
@@ -296,16 +301,18 @@ uint8_t getGyrRawData(float* xAxis, float* yAxis, float* zAxis)
 {
 	uint8_t data_buffer[6];
 	int16_t temp;	
-		
+	
 	waitGyrI2CStandbyState();
-
-	readGyrRegister(&data_buffer[0], (uint8_t)L3GD20_OUT_X_L);     
+	readGyrRegister(&data_buffer[0], 6, (uint8_t)L3GD20_OUT_X_L|0x80); 
+	/* 
+	readGyrRegister(&data_buffer[0], (uint8_t)L3GD20_OUT_X_L);  
 	readGyrRegister(&data_buffer[1], (uint8_t)L3GD20_OUT_X_H);
 	readGyrRegister(&data_buffer[2], (uint8_t)L3GD20_OUT_Y_L);
 	readGyrRegister(&data_buffer[3], (uint8_t)L3GD20_OUT_Y_H);
 	readGyrRegister(&data_buffer[4], (uint8_t)L3GD20_OUT_Z_L);
 	readGyrRegister(&data_buffer[5], (uint8_t)L3GD20_OUT_Z_H);
-
+	*/
+	
 #ifdef USE_LPMSCU_NEW
 	temp = data_buffer[1];
 	temp = (temp << 8) | data_buffer[0];
@@ -340,7 +347,7 @@ uint8_t getGyrTempData(int8_t* temp)
 	uint8_t data;
 	
 	waitGyrI2CStandbyState();
-	readGyrRegister(&data, (uint8_t)L3GD20_OUT_TEMP);
+	readGyrRegister(&data, 1, (uint8_t)L3GD20_OUT_TEMP);
 	
 	*temp = (int8_t)(data);
 	

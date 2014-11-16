@@ -295,6 +295,7 @@ void initSensorManager(void)
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
 #endif
+	
 }
 
 void updateSensorData(void)
@@ -312,7 +313,6 @@ void updateSensorData(void)
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
-		
 #ifdef USE_CANBUS_INTERFACE
 		canHeartbeatTime += LPMS_MEASUREMENT_PERIOD;
 #endif
@@ -344,9 +344,8 @@ void updateSensorData(void)
 		forceSensorOutput[i] = getForceSensorChannel(i);
 	}
 #endif
-
 }
-
+  
 void checkTimestampReset(void)
 {
 	if (isTimestampResetArmed == 1) {
@@ -398,8 +397,9 @@ void processSensorData(void)
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {		
-		lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
-
+		//lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
+	 	MadgwickAHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q) ;
+		
 		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
 
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
@@ -422,6 +422,7 @@ void processSensorData(void)
 		quaternionIdentity(&qAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
 	}
+	
 }    
 
 void applyLowPass(void)

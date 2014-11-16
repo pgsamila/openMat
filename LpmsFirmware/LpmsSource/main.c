@@ -10,10 +10,13 @@
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 #include "Watchdog.h"
+#include "LpStopwatch.h"
 
 extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
 extern __IO uint8_t systemStepTimeout;
+
+
 
 int main(void)
 {
@@ -30,7 +33,9 @@ int main(void)
 #ifdef ENABLE_INSOLE
 	initAdConverter();
 #endif
-
+	float dt=0.0f;
+	stopwatch_reset();
+	//STOPWATCH_START;
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 			if (systemStepTimeout == 1) {
@@ -86,16 +91,22 @@ int main(void)
 			}			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
-				systemStepTimeout = 0;
-
+			  
+				STOPWATCH_STOP;	dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
+				STOPWATCH_START;
+			  
+				systemStepTimeout = 0;				
 				++ledC;
 				ledC %= ledFlashTime;
-				if (ledC == 0) updateAliveLed();
+				if (ledC == 0) {
+				  updateAliveLed();
+				}
 				resetIWatchdog();
-
+				
 				updateSensorData();
+				
 				processSensorData();
-
+				
 				++sendCounter;
 				if (sendCounter >= getTransferCycles()) {
 					sendCounter = 0;
@@ -138,6 +149,7 @@ int main(void)
 				pollBluetoothData();
 #endif
 				parsePacket();
+				
 			}
 		}
   	}

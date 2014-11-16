@@ -235,7 +235,7 @@ void writeAccRegister(uint8_t address, uint8_t data);
 void writeMagRegister(uint8_t address, uint8_t data);
 
 // Reads accelerometer register
-void readAccRegister(uint8_t* pBuffer, uint8_t address);
+void readAccRegister(uint8_t* pBuffer, unsigned char length, uint8_t address);
 
 // Reads magnetometer register
 void readMagRegister(uint8_t* pBuffer, uint8_t address, uint8_t NumByteToRead);

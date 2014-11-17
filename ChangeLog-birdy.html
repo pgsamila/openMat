@@ -474,7 +474,7 @@ td:not(.linenos) .linenodiv { padding: 0 !important; }
 &ndash; <strong>TODO: fix up LPMS_STREAM_FREQ_XXXHZ_ENABLED headers</strong><br />
 &ndash; <strong>TODO: decide communication frequencies</strong></li>
 <li>16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsSensor)<br />
-&ndash; SensorManager.cpp</li>
+&ndash; SensorManager.c</li>
 </ul>
 <pre><code class="cpp">uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
@@ -546,7 +546,8 @@ td:not(.linenos) .linenodiv { padding: 0 !important; }
 
 <ul>
 <li>16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsFirmware)<br />
-&ndash; LpmsSensor.cpp</li>
+&ndash; <strong>TODO: decide to use uint or float as sensor timestamp</strong><br />
+&ndash; LpmsIoInterface.cpp</li>
 </ul>
 <pre><code class="cpp">bool LpmsIoInterface::parseSensorData(void)
 {

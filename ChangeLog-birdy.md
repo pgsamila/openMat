@@ -153,6 +153,7 @@ int LpmsSensor::hasImuData(void)
 }
 ```
 - 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsFirmware)
+-- **TODO: decide to use uint or float as sensor timestamp**
 -- LpmsIoInterface.cpp
 ``` cpp
 bool LpmsIoInterface::parseSensorData(void)

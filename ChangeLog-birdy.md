@@ -87,7 +87,18 @@ void setSystemStepTimer(void)
 - change default communication frequencies to 10, 25, 50, 400, 800Hz
 -- **TODO: fix up LPMS_STREAM_FREQ_XXXHZ_ENABLED headers**
 -- **TODO: decide communication frequencies**
-
+- 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsSensor)
+-- SensorManager.c
+``` cpp
+uint8_t getSensorData(uint8_t* data, uint16_t *l)
+{
+    ...
+        if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
+                //setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
+                setFloat(&(data[o]), mT, FLOAT_FULL_PRECISION);
+                o = o+4;
+    ...
+```
 
 ## LpSensor
 - fix inverted raw mag data sign bug
@@ -139,5 +150,20 @@ void LpmsSensor::setCurrentData(ImuData d)
 int LpmsSensor::hasImuData(void)
 {
     return dataQueue.size();
+}
+```
+- 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsFirmware)
+-- LpmsIoInterface.cpp
+``` cpp
+bool LpmsIoInterface::parseSensorData(void)
+{
+    ...
+    o = 0;
+    if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
+        //fromBuffer(oneTx, &l);
+        //currentTimestamp = (float) l / 1000.0f;
+        fromBuffer(oneTx, o, &currentTimestamp);
+        o = o + 4;
+    ...
 }
 ```

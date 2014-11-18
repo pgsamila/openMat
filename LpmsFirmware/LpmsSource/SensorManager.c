@@ -398,7 +398,7 @@ void processSensorData(void)
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {		
 		//lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
-	 	MadgwickAHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q) ;
+	 	AHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q) ;
 		
 		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
 

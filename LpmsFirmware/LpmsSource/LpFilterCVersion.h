@@ -164,12 +164,12 @@ void calculateAlignmentOffset(LpVector4f q,
 	LpVector4f *mQ_hx, 
 	LpVector4f *mQ_offset);
 
-void MadgwickAHRSupdate(LpVector3f a, 
+void AHRSupdate(LpVector3f a, 
 	LpVector3f b, 
 	LpVector3f g,
 	float T, 
 	LpVector4f *qOut);
-void MadgwickAHRSupdateIMU(LpVector3f a,  
+void AHRSupdateIMU(LpVector3f a,  
 	LpVector3f g,
 	float T, 
 	LpVector4f *qOut);

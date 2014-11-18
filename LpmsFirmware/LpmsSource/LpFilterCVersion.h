@@ -168,7 +168,8 @@ void AHRSupdate(LpVector3f a,
 	LpVector3f b, 
 	LpVector3f g,
 	float T, 
-	LpVector4f *qOut);
+	LpVector4f *qOut,
+	LpFilterParameters *lpFilterParam);
 void AHRSupdateIMU(LpVector3f a,  
 	LpVector3f g,
 	float T, 

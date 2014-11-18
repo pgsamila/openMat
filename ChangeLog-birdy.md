@@ -54,14 +54,14 @@ void readAccRegister(uint8_t* pBuffer, unsigned char length, uint8_t address)
 }
 ```
 - Added DCM filter (**TODO: add filter selections: Gyro+Acc, Gyro+Acc+Mag**)
--- LpFilterCVersion.c: `void MadgwickAHRSupdate(...) `
+-- LpFilterCVersion.c: `void AHRSupdate(...) `
 -- SensorManager.c
 ``` cpp
 void processSensorData(void)
 {     
     ...
     //lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
-    MadgwickAHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q) ;
+    AHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q) ;
     ...
 }
 ```

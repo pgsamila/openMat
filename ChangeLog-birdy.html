@@ -436,14 +436,14 @@ td:not(.linenos) .linenodiv { padding: 0 !important; }
 
 <ul>
 <li>Added DCM filter (<strong>TODO: add filter selections: Gyro+Acc, Gyro+Acc+Mag</strong>)<br />
-&ndash; LpFilterCVersion.c: <code>void MadgwickAHRSupdate(...)</code><br />
+&ndash; LpFilterCVersion.c: <code>void AHRSupdate(...)</code><br />
 &ndash; SensorManager.c</li>
 </ul>
 <pre><code class="cpp">void processSensorData(void)
 {     
     ...
     //lpFilterUpdate(a, b, g, &amp;q, LPMS_MEASUREMENT_PERIOD, 0, &amp;magNoise, &amp;calibrationData, &amp;lpFilterParam);
-    MadgwickAHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &amp;q) ;
+    AHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &amp;q) ;
     ...
 }
 </code></pre>

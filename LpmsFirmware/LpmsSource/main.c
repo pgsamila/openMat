@@ -16,12 +16,11 @@ extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
 extern __IO uint8_t systemStepTimeout;
 
-
-
 int main(void)
 {
 	int sendCounter = 0;
 	uint16_t ledC = 0;
+	float dt = 0.0f;
 
 	initIWatchdog();
 	setGPIOConfig();
@@ -33,9 +32,10 @@ int main(void)
 #ifdef ENABLE_INSOLE
 	initAdConverter();
 #endif
-	float dt=0.0f;
+
 	stopwatch_reset();
-	//STOPWATCH_START;
+	// STOPWATCH_START;
+
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
 			if (systemStepTimeout == 1) {
@@ -92,7 +92,8 @@ int main(void)
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
 			  
-				STOPWATCH_STOP;	dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
+				STOPWATCH_STOP;	
+				dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
 				STOPWATCH_START;
 			  
 				systemStepTimeout = 0;				

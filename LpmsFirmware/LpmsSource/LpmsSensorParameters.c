@@ -291,20 +291,24 @@ uint8_t setStreamFreq(uint8_t* data)
 		freq = freq | (((uint32_t) data[i]) << (i * 8));
 	}
 	
-	if (freq == (uint32_t)LPMS_STREAM_FREQ_5HZ) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_5HZ_ENABLED;
+	if (freq == (uint32_t)LPMS_STREAM_FREQ_5_75HZ) {
+		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_5_75HZ_ENABLED;
 	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_10HZ) {
 		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_10HZ_ENABLED;
-	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_30HZ) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_30HZ_ENABLED;
+	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_25HZ) {
+		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_25HZ_ENABLED;
 	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_50HZ) {
 		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_50HZ_ENABLED;
 	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_100HZ) {
 		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_100HZ_ENABLED;
 	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_200HZ) {
 		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_200HZ_ENABLED;
-	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_500HZ) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_500HZ_ENABLED;
+	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_400HZ) {
+		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_400HZ_ENABLED;
+	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_800HZ) {
+		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_800HZ_ENABLED;
+	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_1600HZ) {
+		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_1600HZ_ENABLED;
 	} else {
 		return 0;
 	}

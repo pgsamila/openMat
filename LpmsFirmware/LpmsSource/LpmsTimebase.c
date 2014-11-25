@@ -15,28 +15,26 @@ void initTimebase(void)
 	uint32_t config;
 	config = getConfigReg();
 
-	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
-		cyclesPerDataTransfer = 64; // 5.75 Hz
+	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5_75HZ_ENABLED) {
+		cyclesPerDataTransfer = 128; // 5.75 Hz
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
-		cyclesPerDataTransfer = 80;	// 10Hz			//32; // 12.5 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
-		cyclesPerDataTransfer = 32;	// 25Hz			//16; // 25 Hz
+		cyclesPerDataTransfer = 80;	// 10Hz			// 32; // 12.5 Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_25HZ_ENABLED) {
+		cyclesPerDataTransfer = 32;	// 25Hz			// 16; // 25 Hz
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
-		cyclesPerDataTransfer = 16; // 50Hz 		//8; // 50 Hz
+		cyclesPerDataTransfer = 16; // 50Hz 		// 8; // 50 Hz
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
-		cyclesPerDataTransfer = 2;  // 400Hz 		//4; // 100 Hz
+		cyclesPerDataTransfer = 8; // 100Hz 		// 4; // 100 Hz
 	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
-#ifdef USE_BLUETOOTH_INTERFACE
-		cyclesPerDataTransfer = 1;  // 800Hz   		//3; // 133 Hz
-#else
-		cyclesPerDataTransfer = 2; // 200 Hz
-#endif
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
-		cyclesPerDataTransfer = 1; // 400 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
-		cyclesPerDataTransfer = 1; // 400 Hz
+		cyclesPerDataTransfer = 4; // 200Hz   		// 3; // 133 Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_400HZ_ENABLED) {
+		cyclesPerDataTransfer = 2; // 400Hz   		// 3; // 133 Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_800HZ_ENABLED) {
+		cyclesPerDataTransfer = 1; // 800 Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1600HZ_ENABLED) {
+		cyclesPerDataTransfer = 1; // 1600 Hz
 	} else {
-		cyclesPerDataTransfer = 4; // 100 Hz
+		cyclesPerDataTransfer = 8; // 100 Hz
 	}
 }
 

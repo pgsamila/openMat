@@ -1301,6 +1301,9 @@ void LpmsSensor::setCurrentData(ImuData d)
 	
 	if (dataQueue.size() < 64) { 
 		dataQueue.push(d);
+	} else {
+		dataQueue.pop();
+		dataQueue.push(d);
 	}
 	
 	if (callbackSet == true) {

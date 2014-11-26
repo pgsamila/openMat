@@ -40,7 +40,7 @@ LpmsBBluetooth::~LpmsBBluetooth(void)
 {
 	close();
 }
-	
+
 long long LpmsBBluetooth::getConnectWait(void) 
 { 
 	return 6000000;
@@ -111,10 +111,15 @@ bool LpmsBBluetooth::connect(string deviceId)
 	addr.rc_channel = (uint8_t) 1;
 	str2ba(deviceId.c_str(), &addr.rc_bdaddr);
 
+	std::cout << "[LpmsBBluetooth] Connecting to: " << deviceId.c_str() << std::endl;
 	status = ::connect(bzSocket, (struct sockaddr *)&addr, sizeof(addr));
-
-	if (status < 0) return false;
-
+	
+	if (status < 0) {
+		std::cout << "[LpmsBBluetooth] Couldn't create socket." << std::endl;
+		::close(bzSocket);
+		return false;
+	}
+	std::cout << "[LpmsBBluetooth] Connected!" << std::endl;
 	mm.reset();
 	
 	oneTx.clear();

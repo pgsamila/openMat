@@ -166,10 +166,11 @@ void LpmsBBluetooth::runRead(void)
 
 	while (isOpen == true) {
 		bytesReceived = ::read(bzSocket, rxBuffer, 8);
-
+		mutexDataQueue.lock();
 		for (unsigned int i=0; i < bytesReceived; i++) {
 			dataQueue.push((unsigned char) rxBuffer[i]);
 		}
+		mutexDataQueue.unlock();
 	}
 }
 
@@ -231,8 +232,10 @@ bool LpmsBBluetooth::parseModbusByte(void)
 	unsigned char b;
 
 	while (dataQueue.size() > 0) {	
+		mutexDataQueue.lock();
 		b = dataQueue.front();
 		dataQueue.pop();
+		mutexDataQueue.unlock();
 
 		switch (rxState) {
 		case PACKET_END:
@@ -272,7 +275,7 @@ bool LpmsBBluetooth::parseModbusByte(void)
 			rxState = PACKET_RAW_DATA;
 			rawDataIndex = currentLength;
 		break;
-				
+			
 		case PACKET_RAW_DATA:
 			if (rawDataIndex == 0) {
 				lrcCheck = currentAddress + currentFunction + currentLength;

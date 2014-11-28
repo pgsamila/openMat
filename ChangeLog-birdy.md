@@ -87,7 +87,7 @@ void setSystemStepTimer(void)
 - change default communication frequencies to 10, 25, 50, 400, 800Hz
 -- **TODO: fix up LPMS_STREAM_FREQ_XXXHZ_ENABLED headers**
 -- **TODO: decide communication frequencies**
-- 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsSensor)
+- [master-fixed] 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsSensor)
 -- SensorManager.c
 ``` cpp
 uint8_t getSensorData(uint8_t* data, uint16_t *l)
@@ -101,8 +101,8 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 ```
 
 ## LpSensor
-- fix inverted raw mag data sign bug
-- fix gyro raw data
+- [master-fixed] fix inverted raw mag data sign bug
+- [master-fixed] fix gyro raw data
 -- LpmsSensor.cpp
 ``` cpp
 void LpmsSensor::update(void)
@@ -152,7 +152,7 @@ int LpmsSensor::hasImuData(void)
     return dataQueue.size();
 }
 ```
-- 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsFirmware)
+- [master-fixed] 16bit timing bug. Change to use 32bit float to prevent int overflow @800Hz (see changes in LpmsFirmware)
 -- **TODO: decide to use uint or float as sensor timestamp**
 -- LpmsIoInterface.cpp
 ``` cpp
@@ -168,3 +168,16 @@ bool LpmsIoInterface::parseSensorData(void)
     ...
 }
 ```
+- [master-fixed] VS2013 complaining ofstream != NULL comparison
+-- LpmsSensorManager.cpp :360
+``` cpp
+void LpmsSensorManager::stopSaveSensorData(void)
+{
+	...	
+	//if (saveDataHandle != NULL) saveDataHandle.close();
+	if (saveDataHandle.is_open() ) saveDataHandle.close();
+	...
+}
+```
+- [master-fixed] Fix LinAcc units
+-- LpmsSensorManager.cpp -> bool LpmsSensorManager::saveSensorData(const char* fn)

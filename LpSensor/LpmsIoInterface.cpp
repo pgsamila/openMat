@@ -428,8 +428,9 @@ bool LpmsIoInterface::parseSensorData(void)
 	
 	o = 0;
 	if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-		fromBuffer(oneTx, &l);
-		currentTimestamp = (float) l / 10000.0f;
+		//fromBuffer(oneTx, &l);
+        //currentTimestamp = (float) l / 1000.0f;
+        fromBuffer(oneTx, o, &currentTimestamp);
 		o = o + 4;
 		
 		if ((configReg & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {

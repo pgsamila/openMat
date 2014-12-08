@@ -811,7 +811,8 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 
 #ifdef LPMS_BLE
 	if (connectedInterface == USB_CONNECTED) {
-                setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
+                //setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
+				setFloat(&(data[o]), mT, FLOAT_FULL_PRECISION);
                 o = o+4;
 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_QUAT_OUTPUT_ENABLED) != 0) {
@@ -846,7 +847,8 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 	}
 #else
         if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-                setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
+                //setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
+                setFloat(&(data[o]), mT, FLOAT_FULL_PRECISION);
                 o = o+4;
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {

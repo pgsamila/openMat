@@ -38,6 +38,7 @@
 	#include <bluetooth/rfcomm.h>
 	#include <bluetooth/hci.h>
 	#include <bluetooth/hci_lib.h>
+	#include <mutex>
 
 	/* #include <stdio.h>
 	#include <signal.h>
@@ -83,6 +84,7 @@ private:
 	bool write(char *txBuffer, unsigned bufferLength);
 
 #ifdef __GNUC__
+	std::mutex mutexDataQueue;
 	void runRead(void);
 #endif
 

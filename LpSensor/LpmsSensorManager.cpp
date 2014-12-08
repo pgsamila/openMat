@@ -257,8 +257,10 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 		sensor = new LpmsSensor(DEVICE_LPMS_BLE, deviceId);
 		sensorList.push_back(sensor);
 		
+#ifdef _WIN32	
 		((LpmsBle *)sensor->getIoInterface())->deviceId = deviceId;
 		be.addSensor((LpmsBle *)sensor->getIoInterface());
+#endif
 	break;		
 		
 	case DEVICE_LPMS_C:		

@@ -40,7 +40,7 @@ LpmsBBluetooth::~LpmsBBluetooth(void)
 {
 	close();
 }
-	
+
 long long LpmsBBluetooth::getConnectWait(void) 
 { 
 	return 6000000;
@@ -111,10 +111,15 @@ bool LpmsBBluetooth::connect(string deviceId)
 	addr.rc_channel = (uint8_t) 1;
 	str2ba(deviceId.c_str(), &addr.rc_bdaddr);
 
+	std::cout << "[LpmsBBluetooth] Connecting to: " << deviceId.c_str() << std::endl;
 	status = ::connect(bzSocket, (struct sockaddr *)&addr, sizeof(addr));
-
-	if (status < 0) return false;
-
+	
+	if (status < 0) {
+		std::cout << "[LpmsBBluetooth] Couldn't create socket." << std::endl;
+		::close(bzSocket);
+		return false;
+	}
+	std::cout << "[LpmsBBluetooth] Connected!" << std::endl;
 	mm.reset();
 	
 	oneTx.clear();
@@ -161,10 +166,11 @@ void LpmsBBluetooth::runRead(void)
 
 	while (isOpen == true) {
 		bytesReceived = ::read(bzSocket, rxBuffer, 8);
-
+		mutexDataQueue.lock();
 		for (unsigned int i=0; i < bytesReceived; i++) {
 			dataQueue.push((unsigned char) rxBuffer[i]);
 		}
+		mutexDataQueue.unlock();
 	}
 }
 
@@ -226,8 +232,10 @@ bool LpmsBBluetooth::parseModbusByte(void)
 	unsigned char b;
 
 	while (dataQueue.size() > 0) {	
+		mutexDataQueue.lock();
 		b = dataQueue.front();
 		dataQueue.pop();
+		mutexDataQueue.unlock();
 
 		switch (rxState) {
 		case PACKET_END:
@@ -267,7 +275,7 @@ bool LpmsBBluetooth::parseModbusByte(void)
 			rxState = PACKET_RAW_DATA;
 			rawDataIndex = currentLength;
 		break;
-				
+			
 		case PACKET_RAW_DATA:
 			if (rawDataIndex == 0) {
 				lrcCheck = currentAddress + currentFunction + currentLength;

@@ -86,3 +86,8 @@ bool LpmsRS232::deviceStarted(void)
 {
 	return isOpen;
 }
+
+void LpmsRS232::setRs232Baudrate(int i)
+{
+	currentUartBaudrate = i;
+}

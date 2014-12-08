@@ -397,9 +397,8 @@ void processSensorData(void)
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
 			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {		
-
-		// lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
-	 	MadgwickAHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q) ;
+		//lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
+	 	AHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q, &lpFilterParam) ;
 		
 		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
 
@@ -848,8 +847,9 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 	}
 #else
         if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-                setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
-                o = o+4;
+                //setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
+                setFloat(&(data[o]), mT, FLOAT_FULL_PRECISION);
+		  		o = o+4;
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<3; i++) {

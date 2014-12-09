@@ -1665,39 +1665,8 @@ long LpmsSensor::getStreamFrequency(void)
 	int i;
 	int dataSavePeriod;
 	
-	getConfigurationPrm(PRM_SAMPLING_RATE, &i);	
-	
-	switch (i) {
-	case SELECT_STREAM_FREQ_5HZ:
-		dataSavePeriod = 200;
-	break;	
-	
-	case SELECT_STREAM_FREQ_10HZ:
-		dataSavePeriod = 100;
-	break;	
-	
-	case SELECT_STREAM_FREQ_50HZ:		
-		dataSavePeriod = 20;				
-	break;
-		
-	case SELECT_STREAM_FREQ_100HZ:
-		dataSavePeriod = 10;
-	break;
-		
-	case SELECT_STREAM_FREQ_200HZ:
-		dataSavePeriod = 5;
-	break;
-	
-	case SELECT_STREAM_FREQ_500HZ:
-		dataSavePeriod = 2;
-	break;	
-	
-	default:
-		dataSavePeriod = 2;
-	break;
-	}
-	
-	return dataSavePeriod;
+	getConfigurationPrm(PRM_SAMPLING_RATE, &i);
+	return i;
 }
 
 void LpmsSensor::armTimestampReset(void)
@@ -1707,7 +1676,6 @@ void LpmsSensor::armTimestampReset(void)
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
 	getConfigState = STATE_ARM_TIMESTAMP_RESET;
 }
-
 
 
 /***********************************************************************

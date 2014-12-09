@@ -667,18 +667,20 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_5HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_10HZ);	
-		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_25HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_25HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_50HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_200HZ);	
-		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_500HZ);	
-		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_1000HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_400HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_400HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_800HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_800HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1600HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_1600HZ);	
 		} else {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);	
 		}	

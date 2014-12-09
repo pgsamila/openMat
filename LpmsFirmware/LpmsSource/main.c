@@ -20,13 +20,12 @@ int main(void)
 {
 	int sendCounter = 0;
 	uint16_t ledC = 0;
-	float dt = 0.0f;
+	// float dt = 0.0f;
 
 	initIWatchdog();
 	setGPIOConfig();
 	setSystemStepTimer();	
 	initSensorManager();
-	initTimebase(); 	
 	initCommunicationManager();
 
 #ifdef ENABLE_INSOLE
@@ -92,9 +91,9 @@ int main(void)
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
 			  
-				STOPWATCH_STOP;	
+				/* STOPWATCH_STOP;	
 				dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
-				STOPWATCH_START;
+				STOPWATCH_START; */
 			  
 				systemStepTimeout = 0;				
 				++ledC;

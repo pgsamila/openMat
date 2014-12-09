@@ -33,6 +33,10 @@ extern uint8_t transferFormat;
 extern LpVector4f mQ_hx;
 extern LpVector4f mQ_offset;
 extern uint16_t ledFlashTime;
+extern float lpmsMeasurementPeriod;
+extern uint8_t lpmsMeasurementIntervals;
+extern uint16_t lpmsLedPeriod;
+extern uint8_t cyclesPerDataTransfer;
 
 uint8_t writeRegisters(void)
 {
@@ -291,8 +295,8 @@ uint8_t setStreamFreq(uint8_t* data)
 		freq = freq | (((uint32_t) data[i]) << (i * 8));
 	}
 	
-	if (freq == (uint32_t)LPMS_STREAM_FREQ_5_75HZ) {
-		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_5_75HZ_ENABLED;
+	if (freq == (uint32_t)LPMS_STREAM_FREQ_5HZ) {
+		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_5HZ_ENABLED;
 	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_10HZ) {
 		gReg.data[LPMS_CONFIG] = (gReg.data[LPMS_CONFIG] & (~LPMS_STREAM_FREQ_MASK)) | LPMS_STREAM_FREQ_10HZ_ENABLED;
 	} else if (freq == (uint32_t)LPMS_STREAM_FREQ_25HZ) {
@@ -313,9 +317,39 @@ uint8_t setStreamFreq(uint8_t* data)
 		return 0;
 	}
 
-	initTimebase();
+	updateStreamFreq();
 		
 	return 1;
+}
+
+void updateStreamFreq(void)
+{
+	uint32_t config;
+	config = getConfigReg();
+
+	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
+		cyclesPerDataTransfer = 160; // 5Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
+		cyclesPerDataTransfer = 80;	// 10Hz	// 32; // 12.5Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_25HZ_ENABLED) {
+		cyclesPerDataTransfer = 32;	// 25Hz	// 16; // 25Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
+		cyclesPerDataTransfer = 16; // 50Hz // 8; // 50Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
+		cyclesPerDataTransfer = 8; // 100Hz // 4; // 100Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
+		cyclesPerDataTransfer = 4; // 200Hz // 3; // 133Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_400HZ_ENABLED) {
+		cyclesPerDataTransfer = 2; // 400Hz // 3; // 133Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_800HZ_ENABLED) {
+		cyclesPerDataTransfer = 1; // 800Hz
+	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1600HZ_ENABLED) {
+		cyclesPerDataTransfer = 1; // 1600Hz
+	} else {
+		cyclesPerDataTransfer = 8; // 100Hz
+	}
+
+	if (lpmsMeasurementIntervals > 1) cyclesPerDataTransfer = cyclesPerDataTransfer / 2;
 }
 
 uint8_t setOrientationOffset(uint8_t* data)
@@ -1020,6 +1054,34 @@ uint8_t setFilterMode(uint8_t* data)
 	return f;
 }
 
+void updateFilterMode(void) 
+{
+	lpFilterParam.filterMode = gReg.data[LPMS_FILTER_MODE];
+
+	switch (lpFilterParam.filterMode) {
+	case LPMS_FILTER_GYR:
+	case LPMS_FILTER_GYR_ACC:
+	case LPMS_FILTER_GYR_ACC_MAG:
+	case LPMS_FILTER_GYR_ACC_EULER:
+	case LPMS_FILTER_ACC_MAG:
+		lpmsMeasurementPeriod = 0.00250f;
+		lpmsMeasurementIntervals = 2;
+		lpmsLedPeriod = 400;
+		ledFlashTime = lpmsLedPeriod;
+	break;
+
+	case LPMS_FILTER_MADGWICK_GYR_ACC:
+	case LPMS_FILTER_MADGWICK_GYR_ACC_MAG:
+		lpmsMeasurementPeriod = 0.00125f;
+		lpmsMeasurementIntervals = 1;
+		lpmsLedPeriod = 800;
+		ledFlashTime = lpmsLedPeriod;
+	break;
+	}
+
+	updateStreamFreq();
+}
+
 uint8_t setLinAccCompMode(uint8_t* data) 
 {
 	uint8_t f = 1; 
@@ -1414,14 +1476,14 @@ void armHardwareTimestampReset(uint8_t* data)
 		GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 		isTimestampResetArmed = 1;
-		ledFlashTime = LPMS_LED_PERIOD / 4;
+		ledFlashTime = lpmsLedPeriod / 4;
 	break;
 
 	case LPMS_DISARM_TIMESTAMP_RESET:
 		GPIO_PinAFConfig(GPIOA, GPIO_Pin_13, GPIO_AF_SWJ);
 
 		isTimestampResetArmed = 0;
-		ledFlashTime = LPMS_LED_PERIOD;
+		ledFlashTime = lpmsLedPeriod;
 	break;
 	}
 }

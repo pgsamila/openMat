@@ -34,8 +34,9 @@ void streamDataTask(float t)
 
 	LpmsSensorManagerI* manager = LpmsSensorManagerFactory();
 
+	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:06:66:48:E3:63");	
 	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:06:66:62:C0:7A");
-	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_RS232, "COM159");	
+	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_RS232, "COM159");	
 	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_U, "A4004frO");
 	// LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_C, "0");
 

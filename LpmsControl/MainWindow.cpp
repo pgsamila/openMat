@@ -561,9 +561,9 @@ void MainWindow::timerUpdate(void)
 			checkOptionalFeatures((*it)->getSensor());
 			
 			if (mode == MODE_THREED_WIN && ((cubeWindowContainer->getMode() == CUBE_VIEW_MODE_2) || (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_4))) {
-				if ((*it)->getSensor()->hasImuData() == false) break;
+				if ((*it)->getSensor()->hasImuData() == 0) break;
 				
-				while ((*it)->getSensor()->hasImuData() == true) {
+				while ((*it)->getSensor()->hasImuData() > 0) {
 					imuData = (*it)->getSensor()->getCurrentData();	
 				}
 				
@@ -582,9 +582,9 @@ void MainWindow::timerUpdate(void)
 					}
 				}
 #else
-				if ((*it)->getSensor()->hasImuData() == false) break;
+				if ((*it)->getSensor()->hasImuData() == 0) break;
 				
-				while ((*it)->getSensor()->hasImuData() == true) {
+				while ((*it)->getSensor()->hasImuData() > 0) {
 					imuData = (*it)->getSensor()->getCurrentData();	
 				} 
 #endif

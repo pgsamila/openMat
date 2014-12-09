@@ -8,35 +8,7 @@
 uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
-uint16_t ledFlashTime = LPMS_LED_PERIOD;
-
-void initTimebase(void)
-{
-	uint32_t config;
-	config = getConfigReg();
-
-	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5_75HZ_ENABLED) {
-		cyclesPerDataTransfer = 128; // 5.75 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
-		cyclesPerDataTransfer = 80;	// 10Hz			// 32; // 12.5 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_25HZ_ENABLED) {
-		cyclesPerDataTransfer = 32;	// 25Hz			// 16; // 25 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
-		cyclesPerDataTransfer = 16; // 50Hz 		// 8; // 50 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
-		cyclesPerDataTransfer = 8; // 100Hz 		// 4; // 100 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
-		cyclesPerDataTransfer = 4; // 200Hz   		// 3; // 133 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_400HZ_ENABLED) {
-		cyclesPerDataTransfer = 2; // 400Hz   		// 3; // 133 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_800HZ_ENABLED) {
-		cyclesPerDataTransfer = 1; // 800 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1600HZ_ENABLED) {
-		cyclesPerDataTransfer = 1; // 1600 Hz
-	} else {
-		cyclesPerDataTransfer = 8; // 100 Hz
-	}
-}
+uint16_t ledFlashTime = 400;
 
 uint16_t getTransferCycles(void)
 {
@@ -81,8 +53,8 @@ void setSystemStepTimer(void)
 	int ticks = clock/cycle; 	// 150000
 	int prescaler = 15;
 	int period = ticks/prescaler;
-	TIM_TimeBaseStructure.TIM_Period = period-1;//2499;
-	TIM_TimeBaseStructure.TIM_Prescaler = prescaler-1; //59;
+	TIM_TimeBaseStructure.TIM_Period = period-1; // 2499;
+	TIM_TimeBaseStructure.TIM_Prescaler = prescaler-1; // 59;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	

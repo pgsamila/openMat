@@ -19,6 +19,8 @@
 #define LPMS_FILTER_GYR_ACC_MAG 2
 #define LPMS_FILTER_ACC_MAG 3
 #define LPMS_FILTER_GYR_ACC_EULER 4
+#define LPMS_FILTER_MADGWICK_GYR_ACC 5
+#define LPMS_FILTER_MADGWICK_GYR_ACC_MAG 6
 
 #define LPMS_LIN_ACC_COMP_MODE_OFF 0
 #define LPMS_LIN_ACC_COMP_MODE_WEAK 1
@@ -164,16 +166,17 @@ void calculateAlignmentOffset(LpVector4f q,
 	LpVector4f *mQ_hx, 
 	LpVector4f *mQ_offset);
 
-void AHRSupdate(LpVector3f a, 
+void MadgwickAHRSupdate(LpVector3f a, 
 	LpVector3f b, 
 	LpVector3f g,
 	float T, 
-	LpVector4f *qOut,
-	LpFilterParameters *lpFilterParam);
-void AHRSupdateIMU(LpVector3f a,  
+	LpVector4f *qOut);
+
+void MadgwickAHRSupdateIMU(LpVector3f a,  
 	LpVector3f g,
 	float T, 
 	LpVector4f *qOut);
+
 #ifdef __cplusplus
 }
 #endif 

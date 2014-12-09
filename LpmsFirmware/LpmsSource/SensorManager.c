@@ -52,8 +52,7 @@ float cumulatedRefData[3] = { 0.0f, 0.0f, 0.0f };
 int32_t cumulatedRefCounter = 0;
 float refCalibrationDuration = 0;
 LpVector3f maxGyr;	
-LpVector3f minGyr;	
-float T = LPMS_MEASUREMENT_PERIOD;
+LpVector3f minGyr;
 uint32_t lpmsStatus = 0;
 static __IO uint8_t isDataSending = 0;
 uint16_t pressureTime = 0;
@@ -76,12 +75,14 @@ LpVector3f tB;
 static float d2r = 0.01745f;
 uint32_t measurementTime = 0;
 float sendTime = 0.0f;
-float heaveTime = LPMS_MEASUREMENT_PERIOD;
 LpVector3f heaveOutput;
 float heaveY = 0.0f;
 LpVector3f aRawNoLp;
 LpVector4f mQ_hx;
 LpVector4f mQ_offset;
+float lpmsMeasurementPeriod = 0.00250f;
+__IO uint8_t lpmsMeasurementIntervals = 2;
+uint16_t lpmsLedPeriod = 400;
 
 #ifdef ENABLE_INSOLE
 	float forceSensorOutput[N_FORCE_SENSORS];
@@ -245,7 +246,6 @@ void initSensorManager(void)
 	
 	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
 	
-	lpFilterParam.filterMode = gReg.data[LPMS_FILTER_MODE];
 	lpFilterParam.magFieldEstimate = conItoF(gReg.data[LPMS_MAG_FIELD_EST]);
 
 	if ((gReg.data[LPMS_CONFIG] & LPMS_DYNAMIC_COVAR_ENABLED) != 0) {
@@ -279,6 +279,7 @@ void initSensorManager(void)
 	vectZero3x1(&accRawDataLp);
 	vectZero3x1(&magRawDataLp);
 
+	updateFilterMode();
 	updateRawDataLp();
 	updateCanMapping();
 	updateCanHeartbeat();
@@ -288,6 +289,7 @@ void initSensorManager(void)
 	updateMagAlignBias();
 	updateMagReference();
 	updateUartFormat();
+	updateStreamFreq();
 
 	quaternionIdentity(&mQ_hx);
 	quaternionIdentity(&mQ_offset);
@@ -295,7 +297,6 @@ void initSensorManager(void)
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
 #endif
-	
 }
 
 void updateSensorData(void)
@@ -314,7 +315,7 @@ void updateSensorData(void)
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
 #ifdef USE_CANBUS_INTERFACE
-		canHeartbeatTime += LPMS_MEASUREMENT_PERIOD;
+		canHeartbeatTime += lpmsMeasurementPeriod;
 #endif
 
 		++measurementTime;
@@ -351,7 +352,7 @@ void checkTimestampReset(void)
 	if (isTimestampResetArmed == 1) {
 		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_13) == RESET) {
 			measurementTime = 0;
-			ledFlashTime = LPMS_LED_PERIOD;
+			ledFlashTime = lpmsLedPeriod;
 		}
 	}
 }
@@ -374,7 +375,7 @@ void processSensorData(void)
 	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
 	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
  
-	gyrOnlineCal(gyrRawData, LPMS_MEASUREMENT_PERIOD, isGyrCalibrationEnabled, &calibrationData, &lpFilterParam);
+	gyrOnlineCal(gyrRawData, lpmsMeasurementPeriod, isGyrCalibrationEnabled, &calibrationData, &lpFilterParam);
 
 	applyLowPass();
 
@@ -395,10 +396,9 @@ void processSensorData(void)
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {		
-		//lpFilterUpdate(a, b, g, &q, LPMS_MEASUREMENT_PERIOD, 0, &magNoise, &calibrationData, &lpFilterParam);
-	 	AHRSupdate(a,b,g, LPMS_MEASUREMENT_PERIOD, &q, &lpFilterParam) ;
+			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC) {
+
+		lpFilterUpdate(a, b, g, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
 		
 		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
 
@@ -407,22 +407,65 @@ void processSensorData(void)
 		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
 		
 #ifdef USE_HEAVEMOTION
-		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(heaveTime);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
 #endif
 		
+	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
+
+	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);
+
+		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
+
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
+		
+#ifdef USE_HEAVEMOTION
+		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
+#endif
+
 	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
 		
-		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, T, 0, &magNoise, &calibrationData, &lpFilterParam);
+		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
 		quaternionIdentity(&qAfterOffset); 
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
 		
-	} else {
+	} else if (lpFilterParam.filterMode == LPMS_FILTER_ACC_MAG) {
 	  
 		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, &calibrationData, &lpFilterParam);
 		quaternionIdentity(&qAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
+
+	} else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
+
+		vectZero3x1(&b);
+	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);
+
+		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
+
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
+		
+#ifdef USE_HEAVEMOTION
+		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
+#endif
+
+	} else {
+
+	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);
+
+		qAfterOffset = applyAlignmentOffset(q, gReg.data[LPMS_OFFSET_MODE], &mQ_hx, &mQ_offset);
+
+		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0) quaternionToEuler(&qAfterOffset, &rAfterOffset);
+		if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) calcLinearAcceleration();
+		
+#ifdef USE_HEAVEMOTION
+		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
+#endif
+
 	}
-	
 }    
 
 void applyLowPass(void)
@@ -572,7 +615,7 @@ void checkGyrCal(void)
 	float stDuration = duration / 10.0f;
 
 	if (isGyrCalibrationEnabled) {
-		gyrCalibrationDuration += T;
+		gyrCalibrationDuration += lpmsMeasurementPeriod;
 		++cumulatedGyrCounter;
 
 		if (gyrCalibrationDuration < stDuration) {
@@ -657,7 +700,7 @@ void checkRefCal(void)
 	LpVector3f tR;
 
 	if (isRefCalibrationEnabled) {
-		refCalibrationDuration += T;
+		refCalibrationDuration += lpmsMeasurementPeriod;
 
 		cumulatedRefCounter++;
 		
@@ -724,7 +767,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
     uint8_t sl;
-	float mT = measurementTime * LPMS_MEASUREMENT_PERIOD;
+	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
 
 	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;
 	data[o] = ','; ++o;
@@ -808,7 +851,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
-	float mT = measurementTime * LPMS_MEASUREMENT_PERIOD;
+	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
 
 #ifdef LPMS_BLE
 	if (connectedInterface == USB_CONNECTED) {
@@ -847,13 +890,16 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 	}
 #else
         if ((gReg.data[LPMS_CONFIG] & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-                //setUi32t(&(data[o]), (uint32_t)(mT * 1000.0f));
                 setFloat(&(data[o]), mT, FLOAT_FULL_PRECISION);
 		  		o = o+4;
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<3; i++) {
+#ifdef ENABLE_INSOLE
+								setFloat(&(data[i*2+ o]), forceSensorOutput[i], FLOAT_FIXED_POINT_1000);
+#else
                                 setFloat(&(data[i*2 + o]), gRaw.data[i], FLOAT_FIXED_POINT_1000);
+#endif
                         }
                         o = o+6;
                 }
@@ -901,7 +947,12 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 }
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
+#ifdef ENABLE_INSOLE
+                        setFloat(&(data[0 + o]), forceSensorOutput[3], FLOAT_FIXED_POINT_100);
+#else
                         setFloat(&(data[0 + o]), pressure, FLOAT_FIXED_POINT_100);
+#endif
+
                         o = o+2;
                 }
         
@@ -927,7 +978,11 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                 
                 if ((gReg.data[LPMS_CONFIG] & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<3; i++) {
+#ifdef ENABLE_INSOLE
+								setFloat(&(data[i*4 + o]), forceSensorOutput[i], FLOAT_FULL_PRECISION);
+#else
                                 setFloat(&(data[i*4 + o]), gRaw.data[i], FLOAT_FULL_PRECISION);
+#endif
                         }
                         o = o+12;
                 }
@@ -969,11 +1024,7 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_LINACC_OUTPUT_ENABLED) != 0) {
                         for (int i=0; i<3; i++) {
-#ifdef ENABLE_INSOLE
-								setFloat(&(data[i*4 + o]), forceSensorOutput[i], FLOAT_FULL_PRECISION);
-#else
                                 setFloat(&(data[i*4 + o]), linAcc.data[i], FLOAT_FULL_PRECISION);
-#endif
                         }
                         o = o+12;
                 }

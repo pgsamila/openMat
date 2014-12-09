@@ -331,7 +331,7 @@
 #define LPMS_SELF_TEST_RUNNING 		(0x0001 << 16)
 
 // Stream frequency enable bits
-#define LPMS_STREAM_FREQ_5_75HZ_ENABLED 	0x00000000
+#define LPMS_STREAM_FREQ_5HZ_ENABLED 	0x00000000
 #define LPMS_STREAM_FREQ_10HZ_ENABLED 	0x00000001
 #define LPMS_STREAM_FREQ_25HZ_ENABLED 	0x00000002
 #define LPMS_STREAM_FREQ_50HZ_ENABLED 	0x00000003
@@ -343,7 +343,7 @@
 #define LPMS_STREAM_FREQ_MASK 		0x00000007
 
 // Stream frequency data values
-#define LPMS_STREAM_FREQ_5_75HZ 	(uint32_t)5
+#define LPMS_STREAM_FREQ_5HZ 		(uint32_t)5
 #define LPMS_STREAM_FREQ_10HZ 		(uint32_t)10
 #define LPMS_STREAM_FREQ_25HZ 		(uint32_t)30
 #define LPMS_STREAM_FREQ_50HZ 		(uint32_t)50
@@ -352,17 +352,6 @@
 #define LPMS_STREAM_FREQ_400HZ 		(uint32_t)300
 #define LPMS_STREAM_FREQ_800HZ 		(uint32_t)500
 #define LPMS_STREAM_FREQ_1600HZ 	(uint32_t)1000
-
-// Stream cycle period values
-#define LPMS_STREAM_T_5_75HZ 	(uint32_t)5
-#define LPMS_STREAM_T_10HZ 		(uint32_t)10
-#define LPMS_STREAM_T_25HZ 		(uint32_t)30
-#define LPMS_STREAM_T_50HZ 		(uint32_t)50
-#define LPMS_STREAM_T_100HZ 	(uint32_t)100
-#define LPMS_STREAM_T_200HZ 	(uint32_t)200
-#define LPMS_STREAM_T_400HZ 	(uint32_t)300
-#define LPMS_STREAM_T_800HZ		(uint32_t)500
-#define LPMS_STREAM_T_1600HZ 	(uint32_t)1000
 
 // Bluetooth baudrate settings
 #define LPMS_BT_BAUDRATE_9600_ENABLED 	0x00000000

@@ -871,8 +871,8 @@ void quatRotVec(LpVector4f q, LpVector3f vI, LpVector3f* vO)
 
 	quaternionCon(&q, &tQ2);
 	
-	quaternionMult(&tQ2, &tQ, &tQ3);
-	quaternionMult(&tQ3, &q, &tQ4);
+	quaternionMult(&q, &tQ, &tQ3);
+	quaternionMult(&tQ3, &tQ2, &tQ4);
 
 	vO->data[0] = tQ4.data[1];
 	vO->data[1] = tQ4.data[2];

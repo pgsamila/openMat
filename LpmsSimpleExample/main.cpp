@@ -13,15 +13,19 @@ int main(int argc, char *argv[])
 	// Connects to LPMS-B sensor with address 00:11:22:33:44:55 
 	LpmsSensorI* lpms = manager->addSensor(DEVICE_LPMS_B, "00:11:22:33:44:55");
 
-	while(1) {		
+	while(1) {		 
 		// Checks, if conncted
-		if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED) {
-
+		if (
+			lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+			lpms->hasImuData()
+			) {
+			
 			// Reads quaternion data
 			d = lpms->getCurrentData();
 
 			// Shows data
-			printf("Timestamp=%f, qW=%f, qX=%f, qY=%f, qZ=%f\n", d.timeStamp, d.q[0], d.q[1], d.q[2], d.q[3]);
+			printf("Timestamp=%f, qW=%f, qX=%f, qY=%f, qZ=%f\n", 
+				d.timeStamp, d.q[0], d.q[1], d.q[2], d.q[3]);
 		}
 	}
 

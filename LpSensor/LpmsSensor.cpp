@@ -532,7 +532,7 @@ void LpmsSensor::update(void)
 
 		// Corrects magnetometer measurement
 		if ((bt->getConfigReg() & LPMS_MAG_RAW_OUTPUT_ENABLED) != 0) {
-			vectSub3x1(&configData.hardIronOffset, &bRaw, &b);		
+			vectSub3x1(&bRaw, &configData.hardIronOffset, &b);		
 			matVectMult3(&configData.softIronMatrix, &b, &b);
 		} else {
 			vectZero3x1(&b);
@@ -545,9 +545,16 @@ void LpmsSensor::update(void)
 		} else {
 			vectZero3x1(&a);
 		}
+		
+		// Corrects gyro measurement
+		if ((bt->getConfigReg() & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {	
+			matVectMult3(&configData.gyrMisalignMatrix, &gRaw, &g);
+			vectAdd3x1(&configData.gyrAlignmentBias, &g, &g);
+		} else {
+			vectZero3x1(&g);
+		}
+		
 
-		g = gRaw;
-	
 		convertLpVector3fToArray(&a, imuData.a);
 		convertLpVector3fToArray(&b, imuData.b);
 		convertLpVector3fToArray(&g, imuData.g);
@@ -1293,6 +1300,9 @@ void LpmsSensor::setCurrentData(ImuData d)
 	currentData = d;
 	
 	if (dataQueue.size() < 64) { 
+		dataQueue.push(d);
+	} else {
+		dataQueue.pop();
 		dataQueue.push(d);
 	}
 	

@@ -359,7 +359,7 @@ void checkTimestampReset(void)
 
 void processSensorData(void)
 {     
-	float bInc;
+	// float bInc;
 
 	aRaw.data[0] = accRawData.data[0] * calibrationData.accGain.data[0];
 	aRaw.data[1] = accRawData.data[1] * calibrationData.accGain.data[1];

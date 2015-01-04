@@ -1037,7 +1037,7 @@ uint8_t setFilterMode(uint8_t* data)
 		lpFilterParam.filterMode = LPMS_FILTER_GYR_ACC_MAG;
 	break;
 	
-	case LPMS_FILTER_ACC_MAG:
+	/* case LPMS_FILTER_ACC_MAG:
 		f = setRegUInt32(LPMS_FILTER_MODE, LPMS_FILTER_ACC_MAG);
 		lpFilterParam.filterMode = LPMS_FILTER_ACC_MAG;
 	break;
@@ -1045,8 +1045,18 @@ uint8_t setFilterMode(uint8_t* data)
 	case LPMS_FILTER_GYR_ACC_EULER:
 		f = setRegUInt32(LPMS_FILTER_MODE, LPMS_FILTER_GYR_ACC_EULER);
 		lpFilterParam.filterMode = LPMS_FILTER_GYR_ACC_EULER;
-	break;
+	break; */
 	
+	case LPMS_FILTER_MADGWICK_GYR_ACC:
+		f = setRegUInt32(LPMS_FILTER_MODE, LPMS_FILTER_MADGWICK_GYR_ACC);
+		lpFilterParam.filterMode = LPMS_FILTER_ACC_MAG;
+	break;
+
+	case LPMS_FILTER_MADGWICK_GYR_ACC_MAG:
+		f = setRegUInt32(LPMS_FILTER_MODE, LPMS_FILTER_MADGWICK_GYR_ACC_MAG);
+		lpFilterParam.filterMode = LPMS_FILTER_GYR_ACC_EULER;
+	break;
+
 	default:
 	break;
 	}
@@ -1062,8 +1072,8 @@ void updateFilterMode(void)
 	case LPMS_FILTER_GYR:
 	case LPMS_FILTER_GYR_ACC:
 	case LPMS_FILTER_GYR_ACC_MAG:
-	case LPMS_FILTER_GYR_ACC_EULER:
-	case LPMS_FILTER_ACC_MAG:
+	/* case LPMS_FILTER_GYR_ACC_EULER:
+	case LPMS_FILTER_ACC_MAG: */
 		lpmsMeasurementPeriod = 0.00250f;
 		lpmsMeasurementIntervals = 2;
 		lpmsLedPeriod = 400;

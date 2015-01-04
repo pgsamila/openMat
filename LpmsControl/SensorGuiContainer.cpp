@@ -159,10 +159,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	connect(centriCompModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCentriCompMode(int)));
 
 	filterModeCombo->addItem(QString("Gyr only"));
-	filterModeCombo->addItem(QString("Gyr + Acc"));
-	filterModeCombo->addItem(QString("Gyr + Acc + Mag"));
-	filterModeCombo->addItem(QString("Acc + Mag (Euler only)"));
-	filterModeCombo->addItem(QString("Gyr + Acc (Euler only)"));
+	filterModeCombo->addItem(QString("Gyr + Acc (Kalman)"));
+	filterModeCombo->addItem(QString("Gyr + Acc + Mag (Kalman)"));
+	filterModeCombo->addItem(QString("Gyr + Acc (DCM)"));
+	filterModeCombo->addItem(QString("Gyr + Acc + Mag (DCM)"));
 	connect(filterModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateFilterMode(int)));	
 	
 	thresholdEnableCombo->addItem(QString("Disable"));	

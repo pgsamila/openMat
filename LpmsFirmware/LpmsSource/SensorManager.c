@@ -396,7 +396,8 @@ void processSensorData(void)
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
 
 	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC) {
+			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
+			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
 
 		lpFilterUpdate(a, b, g, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
 		
@@ -409,8 +410,8 @@ void processSensorData(void)
 #ifdef USE_HEAVEMOTION
 		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
 #endif
-		
-	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
+
+	} else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC_MAG) {
 
 	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);
 
@@ -424,7 +425,7 @@ void processSensorData(void)
 		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
 #endif
 
-	} else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
+	} /* else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
 		
 		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
 		quaternionIdentity(&qAfterOffset); 
@@ -436,7 +437,7 @@ void processSensorData(void)
 		quaternionIdentity(&qAfterOffset);
 		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
 
-	} else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
+	} */ else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
 
 		vectZero3x1(&b);
 	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);

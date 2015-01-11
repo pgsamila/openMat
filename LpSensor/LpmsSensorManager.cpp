@@ -151,21 +151,6 @@ void LpmsSensorManager::run(void)
 	int deviceType = 0;
 
 #ifdef _WIN32	
-    OSVERSIONINFO osvi;
-
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-    GetVersionEx(&osvi);
-
-	if ((osvi.dwMajorVersion > 6) || ((osvi.dwMajorVersion == 6) && (osvi.dwMinorVersion >= 1))) {
-		bIsWindows7orLater = true;
-		LOGV("[LpmsSensorManager] Windows 7 and above mode\n");		
-	} else {
-		bIsWindows7orLater = false;
-		LOGV("[LpmsSensorManager] Windows XP mode\n");
-	}
-	
 	ce.connect();
 	be.connect();
 #endif	

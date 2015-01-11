@@ -1663,8 +1663,7 @@ void LpmsSensor::resetToFactorySettings(void)
 long LpmsSensor::getStreamFrequency(void)
 {
 	int i;
-	int dataSavePeriod;
-	
+
 	getConfigurationPrm(PRM_SAMPLING_RATE, &i);
 	return i;
 }

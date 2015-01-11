@@ -421,15 +421,14 @@ bool LpmsIoInterface::parseSensorData(void)
 	float r0, r1, r2;
 	const float r2d = 57.2958f;
 	short s;
-	long l;
 	int i;
 
 	zeroImuData(&imuData);
 	
 	o = 0;
 	if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-		//fromBuffer(oneTx, &l);
-		//currentTimestamp = (float) l / 1000.0f;
+		// fromBuffer(oneTx, &l);
+		// currentTimestamp = (float) l / 1000.0f;
 		fromBuffer(oneTx, o, &currentTimestamp);
 		o = o + 4;
 		

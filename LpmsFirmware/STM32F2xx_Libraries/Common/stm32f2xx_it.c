@@ -3,6 +3,8 @@
 __IO uint8_t systemStepTimeout = 0;
 __IO uint8_t stepDiv = 0;
 
+extern uint8_t lpmsMeasurementIntervals;
+
 void NMI_Handler(void)
 {
 }
@@ -63,10 +65,10 @@ void TIM3_IRQHandler(void)
 {
 	if (TIM_GetFlagStatus(TIM3, TIM_FLAG_Update) != RESET) {
 		TIM_ClearFlag(TIM3, TIM_IT_Update);  
-		/* ++stepDiv;
-		if (stepDiv > 1) { */
+		++stepDiv;
+		if (stepDiv >= lpmsMeasurementIntervals) {
 			systemStepTimeout = 1;
-		/*	stepDiv = 0;
-		} */
+			stepDiv = 0;
+		}
 	}
 }

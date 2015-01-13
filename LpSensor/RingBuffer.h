@@ -1,6 +1,8 @@
 #ifndef RING_BUFFER
 #define RING_BUFFER
 
+#include "math.h"
+
 #define RB_MAX_SAMPLES 1024
 
 typedef struct _RingBuffer {

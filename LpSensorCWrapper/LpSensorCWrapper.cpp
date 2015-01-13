@@ -30,20 +30,41 @@ void APIENTRY connectToLpmsCU(const char* deviceId)
 		connected = 1;
 	}
 }
-			
+
+int APIENTRY getConnectionStatus(void)
+{
+	if (connected == 0) return SENSOR_CONNECTION_CONNECTING;
+	
+	return lpms->getConnectionStatus();
+}
+
+int APIENTRY getSensorStatus(void)
+{
+	if (connected == 0) return SENSOR_CONNECTION_CONNECTING;	
+	
+	return lpms->getSensorStatus();
+}
+
 float APIENTRY getQuaternionW(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 1.0f;
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
+		
 		return d.q[0];
 	}
-	
-	return 0.0f;
+		
+	return 1.0f;
 }
 
 float APIENTRY getQuaternionX(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.q[1];
 	}
@@ -53,7 +74,10 @@ float APIENTRY getQuaternionX(void)
 
 float APIENTRY getQuaternionY(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.q[2];
 	}
@@ -63,7 +87,10 @@ float APIENTRY getQuaternionY(void)
 
 float APIENTRY getQuaternionZ(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.q[3];
 	}
@@ -73,7 +100,10 @@ float APIENTRY getQuaternionZ(void)
 
 float APIENTRY getEulerX(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.r[0];
 	}
@@ -83,7 +113,10 @@ float APIENTRY getEulerX(void)
 
 float APIENTRY getEulerY(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.r[1];
 	}
@@ -93,7 +126,10 @@ float APIENTRY getEulerY(void)
 
 float APIENTRY getEulerZ(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.r[2];
 	}
@@ -103,7 +139,10 @@ float APIENTRY getEulerZ(void)
 
 float APIENTRY getGyrX(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.g[0];
 	}
@@ -113,7 +152,10 @@ float APIENTRY getGyrX(void)
 
 float APIENTRY getGyrY(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.g[1];
 	}
@@ -123,7 +165,10 @@ float APIENTRY getGyrY(void)
 
 float APIENTRY getGyrZ(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.g[2];
 	}
@@ -133,7 +178,10 @@ float APIENTRY getGyrZ(void)
 
 float APIENTRY getAccX(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.a[0];
 	}
@@ -143,7 +191,10 @@ float APIENTRY getAccX(void)
 
 float APIENTRY getAccY(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.a[1];
 	}
@@ -153,7 +204,10 @@ float APIENTRY getAccY(void)
 
 float APIENTRY getAccZ(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.a[2];
 	}
@@ -163,7 +217,10 @@ float APIENTRY getAccZ(void)
 
 float APIENTRY getMagX(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.b[0];
 	}
@@ -173,7 +230,10 @@ float APIENTRY getMagX(void)
 
 float APIENTRY getMagY(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.b[1];
 	}
@@ -183,7 +243,10 @@ float APIENTRY getMagY(void)
 
 float APIENTRY getMagZ(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.b[2];
 	}
@@ -193,7 +256,10 @@ float APIENTRY getMagZ(void)
 
 float APIENTRY getLinAccX(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.linAcc[0];
 	}
@@ -203,7 +269,10 @@ float APIENTRY getLinAccX(void)
 
 float APIENTRY getLinAccY(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.linAcc[1];
 	}
@@ -213,7 +282,10 @@ float APIENTRY getLinAccY(void)
 
 float APIENTRY getLinAccZ(void)
 {
-	if (connected == 1) {
+	if (connected == 0) return 0.0f;	
+	
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED &&
+		lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
 		ImuData d = lpms->getCurrentData();
 		return d.linAcc[2];
 	}

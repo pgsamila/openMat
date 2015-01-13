@@ -72,7 +72,7 @@ public:
 	virtual void setCurrentData(ImuData d) = 0;
 	virtual void setCallback(LpmsCallback cb) = 0;
 	virtual ImuData getCurrentData(void) = 0;
-	virtual bool hasImuData(void) = 0;
+	virtual int hasImuData(void) = 0;
 	virtual void getCalibratedSensorData(float g[3], float a[3], float b[3]) = 0;
 	virtual void getQuaternion(float q[4]) = 0; 
 	virtual void getEulerAngle(float r[3]) = 0; 

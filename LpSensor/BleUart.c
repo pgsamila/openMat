@@ -71,9 +71,10 @@ int uart_list_devices()
 	
 	if (hDevInfo==INVALID_HANDLE_VALUE) return 0;
 
-	while(1) {
+	while (n < 999) {
 		if (!SetupDiEnumDeviceInfo(hDevInfo, n++, &DeviceInfoData)) {
 			SetupDiDestroyDeviceInfoList(hDevInfo);
+			
 			return 0;
 		}
 		
@@ -85,6 +86,7 @@ int uart_list_devices()
 		
 		if (!SetupDiGetDeviceRegistryPropertyA(hDevInfo, &DeviceInfoData, SPDRP_FRIENDLYNAME, NULL, pbuf, reqSize, NULL)) {
 			free(pbuf);
+			
 			continue;
 		}
 		
@@ -92,6 +94,7 @@ int uart_list_devices()
 		
 		if(sscanf(str,tmp,&i) == 1) {
 			printf("[BleUart] Found BLE dongle: %s\n", str);
+			
 			return i;
 		}
 		

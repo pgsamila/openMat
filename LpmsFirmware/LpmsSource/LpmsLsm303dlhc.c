@@ -113,9 +113,9 @@ int accI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char cons
 	return 0;
 }
 
-void readAccRegister(uint8_t* pBuffer, uint8_t address)
+void readAccRegister(uint8_t* pBuffer, unsigned char length, uint8_t address)
 {
-	accI2cRead(address, 1, pBuffer);
+	accI2cRead(address, length, pBuffer);
 }
 
 int accI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data)
@@ -481,12 +481,15 @@ uint8_t getAccRawData(float* xAxis, float* yAxis, float* zAxis)
 	uint8_t data_buffer[6];	
 	int16_t temp;
 	
+	readAccRegister(&data_buffer[0], 6, (uint8_t)LSM303DLHC_OUT_X_L_A | 0x80);
+	/*
 	readAccRegister(&data_buffer[0], (uint8_t)LSM303DLHC_OUT_X_L_A);      
 	readAccRegister(&data_buffer[1], (uint8_t)LSM303DLHC_OUT_X_H_A);
 	readAccRegister(&data_buffer[2], (uint8_t)LSM303DLHC_OUT_Y_L_A);
 	readAccRegister(&data_buffer[3], (uint8_t)LSM303DLHC_OUT_Y_H_A);
 	readAccRegister(&data_buffer[4], (uint8_t)LSM303DLHC_OUT_Z_L_A);
 	readAccRegister(&data_buffer[5], (uint8_t)LSM303DLHC_OUT_Z_H_A);
+	*/
 
 #ifdef USE_LPMSCU_NEW
 	/* *xAxis = (int16_t)((((int16_t)data_buffer[1]) << 8) + data_buffer[0]);
@@ -529,7 +532,7 @@ uint8_t isAccDataReady(void)
 {
 	uint8_t is_data_ready = 0;
 	
-	readAccRegister(&is_data_ready, (uint8_t)LSM303DLHC_STATUS_REG_A);
+	readAccRegister(&is_data_ready, 1, (uint8_t)LSM303DLHC_STATUS_REG_A);
 	if ((is_data_ready & 0x08) == 0) {
 		return 0;  
 	}

@@ -545,16 +545,17 @@ void LpmsSensor::update(void)
 		} else {
 			vectZero3x1(&a);
 		}
-		
-		// Corrects gyro measurement
-		if ((bt->getConfigReg() & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {	
-			matVectMult3(&configData.gyrMisalignMatrix, &gRaw, &g);
-			vectAdd3x1(&configData.gyrAlignmentBias, &g, &g);
-		} else {
-			vectZero3x1(&g);
-		}
-		
-
+    
+    // Corrects gyro measurement
+    if ((bt->getConfigReg() & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {      
+        matVectMult3(&configData.gyrMisalignMatrix, &gRaw, &g);
+        vectAdd3x1(&configData.gyrAlignmentBias, &g, &g);
+    } else {
+        vectZero3x1(&g);
+    }
+    //g = gRaw;
+		 
+	
 		convertLpVector3fToArray(&a, imuData.a);
 		convertLpVector3fToArray(&b, imuData.b);
 		convertLpVector3fToArray(&g, imuData.g);
@@ -1301,7 +1302,7 @@ void LpmsSensor::setCurrentData(ImuData d)
 	
 	if (dataQueue.size() < 64) { 
 		dataQueue.push(d);
-	} else {
+	} else {		
 		dataQueue.pop();
 		dataQueue.push(d);
 	}
@@ -1319,11 +1320,9 @@ void LpmsSensor::setCallback(LpmsCallback cb)
 	callbackSet = true;
 }
 
-bool LpmsSensor::hasImuData(void)
+int LpmsSensor::hasImuData(void)
 {
-	if (dataQueue.size() > 0) return true;
-	
-	return false;
+	return dataQueue.size();
 }
 
 ImuData LpmsSensor::getCurrentData(void)
@@ -1334,12 +1333,12 @@ ImuData LpmsSensor::getCurrentData(void)
 	
 	sensorMutex.lock();
 	
-	if (dataQueue.size() > 0) {
-		d = dataQueue.front();
+	while (dataQueue.size() > 0) {
+		currentData = dataQueue.front();
 		dataQueue.pop();
-	} else {
-		d = currentData;
-	}
+	} 
+	
+	d = currentData;
 	
 	sensorMutex.unlock();
 
@@ -1664,41 +1663,9 @@ void LpmsSensor::resetToFactorySettings(void)
 long LpmsSensor::getStreamFrequency(void)
 {
 	int i;
-	int dataSavePeriod;
-	
-	getConfigurationPrm(PRM_SAMPLING_RATE, &i);	
-	
-	switch (i) {
-	case SELECT_STREAM_FREQ_5HZ:
-		dataSavePeriod = 200;
-	break;	
-	
-	case SELECT_STREAM_FREQ_10HZ:
-		dataSavePeriod = 100;
-	break;	
-	
-	case SELECT_STREAM_FREQ_50HZ:		
-		dataSavePeriod = 20;				
-	break;
-		
-	case SELECT_STREAM_FREQ_100HZ:
-		dataSavePeriod = 10;
-	break;
-		
-	case SELECT_STREAM_FREQ_200HZ:
-		dataSavePeriod = 5;
-	break;
-	
-	case SELECT_STREAM_FREQ_500HZ:
-		dataSavePeriod = 2;
-	break;	
-	
-	default:
-		dataSavePeriod = 2;
-	break;
-	}
-	
-	return dataSavePeriod;
+
+	getConfigurationPrm(PRM_SAMPLING_RATE, &i);
+	return i;
 }
 
 void LpmsSensor::armTimestampReset(void)
@@ -1708,7 +1675,6 @@ void LpmsSensor::armTimestampReset(void)
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
 	getConfigState = STATE_ARM_TIMESTAMP_RESET;
 }
-
 
 
 /***********************************************************************
@@ -2390,7 +2356,7 @@ void LpmsSensor::checkSaveData(void)
 
 	sensorMutex.lock();
 	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(3) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(6) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
 	}
 	sensorMutex.unlock();
 }

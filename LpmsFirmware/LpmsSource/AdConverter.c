@@ -7,6 +7,8 @@
 
 __IO uint16_t adConvertedValues[4];
 
+#define INSOLE_AD_SCALING	100.0f
+
 void initAdConverter(void)
 {
 	int i;
@@ -90,5 +92,5 @@ float getForceSensorChannel(int c)
 	
 	channelVoltage = (float) ((0xfff - adConvertedValues[c]) - FORCE_SENSOR_OFFSET) / (float) (0xfff - FORCE_SENSOR_OFFSET) + 1.0f; // * VBAT_SCALING / 0xFFF;
 	
-	return channelVoltage;
+	return channelVoltage * INSOLE_AD_SCALING;
 }

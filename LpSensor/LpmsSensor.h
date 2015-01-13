@@ -227,7 +227,7 @@ public:
 	void setCurrentData(ImuData d);
 	void setCallback(LpmsCallback cb);
 	ImuData getCurrentData(void);
-	bool hasImuData(void);
+	int hasImuData(void);
 	void getCalibratedSensorData(float g[3], float a[3], float b[3]);
 	void getQuaternion(float q[4]); 
 	void getEulerAngle(float r[3]); 

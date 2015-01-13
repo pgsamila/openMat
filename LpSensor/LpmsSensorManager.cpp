@@ -151,21 +151,6 @@ void LpmsSensorManager::run(void)
 	int deviceType = 0;
 
 #ifdef _WIN32	
-    OSVERSIONINFO osvi;
-
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-    GetVersionEx(&osvi);
-
-	if ((osvi.dwMajorVersion > 6) || ((osvi.dwMajorVersion == 6) && (osvi.dwMinorVersion >= 1))) {
-		bIsWindows7orLater = true;
-		LOGV("[LpmsSensorManager] Windows 7 and above mode\n");		
-	} else {
-		bIsWindows7orLater = false;
-		LOGV("[LpmsSensorManager] Windows XP mode\n");
-	}
-	
 	ce.connect();
 	be.connect();
 #endif	
@@ -325,7 +310,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 	saveDataHandle.open(fn, ios_base::out);
 	saveDataHandle.rdbuf()->pubsetbuf(writeBuffer, 65536);
 	if (saveDataHandle.is_open() == true) {	
-		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
+		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (g), LinAccY (g), LinAccZ (g), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
 						
@@ -359,7 +344,8 @@ void LpmsSensorManager::stopSaveSensorData(void)
 
 	isRecording = false;
 	
-	if (saveDataHandle != NULL) saveDataHandle.close();
+	//if (saveDataHandle != NULL) saveDataHandle.close();
+	if (saveDataHandle.is_open() ) saveDataHandle.close();
 }
 
 void LpmsSensorManager::setThreadTiming(int delay)

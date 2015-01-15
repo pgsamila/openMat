@@ -13,10 +13,24 @@ extern "C" {
 	#define LPMS_API __declspec(dllimport)
 #endif
 
+#define SENSOR_STATUS_ERROR 		3
+#define SENSOR_STATUS_CALIBRATING 	2
+#define SENSOR_STATUS_RUNNING 		1
+#define SENSOR_STATUS_PAUSED 		0
+#define SENSOR_STATUS_UPLOADING 	4
+
+#define SENSOR_CONNECTION_INTERRUPTED 	4
+#define SENSOR_CONNECTION_FAILED 		3
+#define SENSOR_CONNECTION_CONNECTING 	2
+#define SENSOR_CONNECTION_CONNECTED 	1
+
 LPMS_API void APIENTRY initializeLpms(void);
 
 LPMS_API void APIENTRY connectToLpmsB(const char* deviceId);
 LPMS_API void APIENTRY connectToLpmsCU(const char* deviceId);
+
+LPMS_API int APIENTRY getConnectionStatus(void);
+LPMS_API int APIENTRY getSensorStatus(void);
 
 LPMS_API float APIENTRY getQuaternionW(void);
 LPMS_API float APIENTRY getQuaternionX(void);

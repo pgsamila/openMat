@@ -8,37 +8,7 @@
 uint8_t isDataStreamReady = 0;
 float cycleTime = 10.0f;
 uint8_t cyclesPerDataTransfer = 4;
-uint16_t ledFlashTime = LPMS_LED_PERIOD;
-
-void initTimebase(void)
-{
-	uint32_t config;
-	config = getConfigReg();
-
-	if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_5HZ_ENABLED) {
-		cyclesPerDataTransfer = 64; // 5.75 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
-		cyclesPerDataTransfer = 32; // 12.5 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
-		cyclesPerDataTransfer = 16; // 25 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
-		cyclesPerDataTransfer = 8; // 50 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
-		cyclesPerDataTransfer = 4; // 100 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
-#ifdef USE_BLUETOOTH_INTERFACE
-		cyclesPerDataTransfer = 3; // 133 Hz
-#else
-		cyclesPerDataTransfer = 2; // 200 Hz
-#endif
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
-		cyclesPerDataTransfer = 1; // 400 Hz
-	} else if ((config & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
-		cyclesPerDataTransfer = 1; // 400 Hz
-	} else {
-		cyclesPerDataTransfer = 4; // 100 Hz
-	}
-}
+uint16_t ledFlashTime = 400;
 
 uint16_t getTransferCycles(void)
 {
@@ -78,8 +48,13 @@ void setSystemStepTimer(void)
 
 	NVIC_Init(&NVIC_InitStructure);
 	
-	TIM_TimeBaseStructure.TIM_Period = 2499;
-	TIM_TimeBaseStructure.TIM_Prescaler = 59;
+	int clock = 60000000; 		// 60M tick/s -half of system clock of 120Mhz
+	int cycle = 800;			// 2.5ms cycle
+	int ticks = clock/cycle; 	// 150000
+	int prescaler = 15;
+	int period = ticks/prescaler;
+	TIM_TimeBaseStructure.TIM_Period = period-1; // 2499;
+	TIM_TimeBaseStructure.TIM_Prescaler = prescaler-1; // 59;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	

@@ -421,16 +421,15 @@ bool LpmsIoInterface::parseSensorData(void)
 	float r0, r1, r2;
 	const float r2d = 57.2958f;
 	short s;
-	long l;
 	int i;
 
 	zeroImuData(&imuData);
 	
 	o = 0;
 	if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
-		//fromBuffer(oneTx, &l);
-        //currentTimestamp = (float) l / 1000.0f;
-        fromBuffer(oneTx, o, &currentTimestamp);
+		// fromBuffer(oneTx, &l);
+		// currentTimestamp = (float) l / 1000.0f;
+		fromBuffer(oneTx, o, &currentTimestamp);
 		o = o + 4;
 		
 		if ((configReg & LPMS_GYR_RAW_OUTPUT_ENABLED) != 0) {
@@ -667,18 +666,20 @@ bool LpmsIoInterface::parseFunction(void)
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_5HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_10HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_10HZ);	
-		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_30HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_25HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_25HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_50HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_50HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_100HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);	
 		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_200HZ_ENABLED) {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_200HZ);	
-		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_500HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_500HZ);	
-		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1000HZ_ENABLED) {
-			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_1000HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_400HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_400HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_800HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_800HZ);	
+		} else if ((configReg & LPMS_STREAM_FREQ_MASK) == LPMS_STREAM_FREQ_1600HZ_ENABLED) {
+			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_1600HZ);	
 		} else {
 			configData->setParameter(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_100HZ);	
 		}	

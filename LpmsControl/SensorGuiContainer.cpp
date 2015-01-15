@@ -107,8 +107,8 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	for (int i=0; i < 129; i++) indexItem->addItem(QString("%1").arg(i));
 	connect(indexItem, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOpenMATIndex(int)));
 
-	samplingRateCombo->addItem(QString("5.75 Hz"));
-	samplingRateCombo->addItem(QString("12.5 Hz"));
+	samplingRateCombo->addItem(QString("5 Hz"));
+	samplingRateCombo->addItem(QString("10 Hz"));
 	samplingRateCombo->addItem(QString("25 Hz"));
 	
 	if (deviceType != DEVICE_LPMS_B && deviceType != DEVICE_LPMS_BLE) {	
@@ -127,12 +127,12 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		samplingRateCombo->addItem(QString("50 Hz"));
 		samplingRateCombo->addItem(QString("100 Hz"));
 		
-		if (deviceType != DEVICE_LPMS_B) {
+		// if (deviceType != DEVICE_LPMS_B) {
 			samplingRateCombo->addItem(QString("200 Hz"));	
 			samplingRateCombo->addItem(QString("400 Hz"));	
-		} else {
+		/* } else {
 			samplingRateCombo->addItem(QString("133 Hz"));
-		}
+		} */
 	}
 	
 	connect(samplingRateCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updatesamplingRate(int)));
@@ -159,10 +159,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 	connect(centriCompModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCentriCompMode(int)));
 
 	filterModeCombo->addItem(QString("Gyr only"));
-	filterModeCombo->addItem(QString("Gyr + Acc"));
-	filterModeCombo->addItem(QString("Gyr + Acc + Mag"));
-	filterModeCombo->addItem(QString("Acc + Mag (Euler only)"));
-	filterModeCombo->addItem(QString("Gyr + Acc (Euler only)"));
+	filterModeCombo->addItem(QString("Gyr + Acc (Kalman)"));
+	filterModeCombo->addItem(QString("Gyr + Acc + Mag (Kalman)"));
+	filterModeCombo->addItem(QString("Gyr + Acc (DCM)"));
+	filterModeCombo->addItem(QString("Gyr + Acc + Mag (DCM)"));
 	connect(filterModeCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateFilterMode(int)));	
 	
 	thresholdEnableCombo->addItem(QString("Disable"));	
@@ -1115,7 +1115,7 @@ void SensorGuiContainer::updateData(void) {
 		samplingRateCombo->setCurrentIndex(1);
 	break;	
 
-	case SELECT_STREAM_FREQ_30HZ:		
+	case SELECT_STREAM_FREQ_25HZ:		
 		samplingRateCombo->setCurrentIndex(2);
 	break;
 	
@@ -1131,9 +1131,13 @@ void SensorGuiContainer::updateData(void) {
 		samplingRateCombo->setCurrentIndex(5);
 	break;
 	
-	case SELECT_STREAM_FREQ_500HZ:
+	case SELECT_STREAM_FREQ_400HZ:
 		samplingRateCombo->setCurrentIndex(6);
-	break;	
+	break;
+	
+	default:
+		samplingRateCombo->setCurrentIndex(6);
+	break;
 	}	
 		
 	sensor->getConfigurationPrm(PRM_SELECT_DATA, &i);
@@ -1558,7 +1562,7 @@ void SensorGuiContainer::updatesamplingRate(int i)
 	break;
 
 	case 2:
-		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_30HZ);
+		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_25HZ);
 	break;
 	
 	case 3:
@@ -1574,7 +1578,7 @@ void SensorGuiContainer::updatesamplingRate(int i)
 	break;
 	
 	case 6:
-		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_500HZ);
+		sensor->setConfigurationPrm(PRM_SAMPLING_RATE, SELECT_STREAM_FREQ_400HZ);
 	break;
 	}
 }

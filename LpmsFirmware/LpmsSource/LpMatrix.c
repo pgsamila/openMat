@@ -792,18 +792,18 @@ void matCopy3x3(LpMatrix3x3f* src, LpMatrix3x3f* dest)
 
 float vect4x1Norm(LpVector4f src)
 {
-	// float f = 1.0f / sqrtf(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2] + src.data[3]*src.data[3]);
+	float f = 1.0f / sqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2] + src.data[3]*src.data[3]);
 
-	float f = invSqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2] + src.data[3]*src.data[3]);
+	// float f = invSqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2] + src.data[3]*src.data[3]);
 	
 	return f;
 }
 
 float vect3x1Norm(LpVector3f src)
 {
-	// float f = 1.0f / sqrtf(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2]);
+	float f = 1.0f / sqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2]);
 
-	float f = invSqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2]);
+	// float f = invSqrt(src.data[0]*src.data[0] + src.data[1]*src.data[1] + src.data[2]*src.data[2]);
 	
 	return f;
 }

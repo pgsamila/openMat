@@ -386,7 +386,7 @@ void BleEngine::connect(void)
 	int pn;
 	std::ostringstream oss;
 	
-	printf("[BleEngine] Trying to open BlueGiga BLED112 dongle..\n");
+	printf("[BleEngine] Opening BlueGiga BLED112 dongle\n");
 
     bglib_output = output;	
 	
@@ -395,7 +395,7 @@ void BleEngine::connect(void)
 		oss << pn;
 		comStr = std::string("COM") + oss.str();			
 	} else {
-		printf("[BleEngine] Failed to open BlueGiga BLED112 dongle\n");
+		// printf("[BleEngine] Failed to open BlueGiga BLED112 dongle\n");
 		return;
 	}
 	

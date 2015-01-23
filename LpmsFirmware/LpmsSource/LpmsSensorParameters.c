@@ -1060,6 +1060,8 @@ uint8_t setFilterMode(uint8_t* data)
 	default:
 	break;
 	}
+        
+        updateFilterMode();        
 		
 	return f;
 }

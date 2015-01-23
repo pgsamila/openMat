@@ -89,6 +89,7 @@ typedef struct _Bmp180CalibrationParam {
 	int16_t mb;
 	int16_t mc;
 	int16_t md;
+	int32_t b5;
 } CalibrationParam;
 
 // Sets BMP180 i2c bus configuration
@@ -117,6 +118,11 @@ uint8_t getUP(uint32_t* uP, uint8_t oss);
 
 // Retrives temperature and pressure
 uint8_t getTempAndPressure(int16_t* temp, int32_t* pressure, uint8_t oss);
+
+
+int16_t BMP180_Calc_RT(uint16_t UT);
+
+int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss);
 
 #ifdef __cplusplus
 }

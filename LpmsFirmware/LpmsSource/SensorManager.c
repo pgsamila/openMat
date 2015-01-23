@@ -497,6 +497,8 @@ void calcAltitude(void)
 		pressure = (float) rawPressure * 1.0e-2f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
+        altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
+    	/*
 		if (firstPressure == 1) {
 			pressureBias = 1013.25f;
 			temperatureBias = temperature; 
@@ -508,6 +510,7 @@ void calcAltitude(void)
 			altitude = 44330.0f * (1.0f - pow((pressure / pressureBias), (1.0f / 5.225f)));
 			temperature -= temperatureBias;
 		}
+		*/
 	}
 }
 

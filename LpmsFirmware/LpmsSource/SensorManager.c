@@ -5,6 +5,9 @@
 
 #include "SensorManager.h"
 
+#include "LpStopwatch.h"
+float dt = 0.0f;
+
 LpVector3f gyrRawData;
 LpVector3f accRawData;
 LpVector3f magRawData;
@@ -83,6 +86,7 @@ LpVector4f mQ_offset;
 float lpmsMeasurementPeriod = 0.00250f;
 __IO uint8_t lpmsMeasurementIntervals = 2;
 uint16_t lpmsLedPeriod = 400;
+uint16_t bmp180MeasurePeriod = 100; // 250ms
 
 #ifdef ENABLE_INSOLE
 	float forceSensorOutput[N_FORCE_SENSORS];
@@ -97,6 +101,7 @@ extern uint16_t ledFlashTime;
 
 void initSensorManager(void)
 {
+stopwatch_reset();
   	uint32_t buffer, address;
 	
 	if (CHECK_USER_FLASH()) {
@@ -323,15 +328,20 @@ void updateSensorData(void)
 #ifdef ENABLE_PRESSURE
 		++pressureTime;
 
-		if (pressureTime > PRESSURE_T) {
-			pressureTime = 0;
+        if (pressureTime > bmp180MeasurePeriod ){ //PRESSURE_T) {
+          /*  
+          STOPWATCH_STOP;	
+            dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
+            STOPWATCH_START;  
+			*/
+            pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 				((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
 				((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
 				((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
 				  
-				getTempAndPressure(&rawTemp, &rawPressure, BMP180_STD_MODE);
-				calcAltitude();
+				if ( getTempAndPressure(&rawTemp, &rawPressure, BMP180_HIGH_MODE) )
+                      calcAltitude();
 			}
 		}
 #endif
@@ -494,7 +504,7 @@ void calcAltitude(void)
 			((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
 			((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
 			  
-		pressure = (float) rawPressure * 1.0e-2f;
+		pressure = (float) rawPressure * 1.0e-2f-5.3f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
         altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 

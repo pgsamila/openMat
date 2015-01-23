@@ -10,7 +10,7 @@
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 #include "Watchdog.h"
-#include "LpStopwatch.h"
+//#include "LpStopwatch.h"
 
 extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
@@ -32,7 +32,7 @@ int main(void)
 	initAdConverter();
 #endif
 
-	stopwatch_reset();
+	//stopwatch_reset();
 	// STOPWATCH_START;
 
 	while (1) {

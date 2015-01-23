@@ -37,6 +37,7 @@ extern float lpmsMeasurementPeriod;
 extern uint8_t lpmsMeasurementIntervals;
 extern uint16_t lpmsLedPeriod;
 extern uint8_t cyclesPerDataTransfer;
+extern uint16_t bmp180MeasurePeriod;
 
 uint8_t writeRegisters(void)
 {
@@ -1080,6 +1081,7 @@ void updateFilterMode(void)
 		lpmsMeasurementIntervals = 2;
 		lpmsLedPeriod = 400;
 		ledFlashTime = lpmsLedPeriod;
+        bmp180MeasurePeriod = 100;
 	break;
 
 	case LPMS_FILTER_MADGWICK_GYR_ACC:
@@ -1088,6 +1090,7 @@ void updateFilterMode(void)
 		lpmsMeasurementIntervals = 1;
 		lpmsLedPeriod = 800;
 		ledFlashTime = lpmsLedPeriod;
+        bmp180MeasurePeriod = 200;
 	break;
 	}
 

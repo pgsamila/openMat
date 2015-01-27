@@ -943,9 +943,9 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
 #ifdef ENABLE_INSOLE
-                        setFloat(&(data[0 + o]), forceSensorOutput[3], FLOAT_FIXED_POINT_100);
+                        setFloat(&(data[0 + o]), forceSensorOutput[3], FLOAT_FIXED_POINT_10);
 #else
-                        setFloat(&(data[0 + o]), pressure, FLOAT_FIXED_POINT_100);
+                        setFloat(&(data[0 + o]), pressure, FLOAT_FIXED_POINT_10);
 #endif
 
                         o = o+2;

@@ -490,7 +490,7 @@ bool LpmsIoInterface::parseSensorData(void)
 	 
 		if ((configReg & LPMS_PRESSURE_OUTPUT_ENABLED) != 0)  {
 			fromBufferInt16(oneTx, o, &s);
-			imuData.pressure = ((float)s) / 100.0f;	
+			imuData.pressure = ((float)s) / 10.0f;	
 			o = o + 2;
 		}
 		

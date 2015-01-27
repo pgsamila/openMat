@@ -66,7 +66,6 @@ float preGZ = 0.0f;
 float aAvg[3];
 int32_t preAvg[3];
 float startTime = 0.0f;
-int8_t firstPressure = 1;
 int32_t pCycleCount = 0;
 LpVector3f gyrRawDataLp;
 LpVector3f accRawDataLp;
@@ -83,6 +82,8 @@ LpVector4f mQ_offset;
 float lpmsMeasurementPeriod = 0.00250f;
 __IO uint8_t lpmsMeasurementIntervals = 2;
 uint16_t lpmsLedPeriod = 400;
+uint16_t bmp180MeasurePeriod = 50;  // 125ms x 4, see routine for more details
+uint8_t bmp180MeasurementMode = BMP180_HIGH_MODE;
 
 #ifdef ENABLE_INSOLE
 	float forceSensorOutput[N_FORCE_SENSORS];
@@ -323,15 +324,17 @@ void updateSensorData(void)
 #ifdef ENABLE_PRESSURE
 		++pressureTime;
 
-		if (pressureTime > PRESSURE_T) {
-			pressureTime = 0;
+        if (pressureTime >= bmp180MeasurePeriod ){
+            // note: bmp180 takes 4 cycles to complete one measurement
+            // pressure/altitude update time = lpmsMeasurementPeriod x bmp180MeasurePeriod x 4 = 500ms
+            pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 				((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
 				((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
 				((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
 				  
-				getTempAndPressure(&rawTemp, &rawPressure, BMP180_STD_MODE);
-				calcAltitude();
+				if ( getTempAndPressure(&rawTemp, &rawPressure, bmp180MeasurementMode) )
+                      calcAltitude();
 			}
 		}
 #endif
@@ -497,18 +500,9 @@ void calcAltitude(void)
 		pressure = (float) rawPressure * 1.0e-2f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
-		if (firstPressure == 1) {
-			pressureBias = 1013.25f;
-			temperatureBias = temperature; 
-			altitude = 0.0f;
-			firstPressure = 0;
-		} else {
-			if (pressureBias == 0) return;
-
-			altitude = 44330.0f * (1.0f - pow((pressure / pressureBias), (1.0f / 5.225f)));
-			temperature -= temperatureBias;
-		}
+        altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
 	}
+
 }
 
 void calcLinearAcceleration(void)

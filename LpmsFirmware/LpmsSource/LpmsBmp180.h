@@ -89,6 +89,7 @@ typedef struct _Bmp180CalibrationParam {
 	int16_t mb;
 	int16_t mc;
 	int16_t md;
+	int32_t b5;
 } CalibrationParam;
 
 // Sets BMP180 i2c bus configuration
@@ -109,14 +110,29 @@ uint8_t initPressureSensor(void);
 // Retrieves calibration parameters
 uint8_t getCalibParam(CalibrationParam* calibParam);
 
+// Check if BMP180 internal A/D conversion is completed
+uint8_t isBMP180ConversionComplete(void);
+
+// Send start measure temperature command
+void sendUTStartCmd(void);
+
 // Retrieves UT parameter
 uint8_t getUT(uint16_t* uT);
+
+// Send start measure pressure command
+void sendUPStartCmd(uint8_t oss);
 
 // Retrievs UP parameter
 uint8_t getUP(uint32_t* uP, uint8_t oss);
 
 // Retrives temperature and pressure
 uint8_t getTempAndPressure(int16_t* temp, int32_t* pressure, uint8_t oss);
+
+// Calculate true temperature
+int16_t getTrueTemperature(uint16_t UT);
+
+// Calculate true pressure
+int32_t getTruePressure(uint32_t UP, uint8_t oss);
 
 #ifdef __cplusplus
 }

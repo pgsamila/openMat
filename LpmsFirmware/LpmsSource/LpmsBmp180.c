@@ -100,24 +100,6 @@ void readPressureRegister(uint8_t* pBuffer, uint8_t address)
 	while(!I2C_CheckEvent(PRESSURE_I2C_PORT, I2C_EVENT_MASTER_BYTE_RECEIVED));
 	*pBuffer = I2C_ReceiveData(PRESSURE_I2C_PORT);
 	I2C_AcknowledgeConfig(PRESSURE_I2C_PORT, ENABLE);
-  
-  /*
-	I2C_GenerateSTART(PRESSURE_I2C_PORT,ENABLE);
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
-	I2C_Send7bitAddress(PRESSURE_I2C_PORT,PRESSURE_I2C_ADDRESS,I2C_Direction_Transmitter); // Send slave address
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)); // Wait for EV6
-	I2C_SendData(PRESSURE_I2C_PORT,address); // Send register address
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_TRANSMITTED)); // Wait for EV8
-	I2C_GenerateSTART(PRESSURE_I2C_PORT,ENABLE); // Send repeated START condition (aka Re-START)
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
-	I2C_Send7bitAddress(PRESSURE_I2C_PORT,PRESSURE_I2C_ADDRESS,I2C_Direction_Receiver); // Send slave address for READ
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)); // Wait for EV6
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-	*pBuffer = I2C_ReceiveData(PRESSURE_I2C_PORT); // Receive ChipID
-	I2C_AcknowledgeConfig(PRESSURE_I2C_PORT,DISABLE); // Disable I2C acknowledgment
-	I2C_GenerateSTOP(PRESSURE_I2C_PORT,ENABLE); // Send STOP condition
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-  */
 }
 
 uint8_t initPressureSensor(void)
@@ -139,12 +121,6 @@ uint8_t initPressureSensor(void)
 	if (result != BMP180_CHIP_ID) return 0;
 	
 	getCalibParam(&calib_param);
-
-	waitPressureI2CStandbyState();
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_HIGH_MEASURE_START);
-
-	waitPressureI2CStandbyState();
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_T_MEASURE_START);
 	return 1;
 }
 
@@ -156,30 +132,6 @@ uint8_t getCalibParam(CalibrationParam* calibParam)
 		waitPressureI2CStandbyState();
 		readPressureRegister(&data[i], BMP180_E2PROM_CALIB_START_ADDR + i);
 	}
-        
-          /*
-	uint8_t i;
-	I2C_AcknowledgeConfig(PRESSURE_I2C_PORT,ENABLE); // Enable I2C acknowledge
-	I2C_GenerateSTART(PRESSURE_I2C_PORT,ENABLE); // Send START condition
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
-	I2C_Send7bitAddress(PRESSURE_I2C_PORT,PRESSURE_I2C_ADDRESS,I2C_Direction_Transmitter); // Send slave address
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)); // Wait for EV6
-	I2C_SendData(PRESSURE_I2C_PORT,BMP180_E2PROM_CALIB_START_ADDR); // Send calibration first register address
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_TRANSMITTED)); // Wait for EV8
-	I2C_GenerateSTART(PRESSURE_I2C_PORT,ENABLE); // Send repeated START condition (aka Re-START)
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
-	I2C_Send7bitAddress(PRESSURE_I2C_PORT,PRESSURE_I2C_ADDRESS,I2C_Direction_Receiver); // Send slave address for READ
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)); // Wait for EV6
-	for (i = 0; i < BMP180_E2PROM_LEN-1; i++) {
-		while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-		data[i] = I2C_ReceiveData(PRESSURE_I2C_PORT); // Receive byte
-	}
-	I2C_AcknowledgeConfig(PRESSURE_I2C_PORT,DISABLE); // Disable I2C acknowledgment
-	I2C_GenerateSTOP(PRESSURE_I2C_PORT,ENABLE); // Send STOP condition
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-	data[i] = I2C_ReceiveData(PRESSURE_I2C_PORT); // Receive last byte
-	*/
-        
 	calibParam->ac1 = (data[0] << 8) | data[1];
 	calibParam->ac2 = (data[2] << 8) | data[3];
 	calibParam->ac3 = (data[4] << 8) | data[5];
@@ -195,7 +147,7 @@ uint8_t getCalibParam(CalibrationParam* calibParam)
 	return 1;
 }
 
-uint8_t isBMP180ConversionComplete()
+uint8_t isBMP180ConversionComplete(void)
 {
     uint8_t conversionStatus;
     waitPressureI2CStandbyState();
@@ -203,7 +155,7 @@ uint8_t isBMP180ConversionComplete()
 	return !(conversionStatus & 0x20);
 }
 
-void sendUTStartCmd()
+void sendUTStartCmd(void)
 {  
     writePressureRegister(BMP180_CTRL_MEAS_REG,BMP180_T_MEASURE_START);       
 }
@@ -254,133 +206,16 @@ uint8_t getUP(uint32_t* uP, uint8_t oss)
 
     *uP = ((((uint32_t)data[0]) << 16) | (((uint32_t)data[1]) << 8) | (uint32_t)data[2]) >> (8 - oss);
     return 1;
-    
-  /*
-	uint8_t data[3];
-	// uint8_t isDataReady = 0;
-	// uint8_t conversionStatus;
-	
-	//	switch (oss) {
-	//	case BMP180_LOW_POWER_MODE:
-	//		waitPressureI2CStandbyState();
-	//		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_LOW_MEASURE_START);
-	//	break;
-	//	
-	//	case BMP180_STD_MODE:
-	//		waitPressureI2CStandbyState();
-	//		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_STD_MEASURE_START);
-	//	break;
-	//	
-	//	case BMP180_HIGH_MODE:
-	//		waitPressureI2CStandbyState();
-	//		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_HIGH_MEASURE_START);
-	//	break;
-	//	
-	//	case BMP180_ULTRA_HIGH_MODE:
-	//		waitPressureI2CStandbyState();
-	//		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_ULTRA_HIGH_MEASURE_START);
-	//	break;
-	//	
-	//	default:
-	//		return 0;
-	//	break;
-	//	} 
-	
-	// while (isDataReady == 0) {
-		// waitPressureI2CStandbyState();
-		// readPressureRegister(&conversionStatus, BMP180_CTRL_MEAS_REG);
-		// if (!(conversionStatus & 0x20)) {
-			// isDataReady = 1;
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[0], BMP180_OUT_MSB_REG);
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[1], BMP180_OUT_LSB_REG);
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[2], BMP180_OUT_XLSB_REG);
-			
-			*uP = ((((uint32_t)data[0]) << 16) | (((uint32_t)data[1]) << 8) | (uint32_t)data[2]) >> (8 - BMP180_STD_MODE);
-		// }
-	// }
-
-	// waitPressureI2CStandbyState();
-
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_STD_MEASURE_START);
-	*/
-    /*
-  	uint32_t PT;
-	uint8_t cmd,delay;
-    uint8_t conversionStatus;
-    if (BMP180_CurrentState != GETPRESSUREBUSY)
-    { 
-        
-        switch(oss) {
-        case 0:
-            cmd = BMP180_P_LOW_MEASURE_START;
-            delay   = 6;
-            break;
-        case 1:
-            cmd = BMP180_P_STD_MEASURE_START;
-            delay   = 9;
-            break;
-        case 2:
-            cmd = BMP180_P_HIGH_MEASURE_START;
-            delay   = 15;
-            break;
-        case 3:
-            cmd = BMP180_P_ULTRA_HIGH_MEASURE_START;
-            delay   = 27;
-            break;
-        }
-
-        writePressureRegister(BMP180_CTRL_MEAS_REG,cmd);
-        BMP180_CurrentState = GETPRESSUREBUSY;
-        return 0;
-    }
-    
-  //  waitPressureI2CStandbyState();
-    readPressureRegister(&conversionStatus, BMP180_CTRL_MEAS_REG);
-	if ( conversionStatus & 0x20 ) // still converting
-    {
-        return 0;
-    }
-	
-    //Delay_ms(delay);
-    
-	writePressureRegister(0xf4,0x34);
-	I2C_AcknowledgeConfig(PRESSURE_I2C_PORT,ENABLE); // Enable I2C acknowledge
-	I2C_GenerateSTART(PRESSURE_I2C_PORT,ENABLE); // Send START condition
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
-	I2C_Send7bitAddress(PRESSURE_I2C_PORT,PRESSURE_I2C_ADDRESS,I2C_Direction_Transmitter); // Send slave address
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)); // Wait for EV6
-	I2C_SendData(PRESSURE_I2C_PORT,BMP180_OUT_MSB_REG); // Send ADC MSB register address
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_TRANSMITTED)); // Wait for EV8
-	I2C_GenerateSTART(PRESSURE_I2C_PORT,ENABLE); // Send repeated START condition (aka Re-START)
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_MODE_SELECT)); // Wait for EV5
-	I2C_Send7bitAddress(PRESSURE_I2C_PORT,PRESSURE_I2C_ADDRESS,I2C_Direction_Receiver); // Send slave address for READ
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED)); // Wait for EV6
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-	PT = (uint32_t)I2C_ReceiveData(PRESSURE_I2C_PORT) << 16; // Receive MSB
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-	PT |= (uint32_t)I2C_ReceiveData(PRESSURE_I2C_PORT) << 8; // Receive LSB
-	I2C_AcknowledgeConfig(PRESSURE_I2C_PORT,DISABLE); // Disable I2C acknowledgment
-	I2C_GenerateSTOP(PRESSURE_I2C_PORT,ENABLE); // Send STOP condition
-	while (!I2C_CheckEvent(PRESSURE_I2C_PORT,I2C_EVENT_MASTER_BYTE_RECEIVED)); // Wait for EV7 (Byte received from slave)
-	PT |= (uint32_t)I2C_ReceiveData(PRESSURE_I2C_PORT); // Receive XLSB
-
-	*uP =  PT >> (8 - oss);
-	return 1;
-  */
 }
 
 
-int16_t BMP180_Calc_RT(uint16_t UT) {
+int16_t getTrueTemperature(uint16_t UT) {
 	calib_param.b5  = (((int32_t)UT - (int32_t)calib_param.ac6) * (int32_t)calib_param.ac5) >> 15;
 	calib_param.b5 += ((int32_t)calib_param.mc << 11) / (calib_param.b5 + calib_param.md);
-
 	return (calib_param.b5 + 8) >> 4;
 }
 
-int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss) {
+int32_t getTruePressure(uint32_t UP, uint8_t oss) {
 	int32_t B3,B6,X3,p;
 	uint32_t B4,B7;
 
@@ -396,7 +231,6 @@ int32_t BMP180_Calc_RP(uint32_t UP, uint8_t oss) {
 	return p;
 }
 
-int16_t dummy = 0;
 uint8_t getTempAndPressure(int16_t* temp, int32_t* pressure, uint8_t oss)
 {
     if (BMP180_CurrentState == GETTEMP)
@@ -407,8 +241,7 @@ uint8_t getTempAndPressure(int16_t* temp, int32_t* pressure, uint8_t oss)
     {           
         uint16_t uT;
         getUT(&uT); 
-        *temp = BMP180_Calc_RT(uT);
-        
+        *temp = getTrueTemperature(uT);        
         BMP180_CurrentState = GETPRESSURE;         
     } 
     else if (BMP180_CurrentState == GETPRESSURE)
@@ -419,7 +252,7 @@ uint8_t getTempAndPressure(int16_t* temp, int32_t* pressure, uint8_t oss)
     {
         uint32_t uP;
         getUP(&uP, oss);
-        *pressure = BMP180_Calc_RP(uP,oss);
+        *pressure = getTruePressure(uP,oss);
         BMP180_CurrentState = GETTEMP;
         return 1;
     }

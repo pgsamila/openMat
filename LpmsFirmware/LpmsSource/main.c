@@ -10,17 +10,18 @@
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 #include "Watchdog.h"
-//#include "LpStopwatch.h"
+#include "LpStopwatch.h"
 
 extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
 extern __IO uint8_t systemStepTimeout;
 
+//float dt = 0.0f;
+
 int main(void)
 {
 	int sendCounter = 0;
 	uint16_t ledC = 0;
-	// float dt = 0.0f;
 
 	initIWatchdog();
 	setGPIOConfig();
@@ -33,7 +34,7 @@ int main(void)
 #endif
 
 	//stopwatch_reset();
-	// STOPWATCH_START;
+	//STOPWATCH_START;
 
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
@@ -90,11 +91,11 @@ int main(void)
 			}			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
-			  
-				/* STOPWATCH_STOP;	
+                /*
+				STOPWATCH_START;
+				STOPWATCH_STOP;	
 				dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
-				STOPWATCH_START; */
-			  
+                */
 				systemStepTimeout = 0;				
 				++ledC;
 				ledC %= ledFlashTime;

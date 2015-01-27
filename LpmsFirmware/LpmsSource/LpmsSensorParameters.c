@@ -1081,7 +1081,6 @@ void updateFilterMode(void)
 		lpmsMeasurementIntervals = 2;
 		lpmsLedPeriod = 400;
 		ledFlashTime = lpmsLedPeriod;
-        bmp180MeasurePeriod = 100;
 	break;
 
 	case LPMS_FILTER_MADGWICK_GYR_ACC:
@@ -1090,9 +1089,12 @@ void updateFilterMode(void)
 		lpmsMeasurementIntervals = 1;
 		lpmsLedPeriod = 800;
 		ledFlashTime = lpmsLedPeriod;
-        bmp180MeasurePeriod = 200;
 	break;
 	}
+    
+    // note: bmp180 takes 4 cycles to complete one measurement
+    // pressure/altitude update time = lpmsMeasurementPeriod x bmp180MeasurePeriod x 4 = 500ms
+    bmp180MeasurePeriod = lpmsLedPeriod/8;
 
 	updateStreamFreq();
 }

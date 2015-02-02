@@ -68,7 +68,7 @@ void initCommunicationManager(void)
 #endif
 
 #ifdef USE_BLUETOOTH_INTERFACE	
-	bluetoothInitBaudrate(BT_BAUDRATE_921600_ENABLED);
+	bluetoothInitBaudrate();
 #endif
 
 	setStreamMode();

@@ -95,7 +95,7 @@ void bluetoothSetDmaConfig(void);
 void bluetoothSetGpioConfig(void);
 
 // Initializes Bluetooth module baudrate
-uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag);
+uint8_t bluetoothInitBaudrate(void);
 
 // Resets Bluetooth module
 void bluetoothReset(void);

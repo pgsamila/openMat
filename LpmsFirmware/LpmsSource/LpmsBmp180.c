@@ -7,6 +7,9 @@
 
 CalibrationParam calib_param;
 
+typedef enum  {GETTEMP, GETTEMPBUSY, GETPRESSURE, GETPRESSUREBUSY} BMP180States;
+BMP180States BMP180_CurrentState = GETTEMP;
+
 void setPressureI2CConfig(void)
 {
 	I2C_InitTypeDef  I2C_InitStructure;
@@ -69,7 +72,7 @@ void writePressureRegister(uint8_t address, uint8_t data)
 	while(!I2C_CheckEvent(PRESSURE_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT) );
 	I2C_Send7bitAddress(PRESSURE_I2C_PORT, PRESSURE_I2C_ADDRESS, I2C_Direction_Transmitter);
 	while(!I2C_CheckEvent(PRESSURE_I2C_PORT, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	I2C_Cmd(PRESSURE_I2C_PORT, ENABLE);
+	//I2C_Cmd(PRESSURE_I2C_PORT, ENABLE);
 	I2C_SendData(PRESSURE_I2C_PORT, address);
 	while(!I2C_CheckEvent(PRESSURE_I2C_PORT, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 	I2C_SendData(PRESSURE_I2C_PORT, data);
@@ -79,6 +82,7 @@ void writePressureRegister(uint8_t address, uint8_t data)
 
 void readPressureRegister(uint8_t* pBuffer, uint8_t address)
 {
+  
 	I2C_GenerateSTART(PRESSURE_I2C_PORT, ENABLE);
 	while(!I2C_CheckEvent(PRESSURE_I2C_PORT, I2C_EVENT_MASTER_MODE_SELECT));
 	I2C_Send7bitAddress(PRESSURE_I2C_PORT, PRESSURE_I2C_ADDRESS, I2C_Direction_Transmitter);
@@ -117,25 +121,17 @@ uint8_t initPressureSensor(void)
 	if (result != BMP180_CHIP_ID) return 0;
 	
 	getCalibParam(&calib_param);
-
-	waitPressureI2CStandbyState();
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_STD_MEASURE_START);
-
-	waitPressureI2CStandbyState();
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_T_MEASURE_START);
-
 	return 1;
 }
 
 uint8_t getCalibParam(CalibrationParam* calibParam)
 {
 	uint8_t data[BMP180_E2PROM_LEN];
-		
+	
 	for (uint8_t i = 0; i < (BMP180_E2PROM_LEN); i++) {
 		waitPressureI2CStandbyState();
 		readPressureRegister(&data[i], BMP180_E2PROM_CALIB_START_ADDR + i);
 	}
-	
 	calibParam->ac1 = (data[0] << 8) | data[1];
 	calibParam->ac2 = (data[2] << 8) | data[3];
 	calibParam->ac3 = (data[4] << 8) | data[5];
@@ -151,143 +147,114 @@ uint8_t getCalibParam(CalibrationParam* calibParam)
 	return 1;
 }
 
+uint8_t isBMP180ConversionComplete(void)
+{
+    uint8_t conversionStatus;
+    waitPressureI2CStandbyState();
+	readPressureRegister(&conversionStatus, BMP180_CTRL_MEAS_REG);
+	return !(conversionStatus & 0x20);
+}
+
+void sendUTStartCmd(void)
+{  
+    writePressureRegister(BMP180_CTRL_MEAS_REG,BMP180_T_MEASURE_START);       
+}
+
 uint8_t getUT(uint16_t* uT)
 {
-	uint8_t data[2];
-	// uint8_t isDataReady = 0;
-	// uint8_t conversionStatus;
-	
-	// waitPressureI2CStandbyState();
-	// writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_T_MEASURE_START);
-	
-	// while (isDataReady == 0) {
-		// waitPressureI2CStandbyState();
-		// readPressureRegister(&conversionStatus, BMP180_CTRL_MEAS_REG);
-		// if (!(conversionStatus & 0x20)) {
-			// isDataReady = 1;
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[0], BMP180_OUT_MSB_REG);
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[1], BMP180_OUT_LSB_REG);
-			
-			*uT = (((uint16_t)data[0]) << 8) | (uint16_t)data[1];
-		// }
-	// }
+    uint8_t data[2];
+    readPressureRegister(&data[0], BMP180_OUT_MSB_REG);
+    // waitPressureI2CStandbyState();
+    readPressureRegister(&data[1], BMP180_OUT_LSB_REG);
 
-	// waitPressureI2CStandbyState();
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_T_MEASURE_START);
-	
+    *uT = (((uint16_t)data[0]) << 8) | (uint16_t)data[1];
 	return 1;	
+}
+
+void sendUPStartCmd(uint8_t oss)
+{       
+	uint8_t cmd;
+    switch(oss) {
+    case 0:
+        cmd = BMP180_P_LOW_MEASURE_START;
+        //delay   = 6;
+        break;
+    case 1:
+        cmd = BMP180_P_STD_MEASURE_START;
+        //delay   = 9;
+        break;
+    case 2:
+        cmd = BMP180_P_HIGH_MEASURE_START;
+        //delay   = 15;
+        break;
+    case 3:
+        cmd = BMP180_P_ULTRA_HIGH_MEASURE_START;
+       // delay   = 27;
+        break;
+    }
+    writePressureRegister(BMP180_CTRL_MEAS_REG,cmd);  
 }
 
 uint8_t getUP(uint32_t* uP, uint8_t oss)
 {
 	uint8_t data[3];
-	// uint8_t isDataReady = 0;
-	// uint8_t conversionStatus;
-	
-	/* switch (oss) {
-	case BMP180_LOW_POWER_MODE:
-		waitPressureI2CStandbyState();
-		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_LOW_MEASURE_START);
-	break;
-	
-	case BMP180_STD_MODE:
-		waitPressureI2CStandbyState();
-		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_STD_MEASURE_START);
-	break;
-	
-	case BMP180_HIGH_MODE:
-		waitPressureI2CStandbyState();
-		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_HIGH_MEASURE_START);
-	break;
-	
-	case BMP180_ULTRA_HIGH_MODE:
-		waitPressureI2CStandbyState();
-		writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_ULTRA_HIGH_MEASURE_START);
-	break;
-	
-	default:
-		return 0;
-	break;
-	} */
-	
-	// while (isDataReady == 0) {
-		// waitPressureI2CStandbyState();
-		// readPressureRegister(&conversionStatus, BMP180_CTRL_MEAS_REG);
-		// if (!(conversionStatus & 0x20)) {
-			// isDataReady = 1;
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[0], BMP180_OUT_MSB_REG);
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[1], BMP180_OUT_LSB_REG);
-			// waitPressureI2CStandbyState();
-			readPressureRegister(&data[2], BMP180_OUT_XLSB_REG);
-			
-			*uP = ((((uint32_t)data[0]) << 16) | (((uint32_t)data[1]) << 8) | (uint32_t)data[2]) >> (8 - BMP180_STD_MODE);
-		// }
-	// }
+    readPressureRegister(&data[0], BMP180_OUT_MSB_REG);
+    // waitPressureI2CStandbyState();
+    readPressureRegister(&data[1], BMP180_OUT_LSB_REG);
+    // waitPressureI2CStandbyState();
+    readPressureRegister(&data[2], BMP180_OUT_XLSB_REG);
 
-	// waitPressureI2CStandbyState();
+    *uP = ((((uint32_t)data[0]) << 16) | (((uint32_t)data[1]) << 8) | (uint32_t)data[2]) >> (8 - oss);
+    return 1;
+}
 
-	writePressureRegister(BMP180_CTRL_MEAS_REG, BMP180_P_STD_MEASURE_START);
-	
-	return 1;
+
+int16_t getTrueTemperature(uint16_t UT) {
+	calib_param.b5  = (((int32_t)UT - (int32_t)calib_param.ac6) * (int32_t)calib_param.ac5) >> 15;
+	calib_param.b5 += ((int32_t)calib_param.mc << 11) / (calib_param.b5 + calib_param.md);
+	return (calib_param.b5 + 8) >> 4;
+}
+
+int32_t getTruePressure(uint32_t UP, uint8_t oss) {
+	int32_t B3,B6,X3,p;
+	uint32_t B4,B7;
+
+	B6 = calib_param.b5 - 4000;
+	X3 = ((calib_param.b2 * ((B6 * B6) >> 12)) >> 11) + ((calib_param.ac2 * B6) >> 11);
+	B3 = (((((int32_t)calib_param.ac1) * 4 + X3) << oss) + 2) >> 2;
+	X3 = (((calib_param.ac3 * B6) >> 13) + ((calib_param.b1 * ((B6 * B6) >> 12)) >> 16) + 2) >> 2;
+	B4 = (calib_param.ac4 * (uint32_t)(X3 + 32768)) >> 15;
+	B7 = ((uint32_t)UP - B3) * (50000 >> oss);
+	if (B7 < 0x80000000) p = (B7 << 1) / B4; else p = (B7 / B4) << 1;
+	p += ((((p >> 8) * (p >> 8) * BMP180_PARAM_MG) >> 16) + ((BMP180_PARAM_MH * p) >> 16) + BMP180_PARAM_MI) >> 4;
+
+	return p;
 }
 
 uint8_t getTempAndPressure(int16_t* temp, int32_t* pressure, uint8_t oss)
 {
-	int32_t x1, x2, x3, b3, b5, b6;
-	uint32_t b4, b7;
-	uint16_t uT;
-	uint32_t uP;
-	int32_t result;
-	
-	// getCalibParam(&calib_param);
-	getUT(&uT);
-
-	if (!getUP(&uP, oss)) {
-		return 0;
-	}
-	
-	x1 = (((int32_t)uT - (int32_t)calib_param.ac6) * (int32_t)calib_param.ac5) >> 15;
-	x2 = (((int32_t)calib_param.mc) << 11) / (x1 + calib_param.md);
-	b5 = x1 + x2;
-
-	*temp = (b5 + 8) >> 4; 
-	
-	b6 = b5 - 4000;
-
-	x1 = (b6 * b6) >> 12;
-	x1 *= calib_param.b2;
-	x1 >>= 11;
-
-	x2 = calib_param.ac2 * b6;
-	x2 >>= 11;
-
-	x3 = x1 + x2;
-
-	b3 = (((((int32_t)calib_param.ac1) * 4 + x3) << oss) + 2) >> 2;
-
-	x1 = (((int32_t)calib_param.ac3) * b6) >> 13;
-	x2 = (((int32_t)calib_param.b1) * ((b6 * b6) >> 12)) >> 16;
-	x3 = ((x1 + x2) + 2) >> 2;
-	b4 = (calib_param.ac4 * (uint32_t) (x3 + 32768)) >> 15;
-	b7 = ((uint32_t)(uP - b3)) * (50000 >> oss);
-
-	if (b7 < 0x80000000) {
-		result = (b7 << 1) / b4;
-	} else {
-		result = (b7 / b4) << 1;
-	}
-
-	x1 = result >> 8;
-	x1 *= x1;
-	x1 = (x1 * BMP180_PARAM_MG) >> 16;
-	x2 = (result * BMP180_PARAM_MH) >> 16;
-	result = result + ((x1 + x2 + BMP180_PARAM_MI) >> 4);
-
-	*pressure = result;
-	
-	return 1;
+    if (BMP180_CurrentState == GETTEMP)
+    {
+        sendUTStartCmd();
+        BMP180_CurrentState = GETTEMPBUSY;
+    } else if (BMP180_CurrentState == GETTEMPBUSY && isBMP180ConversionComplete())
+    {           
+        uint16_t uT;
+        getUT(&uT); 
+        *temp = getTrueTemperature(uT);        
+        BMP180_CurrentState = GETPRESSURE;         
+    } 
+    else if (BMP180_CurrentState == GETPRESSURE)
+    {
+        sendUPStartCmd(oss);
+        BMP180_CurrentState = GETPRESSUREBUSY;
+    } else if (BMP180_CurrentState == GETPRESSUREBUSY && isBMP180ConversionComplete())
+    {
+        uint32_t uP;
+        getUP(&uP, oss);
+        *pressure = getTruePressure(uP,oss);
+        BMP180_CurrentState = GETTEMP;
+        return 1;
+    }
+    return 0;
 }

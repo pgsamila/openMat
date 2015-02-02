@@ -32,7 +32,7 @@ int main(void)
 	initAdConverter();
 #endif
 
-	stopwatch_reset();
+	// stopwatch_reset();
 	// STOPWATCH_START;
 
 	while (1) {

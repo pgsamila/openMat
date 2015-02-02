@@ -37,6 +37,7 @@ extern float lpmsMeasurementPeriod;
 extern uint8_t lpmsMeasurementIntervals;
 extern uint16_t lpmsLedPeriod;
 extern uint8_t cyclesPerDataTransfer;
+extern uint16_t bmp180MeasurePeriod;
 
 uint8_t writeRegisters(void)
 {
@@ -1090,6 +1091,10 @@ void updateFilterMode(void)
 		ledFlashTime = lpmsLedPeriod;
 	break;
 	}
+    
+    // note: bmp180 takes 4 cycles to complete one measurement
+    // pressure/altitude update time = lpmsMeasurementPeriod x bmp180MeasurePeriod x 4 = 500ms
+    bmp180MeasurePeriod = lpmsLedPeriod/8;
 
 	updateStreamFreq();
 }

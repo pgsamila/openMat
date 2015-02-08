@@ -191,61 +191,31 @@ uint8_t checkConnectionStatus(void)
 	return 0;
 }
 
-uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
-{
-	uint32_t baudrate;
-	
-	switch (baudrateFlag) {
-	case BT_BAUDRATE_9600_ENABLED:
-		baudrate = BT_BAUDRATE_9600;
-	break;
-	
-	case BT_BAUDRATE_19200_ENABLED:
-		baudrate = BT_BAUDRATE_19200;
-	break;
-	
-	case BT_BAUDRATE_38400_ENABLED:
-		baudrate = BT_BAUDRATE_38400;
-	break;
-	
-	case BT_BAUDRATE_57600_ENABLED:
-		baudrate = BT_BAUDRATE_57600;
-	break;
-	
-	case BT_BAUDRATE_115200_ENABLED:
-		baudrate = BT_BAUDRATE_115200;
-	break;
-	
-	case BT_BAUDRATE_230400_ENABLED:
-		baudrate = BT_BAUDRATE_230400;
-	break;
-	
-	case BT_BAUDRATE_460800_ENABLED:
-		baudrate = BT_BAUDRATE_460800;
-	break;
-	
-	case BT_BAUDRATE_921600_ENABLED:
-		baudrate = BT_BAUDRATE_921600;
-	break;
-	
-	default:
-		baudrate = BT_BAUDRATE_230400;
-	break;
-	}
-		
+uint8_t bluetoothInitBaudrate(void)
+{	
 	bluetoothSetGpioConfig();
 	bluetoothSetDmaConfig();
+	
 	bluetoothSetMaster(0);
 	bluetoothSetFactoryDefault(0);
 	bluetoothSetAutoDiscovery(0);
+	
 	bluetoothSetUSARTConfig(9600);
 	bluetoothForceBaudrate9600();
 	bluetoothReset();
-	bluetoothShowStatus();
 
-	if (!bluetoothGotoCommandMode()) return 0;
-	if (!bluetoothSetBaudrate(baudrate)) return 0;
+	msDelay(50);
+	bluetoothGotoCommandMode();
+	msDelay(50);
+	bluetoothSetBaudrate(BT_BAUDRATE_115200);
+	msDelay(50);
+	
+	bluetoothUseFirmwareBaudrate();
+	bluetoothSetUSARTConfig(BT_BAUDRATE_115200);
+	bluetoothReset();
 
+	msDelay(50);	
+	bluetoothGotoCommandMode();	
 	msDelay(50);
 	bluetoothSetName();
 	msDelay(50);
@@ -257,9 +227,11 @@ uint8_t bluetoothInitBaudrate(uint32_t baudrateFlag)
 #endif
 	msDelay(50);
 
-	bluetoothUseFirmwareBaudrate();
-	bluetoothSetUSARTConfig(baudrate);
+	// bluetoothUseFirmwareBaudrate();
+	// bluetoothSetUSARTConfig(baudrate);
+	
 	bluetoothReset();
+	bluetoothShowStatus();
 	
   	USART_DMACmd(BT_USART_PORT, USART_DMAReq_Rx, ENABLE);
   	DMA_Cmd(BT_USART_RX_DMA_STREAM, ENABLE);
@@ -300,7 +272,7 @@ void bluetoothSetMaster(uint8_t isEnabled)
 
 uint8_t bluetoothGotoCommandMode(void)
 {
-	uint8_t data[5];
+	// uint8_t data[5];
 	
 	USART_SendData(BT_USART_PORT, '$');
 	while(USART_GetFlagStatus(BT_USART_PORT, USART_FLAG_TXE) == RESET);
@@ -311,7 +283,7 @@ uint8_t bluetoothGotoCommandMode(void)
 	USART_SendData(BT_USART_PORT, '$');
 	while(USART_GetFlagStatus(BT_USART_PORT, USART_FLAG_TXE) == RESET);
 	
-	for (uint8_t i = 0; i < 5; i++) {
+	/* for (uint8_t i = 0; i < 5; i++) {
 		while(USART_GetFlagStatus(BT_USART_PORT, USART_FLAG_RXNE) == RESET);
 		data[i] = USART_ReceiveData(BT_USART_PORT);
 	}
@@ -321,7 +293,9 @@ uint8_t bluetoothGotoCommandMode(void)
 		return 1;
 	} else {
 		return 0;
-	}
+	} */
+	
+	return 1;
 }
 
 uint8_t bluetoothGotoDataMode(void)
@@ -418,7 +392,7 @@ uint8_t bluetoothSendCommand(uint8_t* command, int length)
 		return 1;
 	} else {
 		return 0;
-	}	
+	}
 }	
 
 uint8_t bluetoothSetName(void)
@@ -485,7 +459,7 @@ uint8_t bluetoothGotoSleepMode(void)
 
 uint8_t bluetoothSetBaudrate(uint32_t baudrate)
 {
-	uint8_t data[5];
+	// uint8_t data[5];
 	
 	USART_SendData(BT_USART_PORT, 'S');
 	while(USART_GetFlagStatus(BT_USART_PORT, USART_FLAG_TXE) == RESET);
@@ -570,7 +544,7 @@ uint8_t bluetoothSetBaudrate(uint32_t baudrate)
 	USART_SendData(BT_USART_PORT, 0x0d);
 	while (USART_GetFlagStatus(BT_USART_PORT, USART_FLAG_TXE) == RESET);
 	
-	for (int8_t i = 0; i < 5; i++) {
+	/* for (int8_t i = 0; i < 5; i++) {
 		while (USART_GetFlagStatus(BT_USART_PORT, USART_FLAG_RXNE) == RESET);
 		data[i] = USART_ReceiveData(BT_USART_PORT);
 	}
@@ -580,7 +554,9 @@ uint8_t bluetoothSetBaudrate(uint32_t baudrate)
 		return 1;
 	} else {
 		return 0;
-	}
+	} */
+	
+	return 1;
 }
 
 uint8_t pollBluetoothData(void) 

@@ -1333,12 +1333,12 @@ ImuData LpmsSensor::getCurrentData(void)
 	
 	sensorMutex.lock();
 	
-	while (dataQueue.size() > 0) {
-		currentData = dataQueue.front();
+	if (dataQueue.size() > 0) {
+		d = dataQueue.front();
 		dataQueue.pop();
-	} 
-	
-	d = currentData;
+	} else {
+		d = currentData;
+	}
 	
 	sensorMutex.unlock();
 

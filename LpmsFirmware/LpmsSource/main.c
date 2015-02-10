@@ -16,10 +16,11 @@ extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
 extern __IO uint8_t systemStepTimeout;
 
+uint16_t ledC = 0;
+
 int main(void)
 {
 	int sendCounter = 0;
-	uint16_t ledC = 0;
 	// float dt = 0.0f;
 
 	initIWatchdog();

@@ -213,6 +213,15 @@ uint8_t bluetoothInitBaudrate(void)
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(BT_BAUDRATE_115200);
 	bluetoothReset();
+	
+	msDelay(50);
+	bluetoothGotoCommandMode();
+	msDelay(50);	
+	bluetoothSetBaudrate(BT_BAUDRATE_921600);
+	msDelay(50);
+	
+	bluetoothSetUSARTConfig(BT_BAUDRATE_921600);
+	bluetoothReset();
 
 	msDelay(50);	
 	bluetoothGotoCommandMode();	

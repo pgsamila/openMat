@@ -95,6 +95,7 @@ extern uint8_t isFirmwareUpdating;
 extern uint8_t connectedInterface;
 extern uint8_t isTimestampResetArmed;
 extern uint16_t ledFlashTime;
+extern uint16_t ledC;
 
 void initSensorManager(void)
 {
@@ -356,6 +357,9 @@ void checkTimestampReset(void)
 		if (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_13) == RESET) {
 			measurementTime = 0;
 			ledFlashTime = lpmsLedPeriod;
+			isTimestampResetArmed = 0;
+			ledC = 0;
+			GPIO_WriteBit(LED_GPIO_PORT, LED_GPIO_PIN, (BitAction)0);
 		}
 	}
 }
@@ -761,7 +765,7 @@ void stopRefCalibration(void)
 uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
-    uint8_t sl;
+    	uint8_t sl;
 	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
 
 	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;

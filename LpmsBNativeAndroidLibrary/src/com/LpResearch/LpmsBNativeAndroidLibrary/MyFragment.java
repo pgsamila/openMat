@@ -8,5 +8,5 @@ public abstract class MyFragment extends Fragment {
 	}
 
 	public abstract int getMyFragmentTag();
-	public abstract void updateView(LpmsBData d, int s);
+	public abstract void updateView(LpmsBData d, ImuStatus s);
 }

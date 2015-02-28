@@ -49,7 +49,7 @@ public class DataFragment extends MyFragment {
 	private GraphViewSeries magSeries1;
 	private GraphViewSeries magSeries2;		
 
-	int dataCount = 100;	
+	int dataCount = 100;
  	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -76,17 +76,17 @@ public class DataFragment extends MyFragment {
 		gyrLayout.addView(gyrGraph);
 		magLayout.addView(magGraph);
 		
-		accSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 1), new GraphViewData[] { });
-		accSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 1), new GraphViewData[] { });
-		accSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 1), new GraphViewData[] { });
+		accSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 4), new GraphViewData[] { });
+		accSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 4), new GraphViewData[] { });
+		accSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 4), new GraphViewData[] { });
 
-		gyrSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 1), new GraphViewData[] { });
-		gyrSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 1), new GraphViewData[] { });
-		gyrSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 1), new GraphViewData[] { });
+		gyrSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 4), new GraphViewData[] { });
+		gyrSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 4), new GraphViewData[] { });
+		gyrSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 4), new GraphViewData[] { });
 
-		magSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 1), new GraphViewData[] { });
-		magSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 1), new GraphViewData[] { });
-		magSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 1), new GraphViewData[] { });
+		magSeries0 = new GraphViewSeries("X-Axis", new GraphViewSeriesStyle(Color.RED, 4), new GraphViewData[] { });
+		magSeries1 = new GraphViewSeries("Y-Axis", new GraphViewSeriesStyle(Color.GREEN, 4), new GraphViewData[] { });
+		magSeries2 = new GraphViewSeries("Z-Axis", new GraphViewSeriesStyle(Color.BLUE, 4), new GraphViewData[] { });
 
 		accGraph.addSeries(accSeries0);
 		accGraph.addSeries(accSeries1);
@@ -172,8 +172,8 @@ public class DataFragment extends MyFragment {
 	}
 
 	@Override
-	public void updateView(LpmsBData d, int s) {
-		if (s == 0) return;
+	public void updateView(LpmsBData d, ImuStatus s) {
+		if (s.measurementStarted == false) return;
 	
 		accSeries0.appendData(new GraphViewData((double)dataCount, d.acc[0]), true, 200);			
 		accSeries1.appendData(new GraphViewData((double)dataCount, d.acc[1]), true, 200);
@@ -192,5 +192,21 @@ public class DataFragment extends MyFragment {
 		magGraph.setViewPort(dataCount-100, 100);	
 
 		dataCount++;
+	}
+	
+	public void clearView() {		
+		dataCount = 100;
+		
+		accSeries0.resetData(new GraphViewData[] { });
+		accSeries1.resetData(new GraphViewData[] { });
+		accSeries2.resetData(new GraphViewData[] { });
+		
+		gyrSeries0.resetData(new GraphViewData[] { });
+		gyrSeries1.resetData(new GraphViewData[] { });
+		gyrSeries2.resetData(new GraphViewData[] { });
+		
+		magSeries0.resetData(new GraphViewData[] { });
+		magSeries1.resetData(new GraphViewData[] { });
+		magSeries2.resetData(new GraphViewData[] { });			
 	}
 }

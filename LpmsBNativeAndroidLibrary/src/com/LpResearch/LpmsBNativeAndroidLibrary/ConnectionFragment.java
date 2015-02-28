@@ -16,6 +16,7 @@ import android.app.FragmentTransaction;
 import android.view.*;
 import android.widget.*;
 import android.widget.Adapter;
+import android.widget.AbsListView;
 import android.os.*;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,13 +39,25 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	final int FRAGMENT_TAG = 0;
     public static final String ARG_SECTION_NUMBER = "section_number";
  	View rootView;
+	
 	BluetoothAdapter btAdapter;
+	OnConnectListener connectListener;
+	String currentLpms;
+	String currentConnectedLpms;
+		
 	ArrayList<String> dcLpms = new ArrayList<String>();	
 	ArrayAdapter dcAdapter;
 	ListView btList;
-	String currentLpms;
-	boolean firstDc;
-	OnConnectListener connectListener;	
+	boolean firstDc = true;
+	
+	ArrayList<String> connectedDevicesLpms = new ArrayList<String>();	
+	ArrayAdapter connectedDevicesAdapter;
+	ListView connectedDevicesList;
+	boolean firstConnectedDevice = true;
+	
+	TextView loggingStateText;
+
+	boolean preLogStatus = false;	
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,7 +66,8 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		btAdapter = BluetoothAdapter.getDefaultAdapter();
 		
 		prepareButtons();
-		prepareDcList();	
+		prepareDiscoveredDevicesList();	
+		prepareConnectedDevicesList();
 		
         return rootView;
     }
@@ -65,6 +79,11 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		b.setOnClickListener(this);
 		b = (Button) rootView.findViewById(R.id.button_disconnect);
 		b.setOnClickListener(this);
+		b = (Button) rootView.findViewById(R.id.button_start_logging);
+		b.setOnClickListener(this);
+		b = (Button) rootView.findViewById(R.id.button_stop_logging);
+		b.setOnClickListener(this);
+		loggingStateText = (TextView) rootView.findViewById(R.id.logging_status);
 	}
 	
     @Override
@@ -79,20 +98,62 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 		break;
 		
 		case R.id.button_disconnect:
-			connectListener.onDisconnect();
+			onDisconnect();
 		break;
+		
+		case R.id.button_start_logging:
+			connectListener.startLogging();
+		break;
+		
+		case R.id.button_stop_logging:
+			connectListener.stopLogging();
+		break;		
         }
     }
 	
 	public interface OnConnectListener {
 		public void onConnect(String address);
 		public void onDisconnect();
+		public void startLogging();
+		public void stopLogging();		
 	}
 	
 	void startBtConnect() {
-		Log.d("lpms", "Connect: " + currentLpms);
+		btAdapter.cancelDiscovery();
+
 		if (btAdapter != null && !currentLpms.equals("")) {
+			Toast.makeText(getActivity(), "Connecting to " + currentLpms, Toast.LENGTH_SHORT).show();
+			
 			connectListener.onConnect(currentLpms);
+		}
+	}
+	
+	void onDisconnect() {
+		connectListener.onDisconnect();	
+	
+		synchronized (connectedDevicesLpms) {
+			Log.e("lpms", "[ConnectionFragment] Remove from list: " + currentConnectedLpms);
+			if (connectedDevicesLpms.remove(currentConnectedLpms) == true) {
+				connectedDevicesAdapter.notifyDataSetChanged();				
+				
+				if (connectedDevicesLpms.size() == 0) {
+					connectedDevicesLpms.add("Press connect button to connect to device..");
+					connectedDevicesAdapter.notifyDataSetChanged();
+					
+					firstConnectedDevice = true;
+					
+					connectedDevicesList.getChildAt(0).setBackgroundColor(Color.TRANSPARENT);
+				} else { 
+					for(int a = 0; a < connectedDevicesList.getChildCount(); a++) {
+						connectedDevicesList.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+					}								
+					connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+					currentConnectedLpms = (String) connectedDevicesList.getItemAtPosition(0);
+					((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(currentConnectedLpms);
+					
+					Log.e("lpms", "[ConnectionFragment] After disconnect selected: " + currentConnectedLpms);						
+				}
+			}	
 		}
 	}
 	
@@ -103,45 +164,126 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				
-				if (device.getName().equals("LPMS-B")) {
-					if (firstDc == true) {
-						dcLpms.clear();
-						firstDc = false;
-					}
+				if (device == null) return;
 				
-					Log.d("lpms", "Discovered: " + device.getName());
-					currentLpms = device.getAddress();
-					dcLpms.add(device.getAddress());
-					dcAdapter.notifyDataSetChanged();
-				} 
+				synchronized (dcLpms) {	
+					if ((device.getName() != null) && (device.getName().length() > 0)) {
+						if (device.getName().equals("LPMS-B")) {
+							for (ListIterator<String> it = dcLpms.listIterator(); it.hasNext(); ) {
+								if (device.getAddress().equals(it.next())) return;
+							}
+							if (firstDc == true) {
+								dcLpms.clear();							
+								btList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+								currentLpms = device.getAddress();								
+								firstDc = false;							
+							}						
+							dcLpms.add(device.getAddress());
+							dcAdapter.notifyDataSetChanged();
+						}
+					}
+				}
 			}
+			
+			if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+				BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+			}			
 		}
 	};
 	
-	public void prepareDcList() {
+	public void prepareDiscoveredDevicesList() {
 		btList = (ListView) rootView.findViewById(R.id.list);
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		getActivity().registerReceiver(mReceiver, filter);
-		dcAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, dcLpms);
+		dcAdapter = new ArrayAdapter(getActivity(), R.layout.list_view_text_item, dcLpms);
 		btList.setAdapter(dcAdapter);
 		dcLpms.add("Press Discover button to start discovery..");
 		dcAdapter.notifyDataSetChanged();
-		firstDc = true;
-	}
-	
-	public void startBtDiscovery() {
-		Log.d("lpms", "Start discovery");
-		btAdapter.startDiscovery();
+		firstDc = true;			
 		
 		btList.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-			int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				if (firstDc == true) return;
+			
+				for(int a = 0; a < parent.getChildCount(); a++) {
+					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+				}			
+				view.setBackgroundColor(getResources().getColor(R.color.navy));
+					
 				int itemPosition = position;
 				currentLpms = (String) btList.getItemAtPosition(position);
-				Log.d("lpms", "Select: " + currentLpms);
+			}
+		});
+	}
+	
+	public void prepareConnectedDevicesList() {
+		connectedDevicesList = (ListView) rootView.findViewById(R.id.connected_devices_list);
+		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
+		getActivity().registerReceiver(mReceiver, filter);
+		connectedDevicesAdapter = new ArrayAdapter(getActivity(), R.layout.list_view_text_item, connectedDevicesLpms);
+		connectedDevicesList.setAdapter(connectedDevicesAdapter);
+		connectedDevicesLpms.add("Press connect button to connect to device..");
+		connectedDevicesAdapter.notifyDataSetChanged();
+		firstConnectedDevice = true;
+		
+		connectedDevicesList.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				if (firstConnectedDevice == true) return;
+			
+				for(int a = 0; a < parent.getChildCount(); a++) {
+					parent.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+				}			
+				view.setBackgroundColor(getResources().getColor(R.color.navy));
+				
+				int itemPosition = position;
+				String itemValue = (String) connectedDevicesList.getItemAtPosition(position);
+				((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(itemValue);
+				
+				currentConnectedLpms = itemValue;
+				Log.e("lpms", "[ConnectionFragment] Switched to pos " + itemPosition + " value " + itemValue);				
 			}
 		}); 		
+	}
+	
+	public void confirmConnected(BluetoothDevice device) {
+		synchronized (connectedDevicesLpms) {
+			Log.e("lpms", "[ConnectionFragment] Connecion callback to device: " + device.getAddress());
+		
+			if (device.getName().equals("LPMS-B")) {
+				for (ListIterator<String> it = connectedDevicesLpms.listIterator(); it.hasNext(); ) {
+					if (device.getAddress().equals(it.next())) {
+						Log.e("lpms", "[ConnectionFragment] Detected double device: " + device.getAddress());
+						return;
+					}
+				}
+				if (firstConnectedDevice == true) {
+					connectedDevicesLpms.clear();							
+					connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+					((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(device.getName());
+					firstConnectedDevice = false;							
+				}				
+				connectedDevicesLpms.add(device.getAddress() /* + device.getImuId()*/);
+				connectedDevicesAdapter.notifyDataSetChanged();
+				
+				for(int a = 0; a < connectedDevicesList.getChildCount(); a++) {
+					connectedDevicesList.getChildAt(a).setBackgroundColor(Color.TRANSPARENT);
+				}													
+				connectedDevicesList.getChildAt(0).setBackgroundColor(getResources().getColor(R.color.navy));
+				currentConnectedLpms = (String) btList.getItemAtPosition(0);
+				((LpmsBMainActivity)getActivity()).onSensorSelectionChanged(currentConnectedLpms);	
+
+				Log.e("lpms", "[ConnectionFragment] After connect selected: " + currentConnectedLpms);
+			}
+		}
+	}	
+	
+	public void startBtDiscovery() {
+		Toast.makeText(getActivity(), "Starting discovery..", Toast.LENGTH_SHORT).show();		
+		
+		btAdapter.cancelDiscovery();
+		btAdapter.startDiscovery();		
 	}
 	
 	@Override
@@ -196,17 +338,15 @@ public class ConnectionFragment extends MyFragment implements OnClickListener {
 	}
 
 	@Override
-	public void updateView(LpmsBData d, int s) {
-		TextView text = (TextView) rootView.findViewById(R.id.connection_status);
-		
-		switch (s) {
-		case 0:
-			text.setText("Not connected");
-		break;
-		
-		default:
-			text.setText("Connected to LPMS-B (" + currentLpms + ")");
-		break;
+	public void updateView(LpmsBData d, ImuStatus s) {
+		if (preLogStatus != s.isLogging) {
+			preLogStatus = s.isLogging;
+			
+			if (s.isLogging == true) {
+				loggingStateText.setText("Logging to " + s.logFileName);
+			} else {
+				loggingStateText.setText("Logging is OFF");
+			}
 		}
 	}
 }

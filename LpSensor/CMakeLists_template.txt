@@ -169,6 +169,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		set(sources
 			${sources}	
 			LpMagnetometerCalibrationOS.c
+      LpMagnetometerMAlignmentOS.c
 			CalcMisalignmentOS.c
 			GaitTrackingOS.cpp
 		)

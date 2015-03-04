@@ -44,250 +44,261 @@ set(BUILD_OPENSOURCE CACHE BOOL "")
 set(USE_JUST_THREAD CACHE BOOL "")
 
 if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		project (LpSensor)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        project (LpSensor)
+    endif()
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		project (LpSensorD)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        project (LpSensorD)
+    endif()
 endif()
 
 if (BUILD_ARCHITECTURE STREQUAL "64-bit")
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		project (LpSensor64)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        project (LpSensor64)
+    endif()
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		project (LpSensorD64)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        project (LpSensorD64)
+    endif()
 endif()
 
 if(COMMAND cmake_policy)
-	cmake_policy(SET CMP0003 NEW)
-	cmake_policy(SET CMP0015 NEW)
+    cmake_policy(SET CMP0003 NEW)
+cmake_policy(SET CMP0015 NEW)
 endif(COMMAND cmake_policy)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(WINDOWS_SDK_PATH "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.1A" CACHE STRING "")
-	set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
-	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
-	set(WINDOWS_PCAN_PATH "C:/pcan-basic" CACHE STRING "")
-	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
-	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
+    set(WINDOWS_SDK_PATH "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.1A" CACHE STRING "")
+    set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
+    set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
+    set(WINDOWS_PCAN_PATH "C:/pcan-basic" CACHE STRING "")
+    set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
+    set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
 
-	include_directories("${WINDOWS_PCAN_PATH}/Include")
-	include_directories("${WINDOWS_BOOST_PATH}")
-	include_directories("${WINDOWS_PUGIXML_PATH}/src")
-	include_directories("${WINDOWS_FTDI_PATH}")
-	
-	include_directories("../LpSensor")
-	
-	include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
-	link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+    include_directories("${WINDOWS_PCAN_PATH}/Include")
+    include_directories("${WINDOWS_BOOST_PATH}")
+    include_directories("${WINDOWS_PUGIXML_PATH}/src")
+    include_directories("${WINDOWS_FTDI_PATH}")
 
-	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-		link_directories("${WINDOWS_FTDI_PATH}/i386")
-		link_directories("${WINDOWS_PCAN_PATH}/Win32/VC_LIB")
-		link_directories("${WINDOWS_SDK_PATH}/Lib")
-		link_directories("${WINDOWS_ICE_PATH}/lib/vc110")
-	endif()	
-	
-	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
-		link_directories("${WINDOWS_FTDI_PATH}/amd64")
-		link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")
-		link_directories("${WINDOWS_SDK_PATH}/Lib/x64")
-		link_directories("${WINDOWS_ICE_PATH}/lib/vc110/x64")	
-	endif()
-	
-	ADD_DEFINITIONS(-DUSE_EIGEN)
-	ADD_DEFINITIONS(-DNOMINMAX)
-	ADD_DEFINITIONS(-DEIGEN_DONT_ALIGN_STATICALLY)
-	ADD_DEFINITIONS(-D_WIN32_WINNT=0x05010200)
-	ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
-	ADD_DEFINITIONS(-DPLATFORM_X86)
-	ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
-	ADD_DEFINITIONS(-DDLL_EXPORT)
+    include_directories("../LpSensor")
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /O2")
-	endif()
+    include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+    link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+
+    if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+        link_directories("${WINDOWS_FTDI_PATH}/i386")
+        link_directories("${WINDOWS_PCAN_PATH}/Win32/VC_LIB")
+        link_directories("${WINDOWS_SDK_PATH}/Lib")
+    endif()	
+
+    if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+        link_directories("${WINDOWS_FTDI_PATH}/amd64")
+        link_directories("${WINDOWS_PCAN_PATH}/x64/VC_LIB")
+        link_directories("${WINDOWS_SDK_PATH}/Lib/x64")
+    endif()
+
+    ADD_DEFINITIONS(-DUSE_EIGEN)
+    ADD_DEFINITIONS(-DNOMINMAX)
+    ADD_DEFINITIONS(-DEIGEN_DONT_ALIGN_STATICALLY)
+    ADD_DEFINITIONS(-D_WIN32_WINNT=0x05010200)
+    ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
+    ADD_DEFINITIONS(-DPLATFORM_X86)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+    ADD_DEFINITIONS(-DDLL_EXPORT)
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /O2")
+    endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(LINUX_FTDI_PATH "" CACHE STRING "")
-	set(LINUX_PUGIXML_PATH "" CACHE STRING "")
+    set(LINUX_FTDI_PATH "" CACHE STRING "")
+    set(LINUX_PUGIXML_PATH "" CACHE STRING "")
 
-	include_directories("${LINUX_FTDI_PATH}")
-	include_directories("${LINUX_PUGIXML_PATH}/src")
-	include_directories("/usr/local/include")
-	include_directories("/usr/include")
+    include_directories("${LINUX_FTDI_PATH}")
+    include_directories("${LINUX_PUGIXML_PATH}/src")
+    include_directories("/usr/local/include")
+    include_directories("/usr/include")
 
-	link_directories("/usr/lib")
+    link_directories("/usr/lib")
 
-	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-		link_directories("${LINUX_FTDI_PATH}/build/i386")
-	endif()
+    if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+    libink_directories("${LINUX_FTDI_PATH}/build/i386")
+    endif()
 
-	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
-		link_directories("/usr/lib/x86_64-linux-gnu")
-		link_directories("${LINUX_FTDI_PATH}/build/x86_64")
-	endif()
+    if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+        link_directories("/usr/lib/x86_64-linux-gnu")
+        link_directories("${LINUX_FTDI_PATH}/build/x86_64")
+    endif()
 
-	link_directories("/usr/local/lib")
+    link_directories("/usr/local/lib")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(sources
-		MicroMeasureWindows.cpp
-		CanEngine.cpp	
-		CalibrationData.cpp
-		LpmsSensorManager.cpp
-		LpmsBBluetooth.cpp	
-		LpmsCanIo.cpp
-		LpmsIoInterface.cpp	
-		LpmsU.cpp	
-		LpmsRS232.cpp
-		LpmsSensor.cpp	
-		LpMatrix.c
-		RingBuffer.c
+    set(sources
+        MicroMeasureWindows.cpp
+        CanEngine.cpp
+        CalibrationData.cpp
+        LpmsSensorManager.cpp
+        LpmsBBluetooth.cpp
+        LpmsCanIo.cpp
+        LpmsIoInterface.cpp
+        LpmsU.cpp
+        LpmsRS232.cpp
+        LpmsSensor.cpp
+        LpMatrix.c
+        RingBuffer.c
 
-		PCANBasicClass.cpp
+        PCANBasicClass.cpp
 
-		LpmsBle2.cpp
-		BleEngine.cpp
-		BleUart.c
-		BleCmdDef.c
-		BleCommands.c
-		
-		${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
-	)
-	
-	if (BUILD_OPENSOURCE)	
-		set(sources
-			${sources}	
-			LpMagnetometerCalibrationOS.c
-      LpMagnetometerMAlignmentOS.c
-			CalcMisalignmentOS.c
-			GaitTrackingOS.cpp
-		)
-	else()
-		set(sources
-			${sources}	
-			../../openmat-closedsource/LpMagnetometerCalibration.c
-			../../openmat-closedsource/LpMagnetometerMAlignment.c
-			../../openmat-closedsource/CalcMisalignment.c
-			../../openmat-closedsource/GaitTracking.cpp
-		)
-	endif()
-	
+        LpmsBle2.cpp
+        BleEngine.cpp
+        BleUart.c
+        BleCmdDef.c
+        BleCommands.c
+
+        ${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
+    )
+
+    if (BUILD_OPENSOURCE)
+        set(sources
+            ${sources}
+            LpMagnetometerCalibrationOS.c
+            LpMagnetometerMAlignmentOS.c
+            CalcMisalignmentOS.c
+            GaitTrackingOS.cpp
+        )
+    else()
+        set(sources
+            ${sources}
+            ../../openmat-closedsource/LpMagnetometerCalibration.c
+            ../../openmat-closedsource/LpMagnetometerMAlignment.c
+            ../../openmat-closedsource/CalcMisalignment.c
+            ../../openmat-closedsource/GaitTracking.cpp
+        )
+    endif()
+
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(sources
-		CanEngineLinux.cpp	
-		MicroMeasure.cpp
-		CalibrationData.cpp
-		LpmsSensorManager.cpp
-		LpmsBBluetoothLinux.cpp	
-		LpmsCanIoLinux.cpp
-		LpmsIoInterface.cpp	
-		LpmsU.cpp	
-		LpmsRS232Linux.cpp
-		LpmsSensor.cpp	
-		LpMatrix.c
-						
-		${LINUX_PUGIXML_PATH}/src/pugixml.cpp
-	)
+    set(sources
+        CanEngineLinux.cpp
+        MicroMeasure.cpp
+        CalibrationData.cpp
+        LpmsSensorManager.cpp
+        LpmsBBluetoothLinux.cpp	
+        LpmsCanIoLinux.cpp
+        LpmsIoInterface.cpp	
+        LpmsU.cpp
+        LpmsRS232Linux.cpp
+        LpmsSensor.cpp
+        LpMatrix.c
 
-	if (BUILD_OPENSOURCE)	
-		set(sources
-			${sources}
-			LpMagnetometerCalibrationOS.c
-			CalcMisalignmentOS.c
-			GaitTrackingOS.cpp
-		)
-	else()
-		set(sources
-			${sources}	
-			../../openmat-closedsource/LpMagnetometerCalibration.c
-			../../openmat-closedsource/LpMagnetometerMAlignment.c		
-			../../openmat-closedsource/CalcMisalignment.c
-			../../openmat-closedsource/GaitTracking.cpp
-		)
-	endif()
+        ${LINUX_PUGIXML_PATH}/src/pugixml.cpp
+    )
+
+    if (BUILD_OPENSOURCE)
+        set(sources
+            ${sources}
+            LpMagnetometerCalibrationOS.c
+            CalcMisalignmentOS.c
+            GaitTrackingOS.cpp
+        )
+    else()
+        set(sources
+            ${sources}
+            ../../openmat-closedsource/LpMagnetometerCalibration.c
+            ../../openmat-closedsource/LpMagnetometerMAlignment.c
+            ../../openmat-closedsource/CalcMisalignment.c
+            ../../openmat-closedsource/GaitTracking.cpp
+        )
+    endif()
 
 endif()
   
 set(headers
+    DeviceListItem.h
+    ImuData.h
+    LpmsDefinitions.h
+    LpmsSensorI.h
+    LpmsSensorManagerI.h
 )
 
 if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-	set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
-	set(EXECUTABLE_OUTPUT_PATH ./build CACHE STRING "")
+    set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
+set(EXECUTABLE_OUTPUT_PATH ./build CACHE STRING "")
 endif()
 
 if (BUILD_ARCHITECTURE STREQUAL "64-bit")
-	set(LIBRARY_OUTPUT_PATH ./build/x64 CACHE STRING "")
-	set(EXECUTABLE_OUTPUT_PATH ./build/x64 CACHE STRING "")
+    set(LIBRARY_OUTPUT_PATH ./build/x64 CACHE STRING "")
+    set(EXECUTABLE_OUTPUT_PATH ./build/x64 CACHE STRING "")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-		if(CMAKE_BUILD_TYPE STREQUAL "Release")
-			add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
-			target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib Setupapi.lib)
-			
-			if (USE_JUSTTHREAD)	
-				target_link_libraries(${CMAKE_PROJECT_NAME} justthread_vc10_mt.lib)
-			endif()
-		endif()
+    if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+        if(CMAKE_BUILD_TYPE STREQUAL "Release")
+            add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
+            target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib Setupapi.lib)
 
-		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-			add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
-			target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib Setupapi.lib)
+            if (USE_JUSTTHREAD)
+                target_link_libraries(${CMAKE_PROJECT_NAME} justthread_vc10_mt.lib)
+            endif()
+        endif()
 
-			if (USE_JUSTTHREAD)	
-				target_link_libraries(${CMAKE_PROJECT_NAME} justthread_vc10_mtd.lib)
-			endif()
-		endif()
-	endif()
-	
-	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
-		if(CMAKE_BUILD_TYPE STREQUAL "Release")
-			add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
-			target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} justthreadx64_vc10_mt.lib)
-		endif()
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
+            target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib Setupapi.lib)
 
-		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-			add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
-			target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib)
-			target_link_libraries(${CMAKE_PROJECT_NAME} justthreadx64_vc10_mtd.lib)
-		endif()
-	endif()	
+            if (USE_JUSTTHREAD)
+                target_link_libraries(${CMAKE_PROJECT_NAME} justthread_vc10_mtd.lib)
+            endif()
+        endif()
+    endif()
+
+    if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+        if(CMAKE_BUILD_TYPE STREQUAL "Release")
+            add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
+            target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} justthreadx64_vc10_mt.lib)
+        endif()
+
+        if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+            add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
+            target_link_libraries(${CMAKE_PROJECT_NAME} Ws2_32.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} Bthprops.lib)
+            target_link_libraries(${CMAKE_PROJECT_NAME} justthreadx64_vc10_mtd.lib)
+        endif()
+    endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
-		target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx)
-		target_link_libraries(${CMAKE_PROJECT_NAME} bluetooth)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
+        target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx)
+        target_link_libraries(${CMAKE_PROJECT_NAME} bluetooth)
+    endif()
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
-		target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx)
-		target_link_libraries(${CMAKE_PROJECT_NAME} bluetooth)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_library(${CMAKE_PROJECT_NAME} SHARED ${sources} ${headers})
+        target_link_libraries(${CMAKE_PROJECT_NAME} ftd2xx)
+        target_link_libraries(${CMAKE_PROJECT_NAME} bluetooth)
+    endif()
+
+    install(FILES ${headers} DESTINATION include)
+
+    install(TARGETS ${CMAKE_PROJECT_NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
 endif()

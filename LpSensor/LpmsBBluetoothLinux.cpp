@@ -60,7 +60,7 @@ void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
 	
 	if (dev_id < 0 || sock < 0) {
 		std::cout << "[LpmsBBluetooth] Error opening socket" << std::endl;
-		exit(1);
+		return;
 	}
 
 	len  = 8;

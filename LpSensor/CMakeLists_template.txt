@@ -113,26 +113,21 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(LINUX_FTDI_PATH "" CACHE STRING "")
     set(LINUX_PUGIXML_PATH "" CACHE STRING "")
 
-    include_directories("${LINUX_FTDI_PATH}")
-    include_directories("${LINUX_PUGIXML_PATH}/src")
     include_directories("/usr/local/include")
     include_directories("/usr/include")
 
     link_directories("/usr/lib")
+    link_directories("/usr/local/lib")
+    
+    include_directories("${LINUX_PUGIXML_PATH}/src")
 
-    if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-        link_directories("${LINUX_FTDI_PATH}/build/i386")
-    endif()
+    include_directories("../LpSensor")
 
     if (BUILD_ARCHITECTURE STREQUAL "64-bit")
         link_directories("/usr/lib/x86_64-linux-gnu")
-        link_directories("${LINUX_FTDI_PATH}/build/x86_64")
     endif()
-
-    link_directories("/usr/local/lib")
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11")
 endif()
@@ -204,6 +199,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         set(sources
             ${sources}
             LpMagnetometerCalibrationOS.c
+            LpMagnetometerMAlignmentOS.c
             CalcMisalignmentOS.c
             GaitTrackingOS.cpp
         )

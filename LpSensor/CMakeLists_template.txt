@@ -124,7 +124,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     link_directories("/usr/lib")
 
     if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-    libink_directories("${LINUX_FTDI_PATH}/build/i386")
+        link_directories("${LINUX_FTDI_PATH}/build/i386")
     endif()
 
     if (BUILD_ARCHITECTURE STREQUAL "64-bit")

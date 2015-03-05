@@ -34,247 +34,215 @@ cmake_minimum_required(VERSION 2.8.3)
 project (LpmsControl)
 
 if (COMMAND cmake_policy)
-	cmake_policy(SET CMP0003 NEW)
-	cmake_policy(SET CMP0015 NEW)
-	cmake_policy(SET CMP0020 NEW)
+    cmake_policy(SET CMP0003 NEW)
+    cmake_policy(SET CMP0015 NEW)
+    cmake_policy(SET CMP0020 NEW)
 endif(COMMAND cmake_policy)
 
-# set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "")
-# set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+set(OPENMAT_VERSION_MAJOR 1)
+set(OPENMAT_VERSION_MINOR 3)
+set(OPENMAT_VERSION_PATCH 4)
+set(OPENMAT_VERSION "${OPENMAT_VERSION_MAJOR}.${OPENMAT_VERSION_MINOR}.${OPENMAT_VERSION_PATCH}")
 
 set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_BUILD_TYPE "Debug")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
 set(USE_JUST_THREAD CACHE BOOL "")
 
+set(BUILD_ARCHITECTURE "64-bit" CACHE STRING "")
+set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
+
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-	set(SHOW_CONSOLE TRUE)
-	set(EXECUTABLE_OUTPUT_PATH "./build/release")
-	set(LIBRARY_OUTPUT_PATH "./build/release")
+    set(SHOW_CONSOLE TRUE)
+    set(EXECUTABLE_OUTPUT_PATH "./build/release")
+    set(LIBRARY_OUTPUT_PATH "./build/release")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set(SHOW_CONSOLE TRUE)
-	set(EXECUTABLE_OUTPUT_PATH "./build/debug")	
-	set(LIBRARY_OUTPUT_PATH "./build/debug")	
+    set(SHOW_CONSOLE TRUE)
+    set(EXECUTABLE_OUTPUT_PATH "./build/debug")
+    set(LIBRARY_OUTPUT_PATH "./build/debug")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(WINDOWS_QWT_PATH "C:/qwt-6.1.0" CACHE STRING "")
-	set(WINDOWS_QT5_PATH "C:/Qt/Qt5.2.1/5.2.1/msvc2010_opengl" CACHE STRING "")
-	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
-	set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
-	set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
-	set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
-	set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.1" CACHE STRING "")
-	set(WINDOWS_EIGEN_PATH "C:/eigen-3.2.0")
+    set(WINDOWS_QWT_PATH "C:/qwt-6.1.0" CACHE STRING "")
+    set(WINDOWS_QT5_PATH "C:/Qt/Qt5.2.1/5.2.1/msvc2010_opengl" CACHE STRING "")
+    set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
+    set(WINDOWS_FTDI_PATH "C:/ftdi" CACHE STRING "")
+    set(WINDOWS_BOOST_PATH "C:/boost_1_55_0" CACHE STRING "")
+    set(WINDOWS_PUGIXML_PATH "C:/pugixml" CACHE STRING "")
+    set(WINDOWS_ICE_PATH "C:/Program Files (x86)/ZeroC/Ice-3.5.1" CACHE STRING "")
+    set(WINDOWS_EIGEN_PATH "C:/eigen-3.2.0")
 
-	include_directories("${WINDOWS_BOOST_PATH}")
-	include_directories("${WINDOWS_PUGIXML_PATH}/src")
-	include_directories("${WINDOWS_FTDI_PATH}")
-	include_directories("${WINDOWS_EIGEN_PATH}")
+    include_directories("${WINDOWS_BOOST_PATH}")
+    include_directories("${WINDOWS_PUGIXML_PATH}/src")
+    include_directories("${WINDOWS_FTDI_PATH}")
+    include_directories("${WINDOWS_EIGEN_PATH}")
 
-	include_directories("../OpenMATCommon")
-	include_directories("../LpSensor")
+    include_directories("../LpSensor")
 
-	include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
-	link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")	
-	
-	include_directories("${WINDOWS_QWT_PATH}/src")
-	link_directories("${WINDOWS_QWT_PATH}/lib")
+    include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+    link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
 
-	link_directories("../LpSensor/build")
+    include_directories("${WINDOWS_QWT_PATH}/src")
+    link_directories("${WINDOWS_QWT_PATH}/lib")
 
-	ADD_DEFINITIONS(-DUSE_EIGEN)
-	ADD_DEFINITIONS(-DQWT_DLL)
-	ADD_DEFINITIONS(-DNOMINMAX)
-	ADD_DEFINITIONS(-DEIGEN_DONT_ALIGN_STATICALLY)
-	ADD_DEFINITIONS(-D_WIN32_WINNT=0x05010200)
-	ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
-	ADD_DEFINITIONS(-DPLATFORM_X86)
-	ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+    link_directories("../LpSensor/build")
 
-	if (SHOW_CONSOLE)
-		ADD_DEFINITIONS(-DSHOW_CONSOLE)
-	endif()
+    ADD_DEFINITIONS(-DUSE_EIGEN)
+    ADD_DEFINITIONS(-DQWT_DLL)
+    ADD_DEFINITIONS(-DNOMINMAX)
+    ADD_DEFINITIONS(-DEIGEN_DONT_ALIGN_STATICALLY)
+    ADD_DEFINITIONS(-D_WIN32_WINNT=0x05010200)
+    ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
+    ADD_DEFINITIONS(-DPLATFORM_X86)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+
+    if (SHOW_CONSOLE)
+        ADD_DEFINITIONS(-DSHOW_CONSOLE)
+    endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	SET(SHOW_CONSOLE TRUE)
+    SET(INSTALL_DIR "/opt/openMAT/${OPENMAT_VERSION}/")
+    SET(SHOW_CONSOLE TRUE)
 
-	set(LINUX_PUGIXML_PATH "~/pugixml" CACHE STRING "")
-	include_directories("${LINUX_PUGIXML_PATH}/src")
+    set(LINUX_QT5_PATH "/opt/Qt/5.3/gcc_64/" CACHE STRING "")
+    set(LINUX_PUGIXML_PATH "/opt/pugixml-1.4" CACHE STRING "")
+    include_directories("${LINUX_PUGIXML_PATH}/src")
 
-	set(LINUX_QWT_PATH "~/qwt-6.1/qwt-6.1.0" CACHE STRING "")
-	include_directories("${LINUX_QWT_PATH}/src")
-	link_directories("${LINUX_QWT_PATH}/lib")
+    set(LINUX_QWT_PATH "/opt/qwt-6.1.0" CACHE STRING "")
+    include_directories("${LINUX_QWT_PATH}/src")
+    link_directories("${LINUX_QWT_PATH}/lib")
 
-	include_directories("/usr/include/eigen3")
+    set(LINUX_EIGEN_PATH "/opt/eigen-3.2.1" CACHE STRING "")
+    include_directories("${LINUX_EIGEN_PATH}")
 
-	include_directories("../OpenMATCommon")
-	include_directories("../LpSensor")
-	link_directories("../LpSensor/build")
+    include_directories("/usr/include")
+    include_directories("/usr/local/include")
+    include_directories("../LpSensor")
 
-	include_directories("/usr/local/include")
-	include_directories("/usr/include")
+    if (BUILD_ARCHITECTURE STREQUAL "32-bit")
+    endif()
 
-	if (BUILD_ARCHITECTURE STREQUAL "32-bit")
-	endif()
+    if (BUILD_ARCHITECTURE STREQUAL "64-bit")
+        link_directories("/usr/lib/x86_64-linux-gnu")
+    endif()
 
-	if (BUILD_ARCHITECTURE STREQUAL "64-bit")
-		link_directories("/usr/lib/x86_64-linux-gnu")
-	endif()
+    link_directories("/usr/lib")
+    link_directories("/usr/local/lib")
 
-	link_directories("/usr/lib")
-	link_directories("/usr/local/lib")
-
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11 -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -std=gnu++11 -fPIC")
 endif()
-
-if (USE_ZEROC_ICE)
-	ADD_DEFINITIONS(-DUSE_ZEROC_ICE)
-endif()	
 
 if (${WIN32} MATCHES TRUE)
-	if (CMAKE_BUILD_TYPE STREQUAL "Release")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /O2")
-	endif()
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /O2")
+    endif()
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(sources
-		MainWindow.cpp
-		Plot.cpp
-		GraphWindow.cpp
-		ThreeDWindow.cpp
-		main.cpp
-		StdRedirector.cpp
-		SensorGuiContainer.cpp
-		ObjFileParser.cpp
-		DiscoveryItem.cpp
-		DiscoveryTree.cpp
-		FieldMapDisplay.cpp
-		FieldMapContainer.cpp
-		FieldModuleIndicator.cpp
-		RescanDialog.cpp
-		GaitTrackingWindow.cpp
-		MotionBuilderCommunication.cpp
-		PlayControl.cpp
-		
-		../LpSensor/LpMatrix.c
-	
-		LpmsControl.rc
+    set(sources
+        MainWindow.cpp
+        Plot.cpp
+        GraphWindow.cpp
+        ThreeDWindow.cpp
+        main.cpp
+        StdRedirector.cpp
+        SensorGuiContainer.cpp
+        ObjFileParser.cpp
+        DiscoveryItem.cpp
+        DiscoveryTree.cpp
+        FieldMapDisplay.cpp
+        FieldMapContainer.cpp
+        FieldModuleIndicator.cpp
+        RescanDialog.cpp
+        GaitTrackingWindow.cpp
+        MotionBuilderCommunication.cpp
+        PlayControl.cpp
 
-		${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
-	)
+        ../LpSensor/LpMatrix.c
 
-	if (USE_ZEROC_ICE)
-		set(sources
-			${sources}
-			../OpenMATCommon/ImuMonitor.cpp
-			../OpenMATCommon/RawImuMonitorI.cpp	
-			../OpenMATCommon/IceStormCommunication.cpp
-		)
-	endif()
-	 
-	set(headers
-		MainWindow.h
-		Plot.h
-		GraphWindow.h
-		ThreeDWindow.h
-		StdRedirector.h		
-		SensorGuiContainer.h
-		ObjFileParser.h
-		DiscoveryItem.h
-		DiscoveryTree.h
-		FieldMapDisplay.h
-		FieldMapContainer.h
-		FieldModuleIndicator.h
-		RescanDialog.h
-		CubeWindowContainer.h
-		GaitTrackingWindow.h
-		VerticalBarGraph.h
-		MotionBuilderCommunication.h
-		PlayControl.h
-	)
+        LpmsControl.rc
 
-	if (USE_ZEROC_ICE)
-		set(headers
-			${headers}
-			../OpenMATCommon/ImuMonitor.h
-			../OpenMATCommon/RawImuMonitorI.h	
-			../OpenMATCommon/IceStormCommunication.h
-		)
-	endif()
+        ${WINDOWS_PUGIXML_PATH}/src/pugixml.cpp
+    )
+
+    set(headers
+        MainWindow.h
+        Plot.h
+        GraphWindow.h
+        ThreeDWindow.h
+        StdRedirector.h
+        SensorGuiContainer.h
+        ObjFileParser.h
+        DiscoveryItem.h
+        DiscoveryTree.h
+        FieldMapDisplay.h
+        FieldMapContainer.h
+        FieldModuleIndicator.h
+        RescanDialog.h
+        CubeWindowContainer.h
+        GaitTrackingWindow.h
+        VerticalBarGraph.h
+        MotionBuilderCommunication.h
+        PlayControl.h
+    )
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(sources
-		MainWindow.cpp
-		Plot.cpp
-		GraphWindow.cpp
-		ThreeDWindow.cpp
-		main.cpp
-		SensorGuiContainer.cpp
-		ObjFileParser.cpp
-		DiscoveryItem.cpp
-		DiscoveryTree.cpp
-		FieldMapDisplay.cpp
-		FieldMapContainer.cpp
-		FieldModuleIndicator.cpp
-		RescanDialog.cpp
-		GaitTrackingWindow.cpp
-		MotionBuilderCommunication.cpp
-		PlayControl.cpp
-	
-		../LpSensor/LpMatrix.c	
-	
-		LpmsControl.rc
+    set(sources
+        MainWindow.cpp
+        Plot.cpp
+        GraphWindow.cpp
+        ThreeDWindow.cpp
+        main.cpp
+        SensorGuiContainer.cpp
+        ObjFileParser.cpp
+        DiscoveryItem.cpp
+        DiscoveryTree.cpp
+        FieldMapDisplay.cpp
+        FieldMapContainer.cpp
+        FieldModuleIndicator.cpp
+        RescanDialog.cpp
+        GaitTrackingWindow.cpp
+        MotionBuilderCommunication.cpp
+        PlayControl.cpp
 
-		${LINUX_PUGIXML_PATH}/src/pugixml.cpp
+        ../LpSensor/LpMatrix.c	
+
+        LpmsControl.rc
+
+        ${LINUX_PUGIXML_PATH}/src/pugixml.cpp
+    )
+
+    set(headers
+        MainWindow.h
+        Plot.h
+        GraphWindow.h
+        ThreeDWindow.h
+        SensorGuiContainer.h
+        ObjFileParser.h
+        DiscoveryItem.h
+        DiscoveryTree.h
+        FieldMapDisplay.h
+        FieldMapContainer.h
+        FieldModuleIndicator.h
+        RescanDialog.h
+        CubeWindowContainer.h
+        GaitTrackingWindow.h
+        VerticalBarGraph.h
+        MotionBuilderCommunication.h
+        PlayControl.h
 	)
-
-	if (USE_ZEROC_ICE)
-		set(sources
-			${sources}
-			../OpenMATCommon/ImuMonitor.cpp
-			../OpenMATCommon/RawImuMonitorI.cpp	
-			../OpenMATCommon/IceStormCommunication.cpp
-		)
-	endif()
-	 
-	set(headers
-		MainWindow.h
-		Plot.h
-		GraphWindow.h
-		ThreeDWindow.h
-		SensorGuiContainer.h
-		ObjFileParser.h
-		DiscoveryItem.h
-		DiscoveryTree.h
-		FieldMapDisplay.h
-		FieldMapContainer.h
-		FieldModuleIndicator.h
-		RescanDialog.h
-		CubeWindowContainer.h
-		GaitTrackingWindow.h
-		VerticalBarGraph.h
-		MotionBuilderCommunication.h
-		PlayControl.h
-	)
-
-	if (USE_ZEROC_ICE)
-		set(headers
-			${headers}
-			../OpenMATCommon/ImuMonitor.h
-			../OpenMATCommon/RawImuMonitorI.h	
-			../OpenMATCommon/IceStormCommunication.h
-		)
-	endif()
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(CMAKE_PREFIX_PATH "${WINDOWS_QT5_PATH}")
+    set(CMAKE_PREFIX_PATH "${WINDOWS_QT5_PATH}")
+endif()
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(CMAKE_PREFIX_PATH "${LINUX_QT5_PATH}")
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -292,70 +260,79 @@ include_directories(${Qt5OpenGL_INCLUDE_DIRS})
 find_package(OpenGL REQUIRED)
 	
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	if (SHOW_CONSOLE)
-		add_executable(LpmsControl ${sources} ${headers} ${moc_sources})
-	else()
-		add_executable(LpmsControl WIN32 ${sources} ${headers} ${moc_sources})
-	endif()
+    if (SHOW_CONSOLE)
+        add_executable(LpmsControl ${sources} ${headers} ${moc_sources})
+    else()
+        add_executable(LpmsControl WIN32 ${sources} ${headers} ${moc_sources})
+    endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	add_executable(LpmsControl ${sources} ${headers} ${moc_sources})
+    add_executable(LpmsControl ${sources} ${headers} ${moc_sources})
 endif()
-	
+
 target_link_libraries(LpmsControl ${QT_LIBRARIES})
 target_link_libraries(LpmsControl ${OPENGL_LIBRARIES})
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		target_link_libraries(LpmsControl LpSensor.lib)
-		target_link_libraries(LpmsControl Qt5::Widgets)		
-		target_link_libraries(LpmsControl Qt5::Core)
-		target_link_libraries(LpmsControl Qt5::OpenGL)		
-		target_link_libraries(LpmsControl qwt.lib)
-		target_link_libraries(LpmsControl Ws2_32.lib)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_link_libraries(LpmsControl LpSensor.lib)
+        target_link_libraries(LpmsControl Qt5::Widgets)
+        target_link_libraries(LpmsControl Qt5::Core)
+        target_link_libraries(LpmsControl Qt5::OpenGL)
+        target_link_libraries(LpmsControl qwt.lib)
+        target_link_libraries(LpmsControl Ws2_32.lib)
 
-		if (USE_JUSTTHREAD)	
-			target_link_libraries(LpmsControl justthread_vc10_mt.lib)
-		endif()	
-		
-		if (USE_ZEROC_ICE)
-			target_link_libraries(LpmsControl ice.lib icestorm.lib iceutil.lib)
-		endif()
-	endif()
+        if (USE_JUSTTHREAD)
+            target_link_libraries(LpmsControl justthread_vc10_mt.lib)
+        endif()
+    endif()
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		target_link_libraries(LpmsControl LpSensorD.lib)
-		target_link_libraries(LpmsControl Qt5::Widgets)
-		target_link_libraries(LpmsControl Qt5::Core)
-		target_link_libraries(LpmsControl Qt5::OpenGL)
-		target_link_libraries(LpmsControl qwtd.lib)
-		target_link_libraries(LpmsControl Ws2_32.lib)
-	
-		if (USE_JUSTTHREAD)	
-			target_link_libraries(LpmsControl justthread_vc10_mtd.lib)
-		endif()	
-	
-		if (USE_ZEROC_ICE)	
-			target_link_libraries(LpmsControl iced.lib icestormd.lib iceutild.lib)
-		endif()	
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_libraries(LpmsControl LpSensorD.lib)
+        target_link_libraries(LpmsControl Qt5::Widgets)
+        target_link_libraries(LpmsControl Qt5::Core)
+        target_link_libraries(LpmsControl Qt5::OpenGL)
+        target_link_libraries(LpmsControl qwtd.lib)
+        target_link_libraries(LpmsControl Ws2_32.lib)
+
+        if (USE_JUSTTHREAD)
+            target_link_libraries(LpmsControl justthread_vc10_mtd.lib)
+        endif()
+    endif()
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		target_link_libraries(LpmsControl libLpSensor.so)
-		target_link_libraries(LpmsControl ${LINUX_QWT_PATH}/lib/libqwt.so)
-		target_link_libraries(LpmsControl Qt5::Widgets)
-		target_link_libraries(LpmsControl Qt5::Core)
-		target_link_libraries(LpmsControl Qt5::OpenGL)
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Release") 
+        target_link_libraries(LpmsControl libLpSensor.so)
+    endif()
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		target_link_libraries(LpmsControl libLpSensorD.so)
-		target_link_libraries(LpmsControl ${LINUX_QWT_PATH}/lib/libqwt.so)
-		target_link_libraries(LpmsControl Qt5::Widgets)
-		target_link_libraries(LpmsControl Qt5::Core)
-		target_link_libraries(LpmsControl Qt5::OpenGL)	
-	endif()
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_link_libraries(LpmsControl libLpSensorD.so)
+    endif()
+
+    target_link_libraries(LpmsControl ${LINUX_QWT_PATH}/lib/libqwt.so)
+    target_link_libraries(LpmsControl Qt5::Widgets)
+    target_link_libraries(LpmsControl Qt5::Core)
+    target_link_libraries(LpmsControl Qt5::OpenGL)
+
+    set_property(TARGET LpmsControl PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
+    set (CMAKE_INSTALL_PREFIX ${INSTALL_DIR})
+    install(TARGETS LpmsControl DESTINATION bin)
+    install(FILES 
+        LpmsStyles.qss 
+        Icon.ico
+        LpSplash.png
+        DESTINATION bin)
+    install(DIRECTORY 
+        icons/
+        DESTINATION bin/icons)
+    # lib
+    #install(DIRECTORY
+    #    ../../lib/
+    #    DESTINATION lib)
+    # include
+    #install(DIRECTORY
+    #    ../../include/
+    #   DESTINATION include)
 endif()

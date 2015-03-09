@@ -1,5 +1,5 @@
-#include "stdio.h"
-
+#include <cstdio>
+#include <thread>
 #include "LpmsSensorI.h"
 #include "LpmsSensorManagerI.h"
 
@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 			printf("Timestamp=%f, qW=%f, qX=%f, qY=%f, qZ=%f\n", 
 				d.timeStamp, d.q[0], d.q[1], d.q[2], d.q[3]);
 		}
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
 	// Removes the initialized sensor

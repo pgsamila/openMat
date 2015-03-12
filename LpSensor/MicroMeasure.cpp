@@ -42,7 +42,7 @@ static const unsigned usec_per_msec = 1000;
 
 bool QueryPerformanceFrequency(long long *frequency)
 {
-    *frequency = usec_per_sec;
+    *frequency = (long long)usec_per_sec;
 
     return true;
 }
@@ -54,7 +54,7 @@ bool QueryPerformanceCounter(long long *performance_count)
     assert(performance_count != NULL);
 
     gettimeofday(&time, NULL);
-    *performance_count = time.tv_usec + time.tv_sec * usec_per_sec;
+    *performance_count = time.tv_usec + time.tv_sec * (long long)usec_per_sec;
 
     return true;
 }
@@ -65,7 +65,7 @@ MicroMeasure::MicroMeasure()
 
 	QueryPerformanceFrequency(&ticksPerSecond);
 	tpm = ticksPerSecond;
-	start_time = 0;
+	start_time = 0LL;
 }
 
 void MicroMeasure::reset(void)
@@ -82,7 +82,7 @@ long long MicroMeasure::measure(void)
 
 	QueryPerformanceCounter(&tick);
 
-	return (((tick - start_time) * 1000 * 1000) / tpm);
+	return (((tick - start_time) * 1000LL * 1000LL) / tpm);
 }
 
 void MicroMeasure::sleep(long long s_t)

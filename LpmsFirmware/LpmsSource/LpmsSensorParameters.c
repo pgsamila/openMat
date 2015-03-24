@@ -27,6 +27,7 @@ extern uint32_t lpmsStatus;
 extern uint32_t lpmsStatus;
 extern float pressure;
 extern float temperature;
+extern float altitude;
 extern float heaveY;
 extern float measurementTime;
 extern uint8_t transferFormat;
@@ -1417,6 +1418,27 @@ uint8_t getMagZData(uint8_t* data, uint16_t *l, uint8_t prec)
 uint8_t getHeaveData(uint8_t* data, uint16_t *l, uint8_t prec) 
 {
 	setFloat(data, heaveY, prec);
+
+	return 1;
+}
+
+uint8_t getPressureData(uint8_t* data, uint16_t *l, uint8_t prec) 
+{
+	setFloat(data, pressure, prec);
+
+	return 1;
+}
+
+uint8_t getAltitudeData(uint8_t* data, uint16_t *l, uint8_t prec) 
+{
+	setFloat(data, altitude, prec);
+
+	return 1;
+}
+
+uint8_t getTemperatureData(uint8_t* data, uint16_t *l, uint8_t prec) 
+{
+	setFloat(data, temperature, prec);
 
 	return 1;
 }

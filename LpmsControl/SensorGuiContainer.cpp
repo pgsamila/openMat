@@ -266,7 +266,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo1ACombo->addItem(QString("Quaternion Z"));
 		canTpdo1ACombo->addItem(QString("Accelerometer X"));
 		canTpdo1ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo1ACombo->addItem(QString("Accelerometer Z"));		
+		canTpdo1ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo1ACombo->addItem(QString("Bar. pressure"));
+		canTpdo1ACombo->addItem(QString("Altitude"));
+		canTpdo1ACombo->addItem(QString("Temperature"));		
 		connect(canTpdo1ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 2"), l, 0);
@@ -289,7 +292,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo1BCombo->addItem(QString("Quaternion Z"));
 		canTpdo1BCombo->addItem(QString("Accelerometer X"));
 		canTpdo1BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo1BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo1BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo1BCombo->addItem(QString("Bar. pressure"));
+		canTpdo1BCombo->addItem(QString("Altitude"));
+		canTpdo1BCombo->addItem(QString("Temperature"));
 		connect(canTpdo1BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 3"), l, 0);
@@ -312,7 +318,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo2ACombo->addItem(QString("Quaternion Z"));
 		canTpdo2ACombo->addItem(QString("Accelerometer X"));
 		canTpdo2ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo2ACombo->addItem(QString("Accelerometer Z"));		
+		canTpdo2ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo2ACombo->addItem(QString("Bar. pressure"));
+		canTpdo2ACombo->addItem(QString("Altitude"));
+		canTpdo2ACombo->addItem(QString("Temperature"));		
 		connect(canTpdo2ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 4"), l, 0);
@@ -335,7 +344,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo2BCombo->addItem(QString("Quaternion Z"));
 		canTpdo2BCombo->addItem(QString("Accelerometer X"));
 		canTpdo2BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo2BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo2BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo2BCombo->addItem(QString("Bar. pressure"));
+		canTpdo2BCombo->addItem(QString("Altitude"));
+		canTpdo2BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo2BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 5"), l, 0);
@@ -358,7 +370,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo3ACombo->addItem(QString("Quaternion Z"));
 		canTpdo3ACombo->addItem(QString("Accelerometer X"));
 		canTpdo3ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo3ACombo->addItem(QString("Accelerometer Z"));				
+		canTpdo3ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo3ACombo->addItem(QString("Bar. pressure"));
+		canTpdo3ACombo->addItem(QString("Altitude"));
+		canTpdo3ACombo->addItem(QString("Temperature"));		
 		connect(canTpdo3ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 6"), l, 0);
@@ -381,7 +396,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo3BCombo->addItem(QString("Quaternion Z"));
 		canTpdo3BCombo->addItem(QString("Accelerometer X"));
 		canTpdo3BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo3BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo3BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo3BCombo->addItem(QString("Bar. pressure"));
+		canTpdo3BCombo->addItem(QString("Altitude"));
+		canTpdo3BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo3BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 7"), l, 0);
@@ -404,7 +422,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo4ACombo->addItem(QString("Quaternion Z"));
 		canTpdo4ACombo->addItem(QString("Accelerometer X"));
 		canTpdo4ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo4ACombo->addItem(QString("Accelerometer Z"));				
+		canTpdo4ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo4ACombo->addItem(QString("Bar. pressure"));
+		canTpdo4ACombo->addItem(QString("Altitude"));
+		canTpdo4ACombo->addItem(QString("Temperature"));		
 		connect(canTpdo4ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 8"), l, 0);
@@ -427,7 +448,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo4BCombo->addItem(QString("Quaternion Z"));
 		canTpdo4BCombo->addItem(QString("Accelerometer X"));
 		canTpdo4BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo4BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo4BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo4BCombo->addItem(QString("Bar. pressure"));
+		canTpdo4BCombo->addItem(QString("Altitude"));
+		canTpdo4BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo4BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 9"), l, 0);
@@ -450,7 +474,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo5ACombo->addItem(QString("Quaternion Z"));
 		canTpdo5ACombo->addItem(QString("Accelerometer X"));
 		canTpdo5ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo5ACombo->addItem(QString("Accelerometer Z"));		
+		canTpdo5ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo5ACombo->addItem(QString("Bar. pressure"));
+		canTpdo5ACombo->addItem(QString("Altitude"));
+		canTpdo5ACombo->addItem(QString("Temperature"));	
 		connect(canTpdo5ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 10"), l, 0);
@@ -473,7 +500,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo5BCombo->addItem(QString("Quaternion Z"));
 		canTpdo5BCombo->addItem(QString("Accelerometer X"));
 		canTpdo5BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo5BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo5BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo5BCombo->addItem(QString("Bar. pressure"));
+		canTpdo5BCombo->addItem(QString("Altitude"));
+		canTpdo5BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo5BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 11"), l, 0);
@@ -496,7 +526,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo6ACombo->addItem(QString("Quaternion Z"));
 		canTpdo6ACombo->addItem(QString("Accelerometer X"));
 		canTpdo6ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo6ACombo->addItem(QString("Accelerometer Z"));		
+		canTpdo6ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo6ACombo->addItem(QString("Bar. pressure"));
+		canTpdo6ACombo->addItem(QString("Altitude"));
+		canTpdo6ACombo->addItem(QString("Temperature"));		
 		connect(canTpdo6ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 12"), l, 0);
@@ -519,7 +552,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo6BCombo->addItem(QString("Quaternion Z"));
 		canTpdo6BCombo->addItem(QString("Accelerometer X"));
 		canTpdo6BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo6BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo6BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo6BCombo->addItem(QString("Bar. pressure"));
+		canTpdo6BCombo->addItem(QString("Altitude"));
+		canTpdo6BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo6BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 13"), l, 0);
@@ -542,7 +578,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo7ACombo->addItem(QString("Quaternion Z"));
 		canTpdo7ACombo->addItem(QString("Accelerometer X"));
 		canTpdo7ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo7ACombo->addItem(QString("Accelerometer Z"));				
+		canTpdo7ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo7ACombo->addItem(QString("Bar. pressure"));
+		canTpdo7ACombo->addItem(QString("Altitude"));
+		canTpdo7ACombo->addItem(QString("Temperature"));		
 		connect(canTpdo7ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 14"), l, 0);
@@ -565,7 +604,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo7BCombo->addItem(QString("Quaternion Z"));
 		canTpdo7BCombo->addItem(QString("Accelerometer X"));
 		canTpdo7BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo7BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo7BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo7BCombo->addItem(QString("Bar. pressure"));
+		canTpdo7BCombo->addItem(QString("Altitude"));
+		canTpdo7BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo7BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 15"), l, 0);
@@ -588,7 +630,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo8ACombo->addItem(QString("Quaternion Z"));
 		canTpdo8ACombo->addItem(QString("Accelerometer X"));
 		canTpdo8ACombo->addItem(QString("Accelerometer Y"));
-		canTpdo8ACombo->addItem(QString("Accelerometer Z"));				
+		canTpdo8ACombo->addItem(QString("Accelerometer Z"));
+		canTpdo8ACombo->addItem(QString("Bar. pressure"));
+		canTpdo8ACombo->addItem(QString("Altitude"));
+		canTpdo8ACombo->addItem(QString("Temperature"));
 		connect(canTpdo8ACombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));
 		
 		gl4->addWidget(new QLabel("Channel 16"), l, 0);
@@ -611,7 +656,10 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		canTpdo8BCombo->addItem(QString("Quaternion Z"));
 		canTpdo8BCombo->addItem(QString("Accelerometer X"));
 		canTpdo8BCombo->addItem(QString("Accelerometer Y"));
-		canTpdo8BCombo->addItem(QString("Accelerometer Z"));				
+		canTpdo8BCombo->addItem(QString("Accelerometer Z"));
+		canTpdo8BCombo->addItem(QString("Bar. pressure"));
+		canTpdo8BCombo->addItem(QString("Altitude"));
+		canTpdo8BCombo->addItem(QString("Temperature"));		
 		connect(canTpdo8BCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(updateCanMapping(int)));	
 	}
 	

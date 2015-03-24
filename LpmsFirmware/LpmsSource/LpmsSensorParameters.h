@@ -323,5 +323,8 @@ void updateUartFormat(void);
 void armHardwareTimestampReset(uint8_t* data);
 void setDefaultAlignmentOffset(void);
 void updateStreamFreq(void);
+uint8_t getPressureData(uint8_t* data, uint16_t *l, uint8_t prec);
+uint8_t getAltitudeData(uint8_t* data, uint16_t *l, uint8_t prec);
+uint8_t getTemperatureData(uint8_t* data, uint16_t *l, uint8_t prec);
 
 #endif

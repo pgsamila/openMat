@@ -433,12 +433,24 @@ void getCanData(uint8_t* data, int i, int fixed)
 		case 18:
 			getAccZData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
-
-#ifdef USE_HEAVEMOTION
+		
 		case 19:
+			getPressureData(data, &dataLength, FLOAT_FIXED_POINT_1000);
+		break;
+		
+		case 20:
+			getAltitudeData(data, &dataLength, FLOAT_FIXED_POINT_1000);
+		break;
+		
+		case 21:
+			getTemperatureData(data, &dataLength, FLOAT_FIXED_POINT_1000);
+		break;
+		
+#ifdef USE_HEAVEMOTION
+		case 22:
 			getHeaveData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
-#endif
+#endif		
 		}
 	} else {
 		switch (v) {
@@ -517,12 +529,24 @@ void getCanData(uint8_t* data, int i, int fixed)
 		case 18:
 			getAccZData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
-
-#ifdef USE_HEAVEMOTION
+		
 		case 19:
+			getPressureData(data, &dataLength, FLOAT_FULL_PRECISION);
+		break;
+		
+		case 20:
+			getAltitudeData(data, &dataLength, FLOAT_FULL_PRECISION);
+		break;
+		
+		case 21:
+			getTemperatureData(data, &dataLength, FLOAT_FULL_PRECISION);
+		break;
+		
+#ifdef USE_HEAVEMOTION
+		case 22:
 			getHeaveData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
-#endif
+#endif		
 		}
 	}
 }

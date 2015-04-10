@@ -204,6 +204,9 @@ void LpmsSensorManager::run(void)
 			managerState = SMANAGER_MEASURE;
 		break;
 		}
+#ifdef __GNUC__
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+#endif
 	}
 
 #ifdef _WIN32		

@@ -164,14 +164,26 @@ void LpmsBBluetooth::runRead(void)
 	unsigned long bytesReceived;
 	char rxBuffer[1024];
 
-	while (isOpen == true) {
-		bytesReceived = ::read(bzSocket, rxBuffer, 8);
-		mutexDataQueue.lock();
-		for (unsigned int i=0; i < bytesReceived; i++) {
-			dataQueue.push((unsigned char) rxBuffer[i]);
+	while (isOpen == true) 
+	{
+
+		bytesReceived = ::read(bzSocket, rxBuffer, 512);
+		if (bytesReceived <= 0 || bytesReceived >= 1024)
+		{ 
+			cout << "[LpmsBBluetoothLinux] LPMS connection timeout has occured (device: " << bluetoothAddress.c_str() << ")." << endl;
+
+			::close(bzSocket);  //birdy
+			isOpen = false;
+		} else {
+			mutexDataQueue.lock();
+			for (unsigned int i=0; i < bytesReceived; i++) {
+				dataQueue.push((unsigned char) rxBuffer[i]);
+			} 
+			mutexDataQueue.unlock();
 		}
-		mutexDataQueue.unlock();
 	}
+
+	::close(bzSocket);
 }
 
 bool LpmsBBluetooth::read(char *rxBuffer, unsigned long *bytesReceived) 

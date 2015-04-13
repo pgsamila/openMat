@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <script force="true" />
+    <script_timeout value="0" />
+    <throughput optimize="performance" />
+</config>

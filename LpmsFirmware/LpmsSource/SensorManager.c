@@ -515,7 +515,7 @@ void calcAltitude(void)
 		pressure = (float) rawPressure * 1.0e-2f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
-        altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
+        	altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
 	}
 
 }
@@ -524,15 +524,23 @@ void calcLinearAcceleration(void)
 {
 	LpVector3f gWorld;
 	LpVector3f gSensor;
-	LpMatrix3x3f M;
+	LpMatrix3x3f M, M_i;
 
 	gWorld.data[0] = 0;
 	gWorld.data[1] = 0;
 	gWorld.data[2] = -1;
 
+#define LINACC_OUTPUT_LOCAL
+#ifdef LINACC_OUTPUT_LOCAL
 	quaternionToMatrix(&q, &M);
 	matVectMult3(&M, &gWorld, &gSensor);
 	vectSub3x1(&a, &gSensor, &linAcc);
+#else
+	quaternionToMatrix(&q, &M);
+	matInv3x3(&M, &M_i);
+	matVectMult3(&M_i, &a, &gSensor);
+	vectSub3x1(&gSensor, &gWorld, &linAcc);
+#endif
 }
 
 void accAverage(void)

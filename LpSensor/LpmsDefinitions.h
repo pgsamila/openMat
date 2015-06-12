@@ -1,18 +1,43 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
+** Copyright (c) LP-RESEARCH Inc.
 ** Contact: LP-Research (info@lp-research.com)
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
 #ifndef LPMS_DEFINITIONS
 #define LPMS_DEFINITIONS
 
-/* Available device types:*/
+// Available device types:
 #define DEVICE_LPMS_B 	0 // LPMS-B (Bluetooth)
 #define DEVICE_LPMS_U 	1 // LPMS-CU (USB)
 #define DEVICE_LPMS_C 	2 // LPMS-CU (CAN bus)
 #define DEVICE_LPMS_BLE 3 // LPMS-BLE (Bluetooth low energy)
 #define DEVICE_LPMS_RS232 4 // LPMS-CUR (RS-232)
+#define DEVICE_LPEMG_B 5 // LPEMG-B (Bluetooth EMG)
 
 #define SENSOR_STATUS_ERROR 		3
 #define SENSOR_STATUS_CALIBRATING 	2
@@ -25,7 +50,7 @@
 #define SENSOR_CONNECTION_CONNECTING 	2
 #define SENSOR_CONNECTION_CONNECTED 	1
 
-/* Supported sensor parameters. For set / get with CalibrationData class. */
+// Supported sensor parameters. For set / get with CalibrationData class.
 #define PRM_NAME 					0 // Sensor name (string)
 #define PRM_DEVICE_ID 				1 // Sensor device ID (int)
 #define PRM_GYR_BIAS 				2 // Gyroscope bias (Eigen::Vector3f)
@@ -70,49 +95,49 @@
 #define PRM_UART_BAUDRATE			41
 #define PRM_UART_FORMAT				42
 
-/* Sensor fusion modes. */
+// Sensor fusion modes
 #define SELECT_FM_GYRO_ONLY 		0
 #define SELECT_FM_GYRO_ACC 			1
 #define SELECT_FM_GYRO_ACC_MAG		2
 #define SELECT_FM_ACC_MAG		 	3
 #define SELECT_FM_GYR_ACC_EULER 	4
 
-/* Available device types. */
+// Available device types
 #define SELECT_DEVICE_LPMS_B 	0
 #define SELECT_DEVICE_LPMS_U	1
 #define SELECT_DEVICE_LPMS_C 	2
 
-/* LpFilter parameter sets. */
+// LpFilter parameter sets
 #define SELECT_IMU_SLOW		0
 #define SELECT_IMU_MEDIUM 	1
 #define SELECT_IMU_FAST 	2
 #define SELECT_IMU_DYNAMIC 	3	
 
-/* Enable / disable gyrsocope threshold. */
+// Enable / disable gyrsocope threshold
 #define SELECT_IMU_GYR_THRESH_DISABLED 	0
 #define SELECT_IMU_GYR_THRESH_ENABLED 	1
 
-/* Enable / disable local filtering. */
+// Enable / disable local filtering
 #define SELECT_IMU_LOCAL_FILTER 	0
 #define SELECT_IMU_REMOTE_FILTER 	1
 
-/* Data transmission modes. */
+// Data transmission modes
 #define SELECT_LPMS_MODE_STREAM 	0
 #define SELECT_LPMS_MODE_COMMAND 	1
 #define SELECT_LPMS_MODE_SLEEP 		2
 
-/* Gyroscope ranges. */
+// Gyroscope ranges
 #define SELECT_GYR_RANGE_250DPS		250
 #define SELECT_GYR_RANGE_500DPS		500 
 #define SELECT_GYR_RANGE_2000DPS	2000
 
-/* Accelerometer ranges. */
+// Accelerometer ranges
 #define SELECT_ACC_RANGE_2G		2
 #define SELECT_ACC_RANGE_4G		4
 #define SELECT_ACC_RANGE_8G		8
 #define SELECT_ACC_RANGE_16G	16
 
-/* Magnetometer ranges. */
+// Magnetometer ranges
 #define SELECT_MAG_RANGE_130UT		130
 #define SELECT_MAG_RANGE_190UT		190
 #define SELECT_MAG_RANGE_250UT		250
@@ -121,24 +146,24 @@
 #define SELECT_MAG_RANGE_560UT		560
 #define SELECT_MAG_RANGE_810UT		810
 
-/* Enable / disable autocalibration. */
+// Enable / disable autocalibration
 #define SELECT_MAG_AUTOCALIBRATION_DISABLED		0
 #define SELECT_MAG_AUTOCALIBRATION_ENABLED 		1
 
-/* CAN bus protocol. */
+// CAN bus protocol
 #define SELECT_STREAM_CAN_LPBUS 		0
 #define SELECT_STREAM_CAN_CUSTOM1	 	1
 #define SELECT_STREAM_CAN_OPEN 			2
 #define SELECT_STREAM_CAN_CUSTOM2	 	3
 #define SELECT_STREAM_CAN_CUSTOM3	 	4
 
-/* CAN bus baudrate. */
+// CAN bus baudrate
 #define SELECT_CAN_BAUDRATE_125KBPS 	125
 #define SELECT_CAN_BAUDRATE_250KBPS 	250
 #define SELECT_CAN_BAUDRATE_500KBPS 	500
 #define SELECT_CAN_BAUDRATE_1000KBPS 	1000
 
-/* Self-test on / off. */
+// Self-test on / off
 #define SELECT_SELF_TEST_ON				0
 #define SELECT_SELF_TEST_OFF			1
 
@@ -153,22 +178,22 @@
 #define SELECT_STREAM_FREQ_800HZ 		500
 #define SELECT_STREAM_FREQ_1600HZ 		1000
 
-/* Magnetometer threshold level. */
+// Magnetometer threshold level
 #define SELECT_MAG_THRESH_DISABLE		0
 #define SELECT_MAG_THRESH_5UT			1
 #define SELECT_MAG_THRESH_10UT			2
 #define SELECT_MAG_THRESH_20UT			3
 
-/* Gyroscope auto-calibration on / off. */
+// Gyroscope auto-calibration on / off
 #define SELECT_GYR_AUTOCALIBRATION_DISABLED		0
 #define SELECT_GYR_AUTOCALIBRATION_ENABLED 		1
 
-/* Magnetic field map dimensions. */
+// Magnetic field map dimensions
 #define ABSMAXPITCH 3
 #define ABSMAXROLL 6
 #define ABSMAXYAW 6
 
-/* Data output selection. */
+// Data output selection
 #define SELECT_LPMS_QUAT_OUTPUT_ENABLED 				0x1 
 #define SELECT_LPMS_EULER_OUTPUT_ENABLED 				(0x1 << 1)
 #define SELECT_LPMS_LINACC_OUTPUT_ENABLED 				(0x1 << 2)
@@ -226,6 +251,5 @@
 
 #define SELECT_LPMS_UART_FORMAT_LPBUS			0
 #define SELECT_LPMS_UART_FORMAT_CSV				1
-
 
 #endif

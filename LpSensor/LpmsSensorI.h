@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) 2012 LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** Copyright (c) LP-RESEARCH Inc.
+** Contact: LP-Research (info@lp-research.com)
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -98,8 +97,7 @@ public:
 	virtual bool uploadFirmware(const char *fn) = 0;
 	virtual bool uploadIap(const char *fn) = 0;
 	virtual int getUploadProgress(int *p) = 0; 
-	virtual void saveCalibrationData(void) = 0;	
-	// virtual LpmsIoInterface *getIoInterface(void) = 0;
+	virtual void saveCalibrationData(void) = 0;
 	virtual void measureAvgLatency(void) = 0; 
 	virtual void acquireFieldMap(void) = 0; 
 	virtual bool getPressure(float *p) = 0;

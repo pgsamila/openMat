@@ -1,31 +1,56 @@
 /***********************************************************************
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** All rights reserved
+** Contact: info@lp-research.com
+**
+** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
+**
+** Redistribution and use in source and binary forms, with 
+** or without modification, are permitted provided that the 
+** following conditions are met:
+**
+** Redistributions of source code must retain the above copyright 
+** notice, this list of conditions and the following disclaimer.
+** Redistributions in binary form must reproduce the above copyright 
+** notice, this list of conditions and the following disclaimer in 
+** the documentation and/or other materials provided with the 
+** distribution.
+**
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+** FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+** HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#include "LpmsBBluetooth.h"
+#include "LpemgBluetooth.h"
 
 static volatile bool isStopDiscovery = false;
 static HBLUETOOTH_RADIO_FIND m_bt = NULL;
 static HBLUETOOTH_DEVICE_FIND m_bt_dev = NULL;
 
-LpmsBBluetooth::LpmsBBluetooth(CalibrationData *configData) :
-	LpmsIoInterface(configData)
+LpemgBluetooth::LpemgBluetooth(CalibrationData *configData) :
+	LpemgIoInterface(configData)
 {
 }
 
-LpmsBBluetooth::~LpmsBBluetooth(void)
+LpemgBluetooth::~LpemgBluetooth(void)
 {
 	close();
 }
 	
-long long LpmsBBluetooth::getConnectWait(void) 
+long long LpemgBluetooth::getConnectWait(void) 
 { 
 	return 6000000; 
 }
 
-void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
+void LpemgBluetooth::listDevices(LpmsDeviceList *deviceList)
 {
 	BLUETOOTH_RADIO_INFO m_bt_info = { sizeof(BLUETOOTH_RADIO_INFO), 0, };
 	BLUETOOTH_DEVICE_SEARCH_PARAMS m_search_params = {
@@ -52,7 +77,7 @@ void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
 
 	BLUETOOTH_FIND_RADIO_PARAMS m_bt_find_radio = {sizeof(BLUETOOTH_FIND_RADIO_PARAMS)};
 
-	std::cout << "[LpmsBBluetooth] Searching for Bluetooth LPMS devices" << std::endl;
+	std::cout << "[LpemgBluetooth] Searching for Bluetooth LPMS devices" << std::endl;
 
     WORD wVersionRequested;
     WSADATA wsaData;
@@ -82,31 +107,27 @@ void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
 				do {
 					char addressString[64];
 					
-					wprintf(L"[LpmsBBluetooth] Device: %d\r\n", m_device_id);
-					wprintf(L"[LpmsBBluetooth] Instance Name: %s\r\n", m_device_info.szName);
-					wprintf(L"[LpmsBBluetooth] Address: %02X:%02X:%02X:%02X:%02X:%02X\r\n", 
+					wprintf(L"[LpemgBluetooth] Device: %d\r\n", m_device_id);
+					wprintf(L"[LpemgBluetooth] Instance Name: %s\r\n", m_device_info.szName);
+					wprintf(L"[LpemgBluetooth] Address: %02X:%02X:%02X:%02X:%02X:%02X\r\n", 
 						m_device_info.Address.rgBytes[5], m_device_info.Address.rgBytes[4], 
 						m_device_info.Address.rgBytes[3], m_device_info.Address.rgBytes[2],
 						m_device_info.Address.rgBytes[1], m_device_info.Address.rgBytes[0]);
-					wprintf(L"[LpmsBBluetooth] Class: 0x%08x\r\n", m_device_info.ulClassofDevice);
-					wprintf(L"[LpmsBBluetooth] Connected: %s\r\n", m_device_info.fConnected ? L"true" : L"false");
-					wprintf(L"[LpmsBBluetooth] Authenticated: %s\r\n", m_device_info.fAuthenticated ? L"true" : L"false");
-					wprintf(L"[LpmsBBluetooth] Remembered: %s\r\n", m_device_info.fRemembered ? L"true" : L"false");				
+					wprintf(L"[LpemgBluetooth] Class: 0x%08x\r\n", m_device_info.ulClassofDevice);
+					wprintf(L"[LpemgBluetooth] Connected: %s\r\n", m_device_info.fConnected ? L"true" : L"false");
+					wprintf(L"[LpemgBluetooth] Authenticated: %s\r\n", m_device_info.fAuthenticated ? L"true" : L"false");
+					wprintf(L"[LpemgBluetooth] Remembered: %s\r\n", m_device_info.fRemembered ? L"true" : L"false");				
 					
 					sprintf(addressString, "%02X:%02X:%02X:%02X:%02X:%02X", 
 						m_device_info.Address.rgBytes[5], m_device_info.Address.rgBytes[4], 
 						m_device_info.Address.rgBytes[3], m_device_info.Address.rgBytes[2], 
 						m_device_info.Address.rgBytes[1], m_device_info.Address.rgBytes[0]);
 
-					if ((m_device_info.szName[0] == 'L' && 
-						m_device_info.szName[1] == 'P' && 
-						m_device_info.szName[2] == 'M' && 
-						m_device_info.szName[3] == 'S') ||
-						(m_device_info.szName[0] == 'L' && 
+					if (m_device_info.szName[0] == 'L' && 
 						m_device_info.szName[1] == 'P' && 
 						m_device_info.szName[2] == 'E' && 
 						m_device_info.szName[3] == 'M' &&
-						m_device_info.szName[4] == 'G')) {
+						m_device_info.szName[4] == 'G') {
 						string s(addressString);
 						
 						int fD = 0;
@@ -119,9 +140,9 @@ void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
 						}
 						
 						if (fD == 0) {
-							deviceList->push_back(DeviceListItem(s.c_str(), DEVICE_LPMS_B));
+							deviceList->push_back(DeviceListItem(s.c_str(), DEVICE_LPEMG_B));
 
-							std::cout << "[LpmsBBluetooth] Discovered device: " << s << endl;
+							std::cout << "[LpemgBluetooth] Discovered device: " << s << endl;
 						}
 					}
 
@@ -150,18 +171,17 @@ void LpmsBBluetooth::listDevices(LpmsDeviceList *deviceList)
 	}
 }
 
-void LpmsBBluetooth::stopDiscovery(void)
+void LpemgBluetooth::stopDiscovery(void)
 {
 	isStopDiscovery = true;	
 }
 
-bool LpmsBBluetooth::connect(string deviceId)
+bool LpemgBluetooth::connect(string deviceId)
 {
 	this->bluetoothAddress = deviceId;
     SOCKADDR_BTH sa = { 0 };
-	
+	unsigned long iMode = 1;
     int sa_len = sizeof(sa);
-
     WORD wVersionRequested;
     WSADATA wsaData;
     wVersionRequested = MAKEWORD(2, 0);
@@ -169,7 +189,7 @@ bool LpmsBBluetooth::connect(string deviceId)
 	if (WSAStartup(wVersionRequested, &wsaData) != 0) {
 		isOpen = false;
 
-		std::cout << "[LpmsBBluetooth] Error during WSA Startup." << std::endl;
+		std::cout << "[LpemgBluetooth] Error during WSA Startup." << std::endl;
 
 		return false;
     }
@@ -179,7 +199,7 @@ bool LpmsBBluetooth::connect(string deviceId)
 		WSACleanup();
 		isOpen = false;
 
-		std::cout << "[LpmsBBluetooth] Couldn't get Bluetooth address." << std::endl;
+		std::cout << "[LpemgBluetooth] Couldn't get Bluetooth address." << std::endl;
 
 		return false;
     }
@@ -188,7 +208,7 @@ bool LpmsBBluetooth::connect(string deviceId)
     if( SOCKET_ERROR == sock ) {
 		close();
 
-		std::cout << "[LpmsBBluetooth] Couldn't create socket." << std::endl;
+		std::cout << "[LpemgBluetooth] Couldn't create socket." << std::endl;
 
 		return false;
     }
@@ -199,15 +219,14 @@ bool LpmsBBluetooth::connect(string deviceId)
     if (SOCKET_ERROR == e) {
 		close();	
 
-		std::cout << "[LpmsBBluetooth] Couldn't connect." << std::endl;
+		std::cout << "[LpemgBluetooth] Couldn't connect." << std::endl;
 
 		return false;
     }
 	
-	unsigned long iMode = 1;
 	ioctlsocket(sock, FIONBIO, &iMode);
 	
-	std::cout << "[LpmsBBluetooth] Connected!" << std::endl;	
+	std::cout << "[LpemgBluetooth] Connected!" << std::endl;	
 	
 	mm.reset();
 	
@@ -239,7 +258,7 @@ bool LpmsBBluetooth::connect(string deviceId)
 	return true;
 }
 
-void LpmsBBluetooth::close(void)
+void LpemgBluetooth::close(void)
 {
 	// if (isOpen == false) return;
 
@@ -251,7 +270,7 @@ void LpmsBBluetooth::close(void)
 	closesocket(sock);
 }	
 
-bool LpmsBBluetooth::read(char *rxBuffer, unsigned long *bytesReceived) 
+bool LpemgBluetooth::read(char *rxBuffer, unsigned long *bytesReceived) 
 {
 	float timeoutT;
 	int n;
@@ -269,7 +288,7 @@ bool LpmsBBluetooth::read(char *rxBuffer, unsigned long *bytesReceived)
 	}
 	
 	if (timeoutT > 10.0f) {
-		std::cout << "[LpmsBBluetooth] Bluetooth timeout" << std::endl;
+		std::cout << "[LpemgBluetooth] Bluetooth timeout" << std::endl;
 		
 		shutdown(sock, SD_SEND);
 		closesocket(sock);
@@ -282,7 +301,7 @@ bool LpmsBBluetooth::read(char *rxBuffer, unsigned long *bytesReceived)
 	return true;
 }
 
-bool LpmsBBluetooth::write(char *txBuffer, unsigned bufferLength)
+bool LpemgBluetooth::write(char *txBuffer, unsigned bufferLength)
 {
 	if (send(sock, txBuffer, bufferLength, 0) == SOCKET_ERROR) {
 		close();
@@ -293,7 +312,7 @@ bool LpmsBBluetooth::write(char *txBuffer, unsigned bufferLength)
 	return true;
 }
 
-bool LpmsBBluetooth::sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data)
+bool LpemgBluetooth::sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data)
 {
 	char txData[1024];
 	unsigned int txLrcCheck;
@@ -332,7 +351,7 @@ bool LpmsBBluetooth::sendModbusData(unsigned address, unsigned function, unsigne
 	return false;
 }
 
-bool LpmsBBluetooth::parseModbusByte(void)
+bool LpemgBluetooth::parseModbusByte(void)
 {
 	unsigned char b;
 
@@ -396,7 +415,7 @@ bool LpmsBBluetooth::parseModbusByte(void)
 			if (lrcReceived == lrcCheck) {
 				parseFunction();
 			} else {
-				std::cout << "[LpmsBBluetooth] Checksum fail in data packet" << std::endl;
+				std::cout << "[LpemgBluetooth] Checksum fail in data packet" << std::endl;
 			}
 			
 			rxState = PACKET_END;
@@ -412,7 +431,7 @@ bool LpmsBBluetooth::parseModbusByte(void)
 	return true;
 }
 
-bool LpmsBBluetooth::pollData(void) 
+bool LpemgBluetooth::pollData(void) 
 {
 	unsigned long bytesReceived;
 	char rxBuffer[1024];
@@ -432,7 +451,7 @@ bool LpmsBBluetooth::pollData(void)
 	return true;
 }
 
-bool LpmsBBluetooth::deviceStarted(void)
+bool LpemgBluetooth::deviceStarted(void)
 {
 	return isOpen;
 }

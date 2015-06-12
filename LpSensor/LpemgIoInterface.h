@@ -1,6 +1,7 @@
 /***********************************************************************
-** Copyright (c) LP-RESEARCH Inc.
-** Contact: LP-Research (info@lp-research.com)
+** Copyright (C) LP-Research
+** All rights reserved.
+** Contact: LP-Research (klaus@lp-research.com)
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -28,57 +29,128 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************/
 
-#ifndef LPMS_IO_INTERFACE
-#define LPMS_IO_INTERFACE
+#ifndef LPEMG_IO_INTERFACE
+#define LPEMG_IO_INTERFACE
 
-#include "LpIoBase.h"
-#include "ImuData.h"
+#include "EmgData.h"
 #include "CalibrationData.h"
 #include "LpmsRegisterDefinitions.h"
+#include "LpMatrix.h"
+#include "MicroMeasure.h"
+#include "LpIoBase.h"
+
+#ifdef _WIN32
+	#include "windows.h"
+#endif
+
+#include <iostream>
+#include <string>
+#include <queue>
+#include <fstream>
+
+#include <boost/cstdint.hpp>
 
 // Firmware packet length
 #define FIRMWARE_PACKET_LENGTH 256
 #define FIRMWARE_PACKET_LENGTH_LPMS_BLE 128
 
-class BleBlock {
-public:
-	int bleConnectionHandle;
-	int bleMeasurementHandle;
-	unsigned char txData[32];
-};
+// State machine definitions
+#define IDLE_STATE -1
+#define ACK_MAX_TIME 3000000
+#define MAX_UPLOAD_TIME 20000000
+#define MAX_COMMAND_RESEND 3
 
 // Class for low-level communication with LPMS devices
-class LpmsIoInterface : public LpIoBase {
+class LpemgIoInterface : public LpIoBase {
 public:
-	LpmsIoInterface(CalibrationData *configData); // Constructor
-	virtual ~LpmsIoInterface() { };	// Destructor
-	virtual bool connect(std::string deviceId); // Connects to device
-	virtual bool deviceStarted(void); // Checks if device is started
-	virtual void loadData(ImuData *data); // Retrieves current data
-	virtual bool pollData(void); // Polls data from device
-	virtual void close(void); // Closes data connection
-	virtual void startStreaming(void); // Starts streaming data from device
-	virtual void stopStreaming(void); // Stops streaming data from device
-	virtual long long getConnectWait(void); // Retrieves connection delay
-	virtual float getSamplingTime(void); // Retrieves sampling time
-	virtual int getGyroCalCycles(void); // Retrieves gyroscope calibration cycles 
-	bool checkState(void); // Checks current state machine state
-	CalibrationData *getConfigData(void); // Retrieves current configuration parameters
-	bool isCalibrating(void); // Checks if currently calibrating
-	bool isError(void);	// Checks if error has occurred
-	bool getUploadProgress(int *p); // Retrieves upload progress
-	virtual bool startUploadFirmware(std::string fn); // Starts uploading firmware
-	virtual bool startUploadIap(std::string fn); // Starts uploading IAP
-	bool setCommandMode(void); // Sets sensor to command mode
-	bool setStreamMode(void); // Sets sensor to streaming mode
-	bool setSleepMode(void); // Sets sensor to sleep mode
-	bool restoreFactoryValue(void); // Restores factory settings
-	bool setSelfTest(long v); // Starts self test
-	bool selectData(long p); // Selects data for transmission
-	bool setImuId(long v); // Sets IMU ID
-	bool setBaudrate(long v); // Sets baud rate
-	bool setStreamFrequency(long v); // Sets stream frequency
-	bool startGyrCalibration(void); // Starts gyroscope calibration
+	// Constructor
+	LpemgIoInterface(CalibrationData *configData);
+	
+	virtual ~LpemgIoInterface() { };	
+	
+	// Connects to device
+	virtual bool connect(std::string deviceId) ;
+	
+	// Checks if device is started
+	virtual bool deviceStarted(void);
+	
+	// Retrieves current data
+	virtual void loadData(EmgData *data);
+	
+	// Polls data from device
+	virtual bool pollData(void);
+	
+	// Closes data connection
+	virtual void close(void);
+	
+	// Starts streaming data from device
+	virtual void startStreaming(void);
+	
+	// Stops streaming data from device
+	virtual void stopStreaming(void);
+	
+	// Retrieves connection delay
+	virtual long long getConnectWait(void);
+	
+	// Retrieves sampling time
+	virtual float getSamplingTime(void);
+
+	// Checks current state machine state
+	bool checkState(void);
+	
+	// Retrieves current configuraton parameters
+	CalibrationData *getConfigData(void);
+	
+	// Checks if state machine is currently waiting for data
+	// bool isWaitForData(void);
+	
+	// Checks if state machine is currently waiting for acknowledge
+	// bool isWaitForAck(void);
+	
+	// Checks if currently calibrating
+	bool isCalibrating(void);
+	
+	// Checks if error has occurred
+	bool isError(void);	
+	
+	// Retrieves upload progress
+	bool getUploadProgress(int *p);
+	
+	// Starts uploading firmware
+	virtual bool startUploadFirmware(std::string fn);
+	
+	// Starts uploading IAP
+	virtual bool startUploadIap(std::string fn);
+	
+	// Sets sensor to command mode
+	bool setCommandMode(void);
+	
+	// Sets sensor to streaming mode
+	bool setStreamMode(void);
+	
+	// Sets sensor to sleep mode
+	bool setSleepMode(void);
+
+	// Restores factory settings
+	bool restoreFactoryValue(void);
+	
+	// Starts self test
+	bool setSelfTest(long v);
+	
+	// Selects data for transmission
+	bool selectData(long p);
+	
+	// Sets IMU ID
+	bool setImuId(long v);
+	
+	// Sets Baudrate
+	bool setBaudrate(long v);
+	
+	// Sets stream frequency
+	bool setStreamFrequency(long v);
+	
+	// Starts gyroscope calibration
+	bool startGyrCalibration(void);
 	bool startAccCalibration(void);
 	bool startMagCalibration(void);
 	bool setGyrRange(long v);
@@ -143,7 +215,7 @@ public:
 	bool setHardIronOffset(void);
 	bool setSoftIronMatrix(void);
 	bool enableGyrAutocalibration(long v);
-	void zeroImuData(ImuData* id);
+	void zeroData(EmgData* d);
 	bool setHardIronOffset(LpVector3f v);
 	bool setSoftIronMatrix(LpMatrix3x3f m);
 	bool setFieldEstimate(float v);
@@ -163,7 +235,6 @@ public:
 	bool getGyrTempCalBaseV(void);
 	bool getGyrTempCalBaseT(void);
 	long getConfigReg(void);
-	bool isNewData(void);
 	bool getRawDataLpFilter(void);
 	bool setRawDataLpFilter(int v);
 	bool getCanMapping(void);
@@ -179,7 +250,7 @@ public:
 	bool setCanChannelMode(int v);
 	bool setCanPointMode(int v);
 	bool setCanStartId(int v);
-	bool getLatestImuData(ImuData *id);
+	bool getLatestData(EmgData *d);
 	void clearRxBuffer(void);
 	void clearDataQueue(void);
 	void setTxRxImuId(int id);
@@ -197,18 +268,20 @@ public:
 	bool setUartBaudRate(int v);
 	bool setUartFormat(int v);
 	bool armTimestampReset(int v);
-	bool parseSensorData(void);
+	bool parseSensorData(void);	
 	
 protected:
 	// Virtual functions to be overwritten by hardware dependent modules -->
-	// virtual bool sendModbusData(unsigned address, unsigned function, unsigned length, unsigned char *data);
-	// virtual bool parseModbusByte(void);
-	
+	// virtual bool parseModbusByte(void);	
+
+	// Firmware / IAP upload handling
 	bool handleFirmwareFrame(void);
-	bool handleIAPFrame(void);	
+	bool handleIAPFrame(void);
 	bool parseFunction(void);
 	bool checkUploadTimeout(void);
 
+protected:
+	// Internal variables
 	int fieldMapPitch;
 	int fieldMapRoll;
 	int fieldMapYaw;
@@ -219,7 +292,7 @@ protected:
 	unsigned currentFunction;
 	unsigned currentLength;
 	std::queue<unsigned char> dataQueue;
-	std::queue<ImuData> imuDataQueue;
+	std::queue<EmgData> emgDataQueue;
 	std::vector<unsigned char> oneTx;
 	unsigned lrcIndex;
 	unsigned lrcCheck;
@@ -227,27 +300,27 @@ protected:
 	int rxState;
 	int rawDataIndex;	
 	bool waitForAck;
-	bool ackReceived;
-	int currentState;	
-	long ackTimeout;
+	bool dataReceived;
 	bool waitForData;
 	long dataTimeout;
 	int pCount;
-	ImuData imuData;
+	EmgData emgData;
 	CalibrationData *configData;
 	std::ifstream ifs;	
 	long configReg;
 	long lpmsStatus;
+	long imuId;
 	long long firmwarePages;
 	int currentMode;
 	float latestLatency;
 	MicroMeasure latencyTimer;
 	MicroMeasure uploadTimer;
-	MicroMeasure ackTimer;
 	bool newDataFlag;
 	float timestampOffset;
 	float currentTimestamp;
-
+	unsigned char cBuffer[512];
+	int resendI;
+	int cLength;
 	bool isOpen;
 	int firmwarePageSize;
 };	

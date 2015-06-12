@@ -42,30 +42,19 @@
 	#include "windows.h"
 #endif
 
-#include "ImuData.h"
+#include "EmgData.h"
 #include "MicroMeasure.h"
 #include "CalibrationData.h"
 #include "LpmsIoInterface.h"
-#include "LpmsSensorI.h"
+#include "LpemgSensorI.h"
 #include "LpMatrix.h"
-#include "LpMagnetometerCalibration.h"
-#include "CalcMisalignment.h"
-#include "GaitTracking.h"
-#include "LpMagnetometerMAlignment.h"
 
 #ifdef _WIN32
-	#include "LpmsCanIo.h"
-	#include "LpmsU.h"
-	#include "LpmsBBluetooth.h"	
-	#include "LpmsRS232.h"
-	#include "LpmsBle2.h"
+	#include "LpemgBluetooth.h"	
 #endif
 
 #ifdef __GNUC__
-	#include "LpmsCanIo.h"
-	#include "LpmsU.h"
-	#include "LpmsBBluetooth.h"	
-	#include "LpmsRS232.h"
+	#include "LpemgBluetooth.h"	
 #endif
 
 #define STATE_CONNECT 1
@@ -73,9 +62,29 @@
 #define STATE_WAIT_CONNECT 3
 #define STATE_MEASURE 4
 #define STATE_NONE 5
+#define STATE_WAIT_AFTER_CONNECT 8
+#define PREPARE_PARAMETER_ADJUSTMENT 27
+#define STATE_SET_CONFIG 53
+#define STATE_SET_OPENMAT_ID 24
+#define STATE_SET_SAMPLING_RATE 30
+#define STATE_WRITE_PARAMETERS 26
+#define STATE_CHECK_IAP_UPLOAD 18
+#define STATE_WAIT_IAP_WRITE 19
+#define STATE_UPLOAD_IAP 20
+#define STATE_CHECK_FIRMWARE_UPLOAD 21
+#define STATE_WAIT_FIRMWARE_WRITE 22
+#define STATE_UPLOAD_FIRMWARE 23
+#define STATE_SELECT_DATA 46
+#define STATE_SET_SELF_TEST 32
+#define STATE_GET_LATENCY 33
+#define STATE_RESET_TO_FACTORY_DEFAULTS 39
+#define STATE_RESET_TIMESTAMP 61
+#define STATE_ARM_TIMESTAMP_RESET 74
 
 #define C_STATE_GET_CONFIG 1
 #define C_STATE_GET_FIRMWARE_VERSION 16
+#define C_STATE_GOTO_COMMAND_MODE 9
+#define C_STATE_SETTINGS_DONE 5
 
 #define CAL_STATE_GET_STATUS 1
 #define CAL_STATE_WAIT_FINISH 2
@@ -91,7 +100,7 @@
 
 #define STREAM_N_PREPARE 100
 
-#define FIRMWARE_BACKUP_FILE "LpemgFirmwareBackupFile.txt"
+#define LPEMG_FIRMWARE_BACKUP_FILE "LpemgFirmwareBackupFile.txt"
 
 class LpemgSensor : public LpemgSensorI
 {
@@ -99,8 +108,8 @@ public:
 /***********************************************************************
 ** CONSTRUCTORS / DESTRUCTORS
 ***********************************************************************/
-	LpmsSensor(int deviceType, const char *deviceId);	
-	~LpmsSensor(void);
+	LpemgSensor(int deviceType, const char *deviceId);	
+	~LpemgSensor(void);
 
 /***********************************************************************
 ** POLL / UPDATE DATA FROM SENSORS
@@ -119,11 +128,10 @@ public:
 	int getSensorStatus(void);
 	void setConnectionStatus(int s);
 	int getConnectionStatus(void);
-	void setCurrentData(ImuData d);
-	void setCallback(LpmsCallback cb);
-	ImuData getCurrentData(void);
-	int hasImuData(void);
-	void getCalibratedSensorData(float g[3], float a[3], float b[3]);
+	void setCurrentData(EmgData d);
+	void setCallback(LpemgCallback cb);
+	EmgData getCurrentData(void);
+	int hasData(void);
 	bool isRunning(void);
 	void pause(void);
 	void run(void);
@@ -140,6 +148,8 @@ public:
 	void resetToFactorySettings(void);
 	long getStreamFrequency(void);
 	void armTimestampReset(void);
+	void setFps(float f);
+	float getFps(void);	
 
 /***********************************************************************
 ** FIRMWARE / IAP
@@ -165,7 +175,7 @@ public:
 	void stopSaveData(void);
 
 private:
-	LpmsIoInterface *bt;	
+	LpemgIoInterface *bt;	
 	std::string deviceId;
 	int state;
 	MicroMeasure lpmsTimer;
@@ -181,7 +191,7 @@ private:
 	float currentFps;
 	int sensorStatus;
 	int connectionStatus;
-	ImuData currentData;
+	EmgData currentData;
 	bool stopped;
 	bool paused;	
 	std::mutex sensorMutex;
@@ -194,14 +204,15 @@ private:
 	bool isFirmwareUpdated;
 	bool isSaveData;
 	std::ofstream *saveDataHandle;
-	LpmsCallback lpmsCallback;
+	LpemgCallback lpemgCallback;
 	bool callbackSet;
 	int saveDataPreroll;
 	float timestampOffset;
 	int frameCounterOffset;
 	int currentOffsetResetMethod;
 	bool runOnce;
-	std::queue<ImuData> dataQueue;
+	std::queue<EmgData> emgDataQueue;
+	float accLatency;
 }; 
 	
 #endif

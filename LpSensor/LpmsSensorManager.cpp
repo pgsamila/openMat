@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** Copyright (c) LP-RESEARCH Inc.
+** Contact: LP-Research (info@lp-research.com)
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -145,7 +144,9 @@ void LpmsSensorManager::run(void)
 {
 	MicroMeasure mm;
 
-	list<LpmsSensor*>::iterator i;	
+	list<LpmsSensor*>::iterator i;
+	list<LpemgSensor*>::iterator lpemgI;
+	
     bool bIsWindows7orLater = true;
 	float prevTimestamp = 0.0f;
 	int deviceType = 0;
@@ -167,12 +168,15 @@ void LpmsSensorManager::run(void)
 			lm.lock();
 			for (i = sensorList.begin(); i != sensorList.end(); i++) {
 				(*i)->pollData();
-			}	
+			}
+			
+			for (lpemgI = lpemgSensorList.begin(); lpemgI != lpemgSensorList.end(); lpemgI++) {
+				(*lpemgI)->pollData();
+			}			
 			
 #ifdef _WIN32
 			ce.poll();
 #endif
-			
 			lm.unlock();
 
 			if (mm.measure() > SENSOR_UPDATE_PERIOD) {			
@@ -182,6 +186,10 @@ void LpmsSensorManager::run(void)
 				for (i = sensorList.begin(); i != sensorList.end(); i++) {
 					(*i)->update();				
 				}
+				
+				for (lpemgI = lpemgSensorList.begin(); lpemgI != lpemgSensorList.end(); lpemgI++) {
+					(*lpemgI)->update();				
+				}				
 				lm.unlock();
 			}	
 		break;
@@ -225,6 +233,7 @@ bool compareOpenMatId(LpmsSensor *first, LpmsSensor *second)
 LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 {
 	LpmsSensor* sensor;
+	LpemgSensor* lpemgSensor;	
 		
 	lm.lock();
 	switch (mode) {
@@ -270,6 +279,11 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
 		((LpmsRS232 *)sensor->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
 		sensorList.push_back(sensor);
+	break;
+	
+	case DEVICE_LPEMG_B:
+		lpemgSensor = new LpemgSensor(DEVICE_LPEMG_B, deviceId);
+		lpemgSensorList.push_back(lpemgSensor);	
 	break;
 	}
 	

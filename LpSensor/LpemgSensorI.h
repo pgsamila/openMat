@@ -36,10 +36,10 @@
 #include <iostream>
 #include <fstream>
 
-#include "ImuData.h"
+#include "EmgData.h"
 #include "LpmsDefinitions.h"
 
-typedef void (*LpmsCallback)(ImuData d, const char* id);  
+typedef void (*LpemgCallback)(EmgData d, const char* id);  
 
 class LpemgSensorI
 {
@@ -47,7 +47,7 @@ public:
 /***********************************************************************
 ** CONSTRUCTORS / DESTRUCTORS
 ***********************************************************************/
-	~LpmsSensorI(void) { };
+	~LpemgSensorI(void) { };
 
 /***********************************************************************
 ** POLL / UPDATE DATA FROM SENSORS
@@ -66,11 +66,10 @@ public:
 	virtual int getSensorStatus(void) = 0;
 	virtual void setConnectionStatus(int s) = 0;
 	virtual int getConnectionStatus(void) = 0;
-	virtual void setCurrentData(ImuData d) = 0;
-	virtual void setCallback(LpmsCallback cb) = 0;
-	virtual ImuData getCurrentData(void) = 0;
-	virtual int hasImuData(void) = 0;
-	virtual void getCalibratedSensorData(float g[3], float a[3], float b[3]) = 0;
+	virtual void setCurrentData(EmgData d) = 0;
+	virtual void setCallback(LpemgCallback cb) = 0;
+	virtual EmgData getCurrentData(void) = 0;
+	virtual int hasData(void) = 0;
 	virtual bool isRunning(void) = 0;
 	virtual void pause(void) = 0;
 	virtual void run(void) = 0;
@@ -82,7 +81,6 @@ public:
 	virtual bool setConfigurationPrm(int parameterIndex, int *parameter) = 0;
 	virtual bool getConfigurationPrm(int parameterIndex, int* parameter) = 0;
 	virtual bool getConfigurationPrm(int parameterIndex, char* parameter) = 0;
-	virtual LpmsIoInterface *getIoInterface(void) = 0;
 	virtual void measureAvgLatency(void) = 0;
 	virtual void resetToFactorySettings(void) = 0;
 	virtual long getStreamFrequency(void) = 0;
@@ -110,6 +108,7 @@ public:
 	virtual void startSaveData(std::ofstream *saveDataHandle) = 0;
 	virtual void checkSaveData(void) = 0;
 	virtual void stopSaveData(void) = 0;
+};
 	
 #ifdef _WIN32
 	#ifdef DLL_EXPORT

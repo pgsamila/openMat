@@ -1,7 +1,6 @@
 /***********************************************************************
-** Copyright (C) LP-Research
-** All rights reserved.
-** Contact: LP-Research (klaus@lp-research.com)
+** Copyright (c) LP-RESEARCH Inc.
+** Contact: LP-Research (info@lp-research.com)
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **
@@ -34,6 +33,7 @@
 
 #include "LpmsSensorManagerI.h"
 #include "LpmsSensor.h"
+#include "LpemgSensor.h"
 #include "CalibrationData.h"
 #include "LpmsIoInterface.h"
 #include "DeviceListItem.h"
@@ -115,7 +115,9 @@ public:
 	void setRs232Baudrate(int i);
 
 private:	
-	list<LpmsSensor*> sensorList;	
+	list<LpmsSensor*> sensorList;
+	list<LpemgSensor*> lpemgSensorList;
+	
 	bool stopped;
 	std::string configurationFile;
 	LpmsDeviceList deviceList;

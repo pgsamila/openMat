@@ -73,7 +73,7 @@ const float pi = 3.141592f;
 	switch (deviceType) {
 	
 #ifdef ANDROID
-	case DEVICE_LPMS_B:	
+	case DEVICE_LPEMG_B:	
 		bt = new AndroidBluetooth(&(this->configData), thisVm, bluetoothAdapter);
 		LOGV("[LpemgSensor] Sensor initialized\n");
 		break;
@@ -81,18 +81,18 @@ const float pi = 3.141592f;
 	
 #ifdef _WIN32
 	case DEVICE_LPEMG_B:
-		bt = new LpmsBBluetooth(&(this->configData));
+		bt = new LpemgBluetooth(&(this->configData));
 	break;
 #endif
 
 #ifdef __GNUC__
 	case DEVICE_LPEMG_B:
-		bt = new LpmsBBluetooth(&(this->configData));
+		bt = new LpemgBluetooth(&(this->configData));
 	break;
 #endif
 	
 	default:
-		bt = new LpmsIoInterface(&(this->configData));
+		bt = new LpemgIoInterface(&(this->configData));
 		break;
 	}	
 	
@@ -115,7 +115,7 @@ const float pi = 3.141592f;
 	frameCounterOffset = 0;
 	currentOffsetResetMethod = 2;
 	
-	bt->zeroImuData(&currentData);
+	bt->zeroData(&currentData);
 }
 
 LpemgSensor::~LpemgSensor(void)
@@ -124,7 +124,6 @@ LpemgSensor::~LpemgSensor(void)
 
 	delete bt;
 }
-
 
 /***********************************************************************
 ** POLL / UPDATE DATA FROM SENSORS
@@ -148,11 +147,8 @@ void LpemgSensor::assertConnected(void)
 
 void LpemgSensor::update(void)
 {
-	ImuData imuData;
+	EmgData emgData;
 	int p;
-	int pa[64];
-	LpVector4f q;
-	LpMatrix3x3f m;
 		
 	if (stopped == true) return;	
 		
@@ -230,9 +226,7 @@ void LpemgSensor::update(void)
 				LOGV("[LpemgSensor] Done reading configuration\n");			
 			
 				lpmsTimer.reset();
-				statusTimer.reset();				
-				
-				newFieldMap = true;		
+				statusTimer.reset();
 					
 				bt->startStreaming();
 				
@@ -246,7 +240,7 @@ void LpemgSensor::update(void)
 				configData.print();
 				
 				if (isFirmwareUpdated == true) {
-					loadCalibrationData(FIRMWARE_BACKUP_FILE);
+					loadCalibrationData(LPEMG_FIRMWARE_BACKUP_FILE);
 					isFirmwareUpdated = false;
 				}
 			break;
@@ -283,30 +277,26 @@ void LpemgSensor::update(void)
 		}
 				
 		// Load current data from hardware and calculate rotation matrix and Euler angle
-		if (bt->getLatestImuData(&imuData) == false) break;
+		if (bt->getLatestData(&emgData) == false) break;
 		
 		frameTime = lpmsTimer.measure() / 1000.0f;	
 		lpmsTimer.reset();	
 		setFps(frameTime);		
 		
-		// Add frame number timestamp and IMU ID to current ImuData
+		// Add frame number timestamp and IMU ID to current EmgData
 		++frameNo;
-		imuData.frameCount = frameNo;	
-		imuData.openMatId = configData.openMatId;				
+		emgData.frameCount = frameNo;	
+		emgData.openMatId = configData.openMatId;				
 
 		setConnectionStatus(SENSOR_CONNECTION_CONNECTED);
-		if (isMagCalibrationEnabled == true) {
-			setSensorStatus(SENSOR_STATUS_CALIBRATING);
+		if (paused == false) {
+			setSensorStatus(SENSOR_STATUS_RUNNING);
 		} else {
-			if (paused == false) {
-				setSensorStatus(SENSOR_STATUS_RUNNING);
-			} else {
-				setSensorStatus(SENSOR_STATUS_PAUSED);
-			}
+			setSensorStatus(SENSOR_STATUS_PAUSED);
 		}
 		
 		// Sets current data
-		setCurrentData(imuData);
+		setCurrentData(emgData);
 		
 		// Checks, if data saving is active
 		checkSaveData();
@@ -329,7 +319,7 @@ void LpemgSensor::update(void)
 			configData.getParameter(PRM_OPENMAT_ID, &p);
 			bt->setImuId(p);
 			LOGV("[LpemgSensor] Set OpenMAT ID\n");
-			state = STATE_SET_CAN_BAUDRATE;
+			state = STATE_SET_SAMPLING_RATE;
 		}
 	break;
 
@@ -339,7 +329,7 @@ void LpemgSensor::update(void)
 			configData.getParameter(PRM_SAMPLING_RATE, &p);
 			bt->setStreamFrequency(p);
 			LOGV("[LpemgSensor] Set sampling rate\n");
-			state = STATE_SET_HARD_IRON_OFFSET;
+			state = STATE_SELECT_DATA;
 		}
 	break;	
 	
@@ -349,7 +339,9 @@ void LpemgSensor::update(void)
 			configData.getParameter(PRM_SELECT_DATA, &p);
 			bt->selectData(p);
 			printf("[LpemgSensor] Select data 0x%x\n", p);
-			state = STATE_SELECT_UART_BAUDRATE;
+			
+			state = STATE_GET_SETTINGS;
+			getConfigState = C_STATE_GET_CONFIG;
 		}
 	break;
 		
@@ -498,7 +490,6 @@ void LpemgSensor::update(void)
 	}
 }
 
-
 /***********************************************************************
 ** DIRECT GET / SET DEVICE PARAMETERS
 ***********************************************************************/
@@ -545,48 +536,48 @@ int LpemgSensor::getConnectionStatus(void)
 	return connectionStatus;
 }
 
-void LpemgSensor::setCurrentData(ImuData d)
+void LpemgSensor::setCurrentData(EmgData d)
 {
 	sensorMutex.lock();
 	
 	currentData = d;
 	
-	if (dataQueue.size() < 64) { 
-		dataQueue.push(d);
+	if (emgDataQueue.size() < 64) { 
+		emgDataQueue.push(d);
 	} else {		
-		dataQueue.pop();
-		dataQueue.push(d);
+		emgDataQueue.pop();
+		emgDataQueue.push(d);
 	}
 	
 	if (callbackSet == true) {
-		lpmsCallback(d, deviceId.c_str());
+		lpemgCallback(d, deviceId.c_str());
 	}
 	
 	sensorMutex.unlock();	
 }
 
-void LpemgSensor::setCallback(LpmsCallback cb)
+void LpemgSensor::setCallback(LpemgCallback cb)
 {
-	lpmsCallback = cb;
+	lpemgCallback = cb;
 	callbackSet = true;
 }
 
-int LpemgSensor::hasImuData(void)
+int LpemgSensor::hasData(void)
 {
-	return dataQueue.size();
+	return emgDataQueue.size();
 }
 
-ImuData LpemgSensor::getCurrentData(void)
+EmgData LpemgSensor::getCurrentData(void)
 {
-	ImuData d;
+	EmgData d;
 	
-	bt->zeroImuData(&d);
+	bt->zeroData(&d);
 	
 	sensorMutex.lock();
 	
-	if (dataQueue.size() > 0) {
-		d = dataQueue.front();
-		dataQueue.pop();
+	if (emgDataQueue.size() > 0) {
+		d = emgDataQueue.front();
+		emgDataQueue.pop();
 	} else {
 		d = currentData;
 	}
@@ -594,15 +585,6 @@ ImuData LpemgSensor::getCurrentData(void)
 	sensorMutex.unlock();
 
 	return d;
-}
-
-void LpemgSensor::getCalibratedSensorData(float g[3], float a[3], float b[3])
-{
-	sensorMutex.lock();
-	for (int i=0; i<3; i++) g[i] = currentData.g[i];
-	for (int i=0; i<3; i++) a[i] = currentData.a[i];
-	for (int i=0; i<3; i++) b[i] = currentData.b[i];
-	sensorMutex.unlock();
 }
 
 bool LpemgSensor::isRunning(void)
@@ -738,6 +720,15 @@ long LpemgSensor::getStreamFrequency(void)
 	return i;
 }
 
+void LpemgSensor::setFps(float f) 
+{	
+	currentFps = f;
+}
+
+float LpemgSensor::getFps(void) 
+{	
+	return currentFps;
+}
 
 /***********************************************************************
 ** FIRMWARE / IAP
@@ -746,7 +737,7 @@ bool LpemgSensor::uploadFirmware(const char *fn)
 {
 	if (connectionStatus != SENSOR_CONNECTION_CONNECTED) return false;
 	
-	saveCalibrationData(FIRMWARE_BACKUP_FILE);
+	saveCalibrationData(LPEMG_FIRMWARE_BACKUP_FILE);
 	
 	state = PREPARE_PARAMETER_ADJUSTMENT;	
 	getConfigState = STATE_UPLOAD_FIRMWARE;
@@ -789,7 +780,6 @@ int LpemgSensor::getUploadProgress(int *p)
 
 	return 1;
 }
-
 
 /***********************************************************************
 ** CALIBRATION
@@ -862,16 +852,16 @@ void LpemgSensor::checkSaveData(void)
 		return;
 	} else if (saveDataPreroll == 1) {
 		--saveDataPreroll;
-		timestampOffset = currentData.timeStamp;
+		timestampOffset = currentData.t;
 		frameCounterOffset = currentData.frameCount;	
 	}
 	
 	// currentTimestamp = (currentData.timeStamp-timestampOffset);
-	currentTimestamp = currentData.timeStamp;
+	currentTimestamp = currentData.t;
 
 	sensorMutex.lock();
 	if (isSaveData == true && saveDataHandle->is_open() == true) {
-		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(6) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.aRaw[0] << ", " << currentData.aRaw[1] << ", " << currentData.aRaw[2] << ", " << currentData.gRaw[0] << ", " << currentData.gRaw[1] << ", " << currentData.gRaw[2] << ", " << currentData.bRaw[0] << ", " << currentData.bRaw[1] << ", " << currentData.bRaw[2] << ", " << currentData.r[0] << ", " << currentData.r[1] << ", " << currentData.r[2] << ", " << currentData.q[0] << ", " << currentData.q[1] << ", " << currentData.q[2] << ", " << currentData.q[3] << ", " << currentData.linAcc[0] << ", " << currentData.linAcc[1] << ", " << currentData.linAcc[2] << ", " << currentData.pressure << ", " << currentData.altitude << ", " << currentData.temperature << ", " << currentData.hm.yHeave << std::endl;
+		*saveDataHandle << currentData.openMatId << ", " << std::fixed << std::setprecision(6) << currentTimestamp << ", " << (currentData.frameCount-frameCounterOffset) << ", " << currentData.u << std::endl;
 	}
 	sensorMutex.unlock();
 }

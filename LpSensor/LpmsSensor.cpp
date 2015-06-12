@@ -1,7 +1,6 @@
 /***********************************************************************
-** (c) LP-RESEARCH Inc.
-** All rights reserved
-** Contact: info@lp-research.com
+** Copyright (c) LP-RESEARCH Inc.
+** Contact: LP-Research (info@lp-research.com)
 **
 ** This file is part of the Open Motion Analysis Toolkit (OpenMAT).
 **

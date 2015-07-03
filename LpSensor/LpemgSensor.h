@@ -130,7 +130,7 @@ public:
 	int getConnectionStatus(void);
 	void setCurrentData(EmgData d);
 	void setCallback(LpemgCallback cb);
-	EmgData getCurrentData(void);
+	void getSensorData(SensorData *d);
 	int hasData(void);
 	bool isRunning(void);
 	void pause(void);

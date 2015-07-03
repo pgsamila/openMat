@@ -144,8 +144,7 @@ void LpmsSensorManager::run(void)
 {
 	MicroMeasure mm;
 
-	list<LpmsSensor*>::iterator i;
-	list<LpemgSensor*>::iterator lpemgI;
+	list<LpSensorBaseI*>::iterator i;
 	
     bool bIsWindows7orLater = true;
 	float prevTimestamp = 0.0f;
@@ -168,11 +167,7 @@ void LpmsSensorManager::run(void)
 			lm.lock();
 			for (i = sensorList.begin(); i != sensorList.end(); i++) {
 				(*i)->pollData();
-			}
-			
-			for (lpemgI = lpemgSensorList.begin(); lpemgI != lpemgSensorList.end(); lpemgI++) {
-				(*lpemgI)->pollData();
-			}			
+			}		
 			
 #ifdef _WIN32
 			ce.poll();
@@ -185,11 +180,7 @@ void LpmsSensorManager::run(void)
 				lm.lock();
 				for (i = sensorList.begin(); i != sensorList.end(); i++) {
 					(*i)->update();				
-				}
-				
-				for (lpemgI = lpemgSensorList.begin(); lpemgI != lpemgSensorList.end(); lpemgI++) {
-					(*lpemgI)->update();				
-				}				
+				}			
 				lm.unlock();
 			}	
 		break;
@@ -230,19 +221,17 @@ bool compareOpenMatId(LpmsSensor *first, LpmsSensor *second)
 	return false;
 }
 
-LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
+LpSensorBaseI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 {
-	LpmsSensor* sensor;
-	LpemgSensor* lpemgSensor;	
-		
+	LpSensorBaseI* sensor;
+	
 	lm.lock();
 	switch (mode) {
-	case DEVICE_LPMS_B:	
-	
+	case DEVICE_LPMS_B:		
 #ifndef ANDROID
-		sensor = new LpmsSensor(DEVICE_LPMS_B, deviceId);
+		sensor = (LpSensorBaseI*) new LpmsSensor(DEVICE_LPMS_B, deviceId);
 #else
-		sensor = new LpmsSensor(DEVICE_LPMS_B, deviceId, thisVm, bluetoothAdapter);
+		sensor = (LpSensorBaseI*) new LpmsSensor(DEVICE_LPMS_B, deviceId, thisVm, bluetoothAdapter);
 		
 		LOGV("[LpmsSensorManager] Sensor added\n");
 #endif
@@ -251,57 +240,59 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 	break;
 		
 	case DEVICE_LPMS_BLE:	
-		sensor = new LpmsSensor(DEVICE_LPMS_BLE, deviceId);
+		sensor = (LpSensorBaseI*) new LpmsSensor(DEVICE_LPMS_BLE, deviceId);
 		sensorList.push_back(sensor);
 		
 #ifdef _WIN32	
-		((LpmsBle *)sensor->getIoInterface())->deviceId = deviceId;
-		be.addSensor((LpmsBle *)sensor->getIoInterface());
+		((LpmsBle *)((LpmsSensor*)sensor)->getIoInterface())->deviceId = deviceId;
+		be.addSensor((LpmsBle *)((LpmsSensor*)sensor)->getIoInterface());
 #endif
 	break;		
 		
 	case DEVICE_LPMS_C:		
-		sensor = new LpmsSensor(DEVICE_LPMS_C, deviceId);
+		sensor = (LpSensorBaseI*) new LpmsSensor(DEVICE_LPMS_C, deviceId);
 		
 #ifdef _WIN32		
-		ce.addSensor((LpmsCanIo *)sensor->getIoInterface());
+		ce.addSensor((LpmsCanIo *)((LpmsSensor*)sensor)->getIoInterface());
 #endif
 
 		sensorList.push_back(sensor);
 	break;		
 		
 	case DEVICE_LPMS_U:	
-		sensor = new LpmsSensor(DEVICE_LPMS_U, deviceId);
+		sensor = (LpSensorBaseI*) new LpmsSensor(DEVICE_LPMS_U, deviceId);
 		sensorList.push_back(sensor);
 	break;
 	
 	case DEVICE_LPMS_RS232:	
-		sensor = new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
-		((LpmsRS232 *)sensor->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
+		sensor = (LpSensorBaseI*) new LpmsSensor(DEVICE_LPMS_RS232, deviceId);
+		((LpmsRS232 *)((LpmsSensor*)sensor)->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
 		sensorList.push_back(sensor);
 	break;
 	
 	case DEVICE_LPEMG_B:
-		lpemgSensor = new LpemgSensor(DEVICE_LPEMG_B, deviceId);
-		lpemgSensorList.push_back(lpemgSensor);	
+		LOGV("[LpmsSensorManager] Adding LPEMG-B sensor\n");
+	
+		sensor = (LpSensorBaseI*) new LpemgSensor(DEVICE_LPEMG_B, deviceId);
+		sensorList.push_back(sensor);	
 	break;
 	}
 	
 	lm.unlock();
 	
-	return (LpmsSensorI*) sensor;
+	return sensor;
 }
 
-void LpmsSensorManager::removeSensor(LpmsSensorI *sensor)
+void LpmsSensorManager::removeSensor(LpSensorBaseI *sensor)
 {
 	sensor->close();
 
 	lm.lock();	
-	sensorList.remove((LpmsSensor*) sensor);
+	sensorList.remove(sensor);
 		
 #ifdef _WIN32
-	ce.removeSensor((LpmsCanIo*) ((LpmsSensor*) sensor)->getIoInterface());
-	be.removeSensor((LpmsBle*) ((LpmsSensor*) sensor)->getIoInterface());	
+	ce.removeSensor((LpmsCanIo*)((LpmsSensor*) sensor)->getIoInterface());
+	be.removeSensor((LpmsBle*)((LpmsSensor*) sensor)->getIoInterface());	
 #endif
 	
 	delete sensor;
@@ -320,7 +311,7 @@ bool LpmsSensorManager::isRecordingActive(void)
 
 bool LpmsSensorManager::saveSensorData(const char* fn)
 {
-	list<LpmsSensor*>::iterator i;
+	list<LpSensorBaseI*>::iterator i;
 
 	if (isRecording == true) return false;	
 	
@@ -349,7 +340,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 
 void LpmsSensorManager::stopSaveSensorData(void)
 {
-	list<LpmsSensor*>::iterator i;
+	list<LpSensorBaseI*>::iterator i;
 
 	if (isRecording == false) return;
 	

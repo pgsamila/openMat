@@ -165,7 +165,7 @@ void initSensorManager(void)
 		lpFilterParam.useGyrAutoCal = 0;
 	}
 	
-	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
+	//if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
 	
 	f2int.u32_val = gReg.data[LPMS_ACC_GAIN_X];
 	calibrationData.accGain.data[0] = f2int.float_val;
@@ -202,7 +202,7 @@ void initSensorManager(void)
 	
 	calibrationData.accRange = gReg.data[LPMS_ACC_RANGE];
 	
-	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
+	//if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
 
 	f2int.u32_val = gReg.data[LPMS_MAG_GAIN_X];
 	calibrationData.magGain.data[0] = f2int.float_val;
@@ -246,7 +246,7 @@ void initSensorManager(void)
 	
 	lpFilterParam.magInclination = conItoF(gReg.data[LPMS_MAG_FIELD_INC]);
 	
-	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
+	//if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
 	
 	lpFilterParam.magFieldEstimate = conItoF(gReg.data[LPMS_MAG_FIELD_EST]);
 
@@ -324,9 +324,9 @@ void updateSensorData(void)
 			lpFilterParam.accRef, lpFilterParam.magRef,
 			T); */
 	} else {
-		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
-		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
-		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
+		//getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
+		//getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
+		//getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
 #ifdef USE_CANBUS_INTERFACE
 		canHeartbeatTime += lpmsMeasurementPeriod;
 #endif
@@ -784,7 +784,7 @@ void stopRefCalibration(void)
 uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
-    	uint8_t sl;
+    uint8_t sl;
 	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
 
 	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;

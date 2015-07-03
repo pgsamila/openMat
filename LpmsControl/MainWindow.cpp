@@ -559,10 +559,10 @@ void MainWindow::timerUpdate(void)
 			checkOptionalFeatures((*it)->getSensor());
 			
 			if (mode == MODE_THREED_WIN && ((cubeWindowContainer->getMode() == CUBE_VIEW_MODE_2) || (cubeWindowContainer->getMode() == CUBE_VIEW_MODE_4))) {
-				if ((*it)->getSensor()->hasImuData() == 0) break;
+				if ((*it)->getSensor()->hasData() == 0) break;
 				
-				while ((*it)->getSensor()->hasImuData() > 0) {
-					imuData = (*it)->getSensor()->getCurrentData();	
+				while ((*it)->getSensor()->hasData() > 0) {
+					(*it)->getSensor()->getSensorData(&imuData);	
 				}
 				
 				cubeWindowContainer->getSelectedCube()->updateData(imuData);			
@@ -580,10 +580,10 @@ void MainWindow::timerUpdate(void)
 					}
 				}
 #else
-				if ((*it)->getSensor()->hasImuData() == 0) break;
+				if ((*it)->getSensor()->hasData() == 0) break;
 				
-				while ((*it)->getSensor()->hasImuData() > 0) {
-					imuData = (*it)->getSensor()->getCurrentData();	
+				while ((*it)->getSensor()->hasData() > 0) {
+					(*it)->getSensor()->getSensorData(&imuData);
 				} 
 #endif
 				
@@ -599,16 +599,16 @@ void MainWindow::timerUpdate(void)
 				break;
 				
 				case MODE_FIELDMAP_WIN:
-					if ((*it)->getSensor()->hasNewFieldMap() == true) {
-						(*it)->getSensor()->getFieldMap((*it)->fieldMap);
-						(*it)->getSensor()->getHardIronOffset((*it)->hardIronOffset);
-						(*it)->getSensor()->getSoftIronMatrix((*it)->softIronMatrix, &((*it)->fieldRadius));
-						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius, imuData.b);
+					if (((LpmsSensorI*)(*it)->getSensor())->hasNewFieldMap() == true) {
+						((LpmsSensorI*)(*it)->getSensor())->getFieldMap((*it)->fieldMap);
+						((LpmsSensorI*)(*it)->getSensor())->getHardIronOffset((*it)->hardIronOffset);
+						((LpmsSensorI*)(*it)->getSensor())->getSoftIronMatrix((*it)->softIronMatrix, &(*it)->fieldRadius);
+						fieldMapWindow->updateFieldMap((*it)->fieldMap, (*it)->hardIronOffset, (*it)->softIronMatrix, (*it)->fieldRadius, imuData.b); // <- TODO: implement proper data exchange
 					}
 				
 					char id[64];
-					(*it)->getSensor()->getDeviceId(id);
-					fieldMapWindow->updateCurrentField((*it)->getSensor()->getFieldNoise(), imuData.b);
+					((LpmsSensorI*)(*it)->getSensor())->getDeviceId(id);
+					fieldMapWindow->updateCurrentField(((LpmsSensorI*)(*it)->getSensor())->getFieldNoise(), imuData.b);
 				break;
 				}
 			} 
@@ -703,7 +703,7 @@ void MainWindow::updateCurrentLpms(QTreeWidgetItem *current, QTreeWidgetItem *pr
 	graphWindow->clearGraphs();
 }
 
-void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
+void MainWindow::checkOptionalFeatures(LpSensorBaseI* sensor)
 {
 	int i;
 	
@@ -719,8 +719,6 @@ void MainWindow::checkOptionalFeatures(LpmsSensorI* sensor)
 		connect(heaveMotionGraphAction, SIGNAL(triggered()), this, SLOT(selectHeaveMotionWindow()));
 	}
 }	
-
-
 
 void MainWindow::openSensor(void)
 {
@@ -755,10 +753,12 @@ void MainWindow::openSensor(void)
 	stopMeasurement();
 	graphWindow->clearGraphs();	
 	
-	LpmsSensorI *lpmsDevice = sm->addSensor(mode, deviceAddress.c_str());
+	// LpmsSensorI *lpmsDevice = sm->addSensor(mode, deviceAddress.c_str());
+	LpSensorBaseI* lpmsDevice = sm->addSensor(mode, deviceAddress.c_str());
+	
 	currentLpms = new SensorGuiContainer(lpmsDevice, lpmsTree);
 
-	mbcom.addSensor(lpmsDevice);
+	// mbcom.addSensor(lpmsDevice);
 	
 	currentLpms->updateData();
 
@@ -786,7 +786,7 @@ void MainWindow::closeSensor(void)
 	if (currentLpms) {
 		SensorGuiContainer *temp = currentLpms;
 
-		mbcom.removeSensor(temp->getSensor());
+		// mbcom.removeSensor(temp->getSensor());
 		
 		sm->removeSensor(temp->getSensor());
 		lpmsList.remove(temp);
@@ -874,10 +874,10 @@ void MainWindow::setOffset(void)
 	
 	if (targetCombo->currentIndex() == 0) {		
 		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-			(*it)->getSensor()->setOrientationOffset(rm);
+			((LpmsSensorI*)(*it)->getSensor())->setOrientationOffset(rm);
 		}
 	} else {
-		currentLpms->getSensor()->setOrientationOffset(rm);
+		((LpmsSensorI*)currentLpms->getSensor())->setOrientationOffset(rm);
 	}
 }
 
@@ -889,10 +889,10 @@ void MainWindow::resetOffset(void)
 	
 	if (targetCombo->currentIndex() == 0) {		
 		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-			(*it)->getSensor()->resetOrientationOffset();
+			((LpmsSensorI*)(*it)->getSensor())->resetOrientationOffset();
 		}
 	} else {
-		currentLpms->getSensor()->resetOrientationOffset();
+		((LpmsSensorI*)currentLpms->getSensor())->resetOrientationOffset();
 	}	
 }
 
@@ -904,10 +904,10 @@ void MainWindow::resetHeading(void)
 	
 	if (targetCombo->currentIndex() == 0) {	
 		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-			(*it)->getSensor()->startMagReferenceCal();
+			((LpmsSensorI*)(*it)->getSensor())->startMagReferenceCal();
 		}
 	} else {
-		currentLpms->getSensor()->startMagReferenceCal();
+		((LpmsSensorI*)currentLpms->getSensor())->startMagReferenceCal();
 	}
 }
 
@@ -919,10 +919,10 @@ void MainWindow::armTimestampReset(void)
 	
 	if (targetCombo->currentIndex() == 0) {	
 		for (it = lpmsList.begin(); it != lpmsList.end(); ++it) {	
-			(*it)->getSensor()->armTimestampReset();
+			((LpmsSensorI*)(*it)->getSensor())->armTimestampReset();
 		}
 	} else {
-		currentLpms->getSensor()->armTimestampReset();
+		((LpmsSensorI*)currentLpms->getSensor())->armTimestampReset();
 	}
 }
 
@@ -936,7 +936,7 @@ void MainWindow::recalibrate(void)
 		startMeasurement();
 	}	
 	
-	currentLpms->getSensor()->startCalibrateGyro();	
+	((LpmsSensorI*)currentLpms->getSensor())->startCalibrateGyro();	
 	
 	startWaitBar(60);
 }
@@ -1209,7 +1209,7 @@ void MainWindow::measureLatency(void)
 {
 	if (currentLpms == 0 || isConnecting == true) return;
 	
-	currentLpms->getSensor()->measureAvgLatency();
+	((LpmsSensorI*)currentLpms->getSensor())->measureAvgLatency();
 }
 
 void MainWindow::getVersionInfo(void)
@@ -1308,7 +1308,7 @@ void MainWindow::magAutoMisalignmentCal(void)
 	
 	if (isRunning == false) startMeasurement();
 	
-	currentLpms->getSensor()->startAutoMagMisalignCal();
+	((LpmsSensorI*)currentLpms->getSensor())->startAutoMagMisalignCal();
 	
 	startWaitBar(45);
 }
@@ -1384,7 +1384,7 @@ void MainWindow::magMisalignmentCal(void)
 
 void MainWindow::magMaNewPage(int i)
 {
-	currentLpms->getSensor()->startGetGyrMisalign(i-1);	
+	((LpmsSensorI*)currentLpms->getSensor())->startGetGyrMisalign(i-1);	
 	if (i == 12) maCalibrationFinished = true;
 	startWaitBar(10);
 }
@@ -1392,7 +1392,7 @@ void MainWindow::magMaNewPage(int i)
 void MainWindow::magMaFinished(int i)
 {
 	if (maCalibrationFinished == true) {
-		currentLpms->getSensor()->calcGyrMisalignMatrix();
+		((LpmsSensorI*)currentLpms->getSensor())->calcGyrMisalignMatrix();
 	}
 	
 	maIsCalibrating = false;
@@ -1481,7 +1481,7 @@ void MainWindow::gyrMisalignmentCal(void)
 	connect(maWizard, SIGNAL(currentIdChanged(int)), this, SLOT(gyrMaNewPage(int)));
 	connect(maWizard, SIGNAL(finished(int)), this, SLOT(gyrMaFinished(int)));
 	
-	currentLpms->getSensor()->initGyrMisalignCal();
+	((LpmsSensorI*)currentLpms->getSensor())->initGyrMisalignCal();
 	
 	maCalibrationFinished = false;
 	maIsCalibrating = true;
@@ -1491,17 +1491,17 @@ void MainWindow::gyrMaNewPage(int i)
 {
 	switch (i) {
 	case 1:
-		currentLpms->getSensor()->startGetGyrMisalign(0);
+		((LpmsSensorI*)currentLpms->getSensor())->startGetGyrMisalign(0);
 		startWaitBar(10);
 	break;
 	
 	case 2:
-		currentLpms->getSensor()->startGetGyrMisalign(1);
+		((LpmsSensorI*)currentLpms->getSensor())->startGetGyrMisalign(1);
 		startWaitBar(10);
 	break;
 
 	case 3:
-		currentLpms->getSensor()->startGetGyrMisalign(2);
+		((LpmsSensorI*)currentLpms->getSensor())->startGetGyrMisalign(2);
 		maCalibrationFinished = true;		
 		startWaitBar(10);
 	break;
@@ -1511,7 +1511,7 @@ void MainWindow::gyrMaNewPage(int i)
 void MainWindow::gyrMaFinished(int i)
 {
 	if (maCalibrationFinished == true) {
-		currentLpms->getSensor()->calcGyrMisalignMatrix();
+		((LpmsSensorI*)currentLpms->getSensor())->calcGyrMisalignMatrix();
 	}
 	
 	maIsCalibrating = false;

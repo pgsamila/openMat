@@ -100,8 +100,8 @@ public:
 	~LpmsSensorManager(void);
 	void start(void);
 	void run(void);		
-	LpmsSensorI* addSensor(int mode, const char *deviceId);
-	void removeSensor(LpmsSensorI *sensor);	
+	LpSensorBaseI* addSensor(int mode, const char *deviceId);
+	void removeSensor(LpSensorBaseI *sensor);	
 	void startListDevices(bool scan_serial_ports);
 	bool listDevicesBusy(void);
 	void stopListDevices(void);
@@ -115,8 +115,7 @@ public:
 	void setRs232Baudrate(int i);
 
 private:	
-	list<LpmsSensor*> sensorList;
-	list<LpemgSensor*> lpemgSensorList;
+	list<LpSensorBaseI*> sensorList;
 	
 	bool stopped;
 	std::string configurationFile;

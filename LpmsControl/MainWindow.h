@@ -58,13 +58,15 @@
 #include <QSpacerItem>
 #include <QSizePolicy>
 
+#include "LpmsSensorManagerI.h"
+#include "LpmsSensorI.h"
+#include "LpemgSensorI.h"
+
 #include "Plot.h"
 #include "GraphWindow.h"
 #include "ThreeDWindow.h"
 #include "SensorGuiContainer.h"
-#include "LpmsSensorManagerI.h"
 #include "DiscoveryTree.h"
-#include "LpmsSensorI.h"
 #include "LpmsDefinitions.h"
 #include "FieldMapContainer.h"
 #include "RescanDialog.h"
@@ -123,7 +125,7 @@ public slots:
 	void updateCanBaudrate(int i);
 	void updateRs232Baudrate(int i);
 	void updateCurrentLpms(QTreeWidgetItem *current = 0, QTreeWidgetItem *previous = 0);
-	void checkOptionalFeatures(LpmsSensorI* sensor);
+	void checkOptionalFeatures(LpSensorBaseI* sensor);
 
 	void openSensor(void);
 	void closeSensor(void);

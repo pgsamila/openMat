@@ -32,6 +32,8 @@
 #ifndef IMU_DATA
 #define IMU_DATA
 
+#include "SensorData.h"
+
 typedef struct _HeaveMotionModule {
 	float yHeave;
 } HeaveMotionModule;
@@ -49,7 +51,8 @@ typedef struct _GaitTrackingModule {
 } GaitTrackingModule;
 
 // Structure for data exchange inside the OpenMAT network.
-typedef struct _ImuData {
+class ImuData : public SensorData {
+public:
 	// The OpenMAT ID of the sensor that created this data structure.
 	int openMatId;
 
@@ -110,6 +113,6 @@ typedef struct _ImuData {
 	HeaveMotionModule hm;
 	GaitTrackingModule gm;
 	
-} ImuData;
+};
 
 #endif

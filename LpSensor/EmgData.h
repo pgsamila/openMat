@@ -32,10 +32,13 @@
 #ifndef EMG_DATA
 #define EMG_DATA
 
+#include "SensorData.h"
+
 #define N_EMG_U 32
 
 // Structure for EMG data exchange inside the OpenMAT network.
-typedef struct _EmgData {
+class EmgData : public SensorData {
+public:
 	// The OpenMAT ID of the sensor that created this data structure.
 	int openMatId;
 
@@ -46,6 +49,6 @@ typedef struct _EmgData {
 	float t;
 	
 	int frameCount;
-} EmgData;
+};
 
 #endif

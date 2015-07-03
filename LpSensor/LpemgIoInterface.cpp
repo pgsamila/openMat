@@ -125,18 +125,19 @@ bool LpemgIoInterface::parseSensorData(void)
 	zeroData(&emgData);
 	
 	o = 0;
-	for (int j=0; j<N_EMG_U; ++j) {
+	/* for (int j=0; j<N_EMG_U; ++j) {
 		if ((configReg & LPMS_LPBUS_DATA_MODE_16BIT_ENABLED) != 0) {
 
 			fromBuffer(oneTx, o, &t);
-			o = o + 4;
+			o = o + 4; */
 			fromBufferInt16(oneTx, o, &s);
 			o = o + 2;
 			
-			emgData.t = t;
-			emgData.u = (float)s / 1000;
+			// emgData.t = t;
+			emgData.u = (float)s;
+			// printf("%f\n", emgData.u);
 			
-		} else {
+		/* } else {
 			
 			fromBuffer(oneTx, o, &t);
 			o = o + 4;
@@ -146,12 +147,12 @@ bool LpemgIoInterface::parseSensorData(void)
 			emgData.t = t;
 			emgData.u = fU;
 			
-		}
+		}*/
 
 		if (emgDataQueue.size() < 64) {
 			emgDataQueue.push(emgData);
 		}
-	}
+	// } 
 
 	return true;
 }

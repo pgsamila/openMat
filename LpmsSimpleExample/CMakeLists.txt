@@ -7,15 +7,15 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0015 NEW)
 endif(COMMAND cmake_policy)
 
-SET(CMAKE_BUILD_TYPE "Debug")
+SET(CMAKE_BUILD_TYPE "Release")
 
 set(BUILD_ARCHITECTURE "32-bit" CACHE STRING "")
 set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     if (BUILD_ARCHITECTURE STREQUAL "32-bit") 
-        include_directories("C:/OpenMAT/OpenMAT-1.3.4/include")
-        link_directories("C:/OpenMAT/OpenMAT-1.3.4/lib/x86")
+        include_directories("../LpSensor")
+        link_directories("../LpSensor/build")
     endif()
     if (BUILD_ARCHITECTURE STREQUAL "64-bit") 
         include_directories("C:/OpenMAT/OpenMAT-1.3.4-x64/include")

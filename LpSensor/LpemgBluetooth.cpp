@@ -283,6 +283,12 @@ bool LpemgBluetooth::read(char *rxBuffer, unsigned long *bytesReceived)
 	} else {
 		*bytesReceived = (unsigned long) n;
 		
+		/* for (int i=0; i<(int)*bytesReceived; i++) {
+			printf("%d, ", i);
+			printf("%x ", rxBuffer[i]);
+		}
+		printf("\n "); */
+		
 		mm.reset();
 		timeoutT = 0;
 	}
@@ -358,7 +364,7 @@ bool LpemgBluetooth::parseModbusByte(void)
 	while (dataQueue.size() > 0) {	
 		b = dataQueue.front();
 		dataQueue.pop();
-
+		
 		switch (rxState) {
 		case PACKET_END:
 			if (b == 0x3a) {
@@ -443,10 +449,12 @@ bool LpemgBluetooth::pollData(void)
 		isOpen = false;
 		return false;
 	}	
-
+	
 	for (unsigned int i=0; i < bytesReceived; i++) {
 		dataQueue.push((unsigned char) rxBuffer[i]);
-	}	
+		// printf("%x ", (unsigned char)rxBuffer[i]);
+	}
+	// if (bytesReceived > 0) printf("\n ");
 	
 	return true;
 }

@@ -31,7 +31,7 @@
 
 #include "SensorGuiContainer.h"
 
-SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
+SensorGuiContainer::SensorGuiContainer(LpSensorBaseI* sensor, QTreeWidget* tree) :
 	sensor(sensor) {
 	int l;
 	
@@ -1587,7 +1587,7 @@ SensorGuiContainer::~SensorGuiContainer(void)
 {
 }
 
-LpmsSensorI* SensorGuiContainer::getSensor(void)
+LpSensorBaseI* SensorGuiContainer::getSensor(void)
 {
 	return sensor;
 }

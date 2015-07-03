@@ -35,12 +35,13 @@
 #include <iostream>
 #include <fstream>
 
+#include "LpSensorBaseI.h"
 #include "ImuData.h"
 #include "LpmsDefinitions.h"
 
 typedef void (*LpmsCallback)(ImuData d, const char* id);  
 
-class LpmsSensorI
+class LpmsSensorI : LpSensorBaseI
 {
 public:
 /***********************************************************************
@@ -71,6 +72,7 @@ public:
 	virtual void setCurrentData(ImuData d) = 0;
 	virtual void setCallback(LpmsCallback cb) = 0;
 	virtual ImuData getCurrentData(void) = 0;
+	virtual void getSensorData(SensorData *d) = 0;	
 	virtual int hasImuData(void) = 0;
 	virtual void getCalibratedSensorData(float g[3], float a[3], float b[3]) = 0;
 	virtual void getQuaternion(float q[4]) = 0; 
@@ -90,6 +92,7 @@ public:
 	virtual bool setConfigurationPrm(int parameterIndex, int *parameter) = 0;
 	virtual bool getConfigurationPrm(int parameterIndex, int* parameter) = 0;
 	virtual bool getConfigurationPrm(int parameterIndex, char* parameter) = 0;
+	virtual int hasData(void) = 0;	
 
 /***********************************************************************
 ** FIRMWARE / IAP

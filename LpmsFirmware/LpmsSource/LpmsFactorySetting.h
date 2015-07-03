@@ -45,7 +45,7 @@
 #define ENABLE_WATCHDOG
 
 // To enable pressure sensing
-#define ENABLE_PRESSURE
+// #define ENABLE_PRESSURE
 
 // Enable Bluetooth low-latency
 #define ENABLE_LOWLATENCY

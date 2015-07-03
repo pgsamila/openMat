@@ -81,7 +81,9 @@ const float pi = 3.141592f;
 	
 #ifdef _WIN32
 	case DEVICE_LPEMG_B:
+		LOGV("[LpemgSensor] Initializing sensor\n");	
 		bt = new LpemgBluetooth(&(this->configData));
+		LOGV("[LpemgSensor] Sensor initialized\n");		
 	break;
 #endif
 
@@ -187,7 +189,7 @@ void LpemgSensor::update(void)
 			LOGV("[LpemgSensor] Waiting after connect..\n");
 			
 			state = STATE_GET_SETTINGS;
-			getConfigState = C_STATE_GOTO_COMMAND_MODE;
+			getConfigState = C_STATE_SETTINGS_DONE; // C_STATE_GOTO_COMMAND_MODE;
 		}
 	break;
 
@@ -567,24 +569,22 @@ int LpemgSensor::hasData(void)
 	return emgDataQueue.size();
 }
 
-EmgData LpemgSensor::getCurrentData(void)
+void LpemgSensor::getSensorData(SensorData *d)
 {
-	EmgData d;
+	EmgData* ed = (EmgData*) d;
 	
-	bt->zeroData(&d);
+	bt->zeroData(ed);
 	
 	sensorMutex.lock();
 	
 	if (emgDataQueue.size() > 0) {
-		d = emgDataQueue.front();
+		*ed = emgDataQueue.front();
 		emgDataQueue.pop();
 	} else {
-		d = currentData;
+		*ed = currentData;
 	}
 	
 	sensorMutex.unlock();
-
-	return d;
 }
 
 bool LpemgSensor::isRunning(void)

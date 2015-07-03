@@ -36,7 +36,7 @@
 #endif
 
 #include "LpmsDefinitions.h"
-#include "LpmsSensorI.h"
+#include "LpSensorBaseI.h"
 #include "DeviceListItem.h"
 
 #ifdef _WIN32
@@ -51,10 +51,10 @@ public:
 	virtual ~LpmsSensorManagerI(void) { };
 				
 	/* Adds one Lpms device to the list of sensor devices. */
-	virtual LpmsSensorI* addSensor(int mode, const char* deviceId) = 0;
+	virtual LpSensorBaseI* addSensor(int mode, const char* deviceId) = 0;
 
 	/* Removes an Lpms device from the list of connected devices. */
-	virtual void removeSensor(LpmsSensorI* sensor) = 0;
+	virtual void removeSensor(LpSensorBaseI* sensor) = 0;
 
 	/* Lists all connected LPMS devices. The device desicovery runs in a seperate thread. */
 	virtual void startListDevices(bool scan_serial_ports) = 0;

@@ -121,7 +121,7 @@ public:
 	QComboBox* uartFormatCombo;
 	QSpinBox* canStartIdSpin;
 	int openMatId;
-	LpmsSensorI* sensor;
+	LpSensorBaseI* sensor;
 	QGridLayout* selectedDataGl;
 	bool heaveMotionEnabled;
 	int deviceType;
@@ -130,9 +130,9 @@ public:
 	float softIronMatrix[3][3];
 	float fieldRadius;	
 	
-	SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree);
+	SensorGuiContainer(LpSensorBaseI* sensor, QTreeWidget* tree);
 	~SensorGuiContainer(void);
-	LpmsSensorI* getSensor(void);
+	LpSensorBaseI* getSensor(void);
 	void checkOptionalFeatures(void);
 	
 public slots:

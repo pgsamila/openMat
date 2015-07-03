@@ -36,12 +36,13 @@
 #include <iostream>
 #include <fstream>
 
+#include "LpSensorBaseI.h"
 #include "EmgData.h"
 #include "LpmsDefinitions.h"
 
-typedef void (*LpemgCallback)(EmgData d, const char* id);  
+typedef void (*LpemgCallback)(EmgData d, const char* id);
 
-class LpemgSensorI
+class LpemgSensorI : LpSensorBaseI
 {
 public:
 /***********************************************************************
@@ -60,7 +61,7 @@ public:
 ** DIRECT GET / SET DEVICE PARAMETERS
 ***********************************************************************/
 	virtual void getDeviceId(char *str) = 0;
-	virtual CalibrationData *getConfigurationData(void) = 0;
+	// virtual CalibrationData *getConfigurationData(void) = 0;
 	virtual bool assertFwVersion(int d0, int d1, int d2) = 0;
 	virtual void setSensorStatus(int s) = 0;
 	virtual int getSensorStatus(void) = 0;
@@ -68,7 +69,7 @@ public:
 	virtual int getConnectionStatus(void) = 0;
 	virtual void setCurrentData(EmgData d) = 0;
 	virtual void setCallback(LpemgCallback cb) = 0;
-	virtual EmgData getCurrentData(void) = 0;
+	virtual void getSensorData(SensorData *d) = 0;	
 	virtual int hasData(void) = 0;
 	virtual bool isRunning(void) = 0;
 	virtual void pause(void) = 0;

@@ -1324,6 +1324,11 @@ int LpmsSensor::hasImuData(void)
 	return dataQueue.size();
 }
 
+int LpmsSensor::hasData(void)
+{
+	return dataQueue.size();	
+}	
+
 ImuData LpmsSensor::getCurrentData(void)
 {
 	ImuData d;
@@ -1342,6 +1347,24 @@ ImuData LpmsSensor::getCurrentData(void)
 	sensorMutex.unlock();
 
 	return d;
+}
+
+void LpmsSensor::getSensorData(SensorData *d)
+{
+	ImuData* id = (ImuData*) d;
+	
+	bt->zeroImuData(id);
+	
+	sensorMutex.lock();
+	
+	if (dataQueue.size() > 0) {
+		*id = dataQueue.front();
+		dataQueue.pop();
+	} else {
+		*id = currentData;
+	}
+	
+	sensorMutex.unlock();
 }
 
 void LpmsSensor::getCalibratedSensorData(float g[3], float a[3], float b[3])

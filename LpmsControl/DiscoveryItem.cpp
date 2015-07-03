@@ -43,7 +43,7 @@ DiscoveryItem::DiscoveryItem(QTreeWidget* tree, string deviceId, int deviceType,
 	
 	switch (deviceType) {
 	case DEVICE_LPMS_B:
-		gl->addWidget(interfaceTypeItem = new QLabel("Bluetooth"), 1, 1);
+		gl->addWidget(interfaceTypeItem = new QLabel("Bluetooth 2.1"), 1, 1);
 		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-B (") + deviceId.c_str() + ")"));
 	break;
 	
@@ -66,6 +66,11 @@ DiscoveryItem::DiscoveryItem(QTreeWidget* tree, string deviceId, int deviceType,
 		gl->addWidget(interfaceTypeItem = new QLabel("RS-232"), 1, 1);
 		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-CUR (Port: ") + deviceId.c_str() + ")"));
 	break;
+	
+	case DEVICE_LPEMG_B:
+		gl->addWidget(interfaceTypeItem = new QLabel("Bluetooth 2.1"), 1, 1);
+		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPEMG-B (") + deviceId.c_str() + ")"));
+	break;	
 	}
 
 	QTreeWidgetItem* subTreeItem = new QTreeWidgetItem(treeItem);

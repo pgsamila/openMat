@@ -75,11 +75,11 @@ void ttlUsartPortSetConfig(uint32_t baudrate)
 	break;
 
 	case LPMS_UART_BAUDRATE_115200:
-	USART_InitStructure.USART_BaudRate = 115200;
+		USART_InitStructure.USART_BaudRate = 115200;
 	break;
 
 	case LPMS_UART_BAUDRATE_921600:
-	USART_InitStructure.USART_BaudRate = 921600;
+		USART_InitStructure.USART_BaudRate = 921600;
 	break;
 	
 	default:

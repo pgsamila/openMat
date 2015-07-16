@@ -257,12 +257,23 @@ void initSensorManager(void)
 	}
 
 	if (!initPressureSensor()) lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
-	                       
+	            
+    /*
 	qOffset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
 	qOffset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
 	qOffset.data[2] = conItoF(gReg.data[LPMS_OFFSET_QUAT_2]);
 	qOffset.data[3] = conItoF(gReg.data[LPMS_OFFSET_QUAT_3]);
-
+    */
+    mQ_offset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
+	mQ_offset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
+	mQ_offset.data[2] = conItoF(gReg.data[LPMS_OFFSET_QUAT_2]);
+	mQ_offset.data[3] = conItoF(gReg.data[LPMS_OFFSET_QUAT_3]);
+    
+    mQ_hx.data[0] = conItoF(gReg.data[LPMS_HEADING_OFFSET_0]);
+    mQ_hx.data[1] = conItoF(gReg.data[LPMS_HEADING_OFFSET_1]);
+    mQ_hx.data[2] = conItoF(gReg.data[LPMS_HEADING_OFFSET_2]);
+    mQ_hx.data[3] = conItoF(gReg.data[LPMS_HEADING_OFFSET_3]);
+    
 	qAfterOffset.data[0] = 1;
 	qAfterOffset.data[1] = 0;
 	qAfterOffset.data[2] = 0;
@@ -293,8 +304,8 @@ void initSensorManager(void)
 	updateUartFormat();
 	updateStreamFreq();
 
-	quaternionIdentity(&mQ_hx);
-	quaternionIdentity(&mQ_offset);
+	//quaternionIdentity(&mQ_hx);
+	//quaternionIdentity(&mQ_offset);
                     
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
@@ -504,7 +515,7 @@ void calcAltitude(void)
 		pressure = (float) rawPressure * 1.0e-2f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
-        altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
+        	altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
 	}
 
 }
@@ -513,15 +524,23 @@ void calcLinearAcceleration(void)
 {
 	LpVector3f gWorld;
 	LpVector3f gSensor;
-	LpMatrix3x3f M;
+	LpMatrix3x3f M, M_i;
 
 	gWorld.data[0] = 0;
 	gWorld.data[1] = 0;
 	gWorld.data[2] = -1;
 
+#define LINACC_OUTPUT_LOCAL
+#ifdef LINACC_OUTPUT_LOCAL
 	quaternionToMatrix(&q, &M);
 	matVectMult3(&M, &gWorld, &gSensor);
 	vectSub3x1(&a, &gSensor, &linAcc);
+#else
+	quaternionToMatrix(&q, &M);
+	matInv3x3(&M, &M_i);
+	matVectMult3(&M_i, &a, &gSensor);
+	vectSub3x1(&gSensor, &gWorld, &linAcc);
+#endif
 }
 
 void accAverage(void)

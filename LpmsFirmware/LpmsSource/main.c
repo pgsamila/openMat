@@ -33,8 +33,26 @@ int main(void)
 	initAdConverter();
 #endif
 
-	// stopwatch_reset();
-	// STOPWATCH_START;
+	/* stopwatch_reset();
+	STOPWATCH_START;
+
+	while (1)
+	{
+
+		if (systemStepTimeout == 1) {
+			systemStepTimeout = 0;
+
+			++ledC;
+			ledC %= ledFlashTime;
+			if (ledC == 0) 
+			{
+				updateAliveLed();
+				USART_SendData(USART_PORT, 'b');
+				USART_SendData(RS232_PORT, 'a');
+			}
+		}
+
+	} */
 
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
@@ -100,7 +118,7 @@ int main(void)
 				++ledC;
 				ledC %= ledFlashTime;
 				if (ledC == 0) {
-				  updateAliveLed();
+					updateAliveLed();
 				}
 				resetIWatchdog();
 				

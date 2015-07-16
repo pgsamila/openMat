@@ -150,32 +150,32 @@ uint8_t pollSerialPortData(void)
 				newPacket.start = b;
 				rawDataCounter = 0;
 			}
-			break;
+		break;
 			
 		case PACKET_ADDRESS_LB:
 			newPacket.address = b;
 			rxState = PACKET_ADDRESS_HB;
-			break;
+		break;
 
 		case PACKET_ADDRESS_HB:
 			newPacket.address = newPacket.address | (((uint16_t)b) << 8);
 			rxState = PACKET_FUNCTION_LB;
-			break;
+		break;
 
 		case PACKET_FUNCTION_LB:
 			newPacket.function = b;
 			rxState = PACKET_FUNCTION_HB;				
-			break;
+		break;
 
 		case PACKET_FUNCTION_HB:
 			newPacket.function = newPacket.function | (((uint16_t)b) << 8);
 			rxState = PACKET_LENGTH_LB;
-			break;
+		break;
 			
 		case PACKET_LENGTH_LB:
 			newPacket.length = b;
 			rxState = PACKET_LENGTH_HB;				
-			break;
+		break;
 
 		case PACKET_LENGTH_HB:
 			newPacket.length = newPacket.length | (((uint16_t)b) << 8);
@@ -184,7 +184,7 @@ uint8_t pollSerialPortData(void)
 			} else {
 				rxState = PACKET_LRC_CHECK_LB;
 			}
-			break;
+		break;
 			
 		case PACKET_RAW_DATA:
 			newPacket.data[rawDataCounter] = b;
@@ -193,17 +193,17 @@ uint8_t pollSerialPortData(void)
 			  	rawDataCounter = 0;
 				rxState = PACKET_LRC_CHECK_LB;
 			}
-			break;
+		break;
 		
 		case PACKET_LRC_CHECK_LB:
 			newPacket.lrcCheck = b;
 			rxState = PACKET_LRC_CHECK_HB;
-			break;
+		break;
 			
 		case PACKET_LRC_CHECK_HB:
 			newPacket.lrcCheck = newPacket.lrcCheck | (((uint16_t)b) << 8);
 			rxState = PACKET_END_LB;
-			break;
+		break;
 		
 		case PACKET_END_LB:
 			if (b == 0x0d) {
@@ -212,7 +212,7 @@ uint8_t pollSerialPortData(void)
 			} else {
 				rxState = PACKET_START;
 			}
-			break;
+		break;
 		
 		case PACKET_END_HB:
 			if (b == 0x0a) {
@@ -225,11 +225,11 @@ uint8_t pollSerialPortData(void)
 			} else {
 				rxState = PACKET_START;
 			}
-			break;
+		break;
 		
 		default:
 			rxState = PACKET_START;		
-			break;
+		break;
 		}
 		
 		rxDmaBufferPtr++;

@@ -124,13 +124,15 @@ public:
 	virtual void initMisalignCal(void) = 0;
 	virtual void startGetMisalign(int i) = 0; 
 	virtual void checkMisalignCal(float T) = 0;
-	virtual void calcMisalignMatrix(void) = 0;
+    virtual void calcMisalignMatrix(void) = 0;
+    virtual void stopMisalignCal(void) = 0;
 	virtual void saveCalibrationData(const char* fn) = 0;
 	virtual void loadCalibrationData(const char* fn) = 0;
 	virtual void initGyrMisalignCal(void) = 0;
 	virtual void startGetGyrMisalign(int i) = 0; 
 	virtual void checkGyrMisalignCal(float T) = 0;
-	virtual void calcGyrMisalignMatrix(void) = 0;
+    virtual void calcGyrMisalignMatrix(void) = 0;
+    virtual void stopGyrMisalignCal(void) = 0;
 	virtual void resetTimestamp(void) = 0;
 	virtual void setTimestamp(float t) = 0;
 	virtual void startAutoMagMisalignCal(void) = 0;

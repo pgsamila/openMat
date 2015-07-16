@@ -516,7 +516,7 @@ void LpmsSensor::update(void)
 		imuData.openMatId = configData.openMatId;				
 
 		setConnectionStatus(SENSOR_CONNECTION_CONNECTED);
-		if (isMagCalibrationEnabled == true) {
+		if (isMagCalibrationEnabled == true ) {
 			setSensorStatus(SENSOR_STATUS_CALIBRATING);
 		} else {
 			if (paused == false) {
@@ -1940,6 +1940,13 @@ void LpmsSensor::calcMisalignMatrix(void)
 	updateParameters();
 }	
 
+void LpmsSensor::stopMisalignCal(void)
+{
+    isGetMisalign = false;
+    configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+    updateParameters();
+}
+
 void LpmsSensor::saveCalibrationData(const char* fn)
 {
 	printf("[LpmsSensor] Saving calibration data to %s\n", fn);
@@ -2060,6 +2067,13 @@ void LpmsSensor::calcGyrMisalignMatrix(void)
 
 	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);	
 	updateParameters();	
+}
+
+void LpmsSensor::stopGyrMisalignCal(void)
+{
+    isGetGyrMisalign = false;
+    configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+    updateParameters();
 }
 
 void LpmsSensor::resetTimestamp(void)

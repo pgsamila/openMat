@@ -44,7 +44,6 @@ void initCommunicationManager(void)
 #ifdef USE_RS232_INTERFACE	
 	rs232PortInit(gReg.data[LPMS_UART_BAUDRATE]);
 	connectedInterface = RS232_CONNECTED;
-
 	serialPortInit(USART_BAUDRATE_921600);
 #elif defined USE_TTL_UART_INTERFACE
 #ifdef LPMS_BLE	

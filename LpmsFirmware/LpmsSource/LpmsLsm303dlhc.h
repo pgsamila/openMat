@@ -1,10 +1,9 @@
 /***********************************************************************
-** LSM303DLHC accelerometer and magnetometer control
-**
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
+
+#ifndef USE_LSM6DS3
 
 #ifndef LPMS_LSM303DLHC_H
 #define LPMS_LSM303DLHC_H
@@ -281,5 +280,7 @@ int magI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char cons
 #ifdef __cplusplus
 }
 #endif 
+
+#endif
 
 #endif

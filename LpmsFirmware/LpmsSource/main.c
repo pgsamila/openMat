@@ -21,7 +21,10 @@ uint16_t ledC = 0;
 int main(void)
 {
 	int sendCounter = 0;
-	// float dt = 0.0f;
+
+#ifdef ENABLE_STOPWATCH
+	float dt = 0.0f;
+#endif
 
 	initIWatchdog();
 	setGPIOConfig();
@@ -33,8 +36,10 @@ int main(void)
 	initAdConverter();
 #endif
 
-	// stopwatch_reset();
-	// STOPWATCH_START;
+#ifdef ENABLE_STOPWATCH
+	stopwatch_reset();
+	STOPWATCH_START;
+#endif
 
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
@@ -92,9 +97,11 @@ int main(void)
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
 			  
-				/* STOPWATCH_STOP;	
+#ifdef ENABLE_STOPWATCH
+				STOPWATCH_STOP;	
 				dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
-				STOPWATCH_START; */
+				STOPWATCH_START;
+#endif
 			  
 				systemStepTimeout = 0;				
 				++ledC;

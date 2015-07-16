@@ -323,5 +323,6 @@ void updateUartFormat(void);
 void armHardwareTimestampReset(uint8_t* data);
 void setDefaultAlignmentOffset(void);
 void updateStreamFreq(void);
+void saveGyrOffsetData(void);
 
 #endif

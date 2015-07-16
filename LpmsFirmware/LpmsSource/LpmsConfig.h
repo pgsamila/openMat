@@ -10,6 +10,7 @@
 #define LPMS_CONFIG_H
 
 #include "stm32f2xx.h"
+
 #include "LpmsFactorySetting.h"
 #include "LpMatrix.h"
 #include "LpmsAssignments.h"

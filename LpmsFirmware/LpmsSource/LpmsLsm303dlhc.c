@@ -3,6 +3,8 @@
 ** info@lp-research.com
 ***********************************************************************/
 
+#ifndef USE_LSM6DS3
+
 #include "LpmsLsm303dlhc.h"
 
 void setAccMagI2CConfig(void)
@@ -607,3 +609,5 @@ uint8_t getAccMagTempData(int16_t* temp)
 	
 	return 1;
 }
+
+#endif

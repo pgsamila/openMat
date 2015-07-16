@@ -1,9 +1,6 @@
 /***********************************************************************
-** Manages communication with sensors and data processing
-**
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
 
 #ifndef LPMS_SENSOR_MANAGER_H
@@ -12,7 +9,13 @@
 #include "stm32f2xx.h"     
 #include "LpMatrix.h"
 #include "LpmsConfig.h"
-#include "LpmsL3gd20.h"
+
+#ifdef USE_LSM6DS3
+	#include "Lsm6ds3.h"
+#else
+	#include "LpmsL3gd20.h"
+#endif
+
 #include "LpmsBmp180.h"
 #include "LpmsLsm303dlhc.h"
 #include "LpFilterCVersion.h"

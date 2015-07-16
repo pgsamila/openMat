@@ -13,6 +13,8 @@ uint8_t writeRamToFlash(__IO uint32_t* flashAddress, uint32_t* ramBuffer, uint32
 {	
 	for (uint16_t i = 0; i < length; i++) {
 		if (FLASH_ProgramWord(*flashAddress, *(uint32_t*)(ramBuffer + i)) == FLASH_COMPLETE) {
+			FLASH_WaitForLastOperation();
+
 			if (*(uint32_t*)*flashAddress != *(uint32_t*)(ramBuffer + i)) {
 				return 0;
 			}
@@ -46,7 +48,7 @@ uint8_t writeCompleteRegisterSet(void)
 	
 	FLASH_Unlock();	
 	
-	FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR|FLASH_FLAG_PGSERR);
+	FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
 	
 	if (FLASH_EraseSector(FLASH_Sector_6, VoltageRange_3) != FLASH_COMPLETE) {
 		return 0;

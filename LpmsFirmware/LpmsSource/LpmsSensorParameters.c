@@ -410,8 +410,11 @@ uint8_t setGyrRange(uint8_t* data)
 		return 0;
 	break;
 	}
-	
+
+#ifndef USE_LSM6DS3	
 	setGyrFullScale(calibrationData.gyrRange);
+#endif
+
 	setRegUInt32(LPMS_GYR_RANGE, calibrationData.gyrRange);
 	setRegVector3f(LPMS_GYR_GAIN_X, calibrationData.gyrGain);
 	
@@ -538,7 +541,10 @@ uint8_t setAccRange(uint8_t* data)
 	break;
 	}
 	
+#ifndef USE_LSM6DS3	
 	setAccFullScale(calibrationData.accRange);
+#endif
+
 	setRegUInt32(LPMS_ACC_RANGE, calibrationData.accRange);
 	setRegVector3f(LPMS_ACC_GAIN_X, calibrationData.accGain);
 	
@@ -671,8 +677,11 @@ uint8_t setMagRange(uint8_t* data)
 		return 0;
 	break;
 	}
-	
+
+#ifndef USE_LSM6DS3	
 	setMagFullScale(calibrationData.magRange);
+#endif
+
 	setRegUInt32(LPMS_MAG_RANGE, calibrationData.magRange);
 	setRegVector3f(LPMS_MAG_GAIN_X, calibrationData.magGain);
 	
@@ -1503,4 +1512,18 @@ void armHardwareTimestampReset(uint8_t* data)
 		ledFlashTime = lpmsLedPeriod;
 	break;
 	}
+}
+
+void saveGyrOffsetData(void)
+{
+	for (int i=0; i<3; ++i) {
+		gReg.data[LPMS_GYR_BIAS_X + i] = conFtoI(calibrationData.gyrOffset.data[i]);		
+	}
+	
+  	uint32_t address = LPMS_GYR_BIAS_X + USER_FLASH_START_ADDRESS;
+  	uint32_t buffer = (uint32_t)gReg.data;
+
+	writeCompleteRegisterSet();
+
+	// writeRamToFlash(&address, (uint32_t*)buffer, 12);
 }

@@ -35,7 +35,7 @@ void setRCCConfig(void)
 		while(RCC_GetSYSCLKSource() != 0x08) {
 		}
 		
-		double PLL_VCO = (HSE_VALUE / PLL_M) * PLL_N;
+		// double PLL_VCO = (HSE_VALUE / PLL_M) * PLL_N;
 	} else {
 		RCC_HSICmd(ENABLE);
 
@@ -62,7 +62,7 @@ void setRCCConfig(void)
 		while(RCC_GetSYSCLKSource() != 0x08) {
 		}
 		
-		double PLL_VCO = (HSI_VALUE / PLL_M) * PLL_N;
+		// double PLL_VCO = (HSI_VALUE / PLL_M) * PLL_N;
 	}
 	
 	SCB->VTOR = FLASH_BASE | 0x00000000;

@@ -10,9 +10,9 @@
 #define GYR_CAL_MIN_TEMP_DIFF 5.0f
 
 #define GYRO_ONLINE_CAL_ITER 32
-#define GYR_CAL_THRES 60.0f
-#define GYR_CAL_TIMEOUT	7.5f
-#define GYR_THRESHOLD 0.05f
+#define GYR_CAL_THRES 10.0f
+#define GYR_CAL_TIMEOUT	2.0f
+#define GYR_THRESHOLD 0.01f
 
 #define LPMS_FILTER_GYR 0
 #define LPMS_FILTER_GYR_ACC 1
@@ -143,7 +143,7 @@ void lpOrientationFromAccMag(LpVector3f b,
 	LpmsCalibrationData *calibrationData,
 	LpFilterParameters *lpFilterParam);
 
-void gyrOnlineCal(LpVector3f gyrRawData, 
+uint8_t gyrOnlineCal(LpVector3f gyrRawData, 
 	float T,
 	int isGyrCalibrationEnabled,
 	LpmsCalibrationData *calibrationData, 

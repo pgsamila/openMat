@@ -10,6 +10,7 @@
 #define __LPMS_BMP180_H
 
 #include "stm32f2xx.h"
+
 #include "LpmsTimebase.h"
 
 // I2c communication definitions
@@ -25,7 +26,7 @@
 #define PRESSURE_I2C_RCC_PORT	RCC_AHB1Periph_GPIOB
 #define PRESSURE_I2C_ADDRESS	0xEE
 #define PRESSURE_I2C_SPEED	400000
-#define LPMS_I2C_ADDRESS	0xA0
+#define LPMS_I2C_ADDRESS	0xa0
 
 // Pressur sensor power modes
 #define PRESSURE_LOW_POWER_MODE		0

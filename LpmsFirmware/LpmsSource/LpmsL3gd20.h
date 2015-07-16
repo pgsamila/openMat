@@ -1,10 +1,9 @@
 /***********************************************************************
-** L3GD20 gyroscope control
-**
-** Copyright (C) 2013 LP-Research
-** All rights reserved.
-** Contact: LP-Research (info@lp-research.com)
+** (c) LP-RESEARCH Inc.
+** info@lp-research.com
 ***********************************************************************/
+
+#ifndef USE_LSM6DS3
 
 #ifndef __LPMS_L3GD20_H
 #define __LPMS_L3GD20_H
@@ -132,10 +131,6 @@
 
 #define GYR_I2C_TIMEOUT 1000
 
-#ifdef __cplusplus
-extern "C" {
-#endif 
-
 // Sets i2c bus configuration
 void setGyrI2CConfig(void);
 
@@ -173,8 +168,6 @@ int gyrI2cWrite(unsigned char reg_addr, unsigned char length, unsigned char cons
 
 int gyrI2cRead(unsigned char reg_addr, unsigned char length, unsigned char *data);
 
-#ifdef __cplusplus
-}
-#endif 
+#endif
 
 #endif

@@ -165,7 +165,9 @@ void initSensorManager(void)
 		lpFilterParam.useGyrAutoCal = 0;
 	}
 	
+#ifndef USE_LSM6DS3
 	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
+#endif
 	
 	f2int.u32_val = gReg.data[LPMS_ACC_GAIN_X];
 	calibrationData.accGain.data[0] = f2int.float_val;
@@ -202,7 +204,9 @@ void initSensorManager(void)
 	
 	calibrationData.accRange = gReg.data[LPMS_ACC_RANGE];
 	
+#ifndef USE_LSM6DS3
 	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
+#endif
 
 	f2int.u32_val = gReg.data[LPMS_MAG_GAIN_X];
 	calibrationData.magGain.data[0] = f2int.float_val;
@@ -245,8 +249,10 @@ void initSensorManager(void)
 	calibrationData.magRange = gReg.data[LPMS_MAG_RANGE];
 	
 	lpFilterParam.magInclination = conItoF(gReg.data[LPMS_MAG_FIELD_INC]);
-	
+
+#ifndef USE_LSM6DS3
 	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
+#endif
 	
 	lpFilterParam.magFieldEstimate = conItoF(gReg.data[LPMS_MAG_FIELD_EST]);
 
@@ -256,7 +262,13 @@ void initSensorManager(void)
 		lpFilterParam.dynamicCovar = 0;
 	}
 
+#ifndef USE_LSM6DS3
 	if (!initPressureSensor()) lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
+#endif
+
+#ifdef USE_LSM6DS3
+	gyrAccInit();
+#endif
 	                       
 	qOffset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
 	qOffset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
@@ -315,7 +327,11 @@ void updateSensorData(void)
 	} else {
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
+
+#ifndef USE_LSM6DS3	
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
+#endif
+
 #ifdef USE_CANBUS_INTERFACE
 		canHeartbeatTime += lpmsMeasurementPeriod;
 #endif
@@ -325,7 +341,7 @@ void updateSensorData(void)
 #ifdef ENABLE_PRESSURE
 		++pressureTime;
 
-        if (pressureTime >= bmp180MeasurePeriod ){
+        if (pressureTime >= bmp180MeasurePeriod ) {
             // note: bmp180 takes 4 cycles to complete one measurement
             // pressure/altitude update time = lpmsMeasurementPeriod x bmp180MeasurePeriod x 4 = 500ms
             pressureTime = 0;
@@ -365,9 +381,7 @@ void checkTimestampReset(void)
 }
 
 void processSensorData(void)
-{     
-	// float bInc;
-
+{
 	aRaw.data[0] = accRawData.data[0] * calibrationData.accGain.data[0];
 	aRaw.data[1] = accRawData.data[1] * calibrationData.accGain.data[1];
 	aRaw.data[2] = accRawData.data[2] * calibrationData.accGain.data[2];
@@ -381,8 +395,10 @@ void processSensorData(void)
 	tB.data[0] = magRawData.data[0] * calibrationData.magGain.data[0];
 	tB.data[1] = magRawData.data[1] * calibrationData.magGain.data[1];
 	tB.data[2] = magRawData.data[2] * calibrationData.magGain.data[2];
- 
-	gyrOnlineCal(gyrRawData, lpmsMeasurementPeriod, isGyrCalibrationEnabled, &calibrationData, &lpFilterParam);
+
+	if (gyrOnlineCal(gyrRawData, lpmsMeasurementPeriod, isGyrCalibrationEnabled, &calibrationData, &lpFilterParam) == 1) {
+		saveGyrOffsetData();
+	}
 
 	applyLowPass();
 
@@ -432,19 +448,7 @@ void processSensorData(void)
 		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
 #endif
 
-	} /* else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
-		
-		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
-		quaternionIdentity(&qAfterOffset); 
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
-		
-	} else if (lpFilterParam.filterMode == LPMS_FILTER_ACC_MAG) {
-	  
-		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, &calibrationData, &lpFilterParam);
-		quaternionIdentity(&qAfterOffset);
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
-
-	} */ else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
+	} else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
 
 		vectZero3x1(&b);
 	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);

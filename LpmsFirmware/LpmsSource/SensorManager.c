@@ -257,12 +257,23 @@ void initSensorManager(void)
 	}
 
 	if (!initPressureSensor()) lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
-	                       
+	            
+    /*
 	qOffset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
 	qOffset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
 	qOffset.data[2] = conItoF(gReg.data[LPMS_OFFSET_QUAT_2]);
 	qOffset.data[3] = conItoF(gReg.data[LPMS_OFFSET_QUAT_3]);
-
+    */
+    mQ_offset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
+	mQ_offset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
+	mQ_offset.data[2] = conItoF(gReg.data[LPMS_OFFSET_QUAT_2]);
+	mQ_offset.data[3] = conItoF(gReg.data[LPMS_OFFSET_QUAT_3]);
+    
+    mQ_hx.data[0] = conItoF(gReg.data[LPMS_HEADING_OFFSET_0]);
+    mQ_hx.data[1] = conItoF(gReg.data[LPMS_HEADING_OFFSET_1]);
+    mQ_hx.data[2] = conItoF(gReg.data[LPMS_HEADING_OFFSET_2]);
+    mQ_hx.data[3] = conItoF(gReg.data[LPMS_HEADING_OFFSET_3]);
+    
 	qAfterOffset.data[0] = 1;
 	qAfterOffset.data[1] = 0;
 	qAfterOffset.data[2] = 0;
@@ -293,8 +304,8 @@ void initSensorManager(void)
 	updateUartFormat();
 	updateStreamFreq();
 
-	quaternionIdentity(&mQ_hx);
-	quaternionIdentity(&mQ_offset);
+	//quaternionIdentity(&mQ_hx);
+	//quaternionIdentity(&mQ_offset);
                     
 #ifdef USE_HEAVEMOTION
 	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();

@@ -284,7 +284,8 @@ uint8_t resetToFactory(void)
 	
 	f2int.float_val = (float)LPMS_FACTORY_PROCESS_COVAR;
 	gReg.data[LPMS_PROCESS_COVAR] = f2int.u32_val;
-			 
+		
+    /*
 	f2int.float_val = (float)LPMS_FACTORY_OFFSET_QUAT_0; 
 	gReg.data[LPMS_OFFSET_QUAT_0] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_OFFSET_QUAT_1; 
@@ -293,6 +294,7 @@ uint8_t resetToFactory(void)
 	gReg.data[LPMS_OFFSET_QUAT_2] = f2int.u32_val;
 	f2int.float_val = (float)LPMS_FACTORY_OFFSET_QUAT_3; 
 	gReg.data[LPMS_OFFSET_QUAT_3] = f2int.u32_val;
+    */
                  
 	gReg.data[LPMS_FILTER_MODE] = LPMS_FILTER_GYR_ACC_MAG;
 	gReg.data[LPMS_FILTER_PRESET] = LPMS_FILTER_PRM_SET_4;

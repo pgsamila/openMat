@@ -280,12 +280,14 @@ public:
 	void startGetMisalign(int i); 
 	void checkMisalignCal(float T);
 	void calcMisalignMatrix(void);
+    void stopMisalignCal(void);
 	void saveCalibrationData(const char* fn);
 	void loadCalibrationData(const char* fn);
 	void initGyrMisalignCal(void);
 	void startGetGyrMisalign(int i); 
 	void checkGyrMisalignCal(float T);
-	void calcGyrMisalignMatrix(void);
+    void calcGyrMisalignMatrix(void);
+    void stopGyrMisalignCal(void);
 	void resetTimestamp(void);
 	void setTimestamp(float t);
 	void startAutoMagMisalignCal(void);

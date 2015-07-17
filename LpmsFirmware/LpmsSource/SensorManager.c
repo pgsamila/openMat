@@ -524,7 +524,6 @@ void calcLinearAcceleration(void)
 {
 	LpVector3f gWorld;
 	LpVector3f gSensor;
-	LpMatrix3x3f M, M_i;
 
 	gWorld.data[0] = 0;
 	gWorld.data[1] = 0;
@@ -532,10 +531,14 @@ void calcLinearAcceleration(void)
 
 #define LINACC_OUTPUT_LOCAL
 #ifdef LINACC_OUTPUT_LOCAL
+	LpMatrix3x3f M;
+
 	quaternionToMatrix(&q, &M);
 	matVectMult3(&M, &gWorld, &gSensor);
 	vectSub3x1(&a, &gSensor, &linAcc);
 #else
+	LpMatrix3x3f M, M_i;
+
 	quaternionToMatrix(&q, &M);
 	matInv3x3(&M, &M_i);
 	matVectMult3(&M_i, &a, &gSensor);

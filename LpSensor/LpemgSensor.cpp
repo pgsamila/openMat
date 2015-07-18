@@ -189,7 +189,7 @@ void LpemgSensor::update(void)
 			LOGV("[LpemgSensor] Waiting after connect..\n");
 			
 			state = STATE_GET_SETTINGS;
-			getConfigState = C_STATE_SETTINGS_DONE; // C_STATE_GOTO_COMMAND_MODE;
+			getConfigState = C_STATE_GOTO_COMMAND_MODE;
 		}
 	break;
 

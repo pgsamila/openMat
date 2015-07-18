@@ -106,7 +106,7 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 
 bool LpmsCanIo::getTxMessage(std::queue<TPCANMsg> *topTxQ)
 {
-	int i = txQ.size();
+	int i = (int)txQ.size();
 	if (i <= 0) return false;
 
 	topTxQ->push(txQ.front());

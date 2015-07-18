@@ -191,7 +191,7 @@ bool CanEngine::sendCmdIxxat(char *commandPtr)
 	
 	strcpy(command, commandPtr);
 
-	bytesSent = send(connectionSocket, command, strlen(command), 0);
+	bytesSent = send(connectionSocket, command, (int)strlen(command), 0);
  
 	if (bytesSent <= 0) {
 		printf("[CanEngine] IXXAT send failed!\n");

@@ -233,7 +233,7 @@ bool LpmsBle::getTxMessage(BleBlock *b)
 
 	if (txQueue.size() == 0) return false;
 	
-	l = txQueue.size();
+	l = (int)txQueue.size();
 	
 	if (l > 20) {
 		l = 20;

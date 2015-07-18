@@ -1322,7 +1322,7 @@ void LpmsSensor::setCallback(LpmsCallback cb)
 
 int LpmsSensor::hasImuData(void)
 {
-	return dataQueue.size();
+	return (int)dataQueue.size();
 }
 
 ImuData LpmsSensor::getCurrentData(void)

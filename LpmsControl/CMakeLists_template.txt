@@ -83,8 +83,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
     include_directories("../LpSensor")
 
-    include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
-    link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+	if (USE_JUSTTHREAD)
+		include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+		link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+	endif()
 
     include_directories("${WINDOWS_QWT_PATH}/src")
     link_directories("${WINDOWS_QWT_PATH}/lib")

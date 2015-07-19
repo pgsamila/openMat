@@ -11,9 +11,13 @@ SET(CMAKE_BUILD_TYPE "Release")
 include_directories("../LpSensor")
 link_directories("../LpSensor/build")
 
+set(USE_JUST_THREAD CACHE BOOL "")
+
 set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
-include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
-link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+if (USE_JUSTTHREAD)
+	include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+	link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
+endif()
 
 ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
 
@@ -29,4 +33,6 @@ add_executable(${PROJECT_NAME} ${sources} ${headers})
 
 target_link_libraries(${PROJECT_NAME} LpSensor.lib)
 target_link_libraries(${PROJECT_NAME} Winmm.lib)
-# target_link_libraries(${PROJECT_NAME} justthread_vc10_mt.lib)
+if (USE_JUSTTHREAD)
+	target_link_libraries(${PROJECT_NAME} justthread_vc10_mt.lib)
+endif()

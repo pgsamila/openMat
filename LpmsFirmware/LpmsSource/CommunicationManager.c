@@ -22,6 +22,7 @@ uint32_t rxFirmwarePacketSize = 0;
 uint32_t JumpAddress;
 pFunction Jump_To_Application;
 uint8_t isConfigForFirmwareUpdateSent = 0;
+
 __IO int firstTimeTx = 1;
 __IO int rs232FirstTimeTx = 1;
 __IO int ttlUsartFirstTimeTx = 1;
@@ -805,6 +806,10 @@ void parsePacket(void)
 			case GET_CAN_CONFIGURATION:
 				getCanConfiguration(dataBuffer, &dataLength);
 				sendData(getImuID(), GET_CAN_CONFIGURATION, dataLength, dataBuffer);
+			break;
+
+			case GOTO_CAN_STREAM:
+				setCanStreamMode();
 			break;
 
 			

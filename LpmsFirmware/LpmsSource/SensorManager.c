@@ -4,6 +4,7 @@
 ***********************************************************************/
 
 #include "SensorManager.h"
+#include "LpStopwatch.h"
 
 LpVector3f gyrRawData;
 LpVector3f accRawData;
@@ -82,8 +83,10 @@ LpVector4f mQ_offset;
 float lpmsMeasurementPeriod = 0.00250f;
 __IO uint8_t lpmsMeasurementIntervals = 2;
 uint16_t lpmsLedPeriod = 400;
-uint16_t bmp180MeasurePeriod = 50;  // 125ms x 4, see routine for more details
+uint16_t bmp180MeasurePeriod = 50; // 125ms x 4, see routine for more details
 uint8_t bmp180MeasurementMode = BMP180_HIGH_MODE;
+int16_t stablizeC = SPEED_STEP_LP;
+uint8_t sensorOverload = 0;
 
 #ifdef ENABLE_INSOLE
 	float forceSensorOutput[N_FORCE_SENSORS];
@@ -165,7 +168,9 @@ void initSensorManager(void)
 		lpFilterParam.useGyrAutoCal = 0;
 	}
 	
-	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
+	if (!initGyr(gReg.data[LPMS_GYR_OUTPUT_RATE], GYR_NORMAL_MODE, gReg.data[LPMS_GYR_RANGE])) {
+		lpmsStatus = lpmsStatus | LPMS_GYR_INIT_FAILED;
+	}
 	
 	f2int.u32_val = gReg.data[LPMS_ACC_GAIN_X];
 	calibrationData.accGain.data[0] = f2int.float_val;
@@ -202,7 +207,9 @@ void initSensorManager(void)
 	
 	calibrationData.accRange = gReg.data[LPMS_ACC_RANGE];
 	
-	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
+	if (!initAcc(gReg.data[LPMS_ACC_OUTPUT_RATE], ACC_NORMAL_POWER_MODE, gReg.data[LPMS_ACC_RANGE])) {
+		lpmsStatus = lpmsStatus | LPMS_ACC_INIT_FAILED;
+	}
 
 	f2int.u32_val = gReg.data[LPMS_MAG_GAIN_X];
 	calibrationData.magGain.data[0] = f2int.float_val;
@@ -246,7 +253,9 @@ void initSensorManager(void)
 	
 	lpFilterParam.magInclination = conItoF(gReg.data[LPMS_MAG_FIELD_INC]);
 	
-	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
+	if (!initMag(gReg.data[LPMS_MAG_OUTPUT_RATE], MAG_NORMAL_POWER_MODE, gReg.data[LPMS_MAG_RANGE])) {
+		lpmsStatus = lpmsStatus | LPMS_MAG_INIT_FAILED;
+	}
 	
 	lpFilterParam.magFieldEstimate = conItoF(gReg.data[LPMS_MAG_FIELD_EST]);
 
@@ -257,13 +266,7 @@ void initSensorManager(void)
 	}
 
 	if (!initPressureSensor()) lpmsStatus = lpmsStatus | LPMS_PRESSURE_INIT_FAILED;
-	            
-    /*
-	qOffset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
-	qOffset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
-	qOffset.data[2] = conItoF(gReg.data[LPMS_OFFSET_QUAT_2]);
-	qOffset.data[3] = conItoF(gReg.data[LPMS_OFFSET_QUAT_3]);
-    */
+
     mQ_offset.data[0] = conItoF(gReg.data[LPMS_OFFSET_QUAT_0]);
 	mQ_offset.data[1] = conItoF(gReg.data[LPMS_OFFSET_QUAT_1]);
 	mQ_offset.data[2] = conItoF(gReg.data[LPMS_OFFSET_QUAT_2]);
@@ -303,17 +306,19 @@ void initSensorManager(void)
 	updateMagReference();
 	updateUartFormat();
 	updateStreamFreq();
-
-	//quaternionIdentity(&mQ_hx);
-	//quaternionIdentity(&mQ_offset);
                     
 #ifdef USE_HEAVEMOTION
-	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) initHeaveMotion();
+	if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) {
+		initHeaveMotion();
+	}
 #endif
+
+	stopwatch_reset();
+	STOPWATCH_START;
 }
 
 void updateSensorData(void)
-{     
+{
 	if (isSelfTestOn == 1) {
 		calibrationData.gyrOffset.data[0] = 0.0f;
 		calibrationData.gyrOffset.data[1] = 0.0f;
@@ -327,6 +332,9 @@ void updateSensorData(void)
 		getGyrRawData(&gyrRawData.data[0], &gyrRawData.data[1], &gyrRawData.data[2]);
 		getAccRawData(&accRawData.data[0], &accRawData.data[1], &accRawData.data[2]);
 		getMagRawData(&magRawData.data[0], &magRawData.data[1], &magRawData.data[2]);
+
+		checkTimingAccuracy();
+
 #ifdef USE_CANBUS_INTERFACE
 		canHeartbeatTime += lpmsMeasurementPeriod;
 #endif
@@ -337,8 +345,9 @@ void updateSensorData(void)
 		++pressureTime;
 
         if (pressureTime >= bmp180MeasurePeriod ){
-            // note: bmp180 takes 4 cycles to complete one measurement
-            // pressure/altitude update time = lpmsMeasurementPeriod x bmp180MeasurePeriod x 4 = 500ms
+            /* note: bmp180 takes 4 cycles to complete one measurement
+            pressure/altitude update time = lpmsMeasurementPeriod x bmp180MeasurePeriod x 4 = 500ms */
+
             pressureTime = 0;
 			if (	(((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 				((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
@@ -376,9 +385,7 @@ void checkTimestampReset(void)
 }
 
 void processSensorData(void)
-{     
-	// float bInc;
-
+{
 	aRaw.data[0] = accRawData.data[0] * calibrationData.accGain.data[0];
 	aRaw.data[1] = accRawData.data[1] * calibrationData.accGain.data[1];
 	aRaw.data[2] = accRawData.data[2] * calibrationData.accGain.data[2];
@@ -413,9 +420,9 @@ void processSensorData(void)
 	matVectMult3(&calibrationData.gyrAlignment, &gRaw, &g);
 	vectAdd3x1(&calibrationData.gyrAlignOffset, &g, &g);
 
-	if (	lpFilterParam.filterMode == LPMS_FILTER_GYR ||
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
-			lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
+	if (lpFilterParam.filterMode == LPMS_FILTER_GYR ||
+		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC || 
+		lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_MAG) {
 
 		lpFilterUpdate(a, b, g, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
 		
@@ -443,19 +450,7 @@ void processSensorData(void)
 		if ((gReg.data[LPMS_CONFIG] & LPMS_HEAVEMOTION_OUTPUT_ENABLED) != 0) calculateHeaveMotion(lpmsMeasurementPeriod);
 #endif
 
-	} /* else if (lpFilterParam.filterMode == LPMS_FILTER_GYR_ACC_EULER) {
-		
-		lpFilterEulerUpdate(aRaw, b, gRaw, &rAfterOffset, &q, lpmsMeasurementPeriod, 0, &magNoise, &calibrationData, &lpFilterParam);
-		quaternionIdentity(&qAfterOffset); 
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertial(q, &w, gRaw);
-		
-	} else if (lpFilterParam.filterMode == LPMS_FILTER_ACC_MAG) {
-	  
-		lpOrientationFromAccMag(b, a, &rAfterOffset, &bInc, &calibrationData, &lpFilterParam);
-		quaternionIdentity(&qAfterOffset);
-		if ((gReg.data[LPMS_CONFIG] & LPMS_ANGULAR_VELOCITY_OUTPUT_ENABLED) != 0) gyroToInertialEuler(gRaw, rAfterOffset, &w);
-
-	} */ else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
+	} else if (lpFilterParam.filterMode == LPMS_FILTER_MADGWICK_GYR_ACC) {
 
 		vectZero3x1(&b);
 	 	MadgwickAHRSupdate(a, b, g, lpmsMeasurementPeriod, &q);
@@ -507,7 +502,7 @@ void applyLowPass(void)
 
 void calcAltitude(void)
 {
-	if (	(	((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
+	if ((	((gReg.data[LPMS_CONFIG] & LPMS_PRESSURE_OUTPUT_ENABLED) != 0) ||
 			((gReg.data[LPMS_CONFIG] & LPMS_TEMPERATURE_OUTPUT_ENABLED) != 0) ||
 			((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
 			((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
@@ -515,7 +510,7 @@ void calcAltitude(void)
 		pressure = (float) rawPressure * 1.0e-2f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
-        	altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
+		altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
 	}
 
 }
@@ -595,6 +590,20 @@ void setStreamMode(void)
 		
 	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
 	lpmsStatus |= LPMS_STREAM_MODE;
+
+	sensorOverload = 0;
+}
+
+void setCanStreamMode(void)
+{
+	currentMode = LPMS_STREAM_MODE;
+		
+	lpmsStatus &= ~(LPMS_COMMAND_MODE | LPMS_STREAM_MODE | LPMS_SLEEP_MODE);
+	lpmsStatus |= LPMS_STREAM_MODE;
+
+	connectedInterface = CANOPEN_CONNECTED;
+
+	sensorOverload = 0;
 }
 
 void setSleepMode(void)
@@ -788,7 +797,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
     	uint8_t sl;
-	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
+	float mT = measurementTime * lpmsMeasurementPeriod;
 
 	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;
 	data[o] = ','; ++o;
@@ -872,7 +881,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 uint8_t getSensorData(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
-	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
+	float mT = measurementTime * lpmsMeasurementPeriod;
 
 #ifdef LPMS_BLE
 	if (connectedInterface == USB_CONNECTED) {
@@ -1081,4 +1090,36 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
 	*l = o;
 	
 	return 1;
+}
+
+void checkTimingAccuracy(void)
+{
+#ifdef USE_CANBUS_INTERFACE
+	float dt = 0;
+	float t_epsilon = 1.0f;
+
+	STOPWATCH_STOP;	
+	dt = CalcNanosecondsFromStopwatch();
+	STOPWATCH_START;
+
+	if ((dt - (lpmsMeasurementPeriod * 1000.0f)) > t_epsilon && lpmsMeasurementIntervals <= 16) {
+		stablizeC -= 10;
+
+		if (stablizeC <= 0 && sensorOverload == 0) {
+			sensorOverload = 1;
+
+			lpmsLedPeriod = lpmsLedPeriod / 4;
+			ledFlashTime = lpmsLedPeriod;
+
+			setCommandMode();
+
+			stablizeC = SPEED_STEP_LP;
+			}
+	} else {
+		++stablizeC;
+		if (stablizeC >= SPEED_STEP_LP) {
+			stablizeC = SPEED_STEP_LP;
+		}
+	}
+#endif
 }

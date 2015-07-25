@@ -16,46 +16,43 @@ uint32_t m_nStop;                // DEBUG Stopwatch stop cycle counter value
 #define STOPWATCH_START { m_nStart = *((volatile unsigned int *)0xE0001004);} // DWT_CYCCNT;}
 #define STOPWATCH_STOP  { m_nStop = *((volatile unsigned int *)0xE0001004);}
 
-
 static inline void stopwatch_reset(void)
 {
-    /* Enable DWT */
-    DEMCR |= DEMCR_TRCENA; 
-    *DWT_CYCCNT = 0;             
-    /* Enable CPU cycle counter */
-    DWT_CTRL |= CYCCNTENA;
+	/* Enable DWT */
+	DEMCR |= DEMCR_TRCENA; 
+	*DWT_CYCCNT = 0;             
+	/* Enable CPU cycle counter */
+	DWT_CTRL |= CYCCNTENA;
 }
 
 static inline uint32_t stopwatch_getticks()
 {
-    return CPU_CYCLES;
+	return CPU_CYCLES;
 }
 
 static inline void stopwatch_delay(uint32_t ticks)
 {
-    stopwatch_reset();
-    while(1)
-    {
-            if (stopwatch_getticks() >= ticks)
-                    break;
-    }
+	stopwatch_reset();
+    
+	while(1) {
+		if (stopwatch_getticks() >= ticks) break;
+	}
 }
 
-static inline float CalcNanosecondsFromStopwatch(uint32_t nStart, uint32_t nStop)
+static inline float CalcNanosecondsFromStopwatch(void /*uint32_t nStart, uint32_t nStop*/)
 {
     // uint32_t nTemp;
     // uint32_t n;
 
-	float ticks = (nStop-nStart); // *1000.0f/1200000.0f;
+	float ticks = (m_nStop-m_nStart); // *1000.0f/1200000.0f;
 	float dt;
 	
-	dt = ticks*1000.0f/SystemCoreClock; // ms
+	dt = ticks * 1000.0f / SystemCoreClock; // ms
 	/* nTemp *= 1000;                      	// Scale cycles by 1000
 	n = SystemCoreClock / 1000000;          // Convert Hz to MHz. SystemCoreClock = 168000000
 	nTemp = nTemp / n;                      // nanosec = (Cycles * 1000) / (Cycles/microsec) */
 	
     return dt;
 } 
-
 
 #endif

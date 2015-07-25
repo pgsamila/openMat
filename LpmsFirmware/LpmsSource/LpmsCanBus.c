@@ -149,6 +149,7 @@ void CANStartDataTransfer(uint8_t* pDataBuffer, uint16_t dataLength)
 {
 	CanTxMsg txMsg;
 	uint32_t timeout = 0;
+
 	txMsg.StdId = AEROSPACE_CAN_LPMS_MODBUS_WRAPPER_FUNCTION + getImuID();
 	txMsg.RTR = CAN_RTR_DATA;
 	txMsg.IDE = CAN_ID_STD;
@@ -289,8 +290,7 @@ uint8_t pollCanBusData(void)
 				if (b == 0x0a) {
 					newPacket.end = newPacket.end | (((uint16_t)b) << 8);
 					rxState = PACKET_START;
-					if (newPacket.lrcCheck == computeCheckSum(newPacket)/* && 
-						newPacket.address == getImuID() */) {
+					if (newPacket.lrcCheck == computeCheckSum(newPacket)) {
 						addPacketToBuffer(newPacket);
 						connectedInterface = CANBUS_CONNECTED;
 					}
@@ -308,8 +308,6 @@ uint8_t pollCanBusData(void)
 
 	return 1;
 }
-
-#define CAN_TIMEOUT 1000
 
 void CANStartCANOpenDataTransfer(uint16_t cobId, uint8_t* pDataBuffer)
 {
@@ -349,7 +347,7 @@ uint8_t checkCANOpenHeartbeat(void)
 	return 1;
 }
 
-void getCanData(uint8_t* data, int i, int fixed) 
+uint8_t getCanData(uint8_t* data, int i, int fixed) 
 {
 	uint32_t v;
 	uint16_t dataLength;
@@ -359,83 +357,87 @@ void getCanData(uint8_t* data, int i, int fixed)
 	if (fixed == 1) {
 		switch (v) {
 		case 0:
+			return 0;
+		break;
+
+		case 1:
 			getGyroXData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
-		case 1:
+		case 2:
 			getGyroYData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
-		case 2:
+		case 3:
 			getGyroZData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
-		case 3:
+		case 4:
 			getRollData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
-		case 4:
+		case 5:
 			getPitchData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
-		case 5:
+		case 6:
 			getYawData(data, &dataLength, FLOAT_FIXED_POINT_1000, USE_RADIAN);
 		break;
 	
-		case 6:
+		case 7:
 			getLinAccXData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 7:
+		case 8:
 			getLinAccYData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 8:
+		case 9:
 			getLinAccZData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 9:
+		case 10:
 			getMagXData(data, &dataLength, FLOAT_FIXED_POINT_100);
 		break;
 	
-		case 10:
+		case 11:
 			getMagYData(data, &dataLength, FLOAT_FIXED_POINT_100);
 		break;
 	
-		case 11:
+		case 12:
 			getMagZData(data, &dataLength, FLOAT_FIXED_POINT_100);
 		break;
 	
-		case 12:
+		case 13:
 			getQ0Data(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 13:
+		case 14:
 			getQ1Data(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 14:
+		case 15:
 			getQ2Data(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 15:
+		case 16:
 			getQ3Data(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 16:
+		case 17:
 			getAccXData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 17:
+		case 18:
 			getAccYData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 	
-		case 18:
+		case 19:
 			getAccZData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 
 #ifdef USE_HEAVEMOTION
-		case 19:
+		case 20:
 			getHeaveData(data, &dataLength, FLOAT_FIXED_POINT_1000);
 		break;
 #endif
@@ -443,95 +445,102 @@ void getCanData(uint8_t* data, int i, int fixed)
 	} else {
 		switch (v) {
 		case 0:
+			return 0;
+		break;
+
+		case 1:
 			getGyroXData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
-		case 1:
+		case 2:
 			getGyroYData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
-		case 2:
+		case 3:
 			getGyroZData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
-		case 3:
+		case 4:
 			getRollData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
-		case 4:
+		case 5:
 			getPitchData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
-		case 5:
+		case 6:
 			getYawData(data, &dataLength, FLOAT_FULL_PRECISION, USE_RADIAN);
 		break;
 	
-		case 6:
+		case 7:
 			getLinAccXData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 7:
+		case 8:
 			getLinAccYData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 8:
+		case 9:
 			getLinAccZData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 9:
+		case 10:
 			getMagXData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 10:
+		case 11:
 			getMagYData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 11:
+		case 12:
 			getMagZData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 12:
+		case 13:
 			getQ0Data(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 13:
+		case 14:
 			getQ1Data(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 14:
+		case 15:
 			getQ2Data(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 15:
+		case 16:
 			getQ3Data(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 16:
+		case 17:
 			getAccXData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 17:
+		case 18:
 			getAccYData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 	
-		case 18:
+		case 19:
 			getAccZData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 
 #ifdef USE_HEAVEMOTION
-		case 19:
+		case 20:
 			getHeaveData(data, &dataLength, FLOAT_FULL_PRECISION);
 		break;
 #endif
 		}
 	}
+
+	return 1;
 }
 
 void canSendCanOpenFloatingPoint(void)
 {
 	int i, j, k, l;
 	uint8_t data[8];
-	uint16_t id;	
+	uint16_t id;
+	uint8_t skip = 0;
 
 	l = 0;
 
@@ -539,12 +548,19 @@ void canSendCanOpenFloatingPoint(void)
 		for (i=0; i<8; ++i) data[i] = 0;
 
 		for (k=0; k<2; ++k) {
-			getCanData(&(data[k*4]), l, 0);
+			if (getCanData(&(data[k*4]), l, 0) == 0) {
+				skip = 1;
+				break;
+			}
 			++l;
 		}
 
-		id = 0x180 + (j * 0x100) + getImuID();
-		CANStartCANOpenDataTransfer(id, data);
+		if (skip == 0 || (skip == 1 && k > 0)) { 
+			id = 0x180 + (j * 0x100) + getImuID();
+			CANStartCANOpenDataTransfer(id, data);
+		
+			if (skip == 1) break;
+		}
 	}
 }
 
@@ -552,7 +568,8 @@ void canSendCanOpenFixedPoint(void)
 {
 	int i, j, k, l;
 	uint8_t data[8];
-	uint16_t id;	
+	uint16_t id;
+	uint8_t skip = 0;
 
 	l = 0;
 
@@ -560,12 +577,19 @@ void canSendCanOpenFixedPoint(void)
 		for (i=0; i<8; ++i) data[i] = 0;
 
 		for (k=0; k<4; ++k) {
-			getCanData(&(data[k*2]), l, 1);
+			if (getCanData(&(data[k*2]), l, 1) == 0) {
+				skip = 1;
+				break;
+			}
 			++l;
 		}
 		
-		id = 0x180 + (j * 0x100) + getImuID();
-		CANStartCANOpenDataTransfer(id, data);
+		if (skip == 0 || (skip == 1 && k > 0)) { 
+			id = 0x180 + (j * 0x100) + getImuID();
+			CANStartCANOpenDataTransfer(id, data);
+
+			if (skip == 1) break;
+		}
 	}
 }
 
@@ -575,6 +599,7 @@ void canSendCustomFixedPoint(void)
 	uint16_t startId;
 	uint8_t data[8];
 	uint16_t id;
+	uint8_t skip = 0;
 
 	l = 0;
 
@@ -584,12 +609,19 @@ void canSendCustomFixedPoint(void)
 		for (i=0; i<8; ++i) data[i] = 0;
 
 		for (k=0; k<4; ++k) {
-			getCanData(&(data[k*2]), l, 1);
+			if (getCanData(&(data[k*2]), l, 1) == 0) {
+				skip = 1;
+				break;
+			}
 			++l;
 		}
 
-		id = (uint16_t) startId + ((getImuID()-1) * 8) + j;
-		CANStartCANOpenDataTransfer(id, data);
+		if (skip == 0 || (skip == 1 && k > 0)) { 
+			id = (uint16_t) startId + ((getImuID()-1) * 8) + j;
+			CANStartCANOpenDataTransfer(id, data);
+
+			if (skip == 1) break;
+		}
 	}
 }
 
@@ -599,6 +631,7 @@ void canSendCustomFloatingPoint(void)
 	uint32_t startId;
 	uint16_t id;
 	uint8_t data[8];
+	uint8_t skip = 0;
 	
 	l = 0;
 
@@ -608,12 +641,19 @@ void canSendCustomFloatingPoint(void)
 		for (i=0; i<8; ++i) data[i] = 0;
 
 		for (k=0; k<2; ++k) {
-			getCanData(&(data[k*4]), l, 0);
+			if (getCanData(&(data[k*4]), l, 0) == 0) {
+				skip = 1;
+				break;
+			}
 			++l;
 		}
 
-		id = (uint16_t) startId + ((getImuID()-1) * 8) + j;
-		CANStartCANOpenDataTransfer(id, data);
+		if (skip == 0 || (skip == 1 && k > 0)) { 
+			id = (uint16_t) startId + ((getImuID()-1) * 8) + j;
+			CANStartCANOpenDataTransfer(id, data);
+		
+			if (skip == 1) break;
+		}
 	}
 }
 

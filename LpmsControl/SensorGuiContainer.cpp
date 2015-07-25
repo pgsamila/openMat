@@ -248,6 +248,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 1"), l, 0);
 		gl4->addWidget(canTpdo1ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo1ACombo->addItem(QString("-- Disabled --"));
 		canTpdo1ACombo->addItem(QString("Gyroscope X"));
 		canTpdo1ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo1ACombo->addItem(QString("Gyroscope Z"));
@@ -271,6 +272,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 2"), l, 0);
 		gl4->addWidget(canTpdo1BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo1BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo1BCombo->addItem(QString("Gyroscope X"));
 		canTpdo1BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo1BCombo->addItem(QString("Gyroscope Z"));
@@ -294,6 +296,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 3"), l, 0);
 		gl4->addWidget(canTpdo2ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo2ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo2ACombo->addItem(QString("Gyroscope X"));
 		canTpdo2ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo2ACombo->addItem(QString("Gyroscope Z"));
@@ -317,6 +320,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 4"), l, 0);
 		gl4->addWidget(canTpdo2BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo2BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo2BCombo->addItem(QString("Gyroscope X"));
 		canTpdo2BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo2BCombo->addItem(QString("Gyroscope Z"));
@@ -340,6 +344,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 5"), l, 0);
 		gl4->addWidget(canTpdo3ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo3ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo3ACombo->addItem(QString("Gyroscope X"));
 		canTpdo3ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo3ACombo->addItem(QString("Gyroscope Z"));
@@ -363,6 +368,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 6"), l, 0);
 		gl4->addWidget(canTpdo3BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo3BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo3BCombo->addItem(QString("Gyroscope X"));
 		canTpdo3BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo3BCombo->addItem(QString("Gyroscope Z"));
@@ -386,6 +392,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 7"), l, 0);
 		gl4->addWidget(canTpdo4ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo4ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo4ACombo->addItem(QString("Gyroscope X"));
 		canTpdo4ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo4ACombo->addItem(QString("Gyroscope Z"));
@@ -409,6 +416,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 8"), l, 0);
 		gl4->addWidget(canTpdo4BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo4BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo4BCombo->addItem(QString("Gyroscope X"));
 		canTpdo4BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo4BCombo->addItem(QString("Gyroscope Z"));
@@ -432,6 +440,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 9"), l, 0);
 		gl4->addWidget(canTpdo5ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo5ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo5ACombo->addItem(QString("Gyroscope X"));
 		canTpdo5ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo5ACombo->addItem(QString("Gyroscope Z"));
@@ -455,6 +464,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 10"), l, 0);
 		gl4->addWidget(canTpdo5BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo5BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo5BCombo->addItem(QString("Gyroscope X"));
 		canTpdo5BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo5BCombo->addItem(QString("Gyroscope Z"));
@@ -478,6 +488,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 11"), l, 0);
 		gl4->addWidget(canTpdo6ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo6ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo6ACombo->addItem(QString("Gyroscope X"));
 		canTpdo6ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo6ACombo->addItem(QString("Gyroscope Z"));
@@ -501,6 +512,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 12"), l, 0);
 		gl4->addWidget(canTpdo6BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo6BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo6BCombo->addItem(QString("Gyroscope X"));
 		canTpdo6BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo6BCombo->addItem(QString("Gyroscope Z"));
@@ -524,6 +536,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 13"), l, 0);
 		gl4->addWidget(canTpdo7ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo7ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo7ACombo->addItem(QString("Gyroscope X"));
 		canTpdo7ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo7ACombo->addItem(QString("Gyroscope Z"));
@@ -547,6 +560,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 14"), l, 0);
 		gl4->addWidget(canTpdo7BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo7BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo7BCombo->addItem(QString("Gyroscope X"));
 		canTpdo7BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo7BCombo->addItem(QString("Gyroscope Z"));
@@ -570,6 +584,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 15"), l, 0);
 		gl4->addWidget(canTpdo8ACombo = new QComboBox(), l, 1); ++l;
+		canTpdo8ACombo->addItem(QString("-- Disabled --"));		
 		canTpdo8ACombo->addItem(QString("Gyroscope X"));
 		canTpdo8ACombo->addItem(QString("Gyroscope Y"));
 		canTpdo8ACombo->addItem(QString("Gyroscope Z"));
@@ -593,6 +608,7 @@ SensorGuiContainer::SensorGuiContainer(LpmsSensorI* sensor, QTreeWidget* tree) :
 		
 		gl4->addWidget(new QLabel("Channel 16"), l, 0);
 		gl4->addWidget(canTpdo8BCombo = new QComboBox(), l, 1); ++l;
+		canTpdo8BCombo->addItem(QString("-- Disabled --"));		
 		canTpdo8BCombo->addItem(QString("Gyroscope X"));
 		canTpdo8BCombo->addItem(QString("Gyroscope Y"));
 		canTpdo8BCombo->addItem(QString("Gyroscope Z"));

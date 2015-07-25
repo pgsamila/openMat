@@ -10,21 +10,20 @@
 #include "CommunicationManager.h"
 #include "LpmsTimebase.h"
 #include "Watchdog.h"
-#include "LpStopwatch.h"
 
 extern uint16_t ledFlashTime;
 extern uint8_t connectedInterface;
 extern __IO uint8_t systemStepTimeout;
+extern uint8_t sensorOverload;
 
 uint16_t ledC = 0;
 
 int main(void)
 {
 	int sendCounter = 0;
-	// float dt = 0.0f;
 
 	initIWatchdog();
-	setGPIOConfig();
+	setGPIOConfig();                       
 	setSystemStepTimer();	
 	initSensorManager();
 	initCommunicationManager();
@@ -32,27 +31,6 @@ int main(void)
 #ifdef ENABLE_INSOLE
 	initAdConverter();
 #endif
-
-	/* stopwatch_reset();
-	STOPWATCH_START;
-
-	while (1)
-	{
-
-		if (systemStepTimeout == 1) {
-			systemStepTimeout = 0;
-
-			++ledC;
-			ledC %= ledFlashTime;
-			if (ledC == 0) 
-			{
-				updateAliveLed();
-				USART_SendData(USART_PORT, 'b');
-				USART_SendData(RS232_PORT, 'a');
-			}
-		}
-
-	} */
 
 	while (1) {
 		if (getCurrentMode() == LPMS_COMMAND_MODE) {
@@ -109,11 +87,6 @@ int main(void)
 			}			
 		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
 			if (systemStepTimeout == 1) {
-			  
-				/* STOPWATCH_STOP;	
-				dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
-				STOPWATCH_START; */
-			  
 				systemStepTimeout = 0;				
 				++ledC;
 				ledC %= ledFlashTime;

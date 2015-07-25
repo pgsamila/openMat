@@ -39,12 +39,14 @@
 #define CANBUS_BAUDRATE_1M_ENABLED 		7
 
 // CAN transmission timeout
-#define CAN_TX_TIMEOUT 			0x0007ffff
+#define CAN_TX_TIMEOUT 				0x0007ffff
 
 // CANopen definitions
 #define MAX_HEARTBEAT_TIME 			0.5f
 #define HEARTBEAT_CAN_ID 			0x700
 #define CANOPEN_STATE_OPERATIONAL 	0x05
+
+#define CAN_TIMEOUT 				1000
 
 // Initializes CAN baudrate
 uint8_t CANInitBaudrate(uint8_t baudrateFlag);
@@ -92,5 +94,7 @@ void canSendCustomFloatingPoint(void);
 void canSendCanOpenFixedPoint(void);
 
 void resetCanId(void);
+
+uint8_t getCanData(uint8_t* data, int i, int fixed);
 
 #endif

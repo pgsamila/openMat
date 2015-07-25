@@ -32,6 +32,8 @@ LPMS_API void APIENTRY connectToLpmsCU(const char* deviceId);
 LPMS_API int APIENTRY getConnectionStatus(void);
 LPMS_API int APIENTRY getSensorStatus(void);
 
+LPMS_API int APIENTRY getQuaternion(float* output);
+
 LPMS_API float APIENTRY getQuaternionW(void);
 LPMS_API float APIENTRY getQuaternionX(void);
 LPMS_API float APIENTRY getQuaternionY(void);

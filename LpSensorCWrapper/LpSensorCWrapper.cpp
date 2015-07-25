@@ -45,6 +45,23 @@ int APIENTRY getSensorStatus(void)
 	return lpms->getSensorStatus();
 }
 
+int APIENTRY getQuaternion(float* output)
+{
+	if (connected == 0) return 0;
+		
+	if (lpms->getConnectionStatus() == SENSOR_CONNECTION_CONNECTED && lpms->getSensorStatus() == SENSOR_STATUS_RUNNING) {
+		ImuData d = lpms->getCurrentData();
+		output[0] = d.q[0];
+		output[1] = d.q[1];
+		output[2] = d.q[2];
+		output[3] = d.q[3];
+	
+		return 1;
+	}
+	
+	return 0;
+}
+
 float APIENTRY getQuaternionW(void)
 {
 	if (connected == 0) return 1.0f;

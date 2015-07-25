@@ -45,6 +45,8 @@
 #define LPMS_REF_CALIBRATION_DURATION_1S	(1.0f)
 #define LPMS_REF_CALIBRATION_DURATION_01S	(0.1f) 
 
+#define SPEED_STEP_LP 500
+
 // Initializes the sensor manager
 void initSensorManager(void);
 
@@ -138,5 +140,9 @@ int isDataSendingSet(void);
 uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l);
 
 void checkTimestampReset(void);
+
+void checkTimingAccuracy(void);
+
+void setCanStreamMode(void);
 
 #endif

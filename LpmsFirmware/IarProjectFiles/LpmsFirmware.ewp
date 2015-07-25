@@ -1035,7 +1035,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.21.1.52845</state>
+          <state>7.30.4.8186</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -1047,7 +1047,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F205rx	ST STM32F205rx</state>
+          <state>STM32F205RG	ST STM32F205RG</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -1548,7 +1548,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsCU-Mk2Can-Firmware.bin</state>
+          <state>LpmsCU-Mk2Can-Firmware-CanOverloadTest.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -3884,7 +3884,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.21.1.52845</state>
+          <state>7.30.4.8186</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -3896,7 +3896,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F205rx	ST STM32F205rx</state>
+          <state>STM32F205RG	ST STM32F205RG</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -4032,7 +4032,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11111110</state>
+          <state>00000000</state>
         </option>
         <option>
           <name>CCDebugInfo</name>
@@ -4124,7 +4124,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>0</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -4133,7 +4133,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>0</state>
         </option>
         <option>
           <name>CompilerMisraRules98</name>

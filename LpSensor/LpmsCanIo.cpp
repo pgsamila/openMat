@@ -85,10 +85,12 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 			sendMsg.DATA[j] = txData[i*8+j];
 		}
 		
-		/* printf("Msg. push %x %x %x %x %x %x %x %x\n", sendMsg.DATA[0], sendMsg.DATA[1], sendMsg.DATA[2], sendMsg.DATA[3], sendMsg.DATA[4], sendMsg.DATA[5], sendMsg.DATA[6], sendMsg.DATA[7]); */
+		printf("[LpmsCanIo] Sending CAN msg %x to ID=%d: %x %x %x %x %x %x %x %x\n", sendMsg.ID, address, sendMsg.DATA[0], sendMsg.DATA[1], sendMsg.DATA[2], sendMsg.DATA[3], sendMsg.DATA[4], sendMsg.DATA[5], sendMsg.DATA[6], sendMsg.DATA[7]);
 		
 		txQ.push(sendMsg);
 	}
+	
+	for (int j=0; j<8; j++) sendMsg.DATA[j] = 0;
 	
 	if (r > 0) {
 		sendMsg.LEN = r;
@@ -96,7 +98,7 @@ bool LpmsCanIo::sendModbusData(unsigned address, unsigned function,
 			sendMsg.DATA[j] = txData[p*8+j];
 		}
 		
-		/* printf("Msg. push %x %x %x %x %x %x %x %x\n", sendMsg.DATA[0], sendMsg.DATA[1], sendMsg.DATA[2], sendMsg.DATA[3], sendMsg.DATA[4], sendMsg.DATA[5], sendMsg.DATA[6], sendMsg.DATA[7]); */
+		printf("[LpmsCanIo] Sending CAN msg %x to ID=%d: %x %x %x %x %x %x %x %x\n", sendMsg.ID, address, sendMsg.DATA[0], sendMsg.DATA[1], sendMsg.DATA[2], sendMsg.DATA[3], sendMsg.DATA[4], sendMsg.DATA[5], sendMsg.DATA[6], sendMsg.DATA[7]);
 		
 		txQ.push(sendMsg);
 	}	

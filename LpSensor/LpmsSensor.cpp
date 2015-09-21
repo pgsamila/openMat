@@ -99,7 +99,11 @@ const float pi = 3.141592f;
 	
 	case DEVICE_LPMS_BLE:
 		bt = new LpmsBle(&(this->configData));
-	break;	
+	break;
+	
+	case DEVICE_LPMS_TCP:
+		bt = new LpmsTcp(&(this->configData));
+	break;
 #endif
 
 #ifdef __GNUC__

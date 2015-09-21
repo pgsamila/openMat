@@ -198,7 +198,9 @@ void LpmsSensorManager::run(void)
 				printf("[LpmsSensorManager] List RS232 devices\n");
 				LpmsRS232::listDevices(&deviceList);
 			}
+			
 			LpmsU::listDevices(&deviceList);
+			LpmsTcp::listDevices(&deviceList);
 			LpmsBBluetooth::listDevices(&deviceList);			
 
 			managerState = SMANAGER_MEASURE;
@@ -271,6 +273,11 @@ LpmsSensorI* LpmsSensorManager::addSensor(int mode, const char *deviceId)
 		((LpmsRS232 *)sensor->getIoInterface())->setRs232Baudrate(currentUartBaudrate);
 		sensorList.push_back(sensor);
 	break;
+	
+	case DEVICE_LPMS_TCP:	
+		sensor = new LpmsSensor(DEVICE_LPMS_TCP, deviceId);
+		sensorList.push_back(sensor);
+	break;	
 	}
 	
 	lm.unlock();

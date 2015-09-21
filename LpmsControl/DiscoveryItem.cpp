@@ -66,6 +66,11 @@ DiscoveryItem::DiscoveryItem(QTreeWidget* tree, string deviceId, int deviceType,
 		gl->addWidget(interfaceTypeItem = new QLabel("RS-232"), 1, 1);
 		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-CUR (Port: ") + deviceId.c_str() + ")"));
 	break;
+	
+	case DEVICE_LPMS_TCP:
+		gl->addWidget(interfaceTypeItem = new QLabel("TCP"), 1, 1);
+		treeItem = new QTreeWidgetItem(tree, QStringList(QString("LPMS-TCP (Address: ") + deviceId.c_str() + ")"));
+	break;	
 	}
 
 	QTreeWidgetItem* subTreeItem = new QTreeWidgetItem(treeItem);

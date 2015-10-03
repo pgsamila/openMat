@@ -28,7 +28,7 @@ extern uint32_t lpmsStatus;
 extern float pressure;
 extern float temperature;
 extern float heaveY;
-extern float measurementTime;
+extern uint32_t measurementTime;
 extern uint8_t transferFormat;
 extern LpVector4f mQ_hx;
 extern LpVector4f mQ_offset;

@@ -160,7 +160,7 @@ void LpmsSensorManager::run(void)
 #endif
 
 	mm.reset();
-	
+	int sleepFlag = 0;
 	while (stopped == false) {	
 		switch (managerState) {
 		case SMANAGER_MEASURE:
@@ -183,7 +183,19 @@ void LpmsSensorManager::run(void)
 					(*i)->update();				
 				}
 				lm.unlock();
-			}	
+			}
+#ifdef _WIN32
+			else {
+				// Busy Wait hack
+				if (sleepFlag++ > 10)
+				{
+					std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+					sleepFlag = 0;
+				}
+				else
+					std::this_thread::yield();
+			}
+#endif
 		break;
 
 		case SMANAGER_LIST:

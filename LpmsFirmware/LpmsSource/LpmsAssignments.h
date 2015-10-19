@@ -55,7 +55,7 @@ float getFloat(uint8_t* data);
 void setUi32t(uint8_t* data, uint32_t v);
 
 // Sets 32-bit float to communication data
-void setFloat(uint8_t* data, float f, uint8_t prec);
+void setFloat(uint8_t* data, float v, uint8_t prec);
 
 // Sets 32-bit unsigned integer array to communication data 
 void setMultiUi32t(uint8_t* data, uint32_t *v, int l);

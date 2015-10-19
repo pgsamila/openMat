@@ -72,6 +72,7 @@ LpVector3f accRawDataLp;
 LpVector3f magRawDataLp;
 LpVector3f tB;
 static float d2r = 0.01745f;
+static float r2d = 57.2958f;
 uint32_t measurementTime = 0;
 float sendTime = 0.0f;
 LpVector3f heaveOutput;
@@ -788,7 +789,7 @@ uint8_t getSensorDataAscii(uint8_t* data, uint16_t *l)
 {
   	uint16_t o = 0;
     	uint8_t sl;
-	float mT = measurementTime * lpmsMeasurementPeriod; // lpmsMeasurementPeriod;
+	float mT = measurementTime * lpmsMeasurementPeriod;
 
 	setUi32tAscii(&(data[o]), &sl, (uint32_t)(mT * 1000.0f)); o = o+sl;
 	data[o] = ','; ++o;
@@ -1038,7 +1039,11 @@ uint8_t getSensorData(uint8_t* data, uint16_t *l)
                         
                 if ((gReg.data[LPMS_CONFIG] & LPMS_EULER_OUTPUT_ENABLED) != 0)  {
                         for (int i=0; i<3; i++) {
+#ifdef EULER_ANGLE_DEGREE
+                                setFloat(&(data[i*4 + o]), rAfterOffset.data[i]*r2d, FLOAT_FULL_PRECISION);
+#else
                                 setFloat(&(data[i*4 + o]), rAfterOffset.data[i], FLOAT_FULL_PRECISION);
+#endif
                         }
                         o = o+12;
                 }	

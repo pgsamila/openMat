@@ -232,9 +232,15 @@ void setFloat(uint8_t* data, float v, uint8_t prec)
 	
 	switch (prec) {
 	case FLOAT_FULL_PRECISION:
+#ifdef BIG_ENDIAN
 		for (int i=0; i<4; i++) {
 			data[i] = (f >> (i * 8)) & (uint8_t) 0xff;
 		}
+#else
+		for (int i=3; i>0; i--) {
+			data[i] = (f >> ((3-i) * 8)) & (uint8_t) 0xff;
+		}
+#endif
 	break;
 
 	case FLOAT_FIXED_POINT_1:

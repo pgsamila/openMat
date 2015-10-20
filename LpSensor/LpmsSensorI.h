@@ -145,6 +145,10 @@ public:
 	virtual void startMagMisalignCal(int i) = 0; 
 	virtual void checkMagMisalignCal(float T) = 0;
 	virtual void calcMagMisalignCal(void) = 0;
+	virtual void initTempCal(void) = 0;
+	virtual void startTempCal(int i) = 0;
+	virtual void checkTempCal(float T) = 0;
+	virtual void calcTempCal(void) = 0;
 
 /***********************************************************************
 ** DATA RECORDING

@@ -32,7 +32,7 @@
 #define LPMS_MEASUREMENT_PERIOD 0.00125f //800Hz
 #define PRESSURE_T 400
 
-// Possible durations of manual gyroscope bias clibration
+// Possible durations of manual gyroscope bias calibration
 #define LPMS_GYR_CALIBRATION_DURATION_5S 	(5.0f)
 #define LPMS_GYR_CALIBRATION_DURATION_10S	(10.0f)
 #define LPMS_GYR_CALIBRATION_DURATION_15S 	(15.0f)
@@ -79,7 +79,7 @@ void calcLinearAcceleration(void);
 // Waits until sending data has been compleyted
 void waitForSendCompleted(void);
 
-// Does oone gyroscope calibration step
+// Does one gyroscope calibration step
 void checkGyrCal(void);
 
 // Performs one magnetomteer calibration step
@@ -105,6 +105,12 @@ void startMagCalibration(void);
 
 // Stops magnetometer calibration
 void stopMagCalibration(void);
+
+void startTempCalibration(void);
+
+void checkTempCal(void);
+
+void stopTempCalibration(void);
 
 // Retrieves current sensor data
 uint8_t getSensorData(uint8_t* data, uint16_t *l);

@@ -567,10 +567,7 @@ void LpmsSensor::update(void)
 		checkGyrMisalignCal(frameTime);
 		checkMagMisalignCal(frameTime);
 		checkMagReferenceCal(frameTime);
-		
-		if ((bt->getConfigReg() & LPMS_GAIT_TRACKING_ENABLED) != 0) {
-			gm.update(&imuData);
-		}
+		checkTempCal(frameTime);
 		
 		// Sets current data
 		setCurrentData(imuData);
@@ -2336,7 +2333,247 @@ void LpmsSensor::calcMagMisalignCal(void)
 	updateParameters();
 }
 
+// initializes temperature calibration
+void LpmsSensor::initTempCal(void)
+{
+	printf("initTempCal called \n");
 
+	int p;
+
+	if (isGetTempCalEnabled == true) return;
+
+	// run time variables
+	isGetTempCalEnabled = false;
+	tempCalSetIndex = 0;
+	tempCalSamples = 0;
+	tempCalTime = 0.0f;
+
+	// zero data container
+	for (int i = 0; i<N_TEMP_CAL_SETS; i++) {
+		vectZero3x1(&tempCalAData[i]);
+		vectZero3x1(&tempCalGData[i]);
+		tempCalTData[i] = 0.0f;	
+	}
+	
+	// zero averaging accumulator
+	vectZero3x1(&tempCalADataAcc);
+	vectZero3x1(&tempCalGDataAcc);
+	tempCalTDataAcc = 0.0f;
+
+	// select calibration measuerement data and save old data selection
+	configData.getParameter(PRM_SELECT_DATA, &prevDataSelection);
+
+	p = SELECT_LPMS_GYRO_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_ACC_OUTPUT_ENABLED;
+	p |= SELECT_LPMS_TEMPERATURE_OUTPUT_ENABLED;
+
+	configData.setParameter(PRM_SELECT_DATA, p);
+	updateParameters();
+
+	printf("initTempCal passed \n");
+}
+
+// start a new calibration set
+void LpmsSensor::startTempCal(int i)
+{
+	printf("startTempCal called \n");
+
+	if (i < N_TEMP_CAL_SETS) {
+		// zero all indices and accumulators
+		isGetTempCalEnabled = true;
+		tempCalSetIndex = i;
+		tempCalSamples = 0;
+		tempCalTime = 0.0f;
+
+		vectZero3x1(&tempCalADataAcc);
+		vectZero3x1(&tempCalGDataAcc);
+		tempCalTDataAcc = 0.0f;
+	}
+	printf("startTempCal passed \n");
+}
+
+// read currently measured data and insert into calibration accumulators
+void LpmsSensor::checkTempCal(float T)
+{
+	if (isGetTempCalEnabled == true) {
+		
+		// add to accumulators
+		for (int i=0; i<3; i++) {
+			tempCalADataAcc.data[i] += aRaw.data[i];
+			tempCalGDataAcc.data[i] += gRaw.data[i];
+		}
+		tempCalTDataAcc += currentData.temperature;
+
+		++tempCalSamples;
+		tempCalTime += T;
+
+		// if 10s of measurement have been done, calculate average and save
+		if (tempCalTime > 10000.0f) {
+			isGetTempCalEnabled = false;
+
+			for (int i=0; i<3; i++) {	
+				if (tempCalSamples == 0) break;
+				tempCalAData[tempCalSetIndex].data[i] = tempCalADataAcc.data[i] / tempCalSamples;
+				tempCalGData[tempCalSetIndex].data[i] = tempCalGDataAcc.data[i] / tempCalSamples;
+			}
+			tempCalTData[tempCalSetIndex] = tempCalTDataAcc / tempCalSamples;
+
+			printf("tempCalAData: %f \n", tempCalAData[tempCalSetIndex].data[2]);
+			printf("tempCalTData: %f \n", tempCalTData[tempCalSetIndex]);
+			
+			vectZero3x1(&tempCalADataAcc);
+			vectZero3x1(&tempCalGDataAcc);
+
+			tempCalSamples = 0;
+			tempCalTime = 0.0f;
+		}
+	}
+}
+
+// calculate new calibration parameters from averaged data sets
+void LpmsSensor::calcTempCal(void)
+{
+	printf("calcTempCal called \n");
+
+	// tempCalAData[i].data[j] <- accelerometer data with i = 0..1 (calibration point 0, 1), j = 0..2 (x, y, z)
+	// tempCalGData[i].data[j] <- gyroscope data with i = 0..1 (calibration point 0, 1), j = 0..2 (x, y, z)	
+	// tempCalTData[i] <- temperature data with i = 0..1 (calibration point 0, 1)
+
+	float currentTemp = currentData.temperature;
+	
+	for (int i = 0; i < 3; ++i){
+		da.data[i] = tempCalAData[1].data[i] - tempCalAData[0].data[i];
+		dg.data[i] = tempCalGData[1].data[i] - tempCalGData[0].data[i];
+	}
+	float dt = tempCalTData[1] - tempCalTData[0];
+	
+	
+	//calibratedA.data[2] = calibratedA.data[2] + 1.0;
+	LpVector3f refTempA;
+	LpVector3f refTempG;
+	vectZero3x1(&refTempA);
+	vectZero3x1(&refTempG);
+	for (int i = 0; i < 3; ++i) {
+		refTempA.data[i] = tempCalTData[0] - (tempCalAData[0].data[i] / (da.data[i] / dt));
+		refTempG.data[i] = tempCalTData[0] - (tempCalGData[0].data[i] / (dg.data[i] / dt));
+	}
+	
+
+	/*
+	for (int i=0; i<3; ++i) {
+		float epsilon = 1e-2;
+		//interpolate if the temperature difference is significant
+		if (fabs(dt) > epsilon) {
+			if (currentTemp > tempCalTData[1]){
+				accTempCalOffset.data[i] = tempCalAData[1].data[i] + (da.data[i] / dt) * (currentTemp - tempCalTData[1]);
+				gyrTempCalOffset.data[i] = tempCalGData[1].data[i] + (dg.data[i] / dt) * (currentTemp - tempCalTData[1]);
+			}
+			else{
+				accTempCalOffset.data[i] = tempCalAData[0].data[i] + (da.data[i] / dt) * (currentTemp - tempCalTData[0]);
+				gyrTempCalOffset.data[i] = tempCalGData[0].data[i] + (dg.data[i] / dt) * (currentTemp - tempCalTData[0]);
+			}
+		}
+		else {
+			// If the temperature difference is not significant, assign the average of point 0 & 1 as calibrated data
+			accTempCalOffset.data[i] = (tempCalAData[0].data[i] + tempCalAData[1].data[i]) / 2;
+			gyrTempCalOffset.data[i] = (tempCalGData[0].data[i] + tempCalGData[1].data[i]) / 2;
+		}
+	}
+	*/
+
+	/*
+	isGetTempCalEnabled = true;
+	tempCalSamples = 0;
+	//LpVector3f accumulatorAcc;
+	LpVector3f accumulatorGyr;
+	//LpVector3f accAve;
+	LpVector3f gyrAve;
+	//vectZero3x1(&accumulatorAcc);
+	vectZero3x1(&accumulatorGyr);
+	//vectZero3x1(&accAve);
+	vectZero3x1(&gyrAve);
+
+	// When 10s of measurement have been done, calculate average and save
+	clock_t start, end;
+	start = clock();
+	while (isGetTempCalEnabled){
+		end = clock();
+		tempCalSamples++;
+		for (int i = 0; i < 3; ++i) {
+			//accumulatorAcc.data[i] = accumulatorAcc.data[i] + aRaw.data[i];
+			accumulatorGyr.data[i] = accumulatorGyr.data[i] + gRaw.data[i];
+		}
+		if (((double)(end - start) / CLOCKS_PER_SEC) > 10.0f) {
+			isGetTempCalEnabled = false;
+		}
+	}
+	for (int i = 0; i < 3; ++i) {
+		//accAve.data[i] = accumulatorAcc.data[i] / tempCalSamples;
+		gyrAve.data[i] = accumulatorGyr.data[i] / tempCalSamples;
+	}
+
+	//calibratedA.data[2] = calibratedA.data[2] + 1.0;
+	LpVector3f refTempA;
+	LpVector3f refTempG;
+	LpVector3f accTempCalOffset;
+	LpVector3f gyrTempCalOffset;
+	vectZero3x1(&refTempA);
+	vectZero3x1(&refTempG);
+	vectZero3x1(&accTempCalOffset);
+	vectZero3x1(&gyrTempCalOffset);
+	for (int i = 0; i < 3; ++i) {
+		refTempA.data[i] = tempCalTData[0] - (tempCalAData[0].data[i] / (da.data[i] / dt));
+		refTempG.data[i] = tempCalTData[0] - (tempCalGData[0].data[i] / (dg.data[i] / dt));
+
+		accTempCalOffset.data[i] = (da.data[i] / dt) * (refTempA.data[i] - currentTemp);
+		gyrTempCalOffset.data[i] = (dg.data[i] / dt) * (refTempG.data[i] - currentTemp);
+		
+		//calibratedA.data[i] = interpolatedA.data[i] + accTempCalOffset.data[i];
+		//calibratedG.data[i] = interpolatedG.data[i] + gyrTempCalOffset.data[i];
+		calibratedA.data[i] = aRaw.data[i] + accTempCalOffset.data[i];
+		calibratedG.data[i] = gyrAve.data[i] + gyrTempCalOffset.data[i];
+	}
+
+	calibratedA.data[2] = calibratedA.data[2] - 1.0;
+
+
+	printf("Interpolated A0: %f \n", interpolatedA.data[0]);
+	printf("Interpolated A1: %f \n", interpolatedA.data[1]);
+	printf("Interpolated A2: %f \n", interpolatedA.data[2]);
+	printf("Original A2 (at point 0, 1): %f, %f \n\n", tempCalAData[0].data[2], tempCalAData[1].data[2]);
+	printf("Temperature (at point 0, 1): %f, %f \n", tempCalTData[0], tempCalTData[1]);	
+	printf("dt: %f \n\n", dt);
+
+	printf("Interpolated G0: %f \n", interpolatedG.data[0]);
+	printf("Interpolated G1: %f \n", interpolatedG.data[1]);
+	printf("Interpolated G2: %f \n", interpolatedG.data[2]);
+	printf("Original G2 (at point 0, 1): %f, %f \n\n", tempCalGData[0].data[2], tempCalGData[1].data[2]);
+
+	printf("accSlope: %f, %f, %f \n", (da.data[0] / dt), (da.data[1] / dt), (da.data[2] / dt));
+	printf("gyrSlope: %f, %f, %f \n", (dg.data[0] / dt), (dg.data[1] / dt), (dg.data[2] / dt));
+	printf("tempCalAData0: %f, %f, %f \n", tempCalAData[0].data[0], tempCalAData[0].data[1], tempCalAData[0].data[2]);
+	printf("tempCalAData1: %f, %f, %f \n", tempCalAData[1].data[0], tempCalAData[1].data[1], tempCalAData[1].data[2]);
+	printf("tempCalGData0: %f, %f, %f \n", tempCalGData[0].data[0], tempCalGData[0].data[1], tempCalGData[0].data[2]);
+	printf("tempCalGData1: %f, %f, %f \n", tempCalGData[1].data[0], tempCalGData[1].data[1], tempCalGData[1].data[2]);
+	printf("tempCalTData: %f, %f \n", tempCalTData[0], tempCalTData[1]);
+	printf("currentTemp: %f \n", currentTemp);
+
+
+	printf("Ref Temp Acc: %f %f %f \n", refTempA.data[0], refTempA.data[1], refTempA.data[2]);
+	printf("Ref Temp Gyr: %f %f %f \n", refTempG.data[0], refTempG.data[1], refTempG.data[2]);
+	printf("Acc Offset: %f %f %f \n", accTempCalOffset.data[0], accTempCalOffset.data[1], accTempCalOffset.data[2]);
+	printf("Gyr Offset: %f %f %f \n\n", gyrTempCalOffset.data[0], gyrTempCalOffset.data[1], gyrTempCalOffset.data[2]);
+	//printf("accAve: %f %f %f \n", accAve.data[0], accAve.data[1], accAve.data[2]);
+	printf("gyrAve: %f %f %f \n\n", gyrAve.data[0], gyrAve.data[1], gyrAve.data[2]);
+	printf("Acc calilbrated with offset: %f %f %f \n", calibratedA.data[0], calibratedA.data[1], calibratedA.data[2]);
+	printf("Gyr calilbrated with offset: %f %f %f \n", calibratedG.data[0], calibratedG.data[1], calibratedG.data[2]);
+	*/
+
+	printf("calcTempCal passed \n");
+
+	configData.setParameter(PRM_SELECT_DATA, prevDataSelection);
+	updateParameters();
+}
 
 /***********************************************************************
 ** DATA RECORDING

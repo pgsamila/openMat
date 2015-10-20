@@ -25,7 +25,7 @@ int main(void)
 
 	initIWatchdog();
 	setGPIOConfig();
-	setSystemStepTimer();	
+	setSystemStepTimer();
 	initSensorManager();
 	initCommunicationManager();
 
@@ -44,7 +44,7 @@ int main(void)
 
 			++ledC;
 			ledC %= ledFlashTime;
-			if (ledC == 0) 
+			if (ledC == 0)
 			{
 				updateAliveLed();
 				USART_SendData(USART_PORT, 'b');
@@ -71,7 +71,7 @@ int main(void)
 				if (sendCounter >= getTransferCycles()) {
 					sendCounter = 0;
 					clearStreamModeTransferReady();
-					
+
 #ifdef LPMS_BLE
 					if (connectedInterface != USB_CONNECTED) {
 						sendQueue();
@@ -79,24 +79,24 @@ int main(void)
 #endif
 				}
 
-#ifdef LPMS_BLE			
+#ifdef LPMS_BLE
 				if (connectedInterface == USB_CONNECTED) {
 					sendQueue();
 				}
 #else
 				sendQueue();
 #endif
-	
+
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
 				pollSerialPortData();
 				rs232PortPollData();
 #elif defined USE_TTL_UART_INTERFACE
-				pollSerialPortData();			
+				pollSerialPortData();
 #ifdef LPMS_BLE
 				ttlUsartPortPollDataBle();
 #else
-				ttlUsartPortPollData();			
+				ttlUsartPortPollData();
 #endif
 #else
 				pollSerialPortData();
@@ -106,33 +106,33 @@ int main(void)
 				pollBluetoothData();
 #endif
 				parsePacket();
-			}			
-		} else if (getCurrentMode() == LPMS_STREAM_MODE) {	
+			}
+		} else if (getCurrentMode() == LPMS_STREAM_MODE) {
 			if (systemStepTimeout == 1) {
-			  
-				/* STOPWATCH_STOP;	
+
+				/* STOPWATCH_STOP;
 				dt = CalcNanosecondsFromStopwatch(m_nStart, m_nStop);
 				STOPWATCH_START; */
-			  
-				systemStepTimeout = 0;				
+
+				systemStepTimeout = 0;
 				++ledC;
 				ledC %= ledFlashTime;
 				if (ledC == 0) {
 					updateAliveLed();
 				}
 				resetIWatchdog();
-				
+
 				updateSensorData();
-				
+
 				processSensorData();
-				
+
 				++sendCounter;
 				if (sendCounter >= getTransferCycles()) {
 					sendCounter = 0;
 
 					clearStreamModeTransferReady();
 					updateDataTransmission();
-					
+
 #ifdef LPMS_BLE
 					if (connectedInterface != USB_CONNECTED) {
 						sendQueue();
@@ -141,25 +141,25 @@ int main(void)
 				}
 
 
-#ifdef LPMS_BLE			
+#ifdef LPMS_BLE
 				if (connectedInterface == USB_CONNECTED) sendQueue();
 #else
 				sendQueue();
 #endif
-	
+
 #ifdef USE_CANBUS_INTERFACE
 #ifdef USE_RS232_INTERFACE
 				pollSerialPortData();
 				rs232PortPollData();
 #elif defined USE_TTL_UART_INTERFACE
 				pollSerialPortData();
-				
+
 #ifdef LPMS_BLE
 				ttlUsartPortPollDataBle();
 #else
-				ttlUsartPortPollData();			
+				ttlUsartPortPollData();
 #endif
-				
+
 #else
 				pollSerialPortData();
 				pollCanBusData();
@@ -168,7 +168,7 @@ int main(void)
 				pollBluetoothData();
 #endif
 				parsePacket();
-				
+
 			}
 		}
   	}

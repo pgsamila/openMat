@@ -37,6 +37,7 @@
 #include <mutex>
 #include <iomanip>
 #include <queue>
+#include <time.h>
 
 #ifdef _WIN32
 	#include "windows.h"
@@ -185,6 +186,7 @@
 #define WAIT_FIRMWARE_WRITE_TIME 15000000
 #define N_ALIGNMENT_SETS 6
 #define N_MAG_ALIGNMENT_SETS 12
+#define N_TEMP_CAL_SETS 2
 #define LPMS_MAG_CALIBRATION_DURATION_20S 20000
 #define CALC_GYR_MA_DURATION 5000.0f
 #define LPMS_REF_CALIBRATION_DURATION_1S 1000.0f
@@ -300,6 +302,10 @@ public:
 	void startMagMisalignCal(int i); 
 	void checkMagMisalignCal(float T);
 	void calcMagMisalignCal(void);
+	void initTempCal(void);
+	void startTempCal(int i);
+	void checkTempCal(float T);
+	void calcTempCal(void);
 
 /***********************************************************************
 ** DATA RECORDING
@@ -354,6 +360,24 @@ private:
 	LpVector3f gyrMisalignBData[N_ALIGNMENT_SETS];
 	LpVector3f magMisalignAData[N_MAG_ALIGNMENT_SETS];
 	LpVector3f magmisalignBData[N_MAG_ALIGNMENT_SETS];
+
+	bool isGetTempCalEnabled = false;
+	int tempCalSetIndex = 0;
+	int tempCalSamples = 0;
+	int tempCalTime = 0.0f;
+	LpVector3f tempCalAData[N_TEMP_CAL_SETS];
+	LpVector3f tempCalGData[N_TEMP_CAL_SETS];
+	float tempCalTData[N_TEMP_CAL_SETS];
+	LpVector3f tempCalADataAcc;
+	LpVector3f tempCalGDataAcc;
+	float tempCalTDataAcc = 0.0f;
+	LpVector3f accTempCalOffset;
+	LpVector3f gyrTempCalOffset;
+	LpVector3f calibratedA;
+	LpVector3f calibratedG;
+	LpVector3f da;
+	LpVector3f dg;
+
 	bool isGetMisalign;
 	bool isGetGyrMisalign;
 	int misalignSetIndex;

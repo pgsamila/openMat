@@ -187,13 +187,11 @@ void LpmsSensorManager::run(void)
 #ifdef _WIN32
 			else {
 				// Busy Wait hack
-				if (sleepFlag++ > 10)
+				if (sleepFlag++ > 100)
 				{
 					std::this_thread::sleep_for(std::chrono::nanoseconds(10));
 					sleepFlag = 0;
 				}
-				else
-					std::this_thread::yield();
 			}
 #endif
 		break;

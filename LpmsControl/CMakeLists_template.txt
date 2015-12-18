@@ -65,23 +65,23 @@ endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	# QWT
-    set(WINDOWS_QWT_PATH "C:/Opt/qwt-6.1.2" CACHE STRING "")
+    set(WINDOWS_QWT_PATH "C:/Opt/qwt-6.1.0" CACHE STRING "")
     include_directories("${WINDOWS_QWT_PATH}/src")
     link_directories("${WINDOWS_QWT_PATH}/lib32")
 	
 	# QT
-	set(WINDOWS_QT5_PATH "C:/Opt/Qt/Qt5.4.2/5.4/msvc2013_opengl" CACHE STRING "")
+	set(WINDOWS_QT5_PATH "C:/Opt/Qt/Qt5.3.2/5.3/msvc2013_opengl" CACHE STRING "")
 	
 	# FTDI
     set(WINDOWS_FTDI_PATH "C:/Opt/Ftdi-2.1" CACHE STRING "")
     include_directories("${WINDOWS_FTDI_PATH}")
     
 	# Boost
-	set(WINDOWS_BOOST_PATH "C:/Opt/Boost/boost_1_55_0" CACHE STRING "")
+	set(WINDOWS_BOOST_PATH "C:/Opt/Boost/boost_1_60_0" CACHE STRING "")
     include_directories("${WINDOWS_BOOST_PATH}")
     
 	# Pugixml
-	set(WINDOWS_PUGIXML_PATH "C:/Opt/pugixml-1.6" CACHE STRING "")
+	set(WINDOWS_PUGIXML_PATH "C:/Opt/pugixml-1.7" CACHE STRING "")
     include_directories("${WINDOWS_PUGIXML_PATH}/src")
     
 	# Eigen

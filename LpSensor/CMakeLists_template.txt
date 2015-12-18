@@ -73,11 +73,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     include_directories("${WINDOWS_PCAN_PATH}/Include")
 	
 	# Boost
-    set(WINDOWS_BOOST_PATH "C:/Opt/Boost/boost_1_55_0" CACHE STRING "")
+    set(WINDOWS_BOOST_PATH "C:/Opt/Boost/boost_1_60_0" CACHE STRING "")
     include_directories("${WINDOWS_BOOST_PATH}")
     
 	# Pugixml
-	set(WINDOWS_PUGIXML_PATH "C:/Opt/pugixml-1.6" CACHE STRING "")
+	set(WINDOWS_PUGIXML_PATH "C:/Opt/pugixml-1.7" CACHE STRING "")
     include_directories("${WINDOWS_PUGIXML_PATH}/src")
 
 	# FTDI

@@ -46,52 +46,56 @@ set(OPENMAT_VERSION "${OPENMAT_VERSION_MAJOR}.${OPENMAT_VERSION_MINOR}.${OPENMAT
 
 set(CMAKE_BUILD_TYPE "Release")
 # set(CMAKE_BUILD_TYPE "Debug")
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+#set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 
 set(USE_JUST_THREAD CACHE BOOL "")
 
-set(BUILD_ARCHITECTURE "64-bit" CACHE STRING "")
+set(BUILD_ARCHITECTURE "32-bit" CACHE STRING "")
 set_property(CACHE BUILD_ARCHITECTURE PROPERTY STRINGS "32-bit" "64-bit")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     set(SHOW_CONSOLE TRUE)
-    set(EXECUTABLE_OUTPUT_PATH "./build/release")
-    set(LIBRARY_OUTPUT_PATH "./build/release")
+	set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
 endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(SHOW_CONSOLE TRUE)
-    set(EXECUTABLE_OUTPUT_PATH "./build/debug")
-    set(LIBRARY_OUTPUT_PATH "./build/debug")
+	set(LIBRARY_OUTPUT_PATH ./build CACHE STRING "")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(WINDOWS_QWT_PATH "C:/Opt/Qwt" CACHE STRING "")
-    set(WINDOWS_QT5_PATH "C:/Opt/Qt/Qt5.4.0/5.4/msvc2013_opengl" CACHE STRING "")
-    set(WINDOWS_EIGEN_PATH "C:/Opt/Eigen")
-	set(WINDOWS_SDK_PATH "C:/Opt/WindowsSdk/v7.1A" CACHE STRING "")
-	set(WINDOWS_FTDI_PATH "C:/Opt/Ftdi" CACHE STRING "")
-	set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
-	set(WINDOWS_PCAN_PATH "C:/Opt/PcanBasicApi" CACHE STRING "")
-	set(WINDOWS_BOOST_PATH "C:/Opt/Boost" CACHE STRING "")
-	set(WINDOWS_PUGIXML_PATH "C:/Opt/Pugixml" CACHE STRING "")
-
-    include_directories("${WINDOWS_BOOST_PATH}")
-    include_directories("${WINDOWS_PUGIXML_PATH}/src")
+	# QWT
+    set(WINDOWS_QWT_PATH "C:/Opt/qwt-6.1.2" CACHE STRING "")
+    include_directories("${WINDOWS_QWT_PATH}/src")
+    link_directories("${WINDOWS_QWT_PATH}/lib32")
+	
+	# QT
+	set(WINDOWS_QT5_PATH "C:/Opt/Qt/Qt5.4.2/5.4/msvc2013_opengl" CACHE STRING "")
+	
+	# FTDI
+    set(WINDOWS_FTDI_PATH "C:/Opt/Ftdi-2.1" CACHE STRING "")
     include_directories("${WINDOWS_FTDI_PATH}")
+    
+	# Boost
+	set(WINDOWS_BOOST_PATH "C:/Opt/Boost/boost_1_55_0" CACHE STRING "")
+    include_directories("${WINDOWS_BOOST_PATH}")
+    
+	# Pugixml
+	set(WINDOWS_PUGIXML_PATH "C:/Opt/pugixml-1.6" CACHE STRING "")
+    include_directories("${WINDOWS_PUGIXML_PATH}/src")
+    
+	# Eigen
+	set(WINDOWS_EIGEN_PATH "C:/Opt/Eigen-3.2.1")
     include_directories("${WINDOWS_EIGEN_PATH}")
 
+	# LPSensor
     include_directories("../LpSensor")
-
-	if (USE_JUSTTHREAD)
-		include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
-		link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
-	endif()
-
-    include_directories("${WINDOWS_QWT_PATH}/src")
-    link_directories("${WINDOWS_QWT_PATH}/lib")
-
     link_directories("../LpSensor/build")
+
+	# Just Thread
+    #set(WINDOWS_JUSTTHREAD_PATH "C:/Program Files (x86)/JustSoftwareSolutions/JustThread" CACHE STRING "")
+    #include_directories("${WINDOWS_JUSTTHREAD_PATH}/include")
+    #link_directories("${WINDOWS_JUSTTHREAD_PATH}/lib")
 
     ADD_DEFINITIONS(-DUSE_EIGEN)
     ADD_DEFINITIONS(-DQWT_DLL)

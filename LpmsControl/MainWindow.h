@@ -89,7 +89,7 @@ using namespace boost;
 #define MODE_FIELDMAP_WIN 2
 #define MODE_GAIT_TRACKING_WIN 3
 
-#define LPMS_CONTROL_VERSION "1.3.4"
+#define LPMS_CONTROL_VERSION "1.3.5 (4EEEE4B)"
 
 #define GRAPH_UPDATE_PERIOD 25000
 
@@ -297,7 +297,7 @@ private:
 	bool isMagPlanarCalOn;
 	QWizard* magEllipsoidCalWizard;
 	QWizard* magPlanarCalWizard;
-	MotionBuilderCommunication mbcom;
+	//MotionBuilderCommunication mbcom;
 };
 
 #endif

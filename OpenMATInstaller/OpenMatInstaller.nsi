@@ -1,6 +1,6 @@
-!define OPENMAT_VERSION_NAME "OpenMAT-1.3.4"
+!define OPENMAT_VERSION_NAME "OpenMAT-1.3.5"
 # !define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1-vs2010\5.2.1\msvc2010_opengl"
-!define QT_BASE_DIRECTORY "C:\Qt\Qt5.2.1\5.2.1\msvc2010_opengl"
+!define QT_BASE_DIRECTORY "C:\Opt\Qt\Qt5.3.2\5.3\msvc2013_opengl"
 
 Name ${OPENMAT_VERSION_NAME}
 OutFile "${OPENMAT_VERSION_NAME}-Setup.exe"
@@ -41,14 +41,14 @@ Section "OpenMAT (required)"
 	SetOutPath $INSTDIR\lib
 	SetOutPath $INSTDIR\lib\x86
 	
-	File "..\LpSensor\build\LpSensorD.lib"
-	File "..\LpSensor\build\LpSensorD.dll"
-	File "..\LpSensor\build\LpSensor.lib"
-	File "..\LpSensor\build\LpSensor.dll"
+	File "..\LpSensor\buildD\Debug\LpSensorD.lib"
+	File "..\LpSensor\buildD\Debug\LpSensorD.dll"
+	File "..\LpSensor\build\Release\LpSensor.lib"
+	File "..\LpSensor\build\Release\LpSensor.dll"
 	
-	File "c:\ftdi\i386\ftd2xx.dll"
-	File "c:\qwt-6.1.0\lib\qwt.dll"
-	File "c:\pcan-basic\Win32\PCANBasic.dll"
+	File "C:\Opt\Ftdi-2.1\i386\ftd2xx.dll"
+	File "C:\Opt\qwt-6.1.0\lib32\qwt.dll"
+	File "C:\Opt\PCAN-BasicAPI\Win32\PCANBasic.dll"
 	
 	SetOutPath $INSTDIR\examples\simple
 	File "..\LpmsSimpleExample\main.cpp"
@@ -63,10 +63,9 @@ Section "OpenMAT (required)"
 	
 	SetOutPath $INSTDIR\bin
 	File "..\LpmsControl\build\Release\LpmsControl.exe"
-	File "..\LpMocap\build\Release\LpMocap.exe"
 	File "..\LpmsControl\LpSplash.png"
 	File "..\LpmsControl\README"
-	File "..\LpSensor\build\LpSensor.dll"	
+	File "..\LpSensor\build\Release\LpSensor.dll"	
 	File "..\LpmsControl\Icon.ico"
 	File "..\LpmsControl\LpmsStyles.qss"
 	File "${QT_BASE_DIRECTORY}\bin\Qt5Core.dll"
@@ -76,16 +75,16 @@ Section "OpenMAT (required)"
 	File "${QT_BASE_DIRECTORY}\bin\Qt5Svg.dll"	
 	File "${QT_BASE_DIRECTORY}\bin\Qt5Network.dll"
 	File "${QT_BASE_DIRECTORY}\bin\Qt5PrintSupport.dll"
-	File "${QT_BASE_DIRECTORY}\bin\icudt51.dll"
-	File "${QT_BASE_DIRECTORY}\bin\icuin51.dll"
-	File "${QT_BASE_DIRECTORY}\bin\icuuc51.dll"
-	File "C:\ftdi\i386\ftd2xx.dll"
-	File "C:\qwt-6.1.0\lib\qwt.dll"
-	File "C:\pcan-basic\Win32\PCANBasic.dll"
-	File "C:\opencv\build\x86\vc10\bin\opencv_core248.dll"
-	File "C:\opencv\build\x86\vc10\bin\opencv_ffmpeg248.dll"	
-	File "C:\opencv\build\x86\vc10\bin\opencv_highgui248.dll"	
-	File "C:\opencv\build\x86\vc10\bin\opencv_imgproc248.dll"
+	File "${QT_BASE_DIRECTORY}\bin\icudt52.dll"
+	File "${QT_BASE_DIRECTORY}\bin\icuin52.dll"
+	File "${QT_BASE_DIRECTORY}\bin\icuuc52.dll"
+	File "C:\Opt\Ftdi-2.1\i386\ftd2xx.dll"
+	File "C:\Opt\qwt-6.1.0\lib32\qwt.dll"
+	File "C:\Opt\PCAN-BasicAPI\Win32\PCANBasic.dll"
+	#File "C:\opencv\build\x86\vc10\bin\opencv_core248.dll"
+	#File "C:\opencv\build\x86\vc10\bin\opencv_ffmpeg248.dll"	
+	#File "C:\opencv\build\x86\vc10\bin\opencv_highgui248.dll"	
+	#File "C:\opencv\build\x86\vc10\bin\opencv_imgproc248.dll"
 	
 	SetOutPath $INSTDIR\bin\platforms	
 	File "${QT_BASE_DIRECTORY}\plugins\platforms\qwindows.dll"
@@ -129,9 +128,9 @@ Section "OpenMAT (required)"
     Delete "$INSTDIR\CDM20824_Setup.exe"
 	
 	SetOutPath $INSTDIR		   
-    File "..\Drivers\VC2010Redistributable\vcredist_x86.exe"
-    ExecWait "$INSTDIR\vcredist_x86.exe /q"         
-    Delete $INSTDIR\vcredist_x86.exe 
+    File "..\Drivers\VC2013Redistributable\vcredist_x64.exe"
+    ExecWait "$INSTDIR\vcredist_x64.exe /q"         
+    Delete $INSTDIR\vcredist_x64.exe 
 SectionEnd
 
 Section "Start Menu Shortcuts"
@@ -139,7 +138,7 @@ Section "Start Menu Shortcuts"
 	CreateDirectory "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}"
 	CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 	CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\LpmsControl.lnk" "$INSTDIR\bin\LpmsControl.exe" "" "$INSTDIR\bin\Icon.ico" 0
-	CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\LpMocap.lnk" "$INSTDIR\bin\LpMocap.exe" "" "$INSTDIR\bin\Icon.ico" 0
+	#CreateShortCut "$SMPROGRAMS\OpenMAT\${OPENMAT_VERSION_NAME}\LpMocap.lnk" "$INSTDIR\bin\LpMocap.exe" "" "$INSTDIR\bin\Icon.ico" 0
 SectionEnd
 
 Section "Uninstall"
@@ -156,6 +155,13 @@ Section "Uninstall"
 
 	Delete $INSTDIR\bin\icons\*.*
 	RMDir $INSTDIR\bin\icons	
+	
+	Delete $INSTDIR\bin\platforms\*.*
+	RMDir $INSTDIR\bin\platforms		
+	
+	Delete $INSTDIR\examples\simple\*.*
+	RMDir $INSTDIR\examples\simple		
+	RMDir $INSTDIR\examples		
 	
 	Delete $INSTDIR\bin\*.*
 	RMDir $INSTDIR\bin

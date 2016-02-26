@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
 	isConnecting = false;
 	calibratingMag	= false;
 	
-	mbcom.startServer();
+	//mbcom.startServer();
 	
 	QTimer* timer = new QTimer(this);
 	connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -517,7 +517,7 @@ bool MainWindow::exitWindow(void)
 	
 	closeSensor();
 	
-	mbcom.stopServer();
+	//mbcom.stopServer();
 	
 	return true;
 }
@@ -758,7 +758,7 @@ void MainWindow::openSensor(void)
 	LpmsSensorI *lpmsDevice = sm->addSensor(mode, deviceAddress.c_str());
 	currentLpms = new SensorGuiContainer(lpmsDevice, lpmsTree);
 
-	mbcom.addSensor(lpmsDevice);
+	//mbcom.addSensor(lpmsDevice);
 	
 	currentLpms->updateData();
 
@@ -786,7 +786,7 @@ void MainWindow::closeSensor(void)
 	if (currentLpms) {
 		SensorGuiContainer *temp = currentLpms;
 
-		mbcom.removeSensor(temp->getSensor());
+		//mbcom.removeSensor(temp->getSensor());
 		
 		sm->removeSensor(temp->getSensor());
 		lpmsList.remove(temp);

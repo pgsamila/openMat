@@ -568,7 +568,7 @@ void MainWindow::timerUpdate(void)
 				cubeWindowContainer->getSelectedCube()->updateData(imuData);			
 			}
 			
-			if ((*it) == currentLpms) {
+			else if ((*it) == currentLpms) {
 #ifdef USE_CALLBACK
 				char id[64];
 

@@ -20,9 +20,8 @@ uint16_t ledC = 0;
 
 int main(void)
 {
+    stopwatch_reset();
 	int sendCounter = 0;
-	// float dt = 0.0f;
-
 	initIWatchdog();
 	setGPIOConfig();
 	setSystemStepTimer();	

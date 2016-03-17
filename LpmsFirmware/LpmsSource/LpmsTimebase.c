@@ -82,6 +82,8 @@ void setTimeoutTimer(void)
 
 void msDelay(uint32_t ms)
 {
+    Delay(ms);
+    /*
 	uint32_t iterations;
 	
 	iterations = ms * 20334;
@@ -89,6 +91,20 @@ void msDelay(uint32_t ms)
 	for( uint32_t i = 0; i < iterations; i++ ) {
 		asm("mov r0, r0");
 	}
+    */
+}
+
+#pragma optimize=none
+void Delay(__IO uint32_t nTime)
+{
+  uint32_t startTick = *((volatile unsigned int *)0xE0001004); 
+  while (1)
+  {
+      uint32_t currentTick= *((volatile unsigned int *)0xE0001004) - startTick;
+      float dt = currentTick*1000.0f/SystemCoreClock; // ms
+      if (dt > nTime)
+        break;
+  }
 }
 
 void startTimeStepCounting(void)

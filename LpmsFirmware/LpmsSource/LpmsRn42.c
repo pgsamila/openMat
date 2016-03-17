@@ -204,37 +204,37 @@ uint8_t bluetoothInitBaudrate(void)
 	bluetoothForceBaudrate9600();
 	bluetoothReset();
 
-	msDelay(50);
+	msDelay(5);
 	bluetoothGotoCommandMode();
-	msDelay(50);
+	msDelay(5);
 	bluetoothSetBaudrate(BT_BAUDRATE_115200);
-	msDelay(50);
+	msDelay(5);
 	
 	bluetoothUseFirmwareBaudrate();
 	bluetoothSetUSARTConfig(BT_BAUDRATE_115200);
 	bluetoothReset();
 	
-	msDelay(50);
+	msDelay(5);
 	bluetoothGotoCommandMode();
-	msDelay(50);	
+	msDelay(5);	
 	bluetoothSetBaudrate(BT_BAUDRATE_921600);
-	msDelay(50);
+	msDelay(5);
 	
 	bluetoothSetUSARTConfig(BT_BAUDRATE_921600);
 	bluetoothReset();
 
-	msDelay(50);	
+	msDelay(5);	
 	bluetoothGotoCommandMode();	
-	msDelay(50);
+	msDelay(5);
 	bluetoothSetName();
-	msDelay(50);
+	msDelay(5);
 	
 #ifdef ENABLE_LOWLATENCY
 	bluetoothEnableLowLatencyOptimization();
 #else
 	bluetoothDisableSpecialCommands();
 #endif
-	msDelay(50);
+	msDelay(5);
 
 	// bluetoothUseFirmwareBaudrate();
 	// bluetoothSetUSARTConfig(baudrate);
@@ -251,13 +251,13 @@ uint8_t bluetoothInitBaudrate(void)
 void bluetoothReset(void)
 {
 	GPIO_WriteBit(BT_RESET_IO_PORT, BT_RESET_IO_PIN, Bit_SET);
-	msDelay(10);
+	msDelay(5);
 
 	GPIO_WriteBit(BT_RESET_IO_PORT, BT_RESET_IO_PIN, Bit_RESET);
-	msDelay(10);
+	msDelay(5);
 
 	GPIO_WriteBit(BT_RESET_IO_PORT, BT_RESET_IO_PIN, Bit_SET);
-	msDelay(1000);
+	msDelay(500);
 }
 
 void bluetoothForceBaudrate9600(void)

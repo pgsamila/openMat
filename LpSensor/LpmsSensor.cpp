@@ -227,6 +227,7 @@ void LpmsSensor::update(void)
 			state = STATE_GET_SETTINGS;
 			getConfigState = C_STATE_GOTO_COMMAND_MODE;
 		}
+		setConnectionStatus(SENSOR_CONNECTION_CONNECTED);
 	break;
 
 	// Retrieves the current parameter settings of the sensor
@@ -461,7 +462,7 @@ void LpmsSensor::update(void)
 				state = STATE_MEASURE;
 				
 				configData.print();
-				
+
 				if (isFirmwareUpdated == true) {
 					loadCalibrationData(FIRMWARE_BACKUP_FILE);
 					isFirmwareUpdated = false;
@@ -836,7 +837,7 @@ void LpmsSensor::update(void)
 	case STATE_SET_ACC_ALIGNMENT:
 		if (bt->isWaitForData() == false && bt->isWaitForAck() == false) {
 			bt->setAccAlignment(configData.misalignMatrix);
-			LOGV("[LpmsSensor] Set acclerometer alignment\n");
+			LOGV("[LpmsSensor] Set accelerometer alignment\n");
 			state = STATE_SET_ACC_BIAS;
 		}
 	break;
@@ -1456,7 +1457,6 @@ bool LpmsSensor::updateParameters(void)
 	if (state != STATE_MEASURE) {
 		return false;
 	}
-		
 	state = PREPARE_PARAMETER_ADJUSTMENT;
 	getConfigState = STATE_SET_CONFIG;
 	

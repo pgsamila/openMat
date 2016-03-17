@@ -512,10 +512,10 @@ void calcAltitude(void)
 			((gReg.data[LPMS_CONFIG] & LPMS_ALTITUDE_OUTPUT_ENABLED) != 0)) && 
 			((lpmsStatus & LPMS_PRESSURE_INIT_FAILED) != LPMS_PRESSURE_INIT_FAILED)) {
 			  
-		pressure = (float) rawPressure * 1.0e-2f;
+		pressure = (float) rawPressure * 1.0e-3f;
 		temperature = (float) rawTemp * 1.0e-1f;
 
-        	altitude = 44330.76067f * (1.0f - pow((pressure / 1013.25), (1.0f / 5.25588f))); 
+        	altitude = 44330.76067f * (1.0f - pow((pressure / 101.325), (1.0f / 5.25588f))); 
 	}
 
 }

@@ -965,7 +965,7 @@ uint32_t getConfigReg(void)
 
 void setTimestamp(uint8_t* data)
 {
-	measurementTime = getFloat(data);
+	measurementTime = getUi32t(data);
 }
 
 uint8_t setFilterPreset(uint8_t* data) 

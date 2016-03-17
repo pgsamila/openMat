@@ -162,7 +162,7 @@ Plot::Plot(string title, string xAxis, string yAxis,
 
 		QString text;
 		float y = 0.0f;
-		text.sprintf("%+08.2f\t", y);
+		text.sprintf("%+08.3f\t", y);
 		c.qwtCurve->setTitle(QString(curveName[i].c_str()) + QString(" = ") + text);
 		
 		curves.push_back(c);
@@ -204,7 +204,7 @@ void Plot::addData(int i, float y)
 			textRedraw[i] = 0;
 
 			QString text;
-			text.sprintf("%+08.2f\t", y);
+			text.sprintf("%+08.3f\t", y);
 			curves[i].qwtCurve->setTitle(QString(curveName[i].c_str()) + QString(" = ") + text);
 		} else {
 			++textRedraw[i];

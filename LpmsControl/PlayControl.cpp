@@ -103,7 +103,7 @@ bool MotionPlayer::readMotionDataFile(std::string fn) {
 			
 			if (tokens.begin() == tokens.end()) break;
 			
-			// SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatX, QuatY, QuatZ, QuatW, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)			
+			// SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatX, QuatY, QuatZ, QuatW, LinAccX (m/s^2), LinAccY (m/s^2), LinAccZ (m/s^2), Pressure (kPa), Altitude (m), Temperature (degC), HeaveMotion (m)			
 			
 			ti = tokens.begin();
 			d.openMatId = boost::lexical_cast<double>(*ti); ++ti;

@@ -644,8 +644,7 @@ bool CalibrationData::load(std::string fn)
 	readXML("MisalignmentMatrix", configuration, &misalignMatrix);
 	readXML("AccelerometerBias", configuration, &accBias);
 	readXML("GyroMisalignmentMatrix", configuration, &gyrMisalignMatrix);
-	readXML("GyroMisalignmentBias", configuration, &gyrAlignmentBias);		
-	
+	readXML("GyroMisalignmentBias", configuration, &gyrAlignmentBias);	
 	return true;
 }
 

@@ -60,7 +60,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -590,8 +590,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -1008,7 +1008,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -1539,8 +1539,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -1957,7 +1957,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -2489,8 +2489,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -2907,7 +2907,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -3439,8 +3439,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -3857,7 +3857,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -4387,8 +4387,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -4805,7 +4805,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -5336,8 +5336,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -5754,7 +5754,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -5781,7 +5781,7 @@
         </option>
         <option>
           <name>OGLastSavedByProductVersion</name>
-          <state>6.21.1.52845</state>
+          <state>7.40.2.8567</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>
@@ -5793,7 +5793,7 @@
         </option>
         <option>
           <name>OGChipSelectEditMenu</name>
-          <state>STM32F205rx	ST STM32F205rx</state>
+          <state>STM32F205RE	ST STM32F205RE</state>
         </option>
         <option>
           <name>GenLowLevelInterface</name>
@@ -6285,8 +6285,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -6294,7 +6294,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>LpmsB-Mk1Hm-Firmware.bin</state>
+          <state>LpmsBFirmware1.3.5-HM.bin</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -6349,7 +6349,7 @@
         </option>
         <option>
           <name>IlinkOutputFile</name>
-          <state>LpmsFirmware.out</state>
+          <state>LpmsBFirmware1.3.5-HM.out</state>
         </option>
         <option>
           <name>IlinkDebugInfoEnable</name>
@@ -6703,7 +6703,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -7237,8 +7237,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -7655,7 +7655,7 @@
         </option>
         <option>
           <name>FPU</name>
-          <version>3</version>
+          <version>5</version>
           <state>0</state>
         </option>
         <option>
@@ -8185,8 +8185,8 @@
         <debug>1</debug>
         <option>
           <name>OOCOutputFormat</name>
-          <version>2</version>
-          <state>2</state>
+          <version>3</version>
+          <state>3</state>
         </option>
         <option>
           <name>OCOutputOverride</name>
@@ -8549,6 +8549,90 @@
     <name>CMSIS</name>
     <file>
       <name>$PROJ_DIR$\..\STM32F2xx_Libraries\CMSIS\CM3\core_cm3.c</name>
+    </file>
+  </group>
+  <group>
+    <name>LpmsHeaders</name>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\AdConverter.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\CommunicationManager.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\delay.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\HeaveMotion.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpFilterCVersion.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpMagnetometerCalibration.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpMatrix.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsAssignments.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsBmp180.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsCanBus.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsConfig.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsFactorySetting.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsL3gd20.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsLsm303dlhc.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsModbus.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsRn42.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsRs232Usart.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsRtc.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsSensorParameters.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsStartup.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsTest.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsTimebase.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsTTLUsart.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpmsUsart.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\LpStopwatch.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\SensorManager.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\LpmsSource\Watchdog.h</name>
     </file>
   </group>
   <group>

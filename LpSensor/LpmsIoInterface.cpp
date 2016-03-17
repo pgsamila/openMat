@@ -2068,7 +2068,7 @@ bool LpmsIoInterface::getCanMapping(void)
 
 bool LpmsIoInterface::setCanMapping(int *a)
 {	
-	return modbusSetInt32Array(SET_CAN_MAPPING, (long *) a, 16);
+	return modbusSetInt32Array(SET_CAN_MAPPING, (long *)a, 16);
 }
 
 bool LpmsIoInterface::getCanHeartbeat(void)

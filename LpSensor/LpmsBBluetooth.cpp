@@ -202,7 +202,7 @@ bool LpmsBBluetooth::connect(string deviceId)
 	unsigned long iMode = 1;
 	ioctlsocket(sock, FIONBIO, &iMode);
 	
-	std::cout << "[LpmsBBluetooth] Connected!" << std::endl;	
+	//std::cout << "[LpmsBBluetooth] Connected!" << std::endl;	
 	
 	mm.reset();
 	
@@ -279,12 +279,30 @@ bool LpmsBBluetooth::read(char *rxBuffer, unsigned long *bytesReceived)
 
 bool LpmsBBluetooth::write(char *txBuffer, unsigned bufferLength)
 {
-	if (send(sock, txBuffer, bufferLength, 0) == SOCKET_ERROR) {
+	// for lpms b2
+	/*
+	int bufL = 16;
+	int l = bufferLength / bufL;
+	int res = bufferLength % bufL;
+	int p = 0;
+	for (int i = 0; i < l; ++i)
+	{
+		if (send(sock, txBuffer + p, bufL, 0) == SOCKET_ERROR) {
+			close();
+			return false;
+		}
+		p += bufL;
+	}
+	if (send(sock, txBuffer + p, res, 0) == SOCKET_ERROR) {
 		close();
-
 		return false;
 	}
-	
+	*/
+
+	if (send(sock, txBuffer, bufferLength, 0) == SOCKET_ERROR) {
+		close();
+		return false;
+	}
 	return true;
 }
 
@@ -293,7 +311,7 @@ bool LpmsBBluetooth::sendModbusData(unsigned address, unsigned function, unsigne
 	char txData[1024];
 	unsigned int txLrcCheck;
 	
-	if (length > 1014) return false;
+	if (length > 1013) return false;
 
 	txData[0] = 0x3a;
 	txData[1] = address & 0xff;
@@ -319,7 +337,7 @@ bool LpmsBBluetooth::sendModbusData(unsigned address, unsigned function, unsigne
 	txData[8 + length] = (txLrcCheck >> 8) & 0xff;
 	txData[9 + length] = 0x0d;
 	txData[10 + length] = 0x0a;
-	
+
 	if (write(txData, length+11) == true) {
 		return true;
 	}

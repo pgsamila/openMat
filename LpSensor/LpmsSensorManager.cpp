@@ -31,7 +31,7 @@
 
 #include "LpmsSensorManager.h"
 
-#define SENSOR_UPDATE_PERIOD 500
+#define SENSOR_UPDATE_PERIOD 200
 
 #define SMANAGER_LIST 0
 #define SMANAGER_MEASURE 1
@@ -185,6 +185,7 @@ void LpmsSensorManager::run(void)
 				lm.unlock();
 			}
 #ifdef _WIN32
+			/*
 			else {
 				// Busy Wait hack
 				if (sleepFlag++ > 100)
@@ -193,6 +194,7 @@ void LpmsSensorManager::run(void)
 					sleepFlag = 0;
 				}
 			}
+			*/
 #endif
 		break;
 
@@ -323,7 +325,7 @@ bool LpmsSensorManager::saveSensorData(const char* fn)
 	saveDataHandle.open(fn, ios_base::out);
 	saveDataHandle.rdbuf()->pubsetbuf(writeBuffer, 65536);
 	if (saveDataHandle.is_open() == true) {	
-		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (g), LinAccY (g), LinAccZ (g), Pressure (hPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
+		saveDataHandle << "SensorId, TimeStamp (s), FrameNumber, AccX (g), AccY (g), AccZ (g), GyroX (deg/s), GyroY (deg/s), GyroZ (deg/s), MagX (uT), MagY (uT), MagZ (uT), EulerX (deg), EulerY (deg), EulerZ (deg), QuatW, QuatX, QuatY, QuatZ, LinAccX (g), LinAccY (g), LinAccZ (g), Pressure (kPa), Altitude (m), Temperature (degC), HeaveMotion (m)\n";
 
 		cout << "[LpmsSensorManager] Writing LPMS data to " << fn << endl;	
 						
